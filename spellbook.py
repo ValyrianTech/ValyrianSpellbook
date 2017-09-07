@@ -30,12 +30,18 @@ class Spellbook(Bottle):
         # Initialize a separate log for the http requests to the REST API
         self.requests_log = self.initialize_requests_log(logs_dir)
 
-        # log the requests to the REST API in a separate file by installing a custom LoggingPlugin
+        # Log the requests to the REST API in a separate file by installing a custom LoggingPlugin
         self.install(self.log_to_logger)
 
         self.log.info('Starting Bitcoin Spellbook')
 
-        # initialize the routes for the REST API
+        # Initialize the routes for the REST API
+        # Routes for managing blockexplorers
+        self.route('/spellbook/explorers', method='GET', callback=self.get_explorers)
+        self.route('/spellbook/explorers', method='POST', callback=self.save_explorer)
+        self.route('/spellbook/explorers', method='DELETE', callback=self.delete_explorer)
+
+        # Routes for retrieving data from the blockchain
         self.route('/spellbook/block', method='GET', callback=self.get_block)
 
         # start the webserver for the REST API
@@ -83,6 +89,15 @@ class Spellbook(Bottle):
                                                                response.status))
             return actual_response
         return _log_to_logger
+
+    def get_explorers(self):
+        return simplejson.dumps('get explorers')
+
+    def save_explorer(self):
+        return simplejson.dumps('save explorer')
+
+    def delete_explorer(self):
+        return simplejson.dumps('delete explorer')
 
     def get_block(self):
         return simplejson.dumps('block data')
