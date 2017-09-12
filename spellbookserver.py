@@ -11,9 +11,9 @@ from functools import wraps
 import simplejson
 
 
-class Spellbook(Bottle):
+class SpellbookRESTAPI(Bottle):
     def __init__(self):
-        super(Spellbook, self).__init__()
+        super(SpellbookRESTAPI, self).__init__()
 
         # Initialize variables
         self.host = 'localhost'
@@ -104,5 +104,5 @@ class Spellbook(Bottle):
 
 
 if __name__ == "__main__":
-    Spellbook()
+    SpellbookRESTAPI()
 

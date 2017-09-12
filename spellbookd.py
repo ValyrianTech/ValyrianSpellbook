@@ -4,7 +4,7 @@
 import os
 import argparse
 import daemon
-from spellbook import Spellbook
+from spellbookserver import SpellbookRESTAPI
 
 
 if __name__ == "__main__":
@@ -22,7 +22,7 @@ if __name__ == "__main__":
 
         with daemon.DaemonContext(stderr=open("spellbook-err.txt", "w"),
                                   working_directory=os.path.dirname(__file__)):
-            Spellbook()
+            SpellbookRESTAPI()
 
     else:
-        Spellbook()
+        SpellbookRESTAPI()
