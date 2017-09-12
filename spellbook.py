@@ -87,7 +87,7 @@ get_explorer_config_parser.add_argument('name', help='Name of the explorer')
 
 
 # Create parser for the delete_explorer subcommand
-delete_explorer_parser = subparsers.add_parser(name='get_explorer_config',
+delete_explorer_parser = subparsers.add_parser(name='delete_explorer',
                                                help='Delete a specific explorer',
                                                formatter_class=argparse.RawDescriptionHelpFormatter,
                                                description='''
