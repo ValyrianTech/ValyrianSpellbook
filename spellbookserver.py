@@ -38,8 +38,9 @@ class SpellbookRESTAPI(Bottle):
         # Initialize the routes for the REST API
         # Routes for managing blockexplorers
         self.route('/spellbook/explorers', method='GET', callback=self.get_explorers)
-        self.route('/spellbook/explorers', method='POST', callback=self.save_explorer)
-        self.route('/spellbook/explorers', method='DELETE', callback=self.delete_explorer)
+        self.route('/spellbook/explorers/<explorer_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.save_explorer)
+        self.route('/spellbook/explorers/<explorer_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.get_explorer_config)
+        self.route('/spellbook/explorers/<explorer_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.delete_explorer)
 
         # Routes for retrieving data from the blockchain
         self.route('/spellbook/block', method='GET', callback=self.get_block)
@@ -95,6 +96,9 @@ class SpellbookRESTAPI(Bottle):
 
     def save_explorer(self):
         return simplejson.dumps('save explorer')
+
+    def get_explorer_config(self):
+        return simplejson.dumps('get explorer config')
 
     def delete_explorer(self):
         return simplejson.dumps('delete explorer')
