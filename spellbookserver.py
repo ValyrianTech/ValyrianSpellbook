@@ -11,6 +11,9 @@ from functools import wraps
 import simplejson
 
 
+from data.data import get_explorers, get_explorer_config
+
+
 class SpellbookRESTAPI(Bottle):
     def __init__(self):
         super(SpellbookRESTAPI, self).__init__()
@@ -51,7 +54,7 @@ class SpellbookRESTAPI(Bottle):
     @staticmethod
     def initialize_log(logs_dir):
         # Create a log file for the Core daemon
-        logger = logging.getLogger('Bitcoin Spellbook')
+        logger = logging.getLogger('Spellbook')
 
         stream_handler = logging.StreamHandler(sys.stdout)
         stream_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(message)s'))
@@ -91,14 +94,24 @@ class SpellbookRESTAPI(Bottle):
             return actual_response
         return _log_to_logger
 
-    def get_explorers(self):
-        return simplejson.dumps('get explorers')
+    @staticmethod
+    def get_explorers():
+        explorers = get_explorers()
+        if explorers is not None:
+            return simplejson.dumps(explorers)
+        else:
+            return simplejson.dumps({'error': 'Unable to retrieve explorer_ids'})
 
     def save_explorer(self):
         return simplejson.dumps('save explorer')
 
-    def get_explorer_config(self):
-        return simplejson.dumps('get explorer config')
+    @staticmethod
+    def get_explorer_config(explorer_id):
+        explorer_config = get_explorer_config(explorer_id)
+        if explorer_config is not None:
+            return simplejson.dumps(explorer_config)
+        else:
+            return simplejson.dumps({'error': 'No explorer configured with id: %s' % explorer_id})
 
     def delete_explorer(self):
         return simplejson.dumps('delete explorer')
