@@ -38,7 +38,7 @@ class SpellbookRESTAPI(Bottle):
         self.install(self.log_to_logger)
 
         # Make sure that an api_keys.json file is present, the first time the server is started
-        #  a new random api key and secret pair will be generated
+        # a new random api key and secret pair will be generated
         if not os.path.isfile('api_keys.json'):
             self.log.info('Generating new API keys')
             initialize_api_keys_file()
