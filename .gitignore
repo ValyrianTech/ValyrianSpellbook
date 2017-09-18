@@ -105,3 +105,6 @@ ENV/
 
 # logs
 logs/
+
+# json files
+*.json
