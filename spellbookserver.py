@@ -12,6 +12,7 @@ import simplejson
 
 
 from data.data import get_explorers, get_explorer_config
+from authentication import initialize_api_keys_file, check_authentication
 
 
 class SpellbookRESTAPI(Bottle):
@@ -35,6 +36,12 @@ class SpellbookRESTAPI(Bottle):
 
         # Log the requests to the REST API in a separate file by installing a custom LoggingPlugin
         self.install(self.log_to_logger)
+
+        # Make sure that an api_keys.json file is present, the first time the server is started
+        #  a new random api key and secret pair will be generated
+        if not os.path.isfile('api_keys.json'):
+            self.log.info('Generating new API keys')
+            initialize_api_keys_file()
 
         self.log.info('Starting Bitcoin Spellbook')
 
