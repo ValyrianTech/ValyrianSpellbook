@@ -92,12 +92,20 @@ class SpellbookRESTAPI(Bottle):
         @wraps(fn)
         def _log_to_logger(*args, **kwargs):
             request_time = datetime.now()
-            actual_response = fn(*args, **kwargs)
+            actual_response = response
+            try:
+                actual_response = fn(*args, **kwargs)
+            except Exception as ex:
+                response_status = '500 ' + str(ex)
+                self.log.error('%s caused an exception: %s' % (request.url, ex))
+            else:
+                response_status = response.status
+
             self.requests_log.info('%s | %s | %s | %s | %s' % (request_time,
                                                                request.remote_addr,
                                                                request.method,
                                                                request.url,
-                                                               response.status))
+                                                               response_status))
             return actual_response
         return _log_to_logger
 
