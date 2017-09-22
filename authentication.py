@@ -32,7 +32,7 @@ def initialize_api_keys_file():
     api_key = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(16))
     api_secret = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(16))
 
-    data = {api_key: {'secret:': api_secret,
+    data = {api_key: {'secret': api_secret,
                       'permissions': 'all'}}
 
     save_to_json_file(API_KEYS_FILE, data)
@@ -46,11 +46,11 @@ def check_authentication(headers, body):
         if api_keys is None:
             authentication_status = AuthenticationStatus.INVALID_JSON_FILE
 
-        elif api_key in api_keys:
+        elif api_key in api_keys and 'secret' in api_keys[api_key]:
             if 'API_Sign' in headers:
                 signature = str(headers['API_Sign'])
                 message = hashlib.sha256(body).digest()
-                if signature != base64.b64encode(hmac.new(base64.b64decode(api_keys[api_key].secret),
+                if signature != base64.b64encode(hmac.new(base64.b64decode(api_keys[api_key]['secret']),
                                                           message,
                                                           hashlib.sha512).digest()):
                     authentication_status = AuthenticationStatus.INVALID_SIGNATURE
