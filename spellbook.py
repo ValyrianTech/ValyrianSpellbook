@@ -3,6 +3,9 @@
 
 import os
 import sys
+import hashlib
+import hmac
+import base64
 import requests
 import argparse
 from ConfigParser import ConfigParser
@@ -14,22 +17,36 @@ os.chdir(os.path.dirname(__file__))
 # ----------------------------------------------------------------------------------------------------------------
 
 # Read the RESTAPI configuration file
-restapi_configuration_file = 'configuration/SpellbookRESTAPI.conf'
+spellbook_configuration_file = 'configuration/Spellbook.conf'
 config = ConfigParser()
-config.read(restapi_configuration_file)
+config.read(spellbook_configuration_file)
 
-# Check if the maggie configuration file contains a [RESTAPI] section
+# Check if the spellbook configuration file contains a [RESTAPI] section
 if not config.has_section('RESTAPI'):
-    raise Exception('Configuration file %s does not have a [RESTAPI] section ' % restapi_configuration_file)
+    raise Exception('Configuration file %s does not have a [RESTAPI] section ' % spellbook_configuration_file)
 
-# Check if the [Core] section has options for 'host' and 'port'
+# Check if the [RESTAPI] section has options for 'host' and 'port'
 if not config.has_option('RESTAPI', 'host'):
-    raise Exception("Configuration file %s does not have an option 'host' in the [RESTAPI] section" % restapi_configuration_file)
+    raise Exception("Configuration file %s does not have an option 'host' in the [RESTAPI] section" % spellbook_configuration_file)
 host = config.get('RESTAPI', 'host')
 
 if not config.has_option('RESTAPI', 'port'):
-    raise Exception("Configuration file %s does not have an option 'port' in the [RESTAPI] section" % restapi_configuration_file)
+    raise Exception("Configuration file %s does not have an option 'port' in the [RESTAPI] section" % spellbook_configuration_file)
 port = config.get('RESTAPI', 'port')
+
+
+# Check if the spellbook configuration file contains a [Authentication] section
+if not config.has_section('Authentication'):
+    raise Exception('Configuration file %s does not have a [Authentication] section ' % spellbook_configuration_file)
+
+# Check if the [Authentication] section has options for 'host' and 'port'
+if not config.has_option('Authentication', 'key'):
+    raise Exception("Configuration file %s does not have an option 'key' in the [Authentication] section" % spellbook_configuration_file)
+key = config.get('Authentication', 'key')
+
+if not config.has_option('Authentication', 'secret'):
+    raise Exception("Configuration file %s does not have an option 'secret' in the [Authentication] section" % spellbook_configuration_file)
+secret = config.get('Authentication', 'secret')
 
 # ----------------------------------------------------------------------------------------------------------------
 
@@ -84,6 +101,8 @@ examples:
                                                    ''')
 
 get_explorer_config_parser.add_argument('name', help='Name of the explorer')
+get_explorer_config_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
+get_explorer_config_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
 
 
 # Create parser for the delete_explorer subcommand
@@ -104,6 +123,19 @@ delete_explorer_parser.add_argument('name', help='Name of the explorer')
 # ----------------------------------------------------------------------------------------------------------------
 
 
+def add_authentication_headers(headers=None, data=''):
+    if headers is None:
+        headers = {}
+
+    message = hashlib.sha256(data).digest()
+    signature = hmac.new(base64.b64decode(args.api_secret), message, hashlib.sha512)
+
+    headers.update({'API_Key': args.api_key,
+                    'API_Sign': base64.b64encode(signature.digest())})
+
+    return headers
+
+
 #############################################
 # Bitcoin Spellbook Commands : explorers    #
 #############################################
@@ -120,7 +152,8 @@ def get_explorers():
 
 def get_explorer_config():
     try:
-        r = requests.get('http://{host}:{port}/spellbook/explorers/{explorer_id}'.format(host=host, port=port, explorer_id=args.name))
+        data = ''
+        r = requests.get('http://{host}:{port}/spellbook/explorers/{explorer_id}'.format(host=host, port=port, explorer_id=args.name), headers=add_authentication_headers(data=data), data=data)
         print r.text
     except Exception as ex:
         print >> sys.stderr, 'Unable to get explorer config: %s' % ex
