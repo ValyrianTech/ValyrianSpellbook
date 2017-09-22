@@ -13,6 +13,7 @@ import simplejson
 
 from data.data import get_explorers, get_explorer_config
 from authentication import initialize_api_keys_file, check_authentication
+from decorators import authentication_required
 
 
 class SpellbookRESTAPI(Bottle):
@@ -121,6 +122,7 @@ class SpellbookRESTAPI(Bottle):
         return simplejson.dumps('save explorer')
 
     @staticmethod
+    @authentication_required
     def get_explorer_config(explorer_id):
         explorer_config = get_explorer_config(explorer_id)
         if explorer_config is not None:
