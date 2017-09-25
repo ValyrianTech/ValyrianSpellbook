@@ -12,7 +12,7 @@ from ConfigParser import ConfigParser
 
 
 # Make sure we are in the correct working directory
-os.chdir(os.path.dirname(__file__))
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 # ----------------------------------------------------------------------------------------------------------------
 
