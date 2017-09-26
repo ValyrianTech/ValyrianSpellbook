@@ -11,11 +11,11 @@ def spellbook_call(*args):
     spellbook_args = ['spellbook.py']
     spellbook_args.extend(args)
 
-    print 'CALL: %s' % ' '.join(spellbook_args)
+    print '\nCALL: %s' % ' '.join(spellbook_args)
     spellbook = Popen(spellbook_args, stdout=PIPE, stderr=PIPE, shell=True)
     output, error = spellbook.communicate()
     stripped_output = output.strip()
-    print 'RESPONSE: %s' % stripped_output
+    print 'RESPONSE: %s\n' % stripped_output
 
     stripped_error = error.strip()
     if len(stripped_error):
@@ -50,3 +50,27 @@ if configured_explorers:
 print '--------------------------------------------------------------------------------------------------------'
 print 'Saving Blockchain.info'
 response = spellbook_call('save_explorer', 'blockchain.info', 'Blockchain.info', 'https://blockchain.info', 10)
+assert response is None
+
+response = spellbook_call('get_explorer_config', 'blockchain.info')
+assert response == {"priority": 10, "url": "https://blockchain.info", "api_key": "", "type": "Blockchain.info"}
+
+print '--------------------------------------------------------------------------------------------------------'
+print 'Saving Insight'
+response = spellbook_call('save_explorer', 'insight', 'Insight', 'https://blockexplorer.com/api', 2)
+assert response is None
+
+response = spellbook_call('get_explorer_config', 'insight')
+assert response == {"priority": 2, "url": "https://blockexplorer.com/api", "api_key": "", "type": "Insight"}
+
+print 'Getting the list of configured explorers'
+response = spellbook_call('get_explorers')
+assert response == ['insight', 'blockchain.info']
+
+print '--------------------------------------------------------------------------------------------------------'
+print 'Updating Blockchain.info with priority 1'
+response = spellbook_call('save_explorer', 'blockchain.info', 'Blockchain.info', 'https://blockchain.info', 1)
+assert response is None
+
+response = spellbook_call('get_explorers')
+assert response == ['blockchain.info', 'insight']
