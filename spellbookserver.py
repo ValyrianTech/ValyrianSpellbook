@@ -9,10 +9,10 @@ from bottle import Bottle, request, response
 from datetime import datetime
 from functools import wraps
 import simplejson
+import traceback
 
-
-from data.data import get_explorers, get_explorer_config
-from authentication import initialize_api_keys_file, check_authentication
+from data.data import get_explorers, get_explorer_config, save_explorer, delete_explorer
+from authentication import initialize_api_keys_file
 from decorators import authentication_required
 
 
@@ -99,6 +99,7 @@ class SpellbookRESTAPI(Bottle):
             except Exception as ex:
                 response_status = '500 ' + str(ex)
                 self.log.error('%s caused an exception: %s' % (request.url, ex))
+                traceback.print_exc()
             else:
                 response_status = response.status
 
@@ -118,8 +119,10 @@ class SpellbookRESTAPI(Bottle):
         else:
             return simplejson.dumps({'error': 'Unable to retrieve explorer_ids'})
 
-    def save_explorer(self):
-        return simplejson.dumps('save explorer')
+    @staticmethod
+    @authentication_required
+    def save_explorer(explorer_id):
+        save_explorer(explorer_id, request.json)
 
     @staticmethod
     @authentication_required
@@ -130,8 +133,10 @@ class SpellbookRESTAPI(Bottle):
         else:
             return simplejson.dumps({'error': 'No explorer configured with id: %s' % explorer_id})
 
-    def delete_explorer(self):
-        return simplejson.dumps('delete explorer')
+    @staticmethod
+    @authentication_required
+    def delete_explorer(explorer_id):
+        delete_explorer(explorer_id)
 
     def get_block(self):
         return simplejson.dumps('block data')

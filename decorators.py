@@ -15,7 +15,7 @@ def authentication_required(f):
     """
 
     def decorated_function(*args, **kwargs):
-        authentication_status = check_authentication(request.headers, request.body.getvalue())
+        authentication_status = check_authentication(request.headers, request.json)
         if authentication_status == AuthenticationStatus.OK:
             return f(*args, **kwargs)
         else:
