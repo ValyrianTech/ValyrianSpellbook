@@ -56,16 +56,16 @@ response = spellbook_call('get_explorer_config', 'blockchain.info')
 assert response == {"priority": 10, "url": "https://blockchain.info", "api_key": "", "type": "Blockchain.info"}
 
 print '--------------------------------------------------------------------------------------------------------'
-print 'Saving Insight'
-response = spellbook_call('save_explorer', 'insight', 'Insight', 'https://blockexplorer.com/api', 2)
+print 'Saving blockexplorer.com'
+response = spellbook_call('save_explorer', 'blockexplorer.com', 'Insight', 'https://blockexplorer.com/api', 2)
 assert response is None
 
-response = spellbook_call('get_explorer_config', 'insight')
+response = spellbook_call('get_explorer_config', 'blockexplorer.com')
 assert response == {"priority": 2, "url": "https://blockexplorer.com/api", "api_key": "", "type": "Insight"}
 
 print 'Getting the list of configured explorers'
 response = spellbook_call('get_explorers')
-assert response == ['insight', 'blockchain.info']
+assert response == ['blockexplorer.com', 'blockchain.info']
 
 print '--------------------------------------------------------------------------------------------------------'
 print 'Updating Blockchain.info with priority 1'
@@ -73,4 +73,4 @@ response = spellbook_call('save_explorer', 'blockchain.info', 'Blockchain.info',
 assert response is None
 
 response = spellbook_call('get_explorers')
-assert response == ['blockchain.info', 'insight']
+assert response == ['blockchain.info', 'blockexplorer.com']
