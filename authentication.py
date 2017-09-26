@@ -38,7 +38,7 @@ def initialize_api_keys_file():
     save_to_json_file(API_KEYS_FILE, data)
 
 
-def check_authentication(headers, body):
+def check_authentication(headers, data):
     if 'API_Key' in headers:
         api_key = headers['API_Key']
         api_keys = load_from_json_file(API_KEYS_FILE)
@@ -49,7 +49,7 @@ def check_authentication(headers, body):
         elif api_key in api_keys and 'secret' in api_keys[api_key]:
             if 'API_Sign' in headers:
                 signature = str(headers['API_Sign'])
-                message = hashlib.sha256(body).digest()
+                message = hashlib.sha256(simplejson.dumps(data, sort_keys=True, indent=2)).digest()
                 if signature != base64.b64encode(hmac.new(base64.b64decode(api_keys[api_key]['secret']),
                                                           message,
                                                           hashlib.sha512).digest()):
