@@ -3,6 +3,7 @@
 
 import os
 import sys
+import simplejson
 import hashlib
 import hmac
 import base64
@@ -83,9 +84,13 @@ examples:
     -> Save or update an explorer with name 'blocktrail' and an API-key in the spellbook
                                              ''')
 
-save_explorer_parser.add_argument('name', help='Name of the explorer')
-save_explorer_parser.add_argument('-k', '--key', help='API key for the explorer')
-save_explorer_parser.add_argument('-u', '--url', help='URL of the explorer')
+save_explorer_parser.add_argument('name', help='name of the explorer')
+save_explorer_parser.add_argument('type', help='type of the explorer', choices=['Blockchain.info', 'Blocktrail.com', 'Insight'])
+save_explorer_parser.add_argument('url', help='URL of the explorer')
+save_explorer_parser.add_argument('priority', help='priority of the explorer')
+save_explorer_parser.add_argument('-b', '--blocktrail_key', help='API key for the explorer (only needed for blocktrail.com)', default='')
+save_explorer_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
+save_explorer_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
 
 # Create parser for the get_explorer_config subcommand
 get_explorer_config_parser = subparsers.add_parser(name='get_explorer_config',
@@ -119,15 +124,27 @@ examples:
                                                ''')
 
 delete_explorer_parser.add_argument('name', help='Name of the explorer')
+delete_explorer_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
+delete_explorer_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
 
 # ----------------------------------------------------------------------------------------------------------------
 
 
-def add_authentication_headers(headers=None, data=''):
-    if headers is None:
-        headers = {}
+def add_authentication_headers(headers=None, data=None):
+    """
+    Add custom headers for API_Key and API_Sign
+    The data that is sent with the HTTP request is signed with the shared secret of the API key,
+    this ensures that the request is made from an authenticated source and the data cannot be modified
+    by a man-in-the-middle attack
 
-    message = hashlib.sha256(data).digest()
+    :param headers: A dict containing headers (optional)
+    :param data: A json string containing the data (optional)
+    :return: A dict containing the updated headers
+    """
+    if headers is None:
+        headers = {'Content-Type': 'application/json'}
+
+    message = hashlib.sha256(simplejson.dumps(data, sort_keys=True, indent=2)).digest()
     signature = hmac.new(base64.b64decode(args.api_secret), message, hashlib.sha512)
 
     headers.update({'API_Key': args.api_key,
@@ -152,8 +169,7 @@ def get_explorers():
 
 def get_explorer_config():
     try:
-        data = ''
-        r = requests.get('http://{host}:{port}/spellbook/explorers/{explorer_id}'.format(host=host, port=port, explorer_id=args.name), headers=add_authentication_headers(data=data), data=data)
+        r = requests.get('http://{host}:{port}/spellbook/explorers/{explorer_id}'.format(host=host, port=port, explorer_id=args.name), headers=add_authentication_headers())
         print r.text
     except Exception as ex:
         print >> sys.stderr, 'Unable to get explorer config: %s' % ex
@@ -161,12 +177,13 @@ def get_explorer_config():
 
 
 def save_explorer():
-    payload = {'name': args.name,
-               'api_key': args.api_key,
-               'url': args.url}
+    data = {'type': args.type,
+            'api_key': args.blocktrail_key,
+            'url': args.url,
+            'priority': args.priority}
 
     try:
-        r = requests.post('http://{host}:{port}/spellbook/explorers/{explorer_id}'.format(host=host, port=port, explorer_id=args.name), data=payload)
+        r = requests.post('http://{host}:{port}/spellbook/explorers/{explorer_id}'.format(host=host, port=port, explorer_id=args.name), headers=add_authentication_headers(data=data), json=data)
         print r.text
     except Exception as ex:
         print >> sys.stderr, 'Unable to get explorer config: %s' % ex
@@ -175,7 +192,7 @@ def save_explorer():
 
 def delete_explorer():
     try:
-        r = requests.delete('http://{host}:{port}/spellbook/explorers/{explorer_id}'.format(host=host, port=port, explorer_id=args.name))
+        r = requests.delete('http://{host}:{port}/spellbook/explorers/{explorer_id}'.format(host=host, port=port, explorer_id=args.name), headers=add_authentication_headers())
         print r.text
     except Exception as ex:
         print >> sys.stderr, 'Unable to delete explorer: %s' % ex
