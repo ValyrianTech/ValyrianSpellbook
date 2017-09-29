@@ -11,6 +11,8 @@ import base64
 
 from jsonhelpers import save_to_json_file, load_from_json_file
 
+LAST_NONCES = {}
+
 
 class AuthenticationStatus(object):
     OK = 'OK'
@@ -19,6 +21,8 @@ class AuthenticationStatus(object):
     INVALID_SIGNATURE = 'Invalid signature'
     NO_SIGNATURE = 'No signature supplied'
     INVALID_JSON_FILE = 'Invalid json file'
+    NO_NONCE = 'No nonce supplied'
+    INVALID_NONCE = 'Invalid nonce'
 
 
 API_KEYS_FILE = 'api_keys.json'
@@ -39,28 +43,51 @@ def initialize_api_keys_file():
 
 
 def check_authentication(headers, data):
-    if 'API_Key' in headers:
-        api_key = headers['API_Key']
-        api_keys = load_from_json_file(API_KEYS_FILE)
+    """
+    Checks if the headers contain valid authentication information
+    This must include the following headers:
+    - API_Key: an identifier for the account
+    - API_Sign: a signature
+    - API_NONCE: an integer, each request must have a nonce that is higher than the nonce of the previous request
 
-        if api_keys is None:
-            authentication_status = AuthenticationStatus.INVALID_JSON_FILE
+    :param headers: The headers of the http request
+    :param data: The json data of the http request
+    :return: An AuthenticationStatus
+    """
+    global LAST_NONCES
 
-        elif api_key in api_keys and 'secret' in api_keys[api_key]:
-            if 'API_Sign' in headers:
-                signature = str(headers['API_Sign'])
-                message = hashlib.sha256(simplejson.dumps(data, sort_keys=True, indent=2)).digest()
-                if signature != base64.b64encode(hmac.new(base64.b64decode(api_keys[api_key]['secret']),
-                                                          message,
-                                                          hashlib.sha512).digest()):
-                    authentication_status = AuthenticationStatus.INVALID_SIGNATURE
-                else:
-                    authentication_status = AuthenticationStatus.OK
-            else:
-                authentication_status = AuthenticationStatus.NO_SIGNATURE
-        else:
-            authentication_status = AuthenticationStatus.INVALID_API_KEY
+    api_keys = load_from_json_file(API_KEYS_FILE)
+    if api_keys is None:
+        return AuthenticationStatus.INVALID_JSON_FILE
+
+    if 'API_Key' not in headers:
+        return AuthenticationStatus.NO_API_KEY
+
+    if 'API_Sign' not in headers:
+        return AuthenticationStatus.NO_SIGNATURE
+
+    if 'API_Nonce' not in headers:
+        return AuthenticationStatus.NO_NONCE
+
+    api_key = headers['API_Key']
+    if api_key not in api_keys or 'secret' not in api_keys[api_key]:
+        return AuthenticationStatus.INVALID_API_KEY
+
+    try:
+        nonce = int(headers['API_Nonce'])
+    except Exception as ex:
+        return AuthenticationStatus.INVALID_NONCE
+
+    if api_key in LAST_NONCES and LAST_NONCES[api_key] >= nonce:
+        return AuthenticationStatus.INVALID_NONCE
+
+    LAST_NONCES[api_key] = nonce
+
+    signature = headers['API_Sign']
+    message = hashlib.sha256(str(nonce) + simplejson.dumps(data, sort_keys=True, indent=2)).digest()
+    if signature == base64.b64encode(hmac.new(base64.b64decode(api_keys[api_key]['secret']),
+                                              message,
+                                              hashlib.sha512).digest()):
+        return AuthenticationStatus.OK
     else:
-        authentication_status = AuthenticationStatus.NO_API_KEY
-
-    return authentication_status
+        return AuthenticationStatus.INVALID_SIGNATURE

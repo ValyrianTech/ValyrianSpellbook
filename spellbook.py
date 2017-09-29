@@ -9,6 +9,7 @@ import hmac
 import base64
 import requests
 import argparse
+import time
 from ConfigParser import ConfigParser
 
 
@@ -144,11 +145,13 @@ def add_authentication_headers(headers=None, data=None):
     if headers is None:
         headers = {'Content-Type': 'application/json'}
 
-    message = hashlib.sha256(simplejson.dumps(data, sort_keys=True, indent=2)).digest()
+    nonce = int(time.time())
+    message = hashlib.sha256(str(nonce) + simplejson.dumps(data, sort_keys=True, indent=2)).digest()
     signature = hmac.new(base64.b64decode(args.api_secret), message, hashlib.sha512)
 
     headers.update({'API_Key': args.api_key,
-                    'API_Sign': base64.b64encode(signature.digest())})
+                    'API_Sign': base64.b64encode(signature.digest()),
+                    'API_Nonce': str(nonce)})
 
     return headers
 
