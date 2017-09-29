@@ -11,6 +11,7 @@ import base64
 
 from jsonhelpers import save_to_json_file, load_from_json_file
 
+API_KEYS_FILE = 'api_keys.json'
 LAST_NONCES = {}
 
 
@@ -23,9 +24,6 @@ class AuthenticationStatus(object):
     INVALID_JSON_FILE = 'Invalid json file'
     NO_NONCE = 'No nonce supplied'
     INVALID_NONCE = 'Invalid nonce'
-
-
-API_KEYS_FILE = 'api_keys.json'
 
 
 def initialize_api_keys_file():
