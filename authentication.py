@@ -48,7 +48,7 @@ def check_authentication(headers, data):
     This must include the following headers:
     - API_Key: an identifier for the account
     - API_Sign: a signature
-    - API_NONCE: an integer, each request must have a nonce that is higher than the nonce of the previous request
+    - API_Nonce: an integer, each request must have a nonce that is higher than the nonce of the previous request
 
     :param headers: The headers of the http request
     :param data: The json data of the http request
