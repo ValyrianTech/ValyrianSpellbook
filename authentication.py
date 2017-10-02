@@ -60,6 +60,9 @@ def signature(data, nonce, secret):
     :param secret:
     :return: A SHA512 hash
     """
+    if len(secret) % 4 != 0:
+        raise Exception('The secret must be a string with a length of a multiple of 4!')
+
     return base64.b64encode(hmac.new(base64.b64decode(secret), hash_message(data, nonce), hashlib.sha512).digest())
 
 
