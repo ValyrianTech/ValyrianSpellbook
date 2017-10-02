@@ -58,7 +58,7 @@ def signature(data, nonce, secret):
     :param data: A dict containing the data to be send as json in a http request
     :param nonce: An integer
     :param secret: A string containing the shared secret (lenght must be a multiple of 4)
-    :return: A SHA512 hash
+    :return: A signature for the data and nonce
     """
     if len(secret) % 4 != 0:
         raise Exception('The secret must be a string with a length of a multiple of 4!')
