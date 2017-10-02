@@ -11,6 +11,7 @@ import requests
 import argparse
 import time
 from ConfigParser import ConfigParser
+from authentication import signature
 
 
 # Make sure we are in the correct working directory
@@ -146,11 +147,9 @@ def add_authentication_headers(headers=None, data=None):
         headers = {'Content-Type': 'application/json'}
 
     nonce = int(time.time())
-    message = hashlib.sha256(str(nonce) + simplejson.dumps(data, sort_keys=True, indent=2)).digest()
-    signature = hmac.new(base64.b64decode(args.api_secret), message, hashlib.sha512)
 
     headers.update({'API_Key': args.api_key,
-                    'API_Sign': base64.b64encode(signature.digest()),
+                    'API_Sign': signature(data, nonce, args.api_secret),
                     'API_Nonce': str(nonce)})
 
     return headers

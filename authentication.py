@@ -40,6 +40,29 @@ def initialize_api_keys_file():
     save_to_json_file(API_KEYS_FILE, data)
 
 
+def hash_message(data, nonce):
+    """
+    Get the SHA512 hash of the nonce and the data in json format (sorted keys and 2 spaces indentation)
+
+    :param data: A dict containing the data to be send as json in a http request
+    :param nonce: An integer
+    :return: A SHA512 hash
+    """
+    return hashlib.sha512(str(nonce) + simplejson.dumps(data, sort_keys=True, indent=2)).digest()
+
+
+def signature(data, nonce, secret):
+    """
+    Sign the nonce and data with a shared secret and return the signature
+
+    :param data: A dict containing the data to be send as json in a http request
+    :param nonce: An integer
+    :param secret:
+    :return: A SHA512 hash
+    """
+    return base64.b64encode(hmac.new(base64.b64decode(secret), hash_message(data, nonce), hashlib.sha512).digest())
+
+
 def check_authentication(headers, data):
     """
     Checks if the headers contain valid authentication information
@@ -81,11 +104,7 @@ def check_authentication(headers, data):
 
     LAST_NONCES[api_key] = nonce
 
-    signature = headers['API_Sign']
-    message = hashlib.sha256(str(nonce) + simplejson.dumps(data, sort_keys=True, indent=2)).digest()
-    if signature == base64.b64encode(hmac.new(base64.b64decode(api_keys[api_key]['secret']),
-                                              message,
-                                              hashlib.sha512).digest()):
+    if headers['API_Sign'] == signature(data, nonce, api_keys[api_key]['secret']):
         return AuthenticationStatus.OK
     else:
         return AuthenticationStatus.INVALID_SIGNATURE
