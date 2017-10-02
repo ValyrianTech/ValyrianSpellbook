@@ -3,10 +3,6 @@
 
 import os
 import sys
-import simplejson
-import hashlib
-import hmac
-import base64
 import requests
 import argparse
 import time
