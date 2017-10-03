@@ -39,9 +39,22 @@ assert response is None
 response = spellbook_call('get_explorer_config', 'blockexplorer.com')
 assert response == {"priority": 2, "url": "https://blockexplorer.com/api", "api_key": "", "type": "Insight"}
 
+print '--------------------------------------------------------------------------------------------------------'
+print 'Saving blocktrail.com'
+
+with open("blocktrail_key.txt", 'r') as input_file:
+    blocktrail_key = input_file.readline()
+
+response = spellbook_call('save_explorer', 'blocktrail.com', 'Blocktrail.com', 'https://api.blocktrail.com/v1', 3, '-b=%s' % blocktrail_key)
+assert response is None
+
+response = spellbook_call('get_explorer_config', 'blocktrail.com')
+assert response == {"priority": 3, "url": "https://api.blocktrail.com/v1", "api_key": blocktrail_key, "type": "Blocktrail.com"}
+
+print '--------------------------------------------------------------------------------------------------------'
 print 'Getting the list of configured explorers'
 response = spellbook_call('get_explorers')
-assert response == ['blockexplorer.com', 'blockchain.info']
+assert response == ['blockexplorer.com', 'blocktrail.com', 'blockchain.info']
 
 print '--------------------------------------------------------------------------------------------------------'
 print 'Updating Blockchain.info with priority 1'
@@ -49,4 +62,4 @@ response = spellbook_call('save_explorer', 'blockchain.info', 'Blockchain.info',
 assert response is None
 
 response = spellbook_call('get_explorers')
-assert response == ['blockchain.info', 'blockexplorer.com']
+assert response == ['blockchain.info', 'blockexplorer.com', 'blocktrail.com']
