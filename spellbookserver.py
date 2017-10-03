@@ -12,6 +12,7 @@ import simplejson
 import traceback
 
 from data.data import get_explorers, get_explorer_config, save_explorer, delete_explorer
+from data.data import latest_block, block
 from authentication import initialize_api_keys_file
 from decorators import authentication_required
 
@@ -54,7 +55,8 @@ class SpellbookRESTAPI(Bottle):
         self.route('/spellbook/explorers/<explorer_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.delete_explorer)
 
         # Routes for retrieving data from the blockchain
-        self.route('/spellbook/block', method='GET', callback=self.get_block)
+        self.route('/spellbook/blocks/latest', method='GET', callback=self.get_latest_block)
+        self.route('/spellbook/blocks/<height:int>', method='GET', callback=self.get_block)
 
         # start the webserver for the REST API
         self.run(host=self.host, port=self.port)
@@ -137,6 +139,9 @@ class SpellbookRESTAPI(Bottle):
     @authentication_required
     def delete_explorer(explorer_id):
         delete_explorer(explorer_id)
+
+    def get_latest_block(self):
+        return simplejson.dumps(latest_block(request.query.explorer))
 
     def get_block(self):
         return simplejson.dumps('block data')
