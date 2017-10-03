@@ -127,6 +127,24 @@ delete_explorer_parser.add_argument('-s', '--api_secret', help='API secret for t
 
 # ----------------------------------------------------------------------------------------------------------------
 
+# Create parser for the get_latest_block subcommand
+get_latest_block_parser = subparsers.add_parser(name='get_latest_block',
+                                                help='Get the latest block',
+                                                formatter_class=argparse.RawDescriptionHelpFormatter,
+                                                description='''
+Get the latest block
+                                                ''',
+                                                epilog='''
+examples:
+  - spellbook.py get_latest_block
+    -> Get the latest block using the default explorer
+  - spellbook.py get_latest_block --explorer=blockchain.info
+    -> Get the latest block using the blockchain.info explorer to retrieve the data
+                                                ''')
+
+get_latest_block_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
+
+# ----------------------------------------------------------------------------------------------------------------
 
 def add_authentication_headers(headers=None, data=None):
     """
@@ -198,6 +216,19 @@ def delete_explorer():
 
 # ----------------------------------------------------------------------------------------------------------------
 
+
+def get_latest_block():
+    try:
+        url = 'http://{host}:{port}/spellbook/blocks/latest'.format(host=host, port=port)
+        if args.explorer is not None:
+            url += '?explorer={explorer}'.format(explorer=args.explorer)
+        r = requests.get(url)
+        print r.text
+    except Exception as ex:
+        print >> sys.stderr, 'Unable get latest block: %s' % ex
+        sys.exit(1)
+
+# ----------------------------------------------------------------------------------------------------------------
 # Parse the command line arguments
 args = parser.parse_args()
 
@@ -210,4 +241,6 @@ elif args.command == 'save_explorer':
     save_explorer()
 elif args.command == 'delete_explorer':
     delete_explorer()
+elif args.command == 'get_latest_block':
+    get_latest_block()
 
