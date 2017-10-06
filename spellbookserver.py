@@ -12,7 +12,7 @@ import simplejson
 import traceback
 
 from data.data import get_explorers, get_explorer_config, save_explorer, delete_explorer
-from data.data import latest_block, block
+from data.data import latest_block, block_by_height, block_by_hash
 from authentication import initialize_api_keys_file
 from decorators import authentication_required
 
@@ -56,7 +56,8 @@ class SpellbookRESTAPI(Bottle):
 
         # Routes for retrieving data from the blockchain
         self.route('/spellbook/blocks/latest', method='GET', callback=self.get_latest_block)
-        self.route('/spellbook/blocks/<height:int>', method='GET', callback=self.get_block)
+        self.route('/spellbook/blocks/<height:int>', method='GET', callback=self.get_block_by_height)
+        self.route('/spellbook/blocks/<block_hash:re:[a-f0-9]+>', method='GET', callback=self.get_block_by_hash)
 
         # start the webserver for the REST API
         self.run(host=self.host, port=self.port)
@@ -140,11 +141,17 @@ class SpellbookRESTAPI(Bottle):
     def delete_explorer(explorer_id):
         delete_explorer(explorer_id)
 
-    def get_latest_block(self):
+    @staticmethod
+    def get_latest_block():
         return simplejson.dumps(latest_block(request.query.explorer))
 
-    def get_block(self):
-        return simplejson.dumps('block data')
+    @staticmethod
+    def get_block_by_height(height):
+        return simplejson.dumps(block_by_height(height, request.query.explorer))
+
+    @staticmethod
+    def get_block_by_hash(block_hash):
+        return simplejson.dumps(block_by_hash(block_hash, request.query.explorer))
 
 
 if __name__ == "__main__":
