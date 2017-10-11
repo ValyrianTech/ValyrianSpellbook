@@ -183,6 +183,25 @@ examples:
 get_prime_input_address_parser.add_argument('txid', help='The txid of the transaction')
 get_prime_input_address_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
 
+
+# Create parser for the get_transactions subcommand
+get_transactions_parser = subparsers.add_parser(name='get_transactions',
+                                                help='Get all transactions that a specific address has received or sent',
+                                                formatter_class=argparse.RawDescriptionHelpFormatter,
+                                                description='''
+Get all transactions that a specific address has received or sent.
+                                                ''',
+                                                epilog='''
+examples:
+  - spellbook.py get_transactions 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8
+    -> Get all transactions of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the default explorer
+  - spellbook.py get_transactions 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 --explorer=blockchain.info
+    -> Get all transactions of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the blockchain.info explorer to retrieve the data
+                                                ''')
+
+get_transactions_parser.add_argument('address', help='The address')
+get_transactions_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
+
 # ----------------------------------------------------------------------------------------------------------------
 
 
@@ -291,6 +310,19 @@ def get_prime_input_address():
     except Exception as ex:
         print >> sys.stderr, 'Unable get prime input address of transaction %s: %s' % (args.txid, ex)
         sys.exit(1)
+
+
+def get_transactions():
+    try:
+        url = 'http://{host}:{port}/spellbook/transactions/{address}'.format(host=host, port=port, address=args.address)
+        if args.explorer is not None:
+            url += '?explorer={explorer}'.format(explorer=args.explorer)
+        r = requests.get(url)
+        print r.text
+    except Exception as ex:
+        print >> sys.stderr, 'Unable get transactions of address %s: %s' % (args.address, ex)
+        sys.exit(1)
+
 # ----------------------------------------------------------------------------------------------------------------
 # Parse the command line arguments
 args = parser.parse_args()
@@ -310,3 +342,5 @@ elif args.command == 'get_block':
     get_block()
 elif args.command == 'get_prime_input_address':
     get_prime_input_address()
+elif args.command == 'get_transactions':
+    get_transactions()
