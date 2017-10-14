@@ -202,6 +202,25 @@ examples:
 get_transactions_parser.add_argument('address', help='The address')
 get_transactions_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
 
+
+# Create parser for the get_balance subcommand
+get_balance_parser = subparsers.add_parser(name='get_balance',
+                                           help='Get the current balance of an address',
+                                           formatter_class=argparse.RawDescriptionHelpFormatter,
+                                           description='''
+Get the current balance of an address.
+                                           ''',
+                                           epilog='''
+examples:
+  - spellbook.py get_balance 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8
+    -> Get the balance of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the default explorer
+  - spellbook.py get_balance 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 --explorer=blockchain.info
+    -> Get the balance of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the blockchain.info explorer to retrieve the data
+                                           ''')
+
+get_balance_parser.add_argument('address', help='The address')
+get_balance_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
+
 # ----------------------------------------------------------------------------------------------------------------
 
 
@@ -323,6 +342,18 @@ def get_transactions():
         print >> sys.stderr, 'Unable get transactions of address %s: %s' % (args.address, ex)
         sys.exit(1)
 
+
+def get_balance():
+    try:
+        url = 'http://{host}:{port}/spellbook/balances/{address}'.format(host=host, port=port, address=args.address)
+        if args.explorer is not None:
+            url += '?explorer={explorer}'.format(explorer=args.explorer)
+        r = requests.get(url)
+        print r.text
+    except Exception as ex:
+        print >> sys.stderr, 'Unable get balance of address %s: %s' % (args.address, ex)
+        sys.exit(1)
+
 # ----------------------------------------------------------------------------------------------------------------
 # Parse the command line arguments
 args = parser.parse_args()
@@ -344,3 +375,5 @@ elif args.command == 'get_prime_input_address':
     get_prime_input_address()
 elif args.command == 'get_transactions':
     get_transactions()
+elif args.command == 'get_balance':
+    get_balance()
