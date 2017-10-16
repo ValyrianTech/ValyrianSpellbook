@@ -13,7 +13,7 @@ import traceback
 
 from data.data import get_explorers, get_explorer_config, save_explorer, delete_explorer
 from data.data import latest_block, block_by_height, block_by_hash, prime_input_address
-from data.data import transactions, balance
+from data.data import transactions, balance, utxos
 from authentication import initialize_api_keys_file
 from decorators import authentication_required
 
@@ -63,6 +63,7 @@ class SpellbookRESTAPI(Bottle):
         self.route('/spellbook/prime_input/<txid:re:[a-f0-9]+>', method='GET', callback=self.get_prime_input_address)
         self.route('/spellbook/transactions/<address:re:[a-km-zA-HJ-NP-Z1-9]+>', method='GET', callback=self.get_transactions)
         self.route('/spellbook/balances/<address:re:[a-km-zA-HJ-NP-Z1-9]+>', method='GET', callback=self.get_balance)
+        self.route('/spellbook/utxos/<address:re:[a-km-zA-HJ-NP-Z1-9]+>', method='GET', callback=self.get_utxos)
 
         # start the webserver for the REST API
         self.run(host=self.host, port=self.port)
@@ -169,6 +170,10 @@ class SpellbookRESTAPI(Bottle):
     @staticmethod
     def get_balance(address):
         return simplejson.dumps(balance(address, request.query.explorer))
+
+    @staticmethod
+    def get_utxos(address):
+        return simplejson.dumps(utxos(address, int(request.query.confirmations), request.query.explorer))
 
 if __name__ == "__main__":
     SpellbookRESTAPI()
