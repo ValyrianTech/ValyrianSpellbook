@@ -221,6 +221,28 @@ examples:
 get_balance_parser.add_argument('address', help='The address')
 get_balance_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
 
+
+# Create parser for the get_utxos subcommand
+get_utxos_parser = subparsers.add_parser(name='get_utxos',
+                                         help='Get the current UTXOs of an address',
+                                         formatter_class=argparse.RawDescriptionHelpFormatter,
+                                         description='''
+Get the UTXOs of an address with at least the specified number of confirmations (default=3).
+                                         ''',
+                                         epilog='''
+examples:
+  - spellbook.py get_utxos 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8
+    -> Get the UTXOs of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 with at least 3 confirmations using the default explorer
+  - spellbook.py get_utxos 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 -c=6
+    -> Get the UTXOs of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 with at least 6 confirmations using the default explorer
+  - spellbook.py get_utxos 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 --explorer=blockchain.info
+    -> Get the UTXOs of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the blockchain.info explorer to retrieve the data
+                                         ''')
+
+get_utxos_parser.add_argument('address', help='The address')
+get_utxos_parser.add_argument('-c', '--confirmations', help='The number of confirmations required (default=3)', default=3)
+get_utxos_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
+
 # ----------------------------------------------------------------------------------------------------------------
 
 
@@ -354,6 +376,18 @@ def get_balance():
         print >> sys.stderr, 'Unable get balance of address %s: %s' % (args.address, ex)
         sys.exit(1)
 
+
+def get_utxos():
+    try:
+        url = 'http://{host}:{port}/spellbook/utxos/{address}?confirmations={confirmations}'.format(host=host, port=port, address=args.address, confirmations=args.confirmations)
+        if args.explorer is not None:
+            url += '&explorer={explorer}'.format(explorer=args.explorer)
+        r = requests.get(url)
+        print r.text
+    except Exception as ex:
+        print >> sys.stderr, 'Unable get UTXOs of address %s: %s' % (args.address, ex)
+        sys.exit(1)
+
 # ----------------------------------------------------------------------------------------------------------------
 # Parse the command line arguments
 args = parser.parse_args()
@@ -377,3 +411,5 @@ elif args.command == 'get_transactions':
     get_transactions()
 elif args.command == 'get_balance':
     get_balance()
+elif args.command == 'get_utxos':
+    get_utxos()
