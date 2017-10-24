@@ -12,7 +12,7 @@ class Watchlist(object):
         """
         Constructor for the Watchlist class
 
-        This method will automatically load the watchlist.json file, if none exist an empty dictionary is initialized
+        This method will automatically load the watchlist.json file, if none exists it will be created
         """
         self.watchlist = None
         # Load the json file
