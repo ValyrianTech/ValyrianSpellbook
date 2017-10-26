@@ -60,10 +60,10 @@ class SpellbookRESTAPI(Bottle):
         self.route('/spellbook/blocks/<height:int>', method='GET', callback=self.get_block_by_height)
         self.route('/spellbook/blocks/<block_hash:re:[a-f0-9]+>', method='GET', callback=self.get_block_by_hash)
 
-        self.route('/spellbook/prime_input/<txid:re:[a-f0-9]+>', method='GET', callback=self.get_prime_input_address)
-        self.route('/spellbook/transactions/<address:re:[a-km-zA-HJ-NP-Z1-9]+>', method='GET', callback=self.get_transactions)
-        self.route('/spellbook/balances/<address:re:[a-km-zA-HJ-NP-Z1-9]+>', method='GET', callback=self.get_balance)
-        self.route('/spellbook/utxos/<address:re:[a-km-zA-HJ-NP-Z1-9]+>', method='GET', callback=self.get_utxos)
+        self.route('/spellbook/transactions/<txid:re:[a-f0-9]+>/prime_input', method='GET', callback=self.get_prime_input_address)
+        self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/transactions', method='GET', callback=self.get_transactions)
+        self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/balance', method='GET', callback=self.get_balance)
+        self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/utxos', method='GET', callback=self.get_utxos)
 
         # start the webserver for the REST API
         self.run(host=self.host, port=self.port)

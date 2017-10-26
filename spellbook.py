@@ -343,7 +343,7 @@ def get_block():
 
 def get_prime_input_address():
     try:
-        url = 'http://{host}:{port}/spellbook/prime_input/{txid}'.format(host=host, port=port, txid=args.txid)
+        url = 'http://{host}:{port}/spellbook/transactions/{txid}/prime_input'.format(host=host, port=port, txid=args.txid)
         if args.explorer is not None:
             url += '?explorer={explorer}'.format(explorer=args.explorer)
         r = requests.get(url)
@@ -355,7 +355,7 @@ def get_prime_input_address():
 
 def get_transactions():
     try:
-        url = 'http://{host}:{port}/spellbook/transactions/{address}'.format(host=host, port=port, address=args.address)
+        url = 'http://{host}:{port}/spellbook/addresses/{address}/transactions'.format(host=host, port=port, address=args.address)
         if args.explorer is not None:
             url += '?explorer={explorer}'.format(explorer=args.explorer)
         r = requests.get(url)
@@ -367,7 +367,7 @@ def get_transactions():
 
 def get_balance():
     try:
-        url = 'http://{host}:{port}/spellbook/balances/{address}'.format(host=host, port=port, address=args.address)
+        url = 'http://{host}:{port}/spellbook/addresses/{address}/balance'.format(host=host, port=port, address=args.address)
         if args.explorer is not None:
             url += '?explorer={explorer}'.format(explorer=args.explorer)
         r = requests.get(url)
@@ -379,7 +379,7 @@ def get_balance():
 
 def get_utxos():
     try:
-        url = 'http://{host}:{port}/spellbook/utxos/{address}?confirmations={confirmations}'.format(host=host, port=port, address=args.address, confirmations=args.confirmations)
+        url = 'http://{host}:{port}/spellbook/addresses/{address}/utxos?confirmations={confirmations}'.format(host=host, port=port, address=args.address, confirmations=args.confirmations)
         if args.explorer is not None:
             url += '&explorer={explorer}'.format(explorer=args.explorer)
         r = requests.get(url)
