@@ -69,9 +69,17 @@ class Comparison(object):
 
             for key in keys:
                 print 'comparing key %s from %s and %s: ' % (key, self.explorers[i], self.explorers[i - 1]),
-                if cmp(response_data[self.explorers[i]][key], response_data[self.explorers[i-1]][key]) != 0:
+                first = response_data[self.explorers[i]][key]
+                second = response_data[self.explorers[i-1]][key]
+                if cmp(first, second) != 0:
                     print 'Not equal!'
-                    print dict_diff(response_data[self.explorers[i]][key], response_data[self.explorers[i-1]][key])
+                    if isinstance(first, dict) and isinstance(second, dict):
+                        print dict_diff(first, second)
+                    elif isinstance(first, list) and isinstance(second, list):
+                        for j in range(len(first)):
+                            if isinstance(first[j], dict) and isinstance(second[j], dict):
+                                print dict_diff(first[j], second[j])
+
                     all_ok = False
 
                 else:
