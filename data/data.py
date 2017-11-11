@@ -114,6 +114,9 @@ def query(query_type, param=None, explorer=None):
     if param is None:
         param = []
 
+    if explorer == '':
+        explorer = None
+
     # Get the list of explorers ordered by priority unless a specific explorer is specified
     explorers = get_explorers() if explorer is None else [explorer]
 
@@ -184,7 +187,8 @@ def transactions(address, explorer=None):
     else:
         response['error'] = 'Invalid address'
 
-    response['transactions'] = sorted(response['transactions'], key=lambda k: (k['block_height'], k['txid']))
+    if 'transactions' in response:
+        response['transactions'] = sorted(response['transactions'], key=lambda k: (k['block_height'], k['txid']))
 
     return response
 
