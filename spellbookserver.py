@@ -17,6 +17,8 @@ from data.data import transactions, balance, utxos
 from authentication import initialize_api_keys_file
 from decorators import authentication_required
 
+from inputs.inputs import get_sil, get_profile
+
 
 class SpellbookRESTAPI(Bottle):
     def __init__(self):
@@ -64,6 +66,12 @@ class SpellbookRESTAPI(Bottle):
         self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/transactions', method='GET', callback=self.get_transactions)
         self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/balance', method='GET', callback=self.get_balance)
         self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/utxos', method='GET', callback=self.get_utxos)
+
+        # Routes for Simplified Inputs List (SIL)
+        self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/SIL', method='GET', callback=self.get_sil)
+
+        # Routes for Profile
+        self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/profile', method='GET', callback=self.get_profile)
 
         # start the webserver for the REST API
         self.run(host=self.host, port=self.port)
@@ -174,6 +182,16 @@ class SpellbookRESTAPI(Bottle):
     @staticmethod
     def get_utxos(address):
         return simplejson.dumps(utxos(address, int(request.query.confirmations), request.query.explorer))
+
+    @staticmethod
+    def get_sil(address):
+        block_height = int(request.json['block_height'])
+        return simplejson.dumps(get_sil(address, block_height, request.query.explorer))
+
+    @staticmethod
+    def get_profile(address):
+        block_height = int(request.json['block_height'])
+        return simplejson.dumps(get_profile(address, block_height, request.query.explorer))
 
 if __name__ == "__main__":
     SpellbookRESTAPI()
