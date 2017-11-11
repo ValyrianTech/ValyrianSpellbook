@@ -243,6 +243,51 @@ get_utxos_parser.add_argument('address', help='The address')
 get_utxos_parser.add_argument('-c', '--confirmations', help='The number of confirmations required (default=3)', default=3)
 get_utxos_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
 
+# ----------------------------------------------------------------------------------------------------------------------
+
+# Create parser for the get_sil subcommand
+get_sil_parser = subparsers.add_parser(name='get_sil',
+                                       help='Get the Simplified Inputs List (SIL) of an address',
+                                       formatter_class=argparse.RawDescriptionHelpFormatter,
+                                       description='''
+Get the Simplified Inputs List (SIL) of an address.
+                                       ''',
+                                       epilog='''
+examples:
+  - spellbook.py get_sil 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8
+    -> Get the SIL of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the default explorer
+  - spellbook.py get_sil 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 -b=478000
+    -> Get the SIL of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 at block height 478000 using the default explorer
+  - spellbook.py get_sil 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 --explorer=blockchain.info
+    -> Get the SIL of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the blockchain.info explorer to retrieve the data
+                                       ''')
+
+get_sil_parser.add_argument('address', help='The address')
+get_sil_parser.add_argument('-b', '--block_height', help='The block height for the SIL (optional, default=latest block)', default=0)
+get_sil_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
+
+
+# Create parser for the get_profile subcommand
+get_profile_parser = subparsers.add_parser(name='get_profile',
+                                           help='Get the profile of an address',
+                                           formatter_class=argparse.RawDescriptionHelpFormatter,
+                                           description='''
+Get the profile of an address.
+                                           ''',
+                                           epilog='''
+examples:
+  - spellbook.py get_profile 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8
+    -> Get the profile of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the default explorer
+  - spellbook.py get_profile 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 -b=478000
+    -> Get the profile of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 at block height 478000 using the default explorer
+  - spellbook.py get_profile 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 --explorer=blockchain.info
+    -> Get the profile of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the blockchain.info explorer to retrieve the data
+                                           ''')
+
+get_profile_parser.add_argument('address', help='The address')
+get_profile_parser.add_argument('-b', '--block_height', help='The block height for the profile (optional, default=latest block)', default=0)
+get_profile_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
+
 # ----------------------------------------------------------------------------------------------------------------
 
 
@@ -389,6 +434,38 @@ def get_utxos():
         sys.exit(1)
 
 # ----------------------------------------------------------------------------------------------------------------
+
+
+def get_sil():
+    data = {'block_height': args.block_height}
+
+    try:
+        url = 'http://{host}:{port}/spellbook/addresses/{address}/SIL'.format(host=host, port=port, address=args.address)
+        if args.explorer is not None:
+            url += '?explorer={explorer}'.format(explorer=args.explorer)
+        r = requests.get(url, json=data)
+        print r.text
+    except Exception as ex:
+        print >> sys.stderr, 'Unable to get SIL: %s' % ex
+        sys.exit(1)
+
+
+def get_profile():
+    data = {'block_height': args.block_height}
+
+    try:
+        url = 'http://{host}:{port}/spellbook/addresses/{address}/profile'.format(host=host, port=port, address=args.address)
+        if args.explorer is not None:
+            url += '?explorer={explorer}'.format(explorer=args.explorer)
+        r = requests.get(url, json=data)
+        print r.text
+    except Exception as ex:
+        print >> sys.stderr, 'Unable to get profile: %s' % ex
+        sys.exit(1)
+
+# ----------------------------------------------------------------------------------------------------------------
+
+
 # Parse the command line arguments
 args = parser.parse_args()
 
@@ -413,3 +490,7 @@ elif args.command == 'get_balance':
     get_balance()
 elif args.command == 'get_utxos':
     get_utxos()
+elif args.command == 'get_sil':
+    get_sil()
+elif args.command == 'get_profile':
+    get_profile()
