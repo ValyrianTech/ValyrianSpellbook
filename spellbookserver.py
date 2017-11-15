@@ -18,6 +18,7 @@ from authentication import initialize_api_keys_file
 from decorators import authentication_required
 
 from inputs.inputs import get_sil, get_profile
+from linker.linker import get_lal, get_lbl, get_lrl, get_lsl
 
 
 class SpellbookRESTAPI(Bottle):
@@ -72,6 +73,12 @@ class SpellbookRESTAPI(Bottle):
 
         # Routes for Profile
         self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/profile', method='GET', callback=self.get_profile)
+
+        # Routes for Linked Lists
+        self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/LAL', method='GET', callback=self.get_lal)
+        self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/LBL', method='GET', callback=self.get_lbl)
+        self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/LRL', method='GET', callback=self.get_lrl)
+        self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/LSL', method='GET', callback=self.get_lsl)
 
         # start the webserver for the REST API
         self.run(host=self.host, port=self.port)
@@ -192,6 +199,31 @@ class SpellbookRESTAPI(Bottle):
     def get_profile(address):
         block_height = int(request.json['block_height'])
         return simplejson.dumps(get_profile(address, block_height, request.query.explorer))
+
+    @staticmethod
+    def get_lal(address):
+        block_height = int(request.json['block_height'])
+        xpub = request.json['xpub']
+        return simplejson.dumps(get_lal(address, xpub, block_height, request.query.explorer))
+
+    @staticmethod
+    def get_lbl(address):
+        block_height = int(request.json['block_height'])
+        xpub = request.json['xpub']
+        return simplejson.dumps(get_lbl(address, xpub, block_height, request.query.explorer))
+
+    @staticmethod
+    def get_lrl(address):
+        block_height = int(request.json['block_height'])
+        xpub = request.json['xpub']
+        return simplejson.dumps(get_lrl(address, xpub, block_height, request.query.explorer))
+
+    @staticmethod
+    def get_lsl(address):
+        block_height = int(request.json['block_height'])
+        xpub = request.json['xpub']
+        return simplejson.dumps(get_lsl(address, xpub, block_height, request.query.explorer))
+
 
 if __name__ == "__main__":
     SpellbookRESTAPI()
