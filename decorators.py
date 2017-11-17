@@ -20,7 +20,7 @@ def authentication_required(f):
         if authentication_status == AuthenticationStatus.OK:
             return f(*args, **kwargs)
         else:
-            return simplejson.dumps({'error': authentication_status})
+            return {'error': authentication_status}
     return decorated_function
 
 
