@@ -18,9 +18,8 @@ def get_sil(address, block_height=0):
         return {'error': 'Invalid address: ' + address}
 
     txs_data = data.transactions(address)
-    if 'transactions' in txs_data and 'explorer' in txs_data:
-        return {'SIL': txs_2_sil(txs_data['transactions'], block_height),
-                'explorer': txs_data['explorer']}
+    if 'transactions' in txs_data:
+        return {'SIL': txs_2_sil(txs_data['transactions'], block_height)}
     else:
         return {'error': 'Unable to retrieve transactions of address %s' % address}
 
@@ -70,9 +69,8 @@ def get_profile(address, block_height=0):
         return {'error': 'Invalid address: ' + address}
 
     txs_data = data.transactions(address)
-    if 'transactions' in txs_data and 'explorer' in txs_data:
-        return {'profile': txs_to_profile(txs_data['transactions'], address, block_height),
-                'explorer': txs_data['explorer']}
+    if 'transactions' in txs_data:
+        return {'profile': txs_to_profile(txs_data['transactions'], address, block_height)}
     else:
         return {'error': 'Unable to retrieve transactions of address %s' % address}
 
