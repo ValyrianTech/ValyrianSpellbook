@@ -15,7 +15,7 @@ from data.data import get_explorers, get_explorer_config, save_explorer, delete_
 from data.data import latest_block, block_by_height, block_by_hash, prime_input_address
 from data.data import transactions, balance, utxos
 from authentication import initialize_api_keys_file
-from decorators import authentication_required, use_explorer
+from decorators import authentication_required, use_explorer, output_json
 
 from inputs.inputs import get_sil, get_profile
 from linker.linker import get_lal, get_lbl, get_lrl, get_lsl
@@ -136,12 +136,13 @@ class SpellbookRESTAPI(Bottle):
         return _log_to_logger
 
     @staticmethod
+    @output_json
     def get_explorers():
         explorers = get_explorers()
         if explorers is not None:
-            return simplejson.dumps(explorers)
+            return explorers
         else:
-            return simplejson.dumps({'error': 'Unable to retrieve explorer_ids'})
+            return {'error': 'Unable to retrieve explorer_ids'}
 
     @staticmethod
     @authentication_required
@@ -149,13 +150,14 @@ class SpellbookRESTAPI(Bottle):
         save_explorer(explorer_id, request.json)
 
     @staticmethod
+    @output_json
     @authentication_required
     def get_explorer_config(explorer_id):
         explorer_config = get_explorer_config(explorer_id)
         if explorer_config is not None:
-            return simplejson.dumps(explorer_config)
+            return explorer_config
         else:
-            return simplejson.dumps({'error': 'No explorer configured with id: %s' % explorer_id})
+            return {'error': 'No explorer configured with id: %s' % explorer_id}
 
     @staticmethod
     @authentication_required
@@ -163,79 +165,92 @@ class SpellbookRESTAPI(Bottle):
         delete_explorer(explorer_id)
 
     @staticmethod
+    @output_json
     @use_explorer
     def get_latest_block():
-        return simplejson.dumps(latest_block())
+        return latest_block()
 
     @staticmethod
+    @output_json
     @use_explorer
     def get_block_by_height(height):
-        return simplejson.dumps(block_by_height(height))
+        return block_by_height(height)
 
     @staticmethod
+    @output_json
     @use_explorer
     def get_block_by_hash(block_hash):
-        return simplejson.dumps(block_by_hash(block_hash))
+        return block_by_hash(block_hash)
 
     @staticmethod
+    @output_json
     @use_explorer
     def get_prime_input_address(txid):
-        return simplejson.dumps(prime_input_address(txid))
+        return prime_input_address(txid)
 
     @staticmethod
+    @output_json
     @use_explorer
     def get_transactions(address):
-        return simplejson.dumps(transactions(address))
+        return transactions(address)
 
     @staticmethod
+    @output_json
     @use_explorer
     def get_balance(address):
-        return simplejson.dumps(balance(address))
+        return balance(address)
 
     @staticmethod
+    @output_json
     @use_explorer
     def get_utxos(address):
-        return simplejson.dumps(utxos(address, int(request.query.confirmations)))
+        return utxos(address, int(request.query.confirmations))
 
     @staticmethod
+    @output_json
     @use_explorer
     def get_sil(address):
         block_height = int(request.json['block_height'])
-        return simplejson.dumps(get_sil(address, block_height))
+        return get_sil(address, block_height)
 
     @staticmethod
+    @output_json
     @use_explorer
     def get_profile(address):
         block_height = int(request.json['block_height'])
-        return simplejson.dumps(get_profile(address, block_height))
+        return get_profile(address, block_height)
 
     @staticmethod
+    @output_json
     @use_explorer
     def get_lal(address):
         block_height = int(request.json['block_height'])
         xpub = request.json['xpub']
-        return simplejson.dumps(get_lal(address, xpub, block_height))
+        return get_lal(address, xpub, block_height)
 
     @staticmethod
+    @output_json
     @use_explorer
     def get_lbl(address):
         block_height = int(request.json['block_height'])
         xpub = request.json['xpub']
-        return simplejson.dumps(get_lbl(address, xpub, block_height))
+        return get_lbl(address, xpub, block_height)
 
     @staticmethod
+    @output_json
     @use_explorer
     def get_lrl(address):
         block_height = int(request.json['block_height'])
         xpub = request.json['xpub']
-        return simplejson.dumps(get_lrl(address, xpub, block_height))
+        return get_lrl(address, xpub, block_height)
 
     @staticmethod
+    @output_json
     @use_explorer
     def get_lsl(address):
         block_height = int(request.json['block_height'])
         xpub = request.json['xpub']
-        return simplejson.dumps(get_lsl(address, xpub, block_height))
+        return get_lsl(address, xpub, block_height)
 
 
 if __name__ == "__main__":
