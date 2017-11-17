@@ -210,3 +210,8 @@ def clear_explorer():
     global EXPLORER
     EXPLORER = None
 
+
+def get_last_explorer():
+    global EXPLORER
+    return EXPLORER
+
