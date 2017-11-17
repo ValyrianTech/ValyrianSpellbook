@@ -38,7 +38,6 @@ def use_explorer(f):
             set_explorer(request.query.explorer)
 
         ret = f(*args, **kwargs)
-        print get_last_explorer()
         if isinstance(ret, dict):
             ret['explorer'] = get_last_explorer()
 
