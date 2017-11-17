@@ -6,19 +6,18 @@ from data import data
 from validators.validators import valid_address, valid_op_return, valid_blockprofile_message
 
 
-def get_sil(address, block_height=0, explorer=None):
+def get_sil(address, block_height=0):
     """
     Get the Simplified Inputs List (SIL)
 
     :param address: The address that received the transactions
     :param block_height: A block height (optional)
-    :param explorer: The id of an explorer to use to retrieve the data from the blockchain (optional)
     :return: A dictionary containing the SIL and the explorer that provided the data
     """
     if not valid_address(address):
         return {'error': 'Invalid address: ' + address}
 
-    txs_data = data.transactions(address, explorer=explorer)
+    txs_data = data.transactions(address)
     if 'transactions' in txs_data and 'explorer' in txs_data:
         return {'SIL': txs_2_sil(txs_data['transactions'], block_height),
                 'explorer': txs_data['explorer']}
@@ -59,19 +58,18 @@ def txs_2_sil(txs, block_height=0):
     return sil
 
 
-def get_profile(address, block_height=0, explorer=None):
+def get_profile(address, block_height=0):
     """
     Get the profile of an address
 
     :param address: The address
     :param block_height: A block height (optional)
-    :param explorer: The id of an explorer to use to retrieve the data from the blockchain (optional)
     :return: A dict containing the profile and the explorer that provided the data
     """
     if not valid_address(address):
         return {'error': 'Invalid address: ' + address}
 
-    txs_data = data.transactions(address, explorer=explorer)
+    txs_data = data.transactions(address)
     if 'transactions' in txs_data and 'explorer' in txs_data:
         return {'profile': txs_to_profile(txs_data['transactions'], address, block_height),
                 'explorer': txs_data['explorer']}
