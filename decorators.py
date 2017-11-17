@@ -4,7 +4,7 @@
 import simplejson
 from bottle import request
 from authentication import check_authentication, AuthenticationStatus
-from data.data import set_explorer, clear_explorer, EXPLORER
+from data.data import set_explorer, clear_explorer, get_last_explorer
 
 
 def authentication_required(f):
@@ -29,7 +29,7 @@ def use_explorer(f):
     Decorator that sets the specified explorer (if one is given) as a global variable before a request is executed
     and sets the global variable back to None at the end
 
-    :param f: The function that requires authentication
+    :param f: The function that requires an explorer
     :return: The result of the function
     """
 
@@ -38,10 +38,25 @@ def use_explorer(f):
             set_explorer(request.query.explorer)
 
         ret = f(*args, **kwargs)
+        print get_last_explorer()
         if isinstance(ret, dict):
-            ret['explorer'] = EXPLORER
+            ret['explorer'] = get_last_explorer()
 
         clear_explorer()
         return ret
+
+    return decorated_function
+
+
+def output_json(f):
+    """
+    Decorator that converts the return value of a function to a JSON string
+
+    :param f: The function where the output needs to be converted to JSON string
+    :return: The result of the function as a JSON string
+    """
+
+    def decorated_function(*args, **kwargs):
+        return simplejson.dumps(f(*args, **kwargs))
 
     return decorated_function
