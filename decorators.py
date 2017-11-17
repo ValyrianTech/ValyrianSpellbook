@@ -4,7 +4,7 @@
 import simplejson
 from bottle import request
 from authentication import check_authentication, AuthenticationStatus
-from data.data import set_explorer, clear_explorer
+from data.data import set_explorer, clear_explorer, EXPLORER
 
 
 def authentication_required(f):
@@ -38,6 +38,9 @@ def use_explorer(f):
             set_explorer(request.query.explorer)
 
         ret = f(*args, **kwargs)
+        if isinstance(ret, dict):
+            ret['explorer'] = EXPLORER
+
         clear_explorer()
         return ret
 
