@@ -15,7 +15,7 @@ from data.data import get_explorers, get_explorer_config, save_explorer, delete_
 from data.data import latest_block, block_by_height, block_by_hash, prime_input_address
 from data.data import transactions, balance, utxos
 from authentication import initialize_api_keys_file
-from decorators import authentication_required
+from decorators import authentication_required, use_explorer
 
 from inputs.inputs import get_sil, get_profile
 from linker.linker import get_lal, get_lbl, get_lrl, get_lsl
@@ -163,68 +163,80 @@ class SpellbookRESTAPI(Bottle):
         delete_explorer(explorer_id)
 
     @staticmethod
+    @use_explorer
     def get_latest_block():
-        return simplejson.dumps(latest_block(request.query.explorer))
+        return simplejson.dumps(latest_block())
 
     @staticmethod
+    @use_explorer
     def get_block_by_height(height):
-        return simplejson.dumps(block_by_height(height, request.query.explorer))
+        return simplejson.dumps(block_by_height(height))
 
     @staticmethod
+    @use_explorer
     def get_block_by_hash(block_hash):
-        return simplejson.dumps(block_by_hash(block_hash, request.query.explorer))
+        return simplejson.dumps(block_by_hash(block_hash))
 
     @staticmethod
+    @use_explorer
     def get_prime_input_address(txid):
-        return simplejson.dumps(prime_input_address(txid, request.query.explorer))
+        return simplejson.dumps(prime_input_address(txid))
 
     @staticmethod
+    @use_explorer
     def get_transactions(address):
-        return simplejson.dumps(transactions(address, request.query.explorer))
+        return simplejson.dumps(transactions(address))
 
     @staticmethod
+    @use_explorer
     def get_balance(address):
-        return simplejson.dumps(balance(address, request.query.explorer))
+        return simplejson.dumps(balance(address))
 
     @staticmethod
+    @use_explorer
     def get_utxos(address):
-        return simplejson.dumps(utxos(address, int(request.query.confirmations), request.query.explorer))
+        return simplejson.dumps(utxos(address, int(request.query.confirmations)))
 
     @staticmethod
+    @use_explorer
     def get_sil(address):
         block_height = int(request.json['block_height'])
-        return simplejson.dumps(get_sil(address, block_height, request.query.explorer))
+        return simplejson.dumps(get_sil(address, block_height))
 
     @staticmethod
+    @use_explorer
     def get_profile(address):
         block_height = int(request.json['block_height'])
-        return simplejson.dumps(get_profile(address, block_height, request.query.explorer))
+        return simplejson.dumps(get_profile(address, block_height))
 
     @staticmethod
+    @use_explorer
     def get_lal(address):
         block_height = int(request.json['block_height'])
         xpub = request.json['xpub']
-        return simplejson.dumps(get_lal(address, xpub, block_height, request.query.explorer))
+        return simplejson.dumps(get_lal(address, xpub, block_height))
 
     @staticmethod
+    @use_explorer
     def get_lbl(address):
         block_height = int(request.json['block_height'])
         xpub = request.json['xpub']
-        return simplejson.dumps(get_lbl(address, xpub, block_height, request.query.explorer))
+        return simplejson.dumps(get_lbl(address, xpub, block_height))
 
     @staticmethod
+    @use_explorer
     def get_lrl(address):
         block_height = int(request.json['block_height'])
         xpub = request.json['xpub']
-        return simplejson.dumps(get_lrl(address, xpub, block_height, request.query.explorer))
+        return simplejson.dumps(get_lrl(address, xpub, block_height))
 
     @staticmethod
+    @use_explorer
     def get_lsl(address):
         block_height = int(request.json['block_height'])
         xpub = request.json['xpub']
-        return simplejson.dumps(get_lsl(address, xpub, block_height, request.query.explorer))
+        return simplejson.dumps(get_lsl(address, xpub, block_height))
 
 
 if __name__ == "__main__":
     SpellbookRESTAPI()
-

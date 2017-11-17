@@ -111,15 +111,14 @@ def get_explorer_api(name):
             raise NotImplementedError('Unknown explorer API: %s' % name)
 
 
-def query(query_type, param=None, explorer=None):
+def query(query_type, param=None):
+    global EXPLORER
+
     if param is None:
         param = []
 
-    if explorer == '':
-        explorer = None
-
     # Get the list of explorers ordered by priority unless a specific explorer is specified
-    explorers = get_explorers() if explorer is None else [explorer]
+    explorers = get_explorers() if EXPLORER is None else [EXPLORER]
 
     message = ''
     for i in range(0, len(explorers)):
@@ -161,30 +160,30 @@ def query(query_type, param=None, explorer=None):
         return {'error': 'Failed to retrieve data from all explorers'}
 
 
-def block(height_or_hash, explorer=None):
-    return query('block', [height_or_hash], explorer)
+def block(height_or_hash):
+    return query('block', [height_or_hash])
 
 
-def block_by_height(height, explorer=None):
-    return query('block_by_height', [height], explorer)
+def block_by_height(height):
+    return query('block_by_height', [height])
 
 
-def block_by_hash(block_hash, explorer=None):
-    return query('block_by_hash', [block_hash], explorer)
+def block_by_hash(block_hash):
+    return query('block_by_hash', [block_hash])
 
 
-def latest_block(explorer=None):
-    return query('latest_block', None, explorer)
+def latest_block():
+    return query('latest_block', None)
 
 
-def prime_input_address(txid, explorer=None):
-    return query('prime_input_address', [txid], explorer)
+def prime_input_address(txid):
+    return query('prime_input_address', [txid])
 
 
-def transactions(address, explorer=None):
+def transactions(address):
     response = {'success': 0}
     if valid_address(address):
-        response = query('transactions', [address], explorer)
+        response = query('transactions', [address])
     else:
         response['error'] = 'Invalid address'
 
@@ -194,17 +193,18 @@ def transactions(address, explorer=None):
     return response
 
 
-def balance(address, explorer=None):
-    return query('balance', [address], explorer)
+def balance(address):
+    return query('balance', [address])
 
 
-def utxos(address, confirmations, explorer=None):
-    return query('utxos', [address, confirmations], explorer)
+def utxos(address, confirmations):
+    return query('utxos', [address, confirmations])
 
 
 def set_explorer(explorer_id):
     global EXPLORER
     EXPLORER = explorer_id
+
 
 def clear_explorer():
     global EXPLORER
