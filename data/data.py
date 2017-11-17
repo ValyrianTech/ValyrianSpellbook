@@ -151,7 +151,7 @@ def query(query_type, param=None):
                 logging.getLogger('Spellbook').error(message)
             else:
                 response = data
-                response['explorer'] = explorers[i]
+                EXPLORER = explorers[i]
                 return response
 
     if len(explorers) == 1:
