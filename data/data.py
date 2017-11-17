@@ -14,6 +14,7 @@ from validators.validators import valid_address
 
 
 EXPLORERS_JSON_FILE = 'data/explorers.json'
+EXPLORER = None
 
 
 def initialize_explorers_file():
@@ -199,4 +200,13 @@ def balance(address, explorer=None):
 
 def utxos(address, confirmations, explorer=None):
     return query('utxos', [address, confirmations], explorer)
+
+
+def set_explorer(explorer_id):
+    global EXPLORER
+    EXPLORER = explorer_id
+
+def clear_explorer():
+    global EXPLORER
+    EXPLORER = None
 
