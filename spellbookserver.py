@@ -8,7 +8,6 @@ from logging.handlers import RotatingFileHandler
 from bottle import Bottle, request, response
 from datetime import datetime
 from functools import wraps
-import simplejson
 import traceback
 
 from data.data import get_explorers, get_explorer_config, save_explorer, delete_explorer
