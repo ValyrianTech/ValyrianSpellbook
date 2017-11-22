@@ -38,8 +38,8 @@ def random_address_from_sil(address, sil_block_height=0, rng_block_height=0):
         return {'error': 'Invalid address: %s' % address}
 
     return RandomAddress(address=address,
-                         sil_block_height=sil_block_height).proportional_random(source='SIL',
-                                                                                rng_block_height=rng_block_height)
+                         sil_block_height=sil_block_height).get(source='SIL',
+                                                                rng_block_height=rng_block_height)
 
 
 def random_address_from_lbl(address, xpub, sil_block_height=0, rng_block_height=0):
@@ -51,8 +51,8 @@ def random_address_from_lbl(address, xpub, sil_block_height=0, rng_block_height=
 
     return RandomAddress(address=address,
                          xpub=xpub,
-                         sil_block_height=sil_block_height).proportional_random(source='LBL',
-                                                                                rng_block_height=rng_block_height)
+                         sil_block_height=sil_block_height).get(source='LBL',
+                                                                rng_block_height=rng_block_height)
 
 
 def random_address_from_lrl(address, xpub, sil_block_height=0, rng_block_height=0):
@@ -64,8 +64,8 @@ def random_address_from_lrl(address, xpub, sil_block_height=0, rng_block_height=
 
     return RandomAddress(address=address,
                          xpub=xpub,
-                         sil_block_height=sil_block_height).proportional_random(source='LRL',
-                                                                                rng_block_height=rng_block_height)
+                         sil_block_height=sil_block_height).get(source='LRL',
+                                                                rng_block_height=rng_block_height)
 
 
 def random_address_from_lsl(address, xpub, sil_block_height=0, rng_block_height=0):
@@ -77,8 +77,8 @@ def random_address_from_lsl(address, xpub, sil_block_height=0, rng_block_height=
 
     return RandomAddress(address=address,
                          xpub=xpub,
-                         sil_block_height=sil_block_height).proportional_random(source='LSL',
-                                                                                rng_block_height=rng_block_height)
+                         sil_block_height=sil_block_height).get(source='LSL',
+                                                                rng_block_height=rng_block_height)
 
 
 class RandomAddress(object):
@@ -87,11 +87,14 @@ class RandomAddress(object):
         self.block_height = sil_block_height
         self.xpub = xpub
 
-    def proportional_random(self, source, rng_block_height=0):
-        response = {'distribution_source': source}
-
+    def get(self, source, rng_block_height=0):
         distribution = self.get_distribution(source)
         random_number = random_number_from_blockhash(rng_block_height)
+
+        response = {'distribution_source': source,
+                    'distribution': distribution,
+                    'random_number': random_number}
+
         response.update(self.results(distribution, random_number))
 
         return response
@@ -114,19 +117,26 @@ class RandomAddress(object):
         else:
             raise NotImplementedError('Unknown distribution source: %s' % source)
 
-        return [[item[0], item[1]] for item in distribution_data[source]]
+        return [(item[0], item[1]) for item in distribution_data[source]]
 
     def results(self, distribution, random_number):
+        """
+        Pick an address from a given distribution and a random number
+
+        :param distribution: A list of (address, value) tuples
+        :param random_number: A floating point number between 0 and 1
+        :return: A dict containing:
+                    'chosen_address': The address that was picked
+                    'chosen_index': The index of the address in the distribution
+                    'target': The total of the values in the distribution multiplied by the random number
+        """
         values = [item[1] for item in distribution]
-        total_value = sum(values)
         chosen_index = self.get_chosen_index(values, random_number)
         chosen_address = distribution[chosen_index][0]
 
-        return {'distribution': distribution,
-                'chosen_address': chosen_address,
+        return {'chosen_address': chosen_address,
                 'chosen_index': chosen_index,
-                'random_number': random_number,
-                'target': total_value * random_number}
+                'target': sum(values) * random_number}
 
     @staticmethod
     def get_chosen_index(values, random_number):
