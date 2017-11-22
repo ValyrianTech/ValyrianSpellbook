@@ -56,6 +56,6 @@ def output_json(f):
     """
 
     def decorated_function(*args, **kwargs):
-        return simplejson.dumps(f(*args, **kwargs))
+        return simplejson.dumps(f(*args, **kwargs), indent=4)
 
     return decorated_function
