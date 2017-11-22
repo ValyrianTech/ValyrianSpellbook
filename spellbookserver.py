@@ -18,6 +18,7 @@ from decorators import authentication_required, use_explorer, output_json
 
 from inputs.inputs import get_sil, get_profile
 from linker.linker import get_lal, get_lbl, get_lrl, get_lsl
+from randomaddress.randomaddress import random_address_from_sil, random_address_from_lbl, random_address_from_lrl, random_address_from_lsl
 
 
 class SpellbookRESTAPI(Bottle):
@@ -78,6 +79,12 @@ class SpellbookRESTAPI(Bottle):
         self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/LBL', method='GET', callback=self.get_lbl)
         self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/LRL', method='GET', callback=self.get_lrl)
         self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/LSL', method='GET', callback=self.get_lsl)
+
+        # Routes for Random Address
+        self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/random/SIL', method='GET', callback=self.get_random_address_from_sil)
+        self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/random/LBL', method='GET', callback=self.get_random_address_from_lbl)
+        self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/random/LRL', method='GET', callback=self.get_random_address_from_lrl)
+        self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/random/LSL', method='GET', callback=self.get_random_address_from_lsl)
 
         # start the webserver for the REST API
         self.run(host=self.host, port=self.port)
@@ -251,6 +258,40 @@ class SpellbookRESTAPI(Bottle):
         xpub = request.json['xpub']
         return get_lsl(address, xpub, block_height)
 
+    @staticmethod
+    @output_json
+    @use_explorer
+    def get_random_address_from_sil(address):
+        rng_block_height = int(request.json['rng_block_height'])
+        sil_block_height = int(request.json['sil_block_height'])
+        return random_address_from_sil(address=address, sil_block_height=sil_block_height, rng_block_height=rng_block_height)
+
+    @staticmethod
+    @output_json
+    @use_explorer
+    def get_random_address_from_lbl(address):
+        rng_block_height = int(request.json['rng_block_height'])
+        sil_block_height = int(request.json['sil_block_height'])
+        xpub = request.json['xpub']
+        return random_address_from_lbl(address=address, xpub=xpub, sil_block_height=sil_block_height, rng_block_height=rng_block_height)
+
+    @staticmethod
+    @output_json
+    @use_explorer
+    def get_random_address_from_lrl(address):
+        rng_block_height = int(request.json['rng_block_height'])
+        sil_block_height = int(request.json['sil_block_height'])
+        xpub = request.json['xpub']
+        return random_address_from_lrl(address=address, xpub=xpub, sil_block_height=sil_block_height, rng_block_height=rng_block_height)
+
+    @staticmethod
+    @output_json
+    @use_explorer
+    def get_random_address_from_lsl(address):
+        rng_block_height = int(request.json['rng_block_height'])
+        sil_block_height = int(request.json['sil_block_height'])
+        xpub = request.json['xpub']
+        return random_address_from_lsl(address=address, xpub=xpub, sil_block_height=sil_block_height, rng_block_height=rng_block_height)
 
 if __name__ == "__main__":
     SpellbookRESTAPI()
