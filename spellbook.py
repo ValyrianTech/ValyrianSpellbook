@@ -390,6 +390,34 @@ get_lbl_parser.add_argument('-b', '--block_height', help='The block height for t
 get_lbl_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
 
 
+# ----------------------------------------------------------------------------------------------------------------
+
+# Create parser for the get_random_address subcommand
+get_random_address_parser = subparsers.add_parser(name='get_random_address',
+                                                  help='Get a random address from SIL, LBL, LRL or LSL where the chance of an address being picked is proportional to its value in the list',
+                                                  formatter_class=argparse.RawDescriptionHelpFormatter,
+                                                  description='''
+Get a random address from SIL, LBL, LRL or LSL where the chance of an address being picked is proportional to its value in the list.
+                                                  ''',
+                                                  epilog='''
+examples:
+  - spellbook.py get_random_address SIL 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 480000
+    -> Get a random address from the SIL of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the blockhash of block 480000 as a random number
+    
+  - spellbook.py get_random_address SIL 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 480000 --block_height=450000
+    -> Get a random address from the SIL of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 at block 450000 using the blockhash of block 480000 as a random number
+
+  - spellbook.py get_random_address LBL 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 480000 --xpub=xpub6CUvzHsNLcxthhGJesNDPSh2gicdHLPAAeyucP2KW1vBKEMxvDWCYRJZzM4g7mNiQ4Zb9nG4y25884SnYAr1P674yQipYLU8pP5z8AmahmD
+    -> Get a random address from the LBL of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 with given xpub key using the blockhash of block 480000 as a random number                                                 ''')
+
+get_random_address_parser.add_argument('source', help='The source of the distribution (SIL, LBL, LRL or LSL)', choices=['SIL', 'LBL', 'LRL', 'LSL'])
+get_random_address_parser.add_argument('address', help='The address')
+get_random_address_parser.add_argument('rng_block_height', help='The block height of which the blockhash will be used as a random number')
+get_random_address_parser.add_argument('-x', '--xpub', help='The xpub key (needed for LBL, LRL and LSL)')
+get_random_address_parser.add_argument('-b', '--block_height', help='The block height for the SIL to link with the corresponding address from the xpub (optional, default=latest block)', default=0)
+get_random_address_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
+
+
 def add_authentication_headers(headers=None, data=None):
     """
     Add custom headers for API_Key and API_Sign
@@ -627,6 +655,23 @@ def get_lsl():
 # ----------------------------------------------------------------------------------------------------------------
 
 
+def get_random_address():
+    data = {'rng_block_height': args.rng_block_height,
+            'sil_block_height': args.block_height,
+            'xpub': args.xpub}
+
+    try:
+        url = 'http://{host}:{port}/spellbook/addresses/{address}/random/{source}'.format(host=host, port=port, address=args.address, source=args.source)
+        if args.explorer is not None:
+            url += '?explorer={explorer}'.format(explorer=args.explorer)
+        r = requests.get(url, json=data)
+        print r.text
+    except Exception as ex:
+        print >> sys.stderr, 'Unable to get random address: %s' % ex
+        sys.exit(1)
+
+# ----------------------------------------------------------------------------------------------------------------
+
 # Parse the command line arguments
 args = parser.parse_args()
 
@@ -663,3 +708,5 @@ elif args.command == 'get_lrl':
     get_lrl()
 elif args.command == 'get_lsl':
     get_lsl()
+elif args.command == 'get_random_address':
+    get_random_address()
