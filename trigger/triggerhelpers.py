@@ -43,6 +43,20 @@ def get_trigger_config(trigger_id):
 
 
 def get_trigger(trigger_id):
+    """
+    Get the specified trigger, which is a subclass of Trigger
+    The different trigger types are:
+    - ManualTrigger (default)
+    - BalanceTrigger
+    - ReceivedTrigger
+    - SentTrigger
+    - BlockHeightTrigger
+
+    If no config is known for the given trigger id then a ManualTrigger is returned
+
+    :param trigger_id: The id of the trigger
+    :return: A derived Trigger object (ManualTrigger, BalanceTrigger, ReceivedTrigger, SentTrigger or BlockHeightTrigger)
+    """
     trigger_config = get_trigger_config(trigger_id)
     trigger = ManualTrigger(trigger_id)
     if 'trigger_type' in trigger_config:
