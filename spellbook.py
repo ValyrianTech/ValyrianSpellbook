@@ -541,7 +541,7 @@ def add_authentication_headers(headers=None, data=None):
     if headers is None:
         headers = {'Content-Type': 'application/json'}
 
-    nonce = int(time.time())
+    nonce = int(round(time.time() * 1000))
 
     headers.update({'API_Key': args.api_key,
                     'API_Sign': signature(data, nonce, args.api_secret),
