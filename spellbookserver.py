@@ -20,6 +20,8 @@ from inputs.inputs import get_sil, get_profile
 from linker.linker import get_lal, get_lbl, get_lrl, get_lsl
 from randomaddress.randomaddress import random_address_from_sil, random_address_from_lbl, random_address_from_lrl, random_address_from_lsl
 
+from trigger.trigger import get_triggers, get_trigger_config, save_trigger, delete_trigger, activate_trigger
+
 
 class SpellbookRESTAPI(Bottle):
     def __init__(self):
@@ -85,6 +87,13 @@ class SpellbookRESTAPI(Bottle):
         self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/random/LBL', method='GET', callback=self.get_random_address_from_lbl)
         self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/random/LRL', method='GET', callback=self.get_random_address_from_lrl)
         self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/random/LSL', method='GET', callback=self.get_random_address_from_lsl)
+
+        # Routes for Triggers
+        self.route('/spellbook/triggers', method='GET', callback=self.get_triggers)
+        self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.get_trigger)
+        self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.save_trigger)
+        self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.delete_trigger)
+        self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/activate', method='GET', callback=self.activate_trigger)
 
         # start the webserver for the REST API
         self.run(host=self.host, port=self.port)
@@ -292,6 +301,43 @@ class SpellbookRESTAPI(Bottle):
         sil_block_height = int(request.json['sil_block_height'])
         xpub = request.json['xpub']
         return random_address_from_lsl(address=address, xpub=xpub, sil_block_height=sil_block_height, rng_block_height=rng_block_height)
+
+    @staticmethod
+    @output_json
+    def get_triggers():
+        triggers = get_triggers()
+        if triggers is not None:
+            return triggers
+        else:
+            return {'error': 'Unable to retrieve explorer_ids'}
+
+    @staticmethod
+    @output_json
+    @authentication_required
+    def get_trigger(trigger_id):
+        trigger_config = get_trigger_config(trigger_id)
+        if trigger_config is not None:
+            return trigger_config
+        else:
+            return {'error': 'No trigger configured with id: %s' % trigger_id}
+
+    @staticmethod
+    @output_json
+    @authentication_required
+    def save_trigger(trigger_id):
+        return save_trigger(trigger_id, **request.json)
+
+    @staticmethod
+    @output_json
+    @authentication_required
+    def delete_trigger(trigger_id):
+        return delete_trigger(trigger_id)
+
+    @staticmethod
+    @output_json
+    @authentication_required
+    def activate_trigger(trigger_id):
+        return activate_trigger(trigger_id)
 
 if __name__ == "__main__":
     SpellbookRESTAPI()
