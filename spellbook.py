@@ -475,8 +475,8 @@ save_trigger_parser.add_argument('trigger_id', help='The id of the trigger')
 save_trigger_parser.add_argument('-r', '--reset', help='Reset the trigger in case it has been triggered already', action='store_true')
 save_trigger_parser.add_argument('-t', '--type', help='The type of the trigger', choices=['Manual', 'Balance', 'Received', 'Sent', 'Block_height'])
 save_trigger_parser.add_argument('-a', '--address', help='The address to check the final balance, total received or total sent')
-save_trigger_parser.add_argument('-am', '--amount', help='The amount')
-save_trigger_parser.add_argument('-c', '--confirmations', help='The number of confirmations before the trigger is activated', default=3)
+save_trigger_parser.add_argument('-am', '--amount', help='The amount', type=int)
+save_trigger_parser.add_argument('-c', '--confirmations', help='The number of confirmations before the trigger is activated', default=3, type=int)
 save_trigger_parser.add_argument('-b', '--block_height', help='The block height at which the trigger will be activated', type=int)
 save_trigger_parser.add_argument('-d', '--description', help='A description of the trigger')
 save_trigger_parser.add_argument('-cn', '--creator_name', help='The name of the creator the trigger')
@@ -821,10 +821,6 @@ def save_trigger():
 
     if args.reset is not None:
         data['reset'] = True
-        # if args.triggered == 'True':
-        #     data['triggered'] = True
-        # elif args.triggered == 'False':
-        #     data['triggered'] = False
 
     if args.description is not None:
         data['description'] = args.description
