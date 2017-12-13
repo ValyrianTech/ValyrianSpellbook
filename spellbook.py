@@ -418,6 +418,115 @@ get_random_address_parser.add_argument('-b', '--block_height', help='The block h
 get_random_address_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
 
 
+# ----------------------------------------------------------------------------------------------------------------
+
+# Create parser for the get_triggers subcommand
+get_triggers_parser = subparsers.add_parser(name='get_triggers',
+                                            help='Get the list of configured triggers',
+                                            formatter_class=argparse.RawDescriptionHelpFormatter,
+                                            description='''
+Get the list of configured triggers.
+                                            ''',
+                                            epilog='''
+examples:
+  - spellbook.py get_triggers
+    -> Get the list of all configured triggers
+    
+  - spellbook.py get_triggers --active
+    -> Get the list of active triggers
+                                            ''')
+
+get_triggers_parser.add_argument('-a', '--active', help='Only get the triggers that are currently active')
+
+# Create parser for the get_trigger subcommand
+get_trigger_config_parser = subparsers.add_parser(name='get_trigger_config',
+                                                  help='Get the configuration of specified trigger',
+                                                  formatter_class=argparse.RawDescriptionHelpFormatter,
+                                                  description='''
+Get the configuration of specified trigger.
+                                           ''',
+                                                  epilog='''
+examples:
+  - spellbook.py get_trigger_config mytrigger
+    -> Get the configuration of the trigger with id 'mytrigger'
+
+                                           ''')
+
+get_trigger_config_parser.add_argument('trigger_id', help='The id of the trigger')
+get_trigger_config_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
+get_trigger_config_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
+
+
+# Create parser for the save_trigger subcommand
+save_trigger_parser = subparsers.add_parser(name='save_trigger',
+                                            help='Save or update the configuration of a trigger',
+                                            formatter_class=argparse.RawDescriptionHelpFormatter,
+                                            description='''
+Save or update the configuration of a trigger.
+                                            ''',
+                                            epilog='''
+examples:
+  - spellbook.py save_trigger mytrigger balance
+    -> Save the configuration of the trigger with id 'mytrigger'
+
+                                            ''')
+
+save_trigger_parser.add_argument('trigger_id', help='The id of the trigger')
+save_trigger_parser.add_argument('-r', '--reset', help='Reset the trigger in case it has been triggered already', action='store_true')
+save_trigger_parser.add_argument('-t', '--type', help='The type of the trigger', choices=['Manual', 'Balance', 'Received', 'Sent', 'Block_height'])
+save_trigger_parser.add_argument('-a', '--address', help='The address to check the final balance, total received or total sent')
+save_trigger_parser.add_argument('-am', '--amount', help='The amount')
+save_trigger_parser.add_argument('-c', '--confirmations', help='The number of confirmations before the trigger is activated', default=3)
+save_trigger_parser.add_argument('-b', '--block_height', help='The block height at which the trigger will be activated', type=int)
+save_trigger_parser.add_argument('-d', '--description', help='A description of the trigger')
+save_trigger_parser.add_argument('-cn', '--creator_name', help='The name of the creator the trigger')
+save_trigger_parser.add_argument('-ce', '--creator_email', help='The email of the creator of the trigger')
+save_trigger_parser.add_argument('-y', '--youtube', help='A video on youtube belonging to the trigger')
+save_trigger_parser.add_argument('-v', '--visibility', help='The visibility of the trigger (Public or Private)', choices=['Public', 'Private'])
+save_trigger_parser.add_argument('-st', '--status', help='The status of the trigger (Pending, Active or Disabled)', choices=['Pending', 'Active', 'Disabled'])
+save_trigger_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
+save_trigger_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
+
+
+# Create parser for the delete_trigger subcommand
+delete_trigger_parser = subparsers.add_parser(name='delete_trigger',
+                                              help='Delete a specified trigger',
+                                              formatter_class=argparse.RawDescriptionHelpFormatter,
+                                              description='''
+Delete a specified trigger.
+                                              ''',
+                                              epilog='''
+examples:
+  - spellbook.py delete_trigger mytrigger
+    -> Delete the trigger with id 'mytrigger'
+
+                                              ''')
+
+delete_trigger_parser.add_argument('trigger_id', help='The id of the trigger to delete')
+delete_trigger_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
+delete_trigger_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
+
+
+# Create parser for the activate_trigger subcommand
+activate_trigger_parser = subparsers.add_parser(name='activate_trigger',
+                                                help='Activate a specified manual trigger',
+                                                formatter_class=argparse.RawDescriptionHelpFormatter,
+                                                description='''
+Activate a specified manual trigger.
+The trigger must be of type 'Manual'
+                                                ''',
+                                                epilog='''
+examples:
+  - spellbook.py activate_trigger mytrigger
+    -> Activate the trigger with id 'mytrigger'
+
+                                                ''')
+
+activate_trigger_parser.add_argument('trigger_id', help='The id of the trigger to activate')
+activate_trigger_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
+activate_trigger_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
+
+
 def add_authentication_headers(headers=None, data=None):
     """
     Add custom headers for API_Key and API_Sign
@@ -671,6 +780,94 @@ def get_random_address():
         sys.exit(1)
 
 # ----------------------------------------------------------------------------------------------------------------
+# Triggers
+# ----------------------------------------------------------------------------------------------------------------
+
+
+def get_triggers():
+    try:
+        r = requests.get('http://{host}:{port}/spellbook/triggers'.format(host=host, port=port))
+        print r.text
+    except Exception as ex:
+        print >> sys.stderr, 'Unable to get triggers: %s' % ex
+        sys.exit(1)
+
+
+def get_trigger():
+    try:
+        r = requests.get('http://{host}:{port}/spellbook/triggers/{trigger_id}'.format(host=host, port=port, trigger_id=args.trigger_id), headers=add_authentication_headers())
+        print r.text
+    except Exception as ex:
+        print >> sys.stderr, 'Unable to get trigger config: %s' % ex
+        sys.exit(1)
+
+
+def save_trigger():
+    data = {}
+    if args.type is not None:
+        data['trigger_type'] = args.type
+
+    if args.address is not None:
+        data['address'] = args.address
+
+    if args.amount is not None:
+        data['amount'] = args.amount
+
+    if args.confirmations is not None:
+        data['confirmations'] = args.confirmations
+
+    if args.block_height is not None:
+        data['block_height'] = args.block_height
+
+    if args.reset is not None:
+        data['reset'] = True
+        # if args.triggered == 'True':
+        #     data['triggered'] = True
+        # elif args.triggered == 'False':
+        #     data['triggered'] = False
+
+    if args.description is not None:
+        data['description'] = args.description
+
+    if args.creator_name is not None:
+        data['creator_name'] = args.creator_name
+
+    if args.creator_email is not None:
+        data['creator_email'] = args.creator_email
+
+    if args.youtube is not None:
+        data['youtube'] = args.youtube
+
+    if args.visibility is not None:
+        data['visibility'] = args.visibility
+
+    if args.status is not None:
+        data['status'] = args.status
+
+    try:
+        r = requests.post('http://{host}:{port}/spellbook/triggers/{trigger_id}'.format(host=host, port=port, trigger_id=args.trigger_id), headers=add_authentication_headers(data=data), json=data)
+        print r.text
+    except Exception as ex:
+        print >> sys.stderr, 'Unable to get explorer config: %s' % ex
+        sys.exit(1)
+
+
+def delete_trigger():
+    try:
+        r = requests.delete('http://{host}:{port}/spellbook/triggers/{trigger_id}'.format(host=host, port=port, trigger_id=args.trigger_id), headers=add_authentication_headers())
+        print r.text
+    except Exception as ex:
+        print >> sys.stderr, 'Unable to delete trigger: %s' % ex
+        sys.exit(1)
+
+
+def activate_trigger():
+    try:
+        r = requests.get('http://{host}:{port}/spellbook/triggers/{trigger_id}/activate'.format(host=host, port=port, trigger_id=args.trigger_id), headers=add_authentication_headers())
+        print r.text
+    except Exception as ex:
+        print >> sys.stderr, 'Unable to activate trigger: %s' % ex
+        sys.exit(1)
 
 # Parse the command line arguments
 args = parser.parse_args()
@@ -710,3 +907,13 @@ elif args.command == 'get_lsl':
     get_lsl()
 elif args.command == 'get_random_address':
     get_random_address()
+elif args.command == 'get_triggers':
+    get_triggers()
+elif args.command == 'get_trigger_config':
+    get_trigger()
+elif args.command == 'save_trigger':
+    save_trigger()
+elif args.command == 'delete_trigger':
+    delete_trigger()
+elif args.command == 'activate_trigger':
+    activate_trigger()
