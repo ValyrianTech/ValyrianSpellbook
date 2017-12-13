@@ -466,9 +466,14 @@ Save or update the configuration of a trigger.
                                             ''',
                                             epilog='''
 examples:
-  - spellbook.py save_trigger mytrigger balance
-    -> Save the configuration of the trigger with id 'mytrigger'
+  - spellbook.py save_trigger mytrigger --reset
+   -> Reset the trigger with id mytrigger in case it has been triggered already
 
+  - spellbook.py save_trigger mytrigger -t=Balance
+    -> Save or update a trigger with id 'mytrigger' of type 'Balance'
+
+  - spellbook.py save_trigger mytrigger -d='A short description'
+    -> Save or update a trigger with id 'mytrigger' with a description
                                             ''')
 
 save_trigger_parser.add_argument('trigger_id', help='The id of the trigger')
