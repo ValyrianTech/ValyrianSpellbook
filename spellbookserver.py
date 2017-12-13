@@ -21,7 +21,7 @@ from inputs.inputs import get_sil, get_profile
 from linker.linker import get_lal, get_lbl, get_lrl, get_lsl
 from randomaddress.randomaddress import random_address_from_sil, random_address_from_lbl, random_address_from_lrl, random_address_from_lsl
 
-from trigger.trigger import get_triggers, get_trigger_config, save_trigger, delete_trigger, activate_trigger
+from trigger.triggerhelpers import get_triggers, get_trigger_config, save_trigger, delete_trigger, activate_trigger
 
 
 class SpellbookRESTAPI(Bottle):
