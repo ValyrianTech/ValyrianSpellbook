@@ -165,6 +165,14 @@ def valid_youtube_id(youtube):
     return valid
 
 
+def valid_status(status):
+    return True if status in ['Pending', 'Active', 'Disabled'] else False
+
+
+def valid_visibility(visibility):
+    return True if visibility in ['Public', 'Private'] else False
+
+
 def valid_private_key(private_key):
     valid = False
 
