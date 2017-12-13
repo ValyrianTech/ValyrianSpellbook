@@ -4,6 +4,7 @@
 import os
 import sys
 import logging
+import time
 from logging.handlers import RotatingFileHandler
 from bottle import Bottle, request, response
 from datetime import datetime
@@ -131,6 +132,7 @@ class SpellbookRESTAPI(Bottle):
     def log_to_logger(self, fn):
         @wraps(fn)
         def _log_to_logger(*args, **kwargs):
+            start_time = int(round(time.time() * 1000))
             request_time = datetime.now()
             actual_response = response
             try:
@@ -142,11 +144,13 @@ class SpellbookRESTAPI(Bottle):
             else:
                 response_status = response.status
 
-            self.requests_log.info('%s | %s | %s | %s | %s' % (request_time,
-                                                               request.remote_addr,
-                                                               request.method,
-                                                               request.url,
-                                                               response_status))
+            end_time = int(round(time.time() * 1000))
+            self.requests_log.info('%s | %s | %s | %s | %s ms | %s' % (request_time,
+                                                                       request.remote_addr,
+                                                                       request.method,
+                                                                       response_status,
+                                                                       end_time - start_time,
+                                                                       request.url))
             return actual_response
         return _log_to_logger
 
