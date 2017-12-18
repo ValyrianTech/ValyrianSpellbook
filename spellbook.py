@@ -532,6 +532,26 @@ activate_trigger_parser.add_argument('-k', '--api_key', help='API key for the sp
 activate_trigger_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
 
 
+# Create parser for the check_triggers subcommand
+check_triggers_parser = subparsers.add_parser(name='check_triggers',
+                                              help='Check a triggers and activate it them if conditions have been fulfilled',
+                                              formatter_class=argparse.RawDescriptionHelpFormatter,
+                                              description='''
+Check triggers and activate it them if conditions have been fulfilled
+                                             ''',
+                                              epilog='''
+examples:
+  - spellbook.py check_triggers mytrigger
+    -> Check the trigger with id 'mytrigger' and activate it if conditions have been fulfilled
+
+                                             ''')
+
+check_triggers_parser.add_argument('trigger_id', help='The id of the trigger to check', nargs='?')
+check_triggers_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
+check_triggers_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
+check_triggers_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
+
+
 def add_authentication_headers(headers=None, data=None):
     """
     Add custom headers for API_Key and API_Sign
@@ -870,6 +890,24 @@ def activate_trigger():
         print >> sys.stderr, 'Unable to activate trigger: %s' % ex
         sys.exit(1)
 
+
+def check_triggers():
+    if args.trigger_id is not None:
+        url = 'http://{host}:{port}/spellbook/triggers/{trigger_id}/check'.format(host=host, port=port, trigger_id=args.trigger_id)
+    else:
+        url = 'http://{host}:{port}/spellbook/check_triggers'.format(host=host, port=port)
+
+    if args.explorer is not None:
+        url += '?explorer={explorer}'.format(explorer=args.explorer)
+
+    try:
+        r = requests.get(url, headers=add_authentication_headers())
+        print r.text
+    except Exception as ex:
+        print >> sys.stderr, 'Unable to check triggers: %s' % ex
+        sys.exit(1)
+
+
 # Parse the command line arguments
 args = parser.parse_args()
 
@@ -918,3 +956,5 @@ elif args.command == 'delete_trigger':
     delete_trigger()
 elif args.command == 'activate_trigger':
     activate_trigger()
+elif args.command == 'check_triggers':
+    check_triggers()
