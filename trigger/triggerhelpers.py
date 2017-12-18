@@ -3,6 +3,7 @@
 
 import os
 import glob
+import logging
 
 from jsonhelpers import load_from_json_file
 from triggertype import TriggerType
@@ -117,3 +118,21 @@ def activate_trigger(trigger_id):
         trigger.activate()
     else:
         return {'error': 'Only triggers of type Manual can be activated manually'}
+
+
+def check_triggers(trigger_id=None):
+    # Get a list of all trigger_ids that are configured
+    triggers = get_triggers()
+
+    # If a trigger_id is given, only check that specific trigger
+    if trigger_id is not None and trigger_id in triggers:
+        triggers = [trigger_id]
+    elif trigger_id is not None and trigger_id not in triggers:
+        return {'error': 'Unknown trigger id: %s' % trigger_id}
+
+    for trigger_id in triggers:
+        trigger = get_trigger(trigger_id=trigger_id)
+        if trigger.triggered is False:
+            logging.getLogger('Spellbook').info('Checking conditions of trigger %s' % trigger_id)
+            if trigger.conditions_fulfilled() is True:
+                trigger.activate()
