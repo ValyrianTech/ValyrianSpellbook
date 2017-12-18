@@ -18,6 +18,7 @@ class BlockchainInfoAPI(ExplorerAPI):
         latest_block = {}
         url = 'https://blockchain.info/latestblock'
         try:
+            logging.getLogger('Spellbook').info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
@@ -31,6 +32,7 @@ class BlockchainInfoAPI(ExplorerAPI):
 
             url = 'https://blockchain.info/rawblock/' + latest_block['hash']
             try:
+                logging.getLogger('Spellbook').info('GET %s' % url)
                 r = requests.get(url)
                 data = r.json()
             except Exception as ex:
@@ -48,6 +50,7 @@ class BlockchainInfoAPI(ExplorerAPI):
     def get_block_by_hash(self, block_hash):
         url = 'https://blockchain.info/rawblock/' + block_hash
         try:
+            logging.getLogger('Spellbook').info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
@@ -67,6 +70,7 @@ class BlockchainInfoAPI(ExplorerAPI):
     def get_block_by_height(self, height):
         url = 'https://blockchain.info/block-height/' + str(height) + '?format=json'
         try:
+            logging.getLogger('Spellbook').info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
@@ -98,6 +102,7 @@ class BlockchainInfoAPI(ExplorerAPI):
         while n_tx is None or len(transactions) < n_tx:
             url = 'https://blockchain.info/address/{address}?format=json&limit={limit}&offset={offset}'.format(address=address, limit=limit, offset=limit * i)
             try:
+                logging.getLogger('Spellbook').info('GET %s' % url)
                 r = requests.get(url)
                 data = r.json()
             except Exception as ex:
@@ -146,6 +151,7 @@ class BlockchainInfoAPI(ExplorerAPI):
     def get_balance(self, address):
         url = 'https://blockchain.info/rawaddr/' + address + '?limit=0'
         try:
+            logging.getLogger('Spellbook').info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
@@ -164,6 +170,7 @@ class BlockchainInfoAPI(ExplorerAPI):
     def get_prime_input_address(self, txid):
         url = 'https://blockchain.info/rawtx/' + str(txid)
         try:
+            logging.getLogger('Spellbook').info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
@@ -190,6 +197,7 @@ class BlockchainInfoAPI(ExplorerAPI):
         limit = 1000  # max number of utxo given by blockchain.info is 1000, there is no 'offset' parameter available
         url = 'https://blockchain.info/unspent?active=' + address + '&limit={limit}&confirmations={confirmations}'.format(address=address, limit=limit, confirmations=confirmations)
         try:
+            logging.getLogger('Spellbook').info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:

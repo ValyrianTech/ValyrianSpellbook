@@ -13,6 +13,7 @@ class InsightAPI(ExplorerAPI):
     def get_latest_block(self):
         url = self.url + '/status?q=getLastBlockHash'
         try:
+            logging.getLogger('Spellbook').info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
@@ -27,6 +28,7 @@ class InsightAPI(ExplorerAPI):
     def get_block_by_hash(self, block_hash):
         url = self.url + '/block/' + block_hash
         try:
+            logging.getLogger('Spellbook').info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
@@ -47,6 +49,7 @@ class InsightAPI(ExplorerAPI):
     def get_block_by_height(self, height):
         url = self.url + '/block-index/' + str(height)
         try:
+            logging.getLogger('Spellbook').info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
@@ -71,6 +74,7 @@ class InsightAPI(ExplorerAPI):
         while n_tx is None or len(transactions) < n_tx:
             url = self.url + '/addrs/' + address + '/txs?from=' + str(limit*i) + '&to=' + str(limit*(i+1))
             try:
+                logging.getLogger('Spellbook').info('GET %s' % url)
                 r = requests.get(url)
                 data = r.json()
             except Exception as ex:
@@ -144,6 +148,7 @@ class InsightAPI(ExplorerAPI):
     def get_prime_input_address(self, txid):
         url = self.url + '/tx/' + str(txid)
         try:
+            logging.getLogger('Spellbook').info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
@@ -166,6 +171,7 @@ class InsightAPI(ExplorerAPI):
     def get_utxos(self, address, confirmations=3):
         url = self.url + '/addrs/' + address + '/utxo?noCache=1'
         try:
+            logging.getLogger('Spellbook').info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
