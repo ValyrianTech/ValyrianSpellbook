@@ -21,6 +21,7 @@ class BlocktrailComAPI(ExplorerAPI):
         latest_block = {}
         url = '{api_url}/{api_version}/btc/block/latest?api_key={api_key}'.format(api_url=API_URL, api_version=API_VERSION, api_key=self.key)
         try:
+            logging.getLogger('Spellbook').info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
@@ -40,6 +41,7 @@ class BlocktrailComAPI(ExplorerAPI):
     def get_block_by_height(self, height):
         url = '{api_url}/{api_version}/btc/block/{height}?api_key={api_key}'.format(api_url=API_URL, api_version=API_VERSION, height=height, api_key=self.key)
         try:
+            logging.getLogger('Spellbook').info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
@@ -60,6 +62,7 @@ class BlocktrailComAPI(ExplorerAPI):
     def get_block_by_hash(self, block_hash):
         url = '{api_url}/{api_version}/btc/block/{hash}?api_key={api_key}'.format(api_url=API_URL, api_version=API_VERSION, hash=block_hash, api_key=self.key)
         try:
+            logging.getLogger('Spellbook').info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
@@ -87,6 +90,7 @@ class BlocktrailComAPI(ExplorerAPI):
             url = '{api_url}/{api_version}/btc/address/{address}/transactions?api_key={api_key}&limit={limit}&page={page}&sort_dir=asc'.format(
                 api_url=API_URL, api_version=API_VERSION, address=address, api_key=self.key, limit=limit, page=page)
             try:
+                logging.getLogger('Spellbook').info('GET %s' % url)
                 r = requests.get(url)
                 data = r.json()
             except Exception as ex:
@@ -136,6 +140,7 @@ class BlocktrailComAPI(ExplorerAPI):
     def get_balance(self, address):
         url = '{api_url}/{api_version}/btc/address/{address}?api_key={api_key}'.format(api_url=API_URL, api_version=API_VERSION, address=address, api_key=self.key)
         try:
+            logging.getLogger('Spellbook').info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
@@ -154,6 +159,7 @@ class BlocktrailComAPI(ExplorerAPI):
     def get_prime_input_address(self, txid):
         url = '{api_url}/{api_version}/btc/transaction/{txid}?api_key={api_key}'.format(api_url=API_URL, api_version=API_VERSION, txid=txid, api_key=self.key)
         try:
+            logging.getLogger('Spellbook').info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
@@ -183,6 +189,7 @@ class BlocktrailComAPI(ExplorerAPI):
             url = '{api_url}/{api_version}/btc/address/{address}/unspent-outputs?api_key={api_key}&limit={limit}&page={page}&sort_dir=asc'.format(
                 api_url=API_URL, api_version=API_VERSION, address=address, api_key=self.key, limit=limit, page=page)
             try:
+                logging.getLogger('Spellbook').info('GET %s' % url)
                 r = requests.get(url)
                 data = r.json()
             except Exception as ex:
