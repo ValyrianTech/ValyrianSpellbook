@@ -21,7 +21,7 @@ from inputs.inputs import get_sil, get_profile
 from linker.linker import get_lal, get_lbl, get_lrl, get_lsl
 from randomaddress.randomaddress import random_address_from_sil, random_address_from_lbl, random_address_from_lrl, random_address_from_lsl
 
-from trigger.triggerhelpers import get_triggers, get_trigger_config, save_trigger, delete_trigger, activate_trigger
+from trigger.triggerhelpers import get_triggers, get_trigger_config, save_trigger, delete_trigger, activate_trigger, check_triggers
 
 
 class SpellbookRESTAPI(Bottle):
@@ -95,6 +95,8 @@ class SpellbookRESTAPI(Bottle):
         self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.save_trigger)
         self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.delete_trigger)
         self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/activate', method='GET', callback=self.activate_trigger)
+        self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/check', method='GET', callback=self.check_trigger)
+        self.route('/spellbook/check_triggers', method='GET', callback=self.check_all_triggers)
 
         # start the webserver for the REST API
         self.run(host=self.host, port=self.port)
@@ -342,6 +344,20 @@ class SpellbookRESTAPI(Bottle):
     @authentication_required
     def activate_trigger(trigger_id):
         return activate_trigger(trigger_id)
+
+    @staticmethod
+    @output_json
+    @use_explorer
+    @authentication_required
+    def check_trigger(trigger_id):
+        return check_triggers(trigger_id)
+
+    @staticmethod
+    @output_json
+    @use_explorer
+    @authentication_required
+    def check_all_triggers():
+        return check_triggers()
 
 if __name__ == "__main__":
     SpellbookRESTAPI()
