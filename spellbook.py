@@ -603,11 +603,21 @@ examples:
   - spellbook.py save_trigger myaction
    -> Save an action with id 'myaction'
 
+  - spellbook.py save_trigger myaction -t=Command -c='ping 127.0.0.1'
+   -> Save an action with id 'myaction' that runs the ping command when run
+
+  - spellbook.py save_trigger myaction -t=SendMail -mr=info@valyrian.tech -ms='email subject' -mb=template1
+   -> Save an action with id 'myaction' that sends an email to info@valyrian.tech with subject 'email subject' and uses template1 for the body
                                            ''')
 
 save_action_parser.add_argument('action_id', help='The id of the action')
 save_action_parser.add_argument('-t', '--type', help='The type of the action', choices=['Command', 'Distributer', 'Forwarder', 'OpReturnWriter', 'RevealLink', 'RevealText', 'SendMail', 'Webhook'])
+
 save_action_parser.add_argument('-c', '--run_command', help='The command to run, only applicable to Command Actions')
+
+save_action_parser.add_argument('-mr', '--mail_recipients', help='The recipients of the email in a SendEmail Action, separated with semicolon')
+save_action_parser.add_argument('-ms', '--mail_subject', help='The subject of the email in a SendEmail Action')
+save_action_parser.add_argument('-mb', '--mail_body_template', help='The name of the body template of the email in a SendEmail Action')
 
 
 save_action_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
@@ -1037,6 +1047,14 @@ def save_action():
     if args.run_command is not None:
         data['run_command'] = args.run_command
 
+    if args.mail_recipients is not None:
+        data['mail_recipients'] = args.mail_recipients
+
+    if args.mail_subject is not None:
+        data['mail_subject'] = args.mail_subject
+
+    if args.mail_body_template is not None:
+        data['mail_body_template'] = args.mail_body_template
 
     try:
         r = requests.post('http://{host}:{port}/spellbook/actions/{action_id}'.format(host=host,
