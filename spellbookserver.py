@@ -1,27 +1,27 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import logging
 import os
 import sys
-import logging
 import time
-from logging.handlers import RotatingFileHandler
-from bottle import Bottle, request, response
-from datetime import datetime
-from functools import wraps
 import traceback
 
+from datetime import datetime
+from functools import wraps
+from logging.handlers import RotatingFileHandler
+from bottle import Bottle, request, response
+
+from authentication import initialize_api_keys_file
 from data.data import get_explorers, get_explorer_config, save_explorer, delete_explorer
 from data.data import latest_block, block_by_height, block_by_hash, prime_input_address
 from data.data import transactions, balance, utxos
-from authentication import initialize_api_keys_file
 from decorators import authentication_required, use_explorer, output_json
-
 from inputs.inputs import get_sil, get_profile
 from linker.linker import get_lal, get_lbl, get_lrl, get_lsl
 from randomaddress.randomaddress import random_address_from_sil, random_address_from_lbl, random_address_from_lrl, random_address_from_lsl
-
 from trigger.triggerhelpers import get_triggers, get_trigger_config, save_trigger, delete_trigger, activate_trigger, check_triggers
+from action.actionhelpers import get_actions, get_action_config, save_action, delete_action, run_action
 
 
 class SpellbookRESTAPI(Bottle):
@@ -97,6 +97,13 @@ class SpellbookRESTAPI(Bottle):
         self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/activate', method='GET', callback=self.activate_trigger)
         self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/check', method='GET', callback=self.check_trigger)
         self.route('/spellbook/check_triggers', method='GET', callback=self.check_all_triggers)
+
+        # Routes for Actions
+        self.route('/spellbook/actions', method='GET', callback=self.get_actions)
+        self.route('/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.get_action)
+        self.route('/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.save_action)
+        self.route('/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.delete_action)
+        self.route('/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>/run', method='GET', callback=self.run_action)
 
         # start the webserver for the REST API
         self.run(host=self.host, port=self.port)
@@ -358,6 +365,45 @@ class SpellbookRESTAPI(Bottle):
     @authentication_required
     def check_all_triggers():
         return check_triggers()
+
+    @staticmethod
+    @output_json
+    def get_actions():
+        actions = get_actions()
+        if actions is not None:
+            return actions
+        else:
+            return {'error': 'Unable to retrieve action_ids'}
+
+    @staticmethod
+    @output_json
+    @authentication_required
+    def get_action(action_id):
+        action_config = get_action_config(action_id)
+        if action_config is not None:
+            return action_config
+        else:
+            return {'error': 'No action with id %s found' % action_id}
+
+    @staticmethod
+    @output_json
+    @authentication_required
+    def save_action(action_id):
+        return save_action(action_id, **request.json)
+
+    @staticmethod
+    @output_json
+    @authentication_required
+    def delete_action(action_id):
+        return delete_action(action_id)
+
+    @staticmethod
+    @output_json
+    @authentication_required
+    def run_action(action_id):
+        return run_action(action_id)
+
+
 
 if __name__ == "__main__":
     SpellbookRESTAPI()
