@@ -621,6 +621,9 @@ save_action_parser.add_argument('-mb', '--mail_body_template', help='The name of
 
 save_action_parser.add_argument('-w', '--webhook', help='The url of a webhook, only applicable to Webhook Actions')
 
+save_action_parser.add_argument('-rt', '--reveal_text', help='The text to reveal when the action is activated, only applicable to RevealText Actions')
+save_action_parser.add_argument('-rl', '--reveal_link', help='The link to reveal when the action is activated, only applicable to RevealText Actions and RevealLink Actions')
+
 save_action_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
 save_action_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
 
@@ -660,6 +663,25 @@ examples:
 run_action_parser.add_argument('action_id', help='The id of the action')
 run_action_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
 run_action_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
+
+
+# Create parser for the get_reveal subcommand
+get_reveal_parser = subparsers.add_parser(name='get_reveal',
+                                          help='Get the reveal text or link from a RevealText or RevealLink action',
+                                          formatter_class=argparse.RawDescriptionHelpFormatter,
+                                          description='''
+Get the reveal text or link from a RevealText or RevealLink action.
+                                          ''',
+                                          epilog='''
+examples:
+  - spellbook.py get_reveal myaction
+    -> Get the reveal text or link of the action with id 'myaction'
+
+                                          ''')
+
+get_reveal_parser.add_argument('action_id', help='The id of the action')
+get_reveal_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
+get_reveal_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
 
 
 def add_authentication_headers(headers=None, data=None):
@@ -1060,6 +1082,12 @@ def save_action():
     if args.webhook is not None:
         data['webhook'] = args.webhook
 
+    if args.reveal_text is not None:
+        data['reveal_text'] = args.reveal_text
+
+    if args.reveal_link is not None:
+        data['reveal_link'] = args.reveal_link
+
     try:
         r = requests.post('http://{host}:{port}/spellbook/actions/{action_id}'.format(host=host,
                                                                                       port=port,
@@ -1092,6 +1120,14 @@ def run_action():
         print >> sys.stderr, 'Unable to run action: %s' % ex
         sys.exit(1)
 
+
+def get_reveal():
+    try:
+        r = requests.get('http://{host}:{port}/spellbook/actions/{action_id}/reveal'.format(host=host, port=port, action_id=args.action_id))
+        print r.text
+    except Exception as ex:
+        print >> sys.stderr, 'Unable to get revealed text or link: %s' % ex
+        sys.exit(1)
 
 # Parse the command line arguments
 args = parser.parse_args()
@@ -1153,3 +1189,5 @@ elif args.command == 'delete_action':
     delete_action()
 elif args.command == 'run_action':
     run_action()
+elif args.command == 'get_reveal':
+    get_reveal()

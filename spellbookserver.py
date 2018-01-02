@@ -21,7 +21,7 @@ from inputs.inputs import get_sil, get_profile
 from linker.linker import get_lal, get_lbl, get_lrl, get_lsl
 from randomaddress.randomaddress import random_address_from_sil, random_address_from_lbl, random_address_from_lrl, random_address_from_lsl
 from trigger.triggerhelpers import get_triggers, get_trigger_config, save_trigger, delete_trigger, activate_trigger, check_triggers
-from action.actionhelpers import get_actions, get_action_config, save_action, delete_action, run_action
+from action.actionhelpers import get_actions, get_action_config, save_action, delete_action, run_action, get_reveal
 
 
 class SpellbookRESTAPI(Bottle):
@@ -104,6 +104,9 @@ class SpellbookRESTAPI(Bottle):
         self.route('/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.save_action)
         self.route('/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.delete_action)
         self.route('/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>/run', method='GET', callback=self.run_action)
+
+        # Routes for RevealText and RevealLink actions
+        self.route('/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>/reveal', method='GET', callback=self.get_reveal)
 
         # start the webserver for the REST API
         self.run(host=self.host, port=self.port)
@@ -402,6 +405,11 @@ class SpellbookRESTAPI(Bottle):
     @authentication_required
     def run_action(action_id):
         return run_action(action_id)
+
+    @staticmethod
+    @output_json
+    def get_reveal(action_id):
+        return get_reveal(action_id)
 
 
 

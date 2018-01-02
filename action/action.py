@@ -24,6 +24,9 @@ class Action(object):
         self.mail_subject = None
         self.mail_body_template = None
         self.webhook = None
+        self.reveal_text = None
+        self.reveal_link = None
+        self.allow_reveal = False
 
     def configure(self, **config):
         self.created = datetime.fromtimestamp(config['created']) if 'created' in config else datetime.now()
@@ -46,6 +49,15 @@ class Action(object):
         if 'webhook' in config:
             self.webhook = config['webhook']
 
+        if 'reveal_text' in config:
+            self.reveal_text = config['reveal_text']
+
+        if 'reveal_link' in config:
+            self.reveal_link = config['reveal_link']
+
+        if 'allow_reveal' in config:
+            self.allow_reveal = config['allow_reveal']
+
     def save(self):
         save_to_json_file(os.path.join(ACTIONS_DIR, '%s.json' % self.id), self.json_encodable())
 
@@ -57,7 +69,10 @@ class Action(object):
                 'mail_recipients': self.mail_recipients,
                 'mail_subject': self.mail_subject,
                 'mail_body_template': self.mail_body_template,
-                'webhook': self.webhook}
+                'webhook': self.webhook,
+                'reveal_text': self.reveal_text,
+                'reveal_link': self.reveal_link,
+                'allow_reveal': self.allow_reveal}
 
     @abstractmethod
     def run(self):
