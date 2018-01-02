@@ -127,3 +127,26 @@ def run_action(action_id):
     action = get_action(action_id)
     return action.run()
 
+
+def get_reveal(action_id):
+    """
+    Get a revealed text and/or link from a RevealText or RevealLink Action.
+    Will return None as long as the action has not been activated.
+    Only after the action is activated will the secret text or link be revealed
+
+    :param action_id: The id of the action
+    """
+    action = get_action(action_id)
+    if action.allow_reveal is False:
+        return None
+
+    response = {}
+    if action.action_type == ActionType.REVEALTEXT:
+        response['reveal_text'] = action.reveal_text
+    elif action.action_type == ActionType.REVEALLINK:
+        response['reveal_text'] = action.reveal_text
+        response['reveal_link'] = action.reveal_link
+    else:
+        return None
+
+    return response
