@@ -66,7 +66,6 @@ def get_action(action_id):
              RevealLinkAction, RevealTextAction, SendMailAction or WebhookAction)
     """
     action_config = get_action_config(action_id)
-    print action_config
     action = CommandAction(action_id)
     if 'action_type' in action_config:
         if action_config['action_type'] == ActionType.COMMAND:
