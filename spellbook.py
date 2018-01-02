@@ -551,6 +551,105 @@ check_triggers_parser.add_argument('-e', '--explorer', help='Use specified explo
 check_triggers_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
 check_triggers_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
 
+# ----------------------------------------------------------------------------------------------------------------
+
+# Create parser for the get_actions subcommand
+get_actions_parser = subparsers.add_parser(name='get_actions',
+                                           help='Get the list of configured action_ids',
+                                           formatter_class=argparse.RawDescriptionHelpFormatter,
+                                           description='''
+Get the list of configured action_ids.
+                                           ''',
+                                           epilog='''
+examples:
+  - spellbook.py get_actions
+    -> Get the list of all configured action_ids
+
+  - spellbook.py get_actions --trigger_id=mytrigger
+    -> Get the list of all configured action_ids on trigger 'mytrigger'
+                                           ''')
+
+get_actions_parser.add_argument('-i', '--trigger_id', help='The id of the trigger')
+
+
+# Create parser for the get_action_config subcommand
+get_action_config_parser = subparsers.add_parser(name='get_action_config',
+                                                 help='Get the configuration of specified action',
+                                                 formatter_class=argparse.RawDescriptionHelpFormatter,
+                                                 description='''
+Get the configuration of specified action.
+                                                 ''',
+                                                 epilog='''
+examples:
+  - spellbook.py get_action_config myaction
+    -> Get the configuration of the action 'myaction'
+
+                                                 ''')
+
+get_action_config_parser.add_argument('action_id', help='The id of the action')
+get_action_config_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
+get_action_config_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
+
+
+# Create parser for the save_action subcommand
+save_action_parser = subparsers.add_parser(name='save_action',
+                                           help='Save or update the configuration of an action',
+                                           formatter_class=argparse.RawDescriptionHelpFormatter,
+                                           description='''
+Save or update the configuration of an action.
+                                           ''',
+                                           epilog='''
+examples:
+  - spellbook.py save_trigger myaction
+   -> Save an action with id 'myaction'
+
+                                           ''')
+
+save_action_parser.add_argument('action_id', help='The id of the action')
+save_action_parser.add_argument('-t', '--type', help='The type of the action', choices=['Command', 'Distributer', 'Forwarder', 'OpReturnWriter', 'RevealLink', 'RevealText', 'SendMail', 'Webhook'])
+save_action_parser.add_argument('-c', '--run_command', help='The command to run, only applicable to Command Actions')
+
+
+save_action_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
+save_action_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
+
+# Create parser for the delete_action subcommand
+delete_action_parser = subparsers.add_parser(name='delete_action',
+                                             help='Delete a specified action',
+                                             formatter_class=argparse.RawDescriptionHelpFormatter,
+                                             description='''
+Delete a specified action.
+                                             ''',
+                                             epilog='''
+examples:
+  - spellbook.py delete_action myaction
+    -> Delete the action with id 'myaction'
+
+                                             ''')
+
+delete_action_parser.add_argument('action_id', help='The id of the action')
+delete_action_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
+delete_action_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
+
+
+# Create parser for the run_action subcommand
+run_action_parser = subparsers.add_parser(name='run_action',
+                                          help='Run a specified action',
+                                          formatter_class=argparse.RawDescriptionHelpFormatter,
+                                          description='''
+Run a specified action.
+                                          ''',
+                                          epilog='''
+examples:
+  - spellbook.py run_action myaction
+    -> Run the action with id 'myaction'
+
+                                          ''')
+
+run_action_parser.add_argument('action_id', help='The id of the action')
+run_action_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
+run_action_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
+
 
 def add_authentication_headers(headers=None, data=None):
     """
@@ -907,6 +1006,70 @@ def check_triggers():
         print >> sys.stderr, 'Unable to check triggers: %s' % ex
         sys.exit(1)
 
+# ----------------------------------------------------------------------------------------------------------------
+# Actions
+# ----------------------------------------------------------------------------------------------------------------
+
+
+def get_actions():
+    try:
+        r = requests.get('http://{host}:{port}/spellbook/actions'.format(host=host, port=port))
+        print r.text
+    except Exception as ex:
+        print >> sys.stderr, 'Unable to get actions: %s' % ex
+        sys.exit(1)
+
+
+def get_action():
+    try:
+        r = requests.get('http://{host}:{port}/spellbook/actions/{action_id}'.format(host=host, port=port, action_id=args.action_id), headers=add_authentication_headers())
+        print r.text
+    except Exception as ex:
+        print >> sys.stderr, 'Unable to get action config: %s' % ex
+        sys.exit(1)
+
+
+def save_action():
+    data = {}
+    if args.type is not None:
+        data['action_type'] = args.type
+
+    if args.run_command is not None:
+        data['run_command'] = args.run_command
+
+
+    try:
+        r = requests.post('http://{host}:{port}/spellbook/actions/{action_id}'.format(host=host,
+                                                                                      port=port,
+                                                                                      action_id=args.action_id),
+                          headers=add_authentication_headers(data=data),
+                          json=data)
+        print r.text
+    except Exception as ex:
+        print >> sys.stderr, 'Unable to save action config: %s' % ex
+        sys.exit(1)
+
+
+def delete_action():
+    try:
+        r = requests.delete('http://{host}:{port}/spellbook/actions/{action_id}'.format(host=host,
+                                                                                        port=port,
+                                                                                        action_id=args.action_id),
+                            headers=add_authentication_headers())
+        print r.text
+    except Exception as ex:
+        print >> sys.stderr, 'Unable to delete action: %s' % ex
+        sys.exit(1)
+
+
+def run_action():
+    try:
+        r = requests.get('http://{host}:{port}/spellbook/actions/{action_id}/run'.format(host=host, port=port, action_id=args.action_id), headers=add_authentication_headers())
+        print r.text
+    except Exception as ex:
+        print >> sys.stderr, 'Unable to run action: %s' % ex
+        sys.exit(1)
+
 
 # Parse the command line arguments
 args = parser.parse_args()
@@ -958,3 +1121,13 @@ elif args.command == 'activate_trigger':
     activate_trigger()
 elif args.command == 'check_triggers':
     check_triggers()
+elif args.command == 'get_actions':
+    get_actions()
+elif args.command == 'get_action_config':
+    get_action()
+elif args.command == 'save_action':
+    save_action()
+elif args.command == 'delete_action':
+    delete_action()
+elif args.command == 'run_action':
+    run_action()
