@@ -10,4 +10,4 @@ class ActionType(object):
     REVEALLINK = 'RevealLink'
     REVEALTEXT = 'RevealText'
     SENDMAIL = 'SendMail'
-    WEBHOOK = 'WebhookAction'
+    WEBHOOK = 'Webhook'

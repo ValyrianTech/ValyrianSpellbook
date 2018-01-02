@@ -619,6 +619,7 @@ save_action_parser.add_argument('-mr', '--mail_recipients', help='The recipients
 save_action_parser.add_argument('-ms', '--mail_subject', help='The subject of the email in a SendEmail Action')
 save_action_parser.add_argument('-mb', '--mail_body_template', help='The name of the body template of the email in a SendEmail Action')
 
+save_action_parser.add_argument('-w', '--webhook', help='The url of a webhook, only applicable to Webhook Actions')
 
 save_action_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
 save_action_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
@@ -1055,6 +1056,9 @@ def save_action():
 
     if args.mail_body_template is not None:
         data['mail_body_template'] = args.mail_body_template
+
+    if args.webhook is not None:
+        data['webhook'] = args.webhook
 
     try:
         r = requests.post('http://{host}:{port}/spellbook/actions/{action_id}'.format(host=host,

@@ -23,6 +23,7 @@ class Action(object):
         self.mail_recipients = None
         self.mail_subject = None
         self.mail_body_template = None
+        self.webhook = None
 
     def configure(self, **config):
         self.created = datetime.fromtimestamp(config['created']) if 'created' in config else datetime.now()
@@ -42,6 +43,9 @@ class Action(object):
         if 'mail_body_template' in config:
             self.mail_body_template = config['mail_body_template']
 
+        if 'webhook' in config:
+            self.webhook = config['webhook']
+
     def save(self):
         save_to_json_file(os.path.join(ACTIONS_DIR, '%s.json' % self.id), self.json_encodable())
 
@@ -52,7 +56,8 @@ class Action(object):
                 'run_command': self.run_command,
                 'mail_recipients': self.mail_recipients,
                 'mail_subject': self.mail_subject,
-                'mail_body_template': self.mail_body_template}
+                'mail_body_template': self.mail_body_template,
+                'webhook': self.webhook}
 
     @abstractmethod
     def run(self):
