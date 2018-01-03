@@ -7,7 +7,7 @@ from abc import abstractmethod, ABCMeta
 from datetime import datetime
 
 from jsonhelpers import save_to_json_file
-from validators.validators import valid_action_type, valid_address, valid_percentage
+from validators.validators import valid_action_type, valid_address, valid_percentage, valid_private_key
 
 ACTIONS_DIR = 'json/public/actions'
 
@@ -29,6 +29,10 @@ class Action(object):
         self.allow_reveal = False
         self.fee_address = None
         self.fee_percentage = 0
+        self.key_source = None
+        self.priv_key = None
+        self.bip44_account = None
+        self.bip44_index = None
 
     def configure(self, **config):
         self.created = datetime.fromtimestamp(config['created']) if 'created' in config else datetime.now()
@@ -66,6 +70,18 @@ class Action(object):
         if 'fee_percentage' in config and valid_percentage(config['fee_percentage']):
             self.fee_percentage = config['fee_percentage']
 
+        if 'key_source' in config and config['key_source'] in ['PrivKey', 'BIP44']:
+            self.key_source = config['key_source']
+
+        if 'priv_key' in config and valid_private_key(config['priv_key']):
+            self.priv_key = config['priv_key']
+
+        if 'bip44_account' in config:
+            self.bip44_account = config['bip44_account']
+
+        if 'bip44_index' in config:
+            self.bip44_index = config['bip44_index']
+
     def save(self):
         save_to_json_file(os.path.join(ACTIONS_DIR, '%s.json' % self.id), self.json_encodable())
 
@@ -82,7 +98,11 @@ class Action(object):
                 'reveal_link': self.reveal_link,
                 'allow_reveal': self.allow_reveal,
                 'fee_address': self.fee_address,
-                'fee_percentage': self.fee_percentage}
+                'fee_percentage': self.fee_percentage,
+                'key_source': self.key_source,
+                'priv_key': self.priv_key,
+                'bip44_account': self.bip44_account,
+                'bip44_index': self.bip44_index}
 
     @abstractmethod
     def run(self):
