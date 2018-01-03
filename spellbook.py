@@ -624,6 +624,9 @@ save_action_parser.add_argument('-w', '--webhook', help='The url of a webhook, o
 save_action_parser.add_argument('-rt', '--reveal_text', help='The text to reveal when the action is activated, only applicable to RevealText Actions')
 save_action_parser.add_argument('-rl', '--reveal_link', help='The link to reveal when the action is activated, only applicable to RevealText Actions and RevealLink Actions')
 
+save_action_parser.add_argument('-fa', '--fee_address', help='The address to send the fee to')
+save_action_parser.add_argument('-fp', '--fee_percentage', help='The fee as a percentage', type=float)
+
 save_action_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
 save_action_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
 
@@ -1087,6 +1090,12 @@ def save_action():
 
     if args.reveal_link is not None:
         data['reveal_link'] = args.reveal_link
+
+    if args.fee_address is not None:
+        data['fee_address'] = args.fee_address
+
+    if args.fee_percentage is not None:
+        data['fee_percentage'] = args.fee_percentage
 
     try:
         r = requests.post('http://{host}:{port}/spellbook/actions/{action_id}'.format(host=host,

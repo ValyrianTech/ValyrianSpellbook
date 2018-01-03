@@ -7,7 +7,7 @@ from abc import abstractmethod, ABCMeta
 from datetime import datetime
 
 from jsonhelpers import save_to_json_file
-from validators.validators import valid_action_type
+from validators.validators import valid_action_type, valid_address, valid_percentage
 
 ACTIONS_DIR = 'json/public/actions'
 
@@ -27,6 +27,8 @@ class Action(object):
         self.reveal_text = None
         self.reveal_link = None
         self.allow_reveal = False
+        self.fee_address = None
+        self.fee_percentage = 0
 
     def configure(self, **config):
         self.created = datetime.fromtimestamp(config['created']) if 'created' in config else datetime.now()
@@ -58,6 +60,12 @@ class Action(object):
         if 'allow_reveal' in config:
             self.allow_reveal = config['allow_reveal']
 
+        if 'fee_address' in config and valid_address(config['fee_address']):
+            self.fee_address = config['fee_address']
+
+        if 'fee_percentage' in config and valid_percentage(config['fee_percentage']):
+            self.fee_percentage = config['fee_percentage']
+
     def save(self):
         save_to_json_file(os.path.join(ACTIONS_DIR, '%s.json' % self.id), self.json_encodable())
 
@@ -72,7 +80,9 @@ class Action(object):
                 'webhook': self.webhook,
                 'reveal_text': self.reveal_text,
                 'reveal_link': self.reveal_link,
-                'allow_reveal': self.allow_reveal}
+                'allow_reveal': self.allow_reveal,
+                'fee_address': self.fee_address,
+                'fee_percentage': self.fee_percentage}
 
     @abstractmethod
     def run(self):
