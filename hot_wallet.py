@@ -90,10 +90,10 @@ Set the BIP44 mnemonic and passphrase for a hot wallet
 examples:
   - hot_wallet.py set_bip44 bench cabin ...
     -> set the 12 or 24 mnemonic words for the default hot wallet
-    
+
   - hot_wallet.py set_bip44 bench cabin ... -p=mysecretpassword
     -> set the 12 or 24 mnemonic words for the default hot wallet with an additional passphrase
-    
+
   - hot_wallet.py set_bip44 bench cabin ... -w=mywallet
     -> set the 12 or 24 mnemonic words for the hot wallet with id 'mywallet'
                                           ''')
@@ -128,7 +128,7 @@ def load_wallet():
     if not os.path.isfile(os.path.join(WALLET_DIR, '%s.enc' % WALLET_ID)):
         return {}
 
-    cipher = AESCipher(key=getpass.getpass('Enter the password to decrypt the wallet: '))
+    cipher = AESCipher(key=getpass.getpass('Enter the password to decrypt the hot wallet: '))
     try:
         with open(os.path.join(WALLET_DIR, '%s.enc' % WALLET_ID), 'r') as input_file:
             encrypted_data = input_file.read()
