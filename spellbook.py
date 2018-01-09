@@ -627,8 +627,8 @@ save_action_parser.add_argument('-rl', '--reveal_link', help='The link to reveal
 save_action_parser.add_argument('-fa', '--fee_address', help='The address to send the fee to')
 save_action_parser.add_argument('-fp', '--fee_percentage', help='The fee as a percentage', type=float)
 
-save_action_parser.add_argument('-ks', '--key_source', help='The source of the private key for the sending address (PrivKey or BIP44)', choices=['PrivKey', 'BIP44'])
-save_action_parser.add_argument('-pk', '--priv_key', help='The private key of the sending address')
+save_action_parser.add_argument('-at', '--address_type', help='The type of the sending address (Single or BIP44)', choices=['Single', 'BIP44'])
+save_action_parser.add_argument('-a', '--address', help='The address to send from')
 save_action_parser.add_argument('-ba', '--bip44_account', help='The account in a BIP44 wallet', type=int)
 save_action_parser.add_argument('-bi', '--bip44_index', help='The index in a BIP44 wallet of the sending address', type=int)
 
@@ -1102,11 +1102,11 @@ def save_action():
     if args.fee_percentage is not None:
         data['fee_percentage'] = args.fee_percentage
 
-    if args.key_source is not None:
-        data['key_source'] = args.key_source
+    if args.address_type is not None:
+        data['address_type'] = args.address_type
 
-    if args.priv_key is not None:
-        data['priv_key'] = args.priv_key
+    if args.address is not None:
+        data['address'] = args.address
 
     if args.bip44_account is not None:
         data['bip44_account'] = args.bip44_account

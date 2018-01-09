@@ -29,8 +29,8 @@ class Action(object):
         self.allow_reveal = False
         self.fee_address = None
         self.fee_percentage = 0
-        self.key_source = None
-        self.priv_key = None
+        self.address_type = None
+        self.address = None
         self.bip44_account = None
         self.bip44_index = None
 
@@ -70,11 +70,11 @@ class Action(object):
         if 'fee_percentage' in config and valid_percentage(config['fee_percentage']):
             self.fee_percentage = config['fee_percentage']
 
-        if 'key_source' in config and config['key_source'] in ['PrivKey', 'BIP44']:
-            self.key_source = config['key_source']
+        if 'address_type' in config and config['address_type'] in ['Single', 'BIP44']:
+            self.address_type = config['address_type']
 
-        if 'priv_key' in config and valid_private_key(config['priv_key']):
-            self.priv_key = config['priv_key']
+        if 'address' in config and valid_private_key(config['address']):
+            self.address = config['address']
 
         if 'bip44_account' in config:
             self.bip44_account = config['bip44_account']
@@ -99,8 +99,8 @@ class Action(object):
                 'allow_reveal': self.allow_reveal,
                 'fee_address': self.fee_address,
                 'fee_percentage': self.fee_percentage,
-                'key_source': self.key_source,
-                'priv_key': self.priv_key,
+                'address_type': self.address_type,
+                'address': self.address,
                 'bip44_account': self.bip44_account,
                 'bip44_index': self.bip44_index}
 
