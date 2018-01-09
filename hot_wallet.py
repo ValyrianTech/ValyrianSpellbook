@@ -143,7 +143,14 @@ def load_wallet():
 
 
 def save_wallet(wallet):
-    cipher = AESCipher(key=getpass.getpass('Enter the password to encrypt the hot wallet: '))
+    password1 = getpass.getpass('Enter the password to encrypt the hot wallet: ')
+    password2 = getpass.getpass('Re-enter the password to encrypt the hot wallet: ')
+
+    if password1 != password2:
+        print >> sys.stderr, 'Passwords do not match!'
+        sys.exit(1)
+
+    cipher = AESCipher(key=password1)
     unencrypted_data = simplejson.dumps(wallet, sort_keys=True, indent=4)
 
     with open(os.path.join(WALLET_DIR, '%s.enc' % WALLET_ID), 'w') as output_file:
