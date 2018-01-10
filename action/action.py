@@ -76,7 +76,7 @@ class Action(object):
         if 'address_type' in config and config['address_type'] in ['Single', 'BIP44']:
             self.address_type = config['address_type']
 
-        if 'address' in config and valid_private_key(config['address']):
+        if 'address' in config and valid_address(config['address']):
             self.address = config['address']
 
         if 'bip44_account' in config:
