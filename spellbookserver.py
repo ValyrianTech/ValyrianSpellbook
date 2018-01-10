@@ -12,6 +12,8 @@ from functools import wraps
 from logging.handlers import RotatingFileHandler
 from bottle import Bottle, request, response
 
+from hot_wallet_helpers import get_hot_wallet
+from configurationhelpers import get_host_and_port
 from authentication import initialize_api_keys_file
 from data.data import get_explorers, get_explorer_config, save_explorer, delete_explorer
 from data.data import latest_block, block_by_height, block_by_hash, prime_input_address
@@ -29,8 +31,7 @@ class SpellbookRESTAPI(Bottle):
         super(SpellbookRESTAPI, self).__init__()
 
         # Initialize variables
-        self.host = 'localhost'
-        self.port = 8080
+        self.host, self.port = get_host_and_port()
 
         # make the directory for logs if it doesn't exist
         logs_dir = os.path.join('logs')
@@ -53,6 +54,12 @@ class SpellbookRESTAPI(Bottle):
             initialize_api_keys_file()
 
         self.log.info('Starting Bitcoin Spellbook')
+
+        try:
+            get_hot_wallet()
+        except Exception as ex:
+            self.log.error('Unable to decrypt hot wallet: %s' % ex)
+            sys.exit(1)
 
         # Initialize the routes for the REST API
         # Routes for managing blockexplorers
@@ -410,7 +417,6 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     def get_reveal(action_id):
         return get_reveal(action_id)
-
 
 
 if __name__ == "__main__":
