@@ -6,8 +6,9 @@ import sys
 import requests
 import argparse
 import time
-from ConfigParser import ConfigParser
 from authentication import signature
+
+from configurationhelpers import get_host_and_port, get_key_and_secret
 
 
 # Make sure we are in the correct working directory
@@ -15,37 +16,8 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 # ----------------------------------------------------------------------------------------------------------------
 
-# Read the RESTAPI configuration file
-spellbook_configuration_file = 'configuration/Spellbook.conf'
-config = ConfigParser()
-config.read(spellbook_configuration_file)
-
-# Check if the spellbook configuration file contains a [RESTAPI] section
-if not config.has_section('RESTAPI'):
-    raise Exception('Configuration file %s does not have a [RESTAPI] section ' % spellbook_configuration_file)
-
-# Check if the [RESTAPI] section has options for 'host' and 'port'
-if not config.has_option('RESTAPI', 'host'):
-    raise Exception("Configuration file %s does not have an option 'host' in the [RESTAPI] section" % spellbook_configuration_file)
-host = config.get('RESTAPI', 'host')
-
-if not config.has_option('RESTAPI', 'port'):
-    raise Exception("Configuration file %s does not have an option 'port' in the [RESTAPI] section" % spellbook_configuration_file)
-port = config.get('RESTAPI', 'port')
-
-
-# Check if the spellbook configuration file contains a [Authentication] section
-if not config.has_section('Authentication'):
-    raise Exception('Configuration file %s does not have a [Authentication] section ' % spellbook_configuration_file)
-
-# Check if the [Authentication] section has options for 'host' and 'port'
-if not config.has_option('Authentication', 'key'):
-    raise Exception("Configuration file %s does not have an option 'key' in the [Authentication] section" % spellbook_configuration_file)
-key = config.get('Authentication', 'key')
-
-if not config.has_option('Authentication', 'secret'):
-    raise Exception("Configuration file %s does not have an option 'secret' in the [Authentication] section" % spellbook_configuration_file)
-secret = config.get('Authentication', 'secret')
+host, port = get_host_and_port()
+key, secret = get_key_and_secret()
 
 # ----------------------------------------------------------------------------------------------------------------
 
