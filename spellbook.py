@@ -599,10 +599,14 @@ save_action_parser.add_argument('-rl', '--reveal_link', help='The link to reveal
 save_action_parser.add_argument('-fa', '--fee_address', help='The address to send the fee to')
 save_action_parser.add_argument('-fp', '--fee_percentage', help='The fee as a percentage', type=float)
 
-save_action_parser.add_argument('-at', '--address_type', help='The type of the sending address (Single or BIP44)', choices=['Single', 'BIP44'])
-save_action_parser.add_argument('-a', '--address', help='The address to send from')
+save_action_parser.add_argument('-wt', '--wallet_type', help='The type of the wallet of the sending address (Single or BIP44)', choices=['Single', 'BIP44'])
+save_action_parser.add_argument('-sa', '--sending_address', help='The address to send the funds from')
 save_action_parser.add_argument('-ba', '--bip44_account', help='The account in a BIP44 wallet', type=int)
 save_action_parser.add_argument('-bi', '--bip44_index', help='The index in a BIP44 wallet of the sending address', type=int)
+
+save_action_parser.add_argument('-ra', '--receiving_address', help='The address to receive the funds')
+save_action_parser.add_argument('-rx', '--receiving_xpub', help='The xpub key to construct the LAL for the receiving addresses')
+save_action_parser.add_argument('-ma', '--minimum_amount', help='The minimum amount in satoshis to forward', type=int)
 
 save_action_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
 save_action_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
@@ -1074,17 +1078,23 @@ def save_action():
     if args.fee_percentage is not None:
         data['fee_percentage'] = args.fee_percentage
 
-    if args.address_type is not None:
-        data['address_type'] = args.address_type
+    if args.wallet_type is not None:
+        data['wallet_type'] = args.wallet_type
 
-    if args.address is not None:
-        data['address'] = args.address
+    if args.sending_address is not None:
+        data['sending_address'] = args.sending_address
 
     if args.bip44_account is not None:
         data['bip44_account'] = args.bip44_account
 
     if args.bip44_index is not None:
         data['bip44_index'] = args.bip44_index
+
+    if args.receiving_address is not None:
+        data['receiving_address'] = args.receiving_address
+
+    if args.minimum_amount is not None:
+        data['minimum_amount'] = args.minimum_amount
 
     try:
         r = requests.post('http://{host}:{port}/spellbook/actions/{action_id}'.format(host=host,
