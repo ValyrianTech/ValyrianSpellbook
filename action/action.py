@@ -7,7 +7,7 @@ from abc import abstractmethod, ABCMeta
 from datetime import datetime
 
 from jsonhelpers import save_to_json_file
-from validators.validators import valid_action_type, valid_address, valid_percentage, valid_private_key
+from validators.validators import valid_action_type, valid_address, valid_percentage, valid_xpub, valid_amount
 from hot_wallet_helpers import get_hot_wallet
 from BIP44.BIP44 import get_xpub_key, get_address_from_xpub
 
@@ -32,10 +32,13 @@ class Action(object):
         self.allow_reveal = False
         self.fee_address = None
         self.fee_percentage = 0
-        self.address_type = None
-        self.address = None
+        self.wallet_type = None
+        self.sending_address = None
         self.bip44_account = None
         self.bip44_index = None
+        self.receiving_address = None
+        self.receiving_xpub = None
+        self.minimum_amount = None
 
     def configure(self, **config):
         self.created = datetime.fromtimestamp(config['created']) if 'created' in config else datetime.now()
@@ -73,11 +76,11 @@ class Action(object):
         if 'fee_percentage' in config and valid_percentage(config['fee_percentage']):
             self.fee_percentage = config['fee_percentage']
 
-        if 'address_type' in config and config['address_type'] in ['Single', 'BIP44']:
-            self.address_type = config['address_type']
+        if 'wallet_type' in config and config['wallet_type'] in ['Single', 'BIP44']:
+            self.wallet_type = config['wallet_type']
 
-        if 'address' in config and valid_address(config['address']):
-            self.address = config['address']
+        if 'sending_address' in config and valid_address(config['sending_address']):
+            self.sending_address = config['sending_address']
 
         if 'bip44_account' in config:
             self.bip44_account = config['bip44_account']
@@ -85,15 +88,24 @@ class Action(object):
         if 'bip44_index' in config:
             self.bip44_index = config['bip44_index']
 
+        if 'receiving_address' in config and valid_address(config['receiving_address']):
+            self.receiving_address = config['receiving_address']
+
+        if 'receiving_xpub' in config and valid_xpub(config['receiving_xpub']):
+            self.receiving_xpub = config['receiving_xpub']
+
+        if 'minimum_amount' in config and valid_amount(config['minimum_amount']):
+            self.minimum_amount = config['minimum_amount']
+
         # fill in the address in case of a BIP44 hot wallet
-        if self.address_type == 'BIP44':
+        if self.wallet_type == 'BIP44':
             hot_wallet = get_hot_wallet()
             xpub_key = get_xpub_key(mnemonic=' '.join(hot_wallet['mnemonic']), passphrase=hot_wallet['passphrase'], account=self.bip44_account)
 
             # Clear the hot wallet from memory as soon as possible
             hot_wallet = None
 
-            self.address = get_address_from_xpub(xpub=xpub_key, i=self.bip44_index)
+            self.sending_address = get_address_from_xpub(xpub=xpub_key, i=self.bip44_index)
 
     def save(self):
         save_to_json_file(os.path.join(ACTIONS_DIR, '%s.json' % self.id), self.json_encodable())
@@ -112,10 +124,13 @@ class Action(object):
                 'allow_reveal': self.allow_reveal,
                 'fee_address': self.fee_address,
                 'fee_percentage': self.fee_percentage,
-                'address_type': self.address_type,
-                'address': self.address,
+                'wallet_type': self.wallet_type,
+                'sending_address': self.sending_address,
                 'bip44_account': self.bip44_account,
-                'bip44_index': self.bip44_index}
+                'bip44_index': self.bip44_index,
+                'receiving_address': self.receiving_address,
+                'receiving_xpub': self.receiving_xpub,
+                'minimum_amount': self.minimum_amount}
 
     @abstractmethod
     def run(self):
