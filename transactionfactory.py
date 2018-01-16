@@ -6,7 +6,7 @@ import pybitcointools
 from pybitcointools.transaction import *
 
 
-def make_custom_tx(private_keys, tx_inputs, tx_outputs, tx_fee=0, op_return_data=''):
+def make_custom_tx(private_keys, tx_inputs, tx_outputs, tx_fee=0, op_return_data=None):
     """
     Construct a custom transaction
 
@@ -44,7 +44,7 @@ def make_custom_tx(private_keys, tx_inputs, tx_outputs, tx_fee=0, op_return_data
         return
 
     # Check if an OP_RETURN message needs to be added and if it is valid
-    if op_return_data != '' and len(op_return_data) > 80:
+    if isinstance(op_return_data, (str, unicode)) and len(op_return_data) > 80:
         logging.getLogger('Spellbook').error('OP_RETURN data is longer than 80 characters')
         return
 
@@ -52,7 +52,7 @@ def make_custom_tx(private_keys, tx_inputs, tx_outputs, tx_fee=0, op_return_data
     tx = pybitcointools.mktx(tx_inputs, tx_outputs)
 
     # Add OP_RETURN message if necessary
-    if op_return_data != '':
+    if isinstance(op_return_data, (str, unicode)):
         tx = add_op_return(op_return_data, tx)
 
     # Now sign each transaction input with the private key
