@@ -15,7 +15,7 @@ from transactionfactory import make_custom_tx
 class SendTransactionAction(Action):
     def __init__(self, action_id):
         super(SendTransactionAction, self).__init__(action_id=action_id)
-        self.action_type = ActionType.FORWARDER
+        self.action_type = ActionType.SENDTRANSACTION
 
     def run(self):
         if self.sending_address is None:
@@ -88,12 +88,14 @@ class SendTransactionAction(Action):
             raise NotImplementedError('Unknown wallet type: %s' % self.wallet_type)
 
         # Make transaction without fee first to get the size
-        transaction = make_custom_tx(private_keys=private_keys, tx_inputs=tx_inputs, tx_outputs=tx_outputs)
+        transaction = make_custom_tx(private_keys=private_keys, tx_inputs=tx_inputs, tx_outputs=tx_outputs, op_return_data=self.op_return_data)
 
         # Because the transaction is in hexadecimal, to calculate the size in bytes all we need to do is divide the number of characters by 2
         transaction_size = len(transaction) / 2
         transaction_fee = transaction_size * optimal_fee
         logging.getLogger('Spellbook').info('Transaction size is %s bytes, total transaction fee = %s (%s sat/b)' % (transaction_size, transaction_fee, optimal_fee))
+
+        transaction_fee = 1  # tmp fee for debugging TODO remove this
 
         # Subtract the transaction fee from the first transaction output
         if tx_outputs[0]['value'] <= transaction_fee:
@@ -103,7 +105,7 @@ class SendTransactionAction(Action):
             tx_outputs[0]['value'] -= transaction_fee
 
         # Now make the real transaction including the transaction fee
-        transaction = make_custom_tx(private_keys=private_keys, tx_inputs=tx_inputs, tx_outputs=tx_outputs, tx_fee=transaction_fee)
+        transaction = make_custom_tx(private_keys=private_keys, tx_inputs=tx_inputs, tx_outputs=tx_outputs, op_return_data=self.op_return_data, tx_fee=transaction_fee)
         logging.getLogger('Spellbook').info('Raw transaction: %s' % transaction)
 
         # Broadcast the transaction to the network
