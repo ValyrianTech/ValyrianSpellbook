@@ -583,7 +583,7 @@ examples:
                                            ''')
 
 save_action_parser.add_argument('action_id', help='The id of the action')
-save_action_parser.add_argument('-t', '--type', help='The type of the action', choices=['Command', 'Distributer', 'Forwarder', 'OpReturnWriter', 'RevealLink', 'RevealText', 'SendMail', 'Webhook'])
+save_action_parser.add_argument('-t', '--type', help='The type of the action', choices=['Command', 'SendTransaction', 'RevealLink', 'RevealText', 'SendMail', 'Webhook'])
 
 save_action_parser.add_argument('-c', '--run_command', help='The command to run, only applicable to Command Actions')
 
@@ -607,6 +607,8 @@ save_action_parser.add_argument('-bi', '--bip44_index', help='The index in a BIP
 save_action_parser.add_argument('-ra', '--receiving_address', help='The address to receive the funds')
 save_action_parser.add_argument('-rx', '--receiving_xpub', help='The xpub key to construct the LAL for the receiving addresses')
 save_action_parser.add_argument('-ma', '--minimum_amount', help='The minimum amount in satoshis to forward', type=int)
+
+save_action_parser.add_argument('-d', '--op_return_data', help='The data to include as a OP_RETURN output in a SendTransaction action (max 80 chars)')
 
 save_action_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
 save_action_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
@@ -1095,6 +1097,9 @@ def save_action():
 
     if args.minimum_amount is not None:
         data['minimum_amount'] = args.minimum_amount
+
+    if args.op_return_data is not None:
+        data['op_return_data'] = args.op_return_data
 
     try:
         r = requests.post('http://{host}:{port}/spellbook/actions/{action_id}'.format(host=host,

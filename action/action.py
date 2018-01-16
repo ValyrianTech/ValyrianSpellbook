@@ -7,7 +7,7 @@ from abc import abstractmethod, ABCMeta
 from datetime import datetime
 
 from jsonhelpers import save_to_json_file
-from validators.validators import valid_action_type, valid_address, valid_percentage, valid_xpub, valid_amount
+from validators.validators import valid_action_type, valid_address, valid_percentage, valid_xpub, valid_amount, valid_op_return
 from hot_wallet_helpers import get_hot_wallet
 from BIP44.BIP44 import get_xpub_key, get_address_from_xpub
 
@@ -39,6 +39,7 @@ class Action(object):
         self.receiving_address = None
         self.receiving_xpub = None
         self.minimum_amount = None
+        self.op_return_data = None
 
     def configure(self, **config):
         self.created = datetime.fromtimestamp(config['created']) if 'created' in config else datetime.now()
@@ -97,6 +98,9 @@ class Action(object):
         if 'minimum_amount' in config and valid_amount(config['minimum_amount']):
             self.minimum_amount = config['minimum_amount']
 
+        if 'op_return_data' in config and valid_op_return(config['op_return_data']):
+            self.op_return_data = config['op_return_data']
+
         # fill in the address in case of a BIP44 hot wallet
         if self.wallet_type == 'BIP44':
             hot_wallet = get_hot_wallet()
@@ -130,7 +134,8 @@ class Action(object):
                 'bip44_index': self.bip44_index,
                 'receiving_address': self.receiving_address,
                 'receiving_xpub': self.receiving_xpub,
-                'minimum_amount': self.minimum_amount}
+                'minimum_amount': self.minimum_amount,
+                'op_return_data': self.op_return_data}
 
     @abstractmethod
     def run(self):
