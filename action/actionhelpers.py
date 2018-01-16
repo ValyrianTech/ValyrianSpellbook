@@ -51,9 +51,7 @@ def get_action(action_id):
     Get the specified action, which is a subclass of Action
     The different action types are:
     - CommandAction
-    - DistributerAction
-    - ForwarderAction
-    - OpReturnWriterAction
+    - SendTransactionAction
     - RevealLinkAction
     - RevealTextAction
     - SendMailAction
@@ -62,7 +60,7 @@ def get_action(action_id):
     If no config is known for the given action id then a CommandAction is returned
 
     :param action_id: The id of the action
-    :return: A derived Action object (CommandAction, DistributerAction, ForwarderAction, OpReturnWriterAction,
+    :return: A derived Action object (CommandAction, SendTransactionAction,
              RevealLinkAction, RevealTextAction, SendMailAction or WebhookAction)
     """
     action_config = get_action_config(action_id)
@@ -70,12 +68,8 @@ def get_action(action_id):
     if 'action_type' in action_config:
         if action_config['action_type'] == ActionType.COMMAND:
             action = CommandAction(action_id)
-        elif action_config['action_type'] == ActionType.DISTRIBUTER:
-            action = DistributerAction(action_id)
-        elif action_config['action_type'] == ActionType.FORWARDER:
+        elif action_config['action_type'] == ActionType.SENDTRANSACTION:
             action = SendTransactionAction(action_id)
-        elif action_config['action_type'] == ActionType.OPRETURNWRITER:
-            action = OpReturnWriterAction(action_id)
         elif action_config['action_type'] == ActionType.REVEALLINK:
             action = RevealLinkAction(action_id)
         elif action_config['action_type'] == ActionType.REVEALTEXT:
