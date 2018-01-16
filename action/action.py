@@ -38,6 +38,7 @@ class Action(object):
         self.bip44_index = None
         self.receiving_address = None
         self.receiving_xpub = None
+        self.amount = None
         self.minimum_amount = None
         self.op_return_data = None
 
@@ -95,6 +96,9 @@ class Action(object):
         if 'receiving_xpub' in config and valid_xpub(config['receiving_xpub']):
             self.receiving_xpub = config['receiving_xpub']
 
+        if 'amount' in config and valid_amount(config['amount']):
+            self.amount = config['amount']
+
         if 'minimum_amount' in config and valid_amount(config['minimum_amount']):
             self.minimum_amount = config['minimum_amount']
 
@@ -134,6 +138,7 @@ class Action(object):
                 'bip44_index': self.bip44_index,
                 'receiving_address': self.receiving_address,
                 'receiving_xpub': self.receiving_xpub,
+                'amount': self.amount,
                 'minimum_amount': self.minimum_amount,
                 'op_return_data': self.op_return_data}
 
