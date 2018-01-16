@@ -606,6 +606,7 @@ save_action_parser.add_argument('-bi', '--bip44_index', help='The index in a BIP
 
 save_action_parser.add_argument('-ra', '--receiving_address', help='The address to receive the funds')
 save_action_parser.add_argument('-rx', '--receiving_xpub', help='The xpub key to construct the LAL for the receiving addresses')
+save_action_parser.add_argument('-a', '--amount', help='The amount in satoshis to send in a SendTransaction action, if omitted all available funds are sent', type=int)
 save_action_parser.add_argument('-ma', '--minimum_amount', help='The minimum amount in satoshis to forward', type=int)
 
 save_action_parser.add_argument('-d', '--op_return_data', help='The data to include as a OP_RETURN output in a SendTransaction action (max 80 chars)')
@@ -1094,6 +1095,9 @@ def save_action():
 
     if args.receiving_address is not None:
         data['receiving_address'] = args.receiving_address
+
+    if args.amount is not None:
+        data['amount'] = args.amount
 
     if args.minimum_amount is not None:
         data['minimum_amount'] = args.minimum_amount
