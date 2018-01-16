@@ -11,3 +11,4 @@ class ActionType(object):
     REVEALTEXT = 'RevealText'
     SENDMAIL = 'SendMail'
     WEBHOOK = 'Webhook'
+    SENDTRANSACTION = 'SendTransaction'

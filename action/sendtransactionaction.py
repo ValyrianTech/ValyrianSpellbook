@@ -12,17 +12,17 @@ from BIP44.BIP44 import get_xpriv_key, get_private_key
 from transactionfactory import make_custom_tx
 
 
-class ForwarderAction(Action):
+class SendTransactionAction(Action):
     def __init__(self, action_id):
-        super(ForwarderAction, self).__init__(action_id=action_id)
+        super(SendTransactionAction, self).__init__(action_id=action_id)
         self.action_type = ActionType.FORWARDER
 
     def run(self):
         if self.sending_address is None:
-            logging.getLogger('Spellbook').error('Can not activate forwarder: sending address is None!')
+            logging.getLogger('Spellbook').error('Can not activate SendTransaction action: sending address is None!')
             return False
 
-        logging.getLogger('Spellbook').info('Activating forwarder %s' % self.id)
+        logging.getLogger('Spellbook').info('Activating SendTransaction action %s' % self.id)
         unspent_outputs = utxos(address=self.sending_address, confirmations=1)
         if 'utxos' in unspent_outputs and len(unspent_outputs['utxos']) > 0:
             logging.getLogger('Spellbook').info('utxos found: %s' % unspent_outputs['utxos'])
@@ -33,7 +33,7 @@ class ForwarderAction(Action):
         logging.getLogger('Spellbook').info('Total value: %s' % total_value)
 
         if total_value < self.minimum_amount:
-            logging.getLogger('Spellbook').error('Forwarding aborted: Total value is less than minimum amount: %s' % self.minimum_amount)
+            logging.getLogger('Spellbook').error('SendTransaction action aborted: Total value is less than minimum amount: %s' % self.minimum_amount)
             return False
 
         # Calculate the forwarding fee if necessary

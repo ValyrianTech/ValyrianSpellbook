@@ -8,7 +8,7 @@ from jsonhelpers import load_from_json_file
 from actiontype import ActionType
 from commandaction import CommandAction
 from distributeraction import DistributerAction
-from forwarderaction import ForwarderAction
+from sendtransactionaction import SendTransactionAction
 from opreturnwriteraction import OpReturnWriterAction
 from reveallinkaction import RevealLinkAction
 from revealtextaction import RevealTextAction
@@ -73,7 +73,7 @@ def get_action(action_id):
         elif action_config['action_type'] == ActionType.DISTRIBUTER:
             action = DistributerAction(action_id)
         elif action_config['action_type'] == ActionType.FORWARDER:
-            action = ForwarderAction(action_id)
+            action = SendTransactionAction(action_id)
         elif action_config['action_type'] == ActionType.OPRETURNWRITER:
             action = OpReturnWriterAction(action_id)
         elif action_config['action_type'] == ActionType.REVEALLINK:

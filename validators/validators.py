@@ -221,4 +221,4 @@ def valid_outputs(outputs):
 
 
 def valid_action_type(action_type):
-    return action_type in ['Command', 'Distributer', 'Forwarder', 'OpReturnWriter', 'RevealLink', 'RevealText', 'SendMail', 'Webhook']
+    return action_type in ['Command', 'SendTransaction', 'RevealLink', 'RevealText', 'SendMail', 'Webhook']
