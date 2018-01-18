@@ -7,7 +7,7 @@ from abc import abstractmethod, ABCMeta
 from datetime import datetime
 
 from jsonhelpers import save_to_json_file
-from validators.validators import valid_action_type, valid_address, valid_percentage, valid_xpub, valid_amount, valid_op_return
+from validators.validators import valid_action_type, valid_address, valid_percentage, valid_xpub, valid_amount, valid_op_return, valid_block_height
 from hot_wallet_helpers import get_hot_wallet
 from BIP44.BIP44 import get_xpub_key, get_address_from_xpub
 
@@ -42,6 +42,9 @@ class Action(object):
         self.minimum_amount = None
         self.op_return_data = None
         self.change_address = None
+        self.registration_address = None
+        self.registration_block_height = None
+        self.registration_xpub = None
 
     def configure(self, **config):
         self.created = datetime.fromtimestamp(config['created']) if 'created' in config else datetime.now()
@@ -109,6 +112,15 @@ class Action(object):
         if 'change_address' in config and valid_address(config['change_address']):
             self.receiving_address = config['change_address']
 
+        if 'registration_address' in config and valid_address(config['registration_address']):
+            self.registration_address = config['registration_address']
+
+        if 'registration_block_height' in config and valid_block_height(config['registration_block_height']):
+            self.registration_block_height = config['registration_block_height']
+
+        if 'registration_xpub' in config and valid_xpub(config['registration_xpub']):
+            self.registration_xpub = config['registration_xpub']
+
         # fill in the address in case of a BIP44 hot wallet
         if self.wallet_type == 'BIP44':
             hot_wallet = get_hot_wallet()
@@ -145,7 +157,10 @@ class Action(object):
                 'amount': self.amount,
                 'minimum_amount': self.minimum_amount,
                 'op_return_data': self.op_return_data,
-                'change_address': self.change_address}
+                'change_address': self.change_address,
+                'registration_address': self.registration_address,
+                'registration_block_height': self.registration_block_height,
+                'registration_xpub': self.receiving_xpub}
 
     @abstractmethod
     def run(self):
