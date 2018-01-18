@@ -24,7 +24,9 @@ class SendTransactionAction(Action):
 
         logging.getLogger('Spellbook').info('Activating SendTransaction action %s' % self.id)
 
-        tx_inputs, total_value = self.construct_transaction_inputs()
+        tx_inputs = self.construct_transaction_inputs(self.sending_address)
+        total_value = int(sum([utxo['value'] for utxo in tx_inputs]))
+        logging.getLogger('Spellbook').info('Total available value in utxos: %d' % total_value)
 
         if total_value < self.minimum_amount:
             logging.getLogger('Spellbook').error('SendTransaction action aborted: Total value is less than minimum amount: %s' % self.minimum_amount)
@@ -34,7 +36,7 @@ class SendTransactionAction(Action):
         # This fee is an optional percentage-based fee the spellbook will subtract from the value and send to a special fee address
         spellbook_fee = 0
         if self.fee_percentage > 0 and self.fee_address is not None:
-            fee_base = total_value if self.amount is None else self.amount
+            fee_base = self.amount if self.amount is not None else total_value
             spellbook_fee = int(fee_base * self.fee_percentage/100.0)
             logging.getLogger('Spellbook').info('Spellbook fee: %s' % spellbook_fee)
 
@@ -47,15 +49,19 @@ class SendTransactionAction(Action):
 
         change_address = self.change_address if self.change_address is not None else self.sending_address
 
-        # Construct the transaction outputs
-        tx_outputs = []
-
+        change_output = None
         if change_amount > 0:
-            tx_outputs.append({'address': change_address, 'value': change_amount})
+            change_output = TransactionOutput(change_address, change_amount)
 
-        tx_outputs.append({'address': self.receiving_address, 'value': sending_amount})
+        receiving_output = TransactionOutput(self.receiving_address, sending_amount)
+
+        spellbook_fee_output = None
         if self.fee_address and spellbook_fee > 0:
-            tx_outputs.append({'address': self.fee_address, 'value': spellbook_fee})
+            spellbook_fee_output = TransactionOutput(self.fee_address, spellbook_fee)
+
+        tx_outputs = self.construct_transaction_outputs(receiving_outputs=[receiving_output],
+                                                        change_output=change_output,
+                                                        spellbook_fee_output=spellbook_fee_output)
 
         logging.getLogger('Spellbook').info('Creating new transaction:')
         for tx_input in tx_inputs:
@@ -93,6 +99,7 @@ class SendTransactionAction(Action):
 
         # Get the current optimal transaction fee
         optimal_fee = get_optimal_fee()
+        optimal_fee = 1
         logging.getLogger('Spellbook').info('Optimal transaction fee is %s sat/b' % optimal_fee)
 
         # Because the transaction is in hexadecimal, to calculate the size in bytes all we need to do is divide the number of characters by 2
@@ -115,7 +122,8 @@ class SendTransactionAction(Action):
         # send_transaction # Todo: broadcast transaction
         return True
 
-    def construct_transaction_inputs(self):
+    @staticmethod
+    def construct_transaction_inputs(sending_address):
         """
         Retrieve the available utxos of the sending address and construct a list of dict object containing the necessary information for the inputs of a transaction
         All available utxos will be used even if a subset would be enough, this is to avoid a scenario where the transaction fee would cause another utxo to be needed
@@ -126,22 +134,44 @@ class SendTransactionAction(Action):
 
         :return: utxos, total_value : a tuple containing the utxos and the total value of those utxos
         """
-        unspent_outputs_data = utxos(address=self.sending_address, confirmations=1)
+        unspent_outputs_data = utxos(address=sending_address, confirmations=1)
         unspent_outputs = []
         if 'utxos' in unspent_outputs_data and len(unspent_outputs_data['utxos']) > 0:
             unspent_outputs = unspent_outputs_data['utxos']
             logging.getLogger('Spellbook').info('utxos found: %s' % unspent_outputs)
         else:
-            logging.getLogger('Spellbook').error('No utxos found for address %s' % self.sending_address)
-
-        total_value = sum([utxo['value'] for utxo in unspent_outputs])
-        logging.getLogger('Spellbook').info('Total available value in utxos: %s' % total_value)
+            logging.getLogger('Spellbook').error('No utxos found for address %s' % sending_address)
 
         # Construct the transaction inputs
-        tx_inputs = [{'address': self.sending_address,
+        tx_inputs = [{'address': sending_address,
                       'value': utxo['value'],
                       'output': '%s:%s' % (utxo['output_hash'], utxo['output_n']),
                       'confirmations': utxo['confirmations']} for utxo in unspent_outputs]
 
-        return tx_inputs, total_value
+        return tx_inputs
 
+    @staticmethod
+    def construct_transaction_outputs(receiving_outputs, change_output=None, spellbook_fee_output=None):
+        # Construct the transaction outputs
+        tx_outputs = []
+
+        # If there is any change, let it be the first output (once transaction fee is calculated, the fee will be subtracted from the first output)
+        if isinstance(change_output, TransactionOutput) and change_output.value > 0:
+            tx_outputs.append({'address': change_output.address, 'value': change_output.value})
+
+        # Add each of the receiving outputs
+        for receiving_output in receiving_outputs:
+            if isinstance(receiving_output, TransactionOutput) and receiving_output.value > 0:
+                tx_outputs.append({'address': receiving_output.address, 'value': receiving_output.value})
+
+        # If there is a spellbook fee, add it as the last output
+        if isinstance(spellbook_fee_output, TransactionOutput) and spellbook_fee_output.value > 0:
+            tx_outputs.append({'address': spellbook_fee_output.address, 'value': spellbook_fee_output.value})
+
+        return tx_outputs
+
+
+class TransactionOutput(object):
+    def __init__(self, address, amount):
+        self.address = address
+        self.value = amount
