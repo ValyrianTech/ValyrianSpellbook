@@ -24,7 +24,7 @@ class SendTransactionAction(Action):
 
         logging.getLogger('Spellbook').info('Activating SendTransaction action %s' % self.id)
 
-        tx_inputs, total_value = self.select_utxos()
+        tx_inputs, total_value = self.construct_transaction_inputs()
 
         if total_value < self.minimum_amount:
             logging.getLogger('Spellbook').error('SendTransaction action aborted: Total value is less than minimum amount: %s' % self.minimum_amount)
@@ -34,11 +34,26 @@ class SendTransactionAction(Action):
         # This fee is an optional percentage-based fee the spellbook will subtract from the value and send to a special fee address
         spellbook_fee = 0
         if self.fee_percentage > 0 and self.fee_address is not None:
-            spellbook_fee = int(total_value * self.fee_percentage/100.0)
+            fee_base = total_value if self.amount is None else self.amount
+            spellbook_fee = int(fee_base * self.fee_percentage/100.0)
             logging.getLogger('Spellbook').info('Spellbook fee: %s' % spellbook_fee)
 
+        sending_amount = total_value - spellbook_fee
+        change_amount = 0
+
+        if self.amount is not None:
+            sending_amount = self.amount
+            change_amount = total_value - self.amount - spellbook_fee
+
+        change_address = self.change_address if self.change_address is not None else self.sending_address
+
         # Construct the transaction outputs
-        tx_outputs = [{'address': self.receiving_address, 'value': total_value - spellbook_fee}]
+        tx_outputs = []
+
+        if change_amount > 0:
+            tx_outputs.append({'address': change_address, 'value': change_amount})
+
+        tx_outputs.append({'address': self.receiving_address, 'value': sending_amount})
         if self.fee_address and spellbook_fee > 0:
             tx_outputs.append({'address': self.fee_address, 'value': spellbook_fee})
 
@@ -85,8 +100,6 @@ class SendTransactionAction(Action):
         transaction_fee = transaction_size * optimal_fee
         logging.getLogger('Spellbook').info('Transaction size is %s bytes, total transaction fee = %s (%s sat/b)' % (transaction_size, transaction_fee, optimal_fee))
 
-        transaction_fee = 1  # tmp fee for debugging TODO remove this
-
         # Subtract the transaction fee from the first transaction output
         if tx_outputs[0]['value'] <= transaction_fee:
             logging.getLogger('Spellbook').error('Transaction value of is not enough to subtract transaction fee!')
@@ -102,17 +115,16 @@ class SendTransactionAction(Action):
         # send_transaction # Todo: broadcast transaction
         return True
 
-    def select_utxos(self, smallest_first=True):
+    def construct_transaction_inputs(self):
         """
-        Retrieve the available utxos of the sending address and select until the total value is greater than the amount needed
-        if self.amount is None, then all available utxos are selected
+        Retrieve the available utxos of the sending address and construct a list of dict object containing the necessary information for the inputs of a transaction
+        All available utxos will be used even if a subset would be enough, this is to avoid a scenario where the transaction fee would cause another utxo to be needed
+        which would increase the transaction fee which could cause another utxo to be needed .... and so on
 
+        The benefit of this is that it will result in automatic consolidation of utxos, in the long run this is preferred otherwise you will end up with many small
+        utxos that might cost more in fees than they are worth
 
-        :param smallest_first: True or False.
-                               Prefer to use the smallest utxos first (This does cause the transactions to be larger and thus require a higher transaction fee
-                               but this option does automatically consolidate utxos, in the long run this is preferred otherwise you will end up with many small
-                               utxos that might cost more in fees than they are worth), default=True
-        :return: utxos, selected_value : a tuple containing the selected utxos and the total value of those utxos
+        :return: utxos, total_value : a tuple containing the utxos and the total value of those utxos
         """
         unspent_outputs_data = utxos(address=self.sending_address, confirmations=1)
         unspent_outputs = []
@@ -126,16 +138,10 @@ class SendTransactionAction(Action):
         logging.getLogger('Spellbook').info('Total available value in utxos: %s' % total_value)
 
         # Construct the transaction inputs
-        tx_inputs = []
-        selected_value = 0
-        for utxo in sorted(unspent_outputs, key=lambda x: -x['value'], reverse=smallest_first):
-            tx_inputs.append({'address': self.sending_address,
-                              'value': utxo['value'],
-                              'output': '%s:%s' % (utxo['output_hash'], utxo['output_n']),
-                              'confirmations': utxo['confirmations']})
-            selected_value += utxo['value']
-            if self.amount is not None and self.amount <= selected_value:
-                break
+        tx_inputs = [{'address': self.sending_address,
+                      'value': utxo['value'],
+                      'output': '%s:%s' % (utxo['output_hash'], utxo['output_n']),
+                      'confirmations': utxo['confirmations']} for utxo in unspent_outputs]
 
-        return tx_inputs, selected_value
+        return tx_inputs, total_value
 
