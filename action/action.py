@@ -41,6 +41,7 @@ class Action(object):
         self.amount = None
         self.minimum_amount = None
         self.op_return_data = None
+        self.change_address = None
 
     def configure(self, **config):
         self.created = datetime.fromtimestamp(config['created']) if 'created' in config else datetime.now()
@@ -105,6 +106,9 @@ class Action(object):
         if 'op_return_data' in config and valid_op_return(config['op_return_data']):
             self.op_return_data = config['op_return_data']
 
+        if 'change_address' in config and valid_address(config['change_address']):
+            self.receiving_address = config['change_address']
+
         # fill in the address in case of a BIP44 hot wallet
         if self.wallet_type == 'BIP44':
             hot_wallet = get_hot_wallet()
@@ -140,7 +144,8 @@ class Action(object):
                 'receiving_xpub': self.receiving_xpub,
                 'amount': self.amount,
                 'minimum_amount': self.minimum_amount,
-                'op_return_data': self.op_return_data}
+                'op_return_data': self.op_return_data,
+                'change_address': self.change_address}
 
     @abstractmethod
     def run(self):

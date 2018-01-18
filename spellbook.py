@@ -608,6 +608,7 @@ save_action_parser.add_argument('-ra', '--receiving_address', help='The address 
 save_action_parser.add_argument('-rx', '--receiving_xpub', help='The xpub key to construct the LAL for the receiving addresses')
 save_action_parser.add_argument('-a', '--amount', help='The amount in satoshis to send in a SendTransaction action, if omitted all available funds are sent', type=int)
 save_action_parser.add_argument('-ma', '--minimum_amount', help='The minimum amount in satoshis to forward', type=int)
+save_action_parser.add_argument('-ca', '--change_address', help='The address to receive the change if there is any, if not specified the sending address will receive the change')
 
 save_action_parser.add_argument('-d', '--op_return_data', help='The data to include as a OP_RETURN output in a SendTransaction action (max 80 chars)')
 
@@ -1104,6 +1105,9 @@ def save_action():
 
     if args.op_return_data is not None:
         data['op_return_data'] = args.op_return_data
+
+    if args.change_address is not None:
+        data['change_address'] = args.change_address
 
     try:
         r = requests.post('http://{host}:{port}/spellbook/actions/{action_id}'.format(host=host,
