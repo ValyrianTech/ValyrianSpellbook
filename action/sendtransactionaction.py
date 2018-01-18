@@ -132,7 +132,8 @@ class SendTransactionAction(Action):
         The benefit of this is that it will result in automatic consolidation of utxos, in the long run this is preferred otherwise you will end up with many small
         utxos that might cost more in fees than they are worth
 
-        :return: utxos, total_value : a tuple containing the utxos and the total value of those utxos
+        :param sending_address: The address that will be sending the transaction
+        :return: A list of dicts containing the following keys for each utxo: 'address', 'value', 'output' and 'confirmations'
         """
         unspent_outputs_data = utxos(address=sending_address, confirmations=1)
         unspent_outputs = []
@@ -145,13 +146,24 @@ class SendTransactionAction(Action):
         # Construct the transaction inputs
         tx_inputs = [{'address': sending_address,
                       'value': utxo['value'],
-                      'output': '%s:%s' % (utxo['output_hash'], utxo['output_n']),
+                      'output': '%s:%s' % (utxo['output_hash'], utxo['output_n']),  # output needs to be formatted as txid:i
                       'confirmations': utxo['confirmations']} for utxo in unspent_outputs]
 
         return tx_inputs
 
     @staticmethod
-    def construct_transaction_outputs(receiving_outputs, change_output=None, spellbook_fee_output=None):
+    def construct_transaction_outputs(receiving_outputs=None, change_output=None, spellbook_fee_output=None):
+        """
+        Construct a list of dicts containing the necessary information for the outputs of the transaction
+
+        :param receiving_outputs: A list of TransactionOutput objects for each receiving output
+        :param change_output: A TransactionOutput object for the change (optional)
+        :param spellbook_fee_output: A TransactionOutput object for the spellbook fee (optional)
+        :return: A list of dicts, each containing the 'address' and 'value'
+        """
+        if receiving_outputs is None:
+            receiving_outputs = []
+
         # Construct the transaction outputs
         tx_outputs = []
 
