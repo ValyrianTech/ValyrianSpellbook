@@ -5,6 +5,7 @@ import logging
 
 from action import Action
 from actiontype import ActionType
+from transactiontype import TransactionType
 from data.data import utxos, prime_input_address
 from feehelpers import get_optimal_fee
 from hot_wallet_helpers import get_hot_wallet
@@ -25,41 +26,58 @@ class SendTransactionAction(Action):
         logging.getLogger('Spellbook').info('Activating SendTransaction action %s' % self.id)
 
         tx_inputs = self.construct_transaction_inputs(self.sending_address)
-        total_value = int(sum([utxo['value'] for utxo in tx_inputs]))
-        logging.getLogger('Spellbook').info('Total available value in utxos: %d' % total_value)
+        total_value_in_inputs = int(sum([utxo['value'] for utxo in tx_inputs]))
+        logging.getLogger('Spellbook').info('Total available value in utxos: %d' % total_value_in_inputs)
 
-        if total_value < self.minimum_amount:
+        if total_value_in_inputs < self.minimum_amount:
             logging.getLogger('Spellbook').error('SendTransaction action aborted: Total value is less than minimum amount: %s' % self.minimum_amount)
             return False
 
-        # Calculate the spellbook fee if necessary, this fee should not be confuse with the transaction fee
+        # Calculate the spellbook fee if necessary, this fee should not be confused with the transaction fee
         # This fee is an optional percentage-based fee the spellbook will subtract from the value and send to a special fee address
         spellbook_fee = 0
         if self.fee_percentage > 0 and self.fee_address is not None:
-            fee_base = self.amount if self.amount is not None else total_value
+            fee_base = total_value_in_inputs if self.amount == 0 else self.amount
             spellbook_fee = int(fee_base * self.fee_percentage/100.0)
+
+            if spellbook_fee < self.fee_minimum_amount:
+                spellbook_fee = self.fee_minimum_amount
+
             logging.getLogger('Spellbook').info('Spellbook fee: %s' % spellbook_fee)
 
-        sending_amount = total_value - spellbook_fee
-        change_amount = 0
+        if self.amount == 0 and total_value_in_inputs < spellbook_fee:
+            logging.getLogger('Spellbook').error('SendTransaction action aborted: Total input value is less than the spellbook fee: %s < %s' % (total_value_in_inputs, spellbook_fee))
+            return False
+        elif total_value_in_inputs < spellbook_fee + self.amount:
+            logging.getLogger('Spellbook').error('SendTransaction action aborted: Total input value is not enough: %s < %s + %s' % (total_value_in_inputs, self.amount, spellbook_fee))
+            return False
 
-        if self.amount is not None:
-            sending_amount = self.amount
-            change_amount = total_value - self.amount - spellbook_fee
+        sending_amount = total_value_in_inputs - spellbook_fee if self.amount == 0 else self.amount
 
+        if self.transaction_type == TransactionType.SEND2SINGLE:
+            receiving_outputs = [TransactionOutput(self.receiving_address, sending_amount)]
+        elif self.transaction_type == TransactionType.SEND2MANY:
+            receiving_outputs = self.get_receiving_outputs(sending_amount)
+        elif self.transaction_type in [TransactionType.SEND2SIL, TransactionType.SEND2LBL, TransactionType.SEND2LRL, TransactionType.SEND2LSL]:
+            receiving_outputs = self.get_distribution_outputs(transaction_type=self.transaction_type)
+        elif self.transaction_type == TransactionType.SEND2LAL:
+            receiving_outputs = self.get_forwarding_outputs()
+        else:
+            raise NotImplementedError('Unknown transaction type: %s' % self.transaction_type)
+
+        total_value_in_outputs = sum([output.value for output in receiving_outputs])
+        change_amount = total_value_in_inputs - total_value_in_outputs - spellbook_fee
         change_address = self.change_address if self.change_address is not None else self.sending_address
 
         change_output = None
         if change_amount > 0:
             change_output = TransactionOutput(change_address, change_amount)
 
-        receiving_output = TransactionOutput(self.receiving_address, sending_amount)
-
         spellbook_fee_output = None
         if self.fee_address and spellbook_fee > 0:
             spellbook_fee_output = TransactionOutput(self.fee_address, spellbook_fee)
 
-        tx_outputs = self.construct_transaction_outputs(receiving_outputs=[receiving_output],
+        tx_outputs = self.construct_transaction_outputs(receiving_outputs=receiving_outputs,
                                                         change_output=change_output,
                                                         spellbook_fee_output=spellbook_fee_output)
 
@@ -97,6 +115,9 @@ class SendTransactionAction(Action):
         # Make transaction without fee first to get the size
         transaction = make_custom_tx(private_keys=private_keys, tx_inputs=tx_inputs, tx_outputs=tx_outputs, op_return_data=self.op_return_data)
 
+        if transaction is None:
+            return False
+
         # Get the current optimal transaction fee
         optimal_fee = get_optimal_fee()
         optimal_fee = 1
@@ -116,6 +137,9 @@ class SendTransactionAction(Action):
 
         # Now make the real transaction including the transaction fee
         transaction = make_custom_tx(private_keys=private_keys, tx_inputs=tx_inputs, tx_outputs=tx_outputs, op_return_data=self.op_return_data, tx_fee=transaction_fee)
+        if transaction is None:
+            return False
+
         logging.getLogger('Spellbook').info('Raw transaction: %s' % transaction)
 
         # Broadcast the transaction to the network
@@ -181,6 +205,18 @@ class SendTransactionAction(Action):
             tx_outputs.append({'address': spellbook_fee_output.address, 'value': spellbook_fee_output.value})
 
         return tx_outputs
+
+    def get_receiving_outputs(self, sending_amount):
+        total_value = sum([value for address, value in self.distribution])
+        receiving_outputs = [TransactionOutput(address, int((value/float(total_value))*sending_amount)) for address, value in self.distribution]
+
+        return receiving_outputs
+
+    def get_distribution_outputs(self, transaction_type):
+        return []
+
+    def get_forwarding_outputs(self):
+        return []
 
 
 class TransactionOutput(object):
