@@ -66,7 +66,7 @@ class SendTransactionAction(Action):
             raise NotImplementedError('Unknown transaction type: %s' % self.transaction_type)
 
         total_value_in_outputs = sum([output.value for output in receiving_outputs])
-        change_amount = total_value_in_inputs - total_value_in_outputs - spellbook_fee
+        change_amount = total_value_in_inputs - total_value_in_outputs - spellbook_fee  # Todo fix possible rounding error
         change_address = self.change_address if self.change_address is not None else self.sending_address
 
         change_output = None
@@ -77,19 +77,10 @@ class SendTransactionAction(Action):
         if self.fee_address and spellbook_fee > 0:
             spellbook_fee_output = TransactionOutput(self.fee_address, spellbook_fee)
 
+        # Construct temporary transaction outputs so we can calculate the transaction fee
         tx_outputs = self.construct_transaction_outputs(receiving_outputs=receiving_outputs,
                                                         change_output=change_output,
                                                         spellbook_fee_output=spellbook_fee_output)
-
-        logging.getLogger('Spellbook').info('Creating new transaction:')
-        for tx_input in tx_inputs:
-            logging.getLogger('Spellbook').info('INPUT: %s -> %s (%s)' % (tx_input['address'], tx_input['value'], tx_input['output']))
-
-        for tx_output in tx_outputs:
-            logging.getLogger('Spellbook').info('OUTPUT: %s -> %s' % (tx_output['address'], tx_output['value']))
-
-        if self.op_return_data is not None:
-            logging.getLogger('Spellbook').info('OUTPUT: OP_RETURN -> %s' % self.op_return_data)
 
         # Get the necessary private keys from the hot wallet
         private_keys = {}
@@ -128,12 +119,54 @@ class SendTransactionAction(Action):
         transaction_fee = transaction_size * optimal_fee
         logging.getLogger('Spellbook').info('Transaction size is %s bytes, total transaction fee = %s (%s sat/b)' % (transaction_size, transaction_fee, optimal_fee))
 
-        # Subtract the transaction fee from the first transaction output
-        if tx_outputs[0]['value'] <= transaction_fee:
-            logging.getLogger('Spellbook').error('Transaction value of is not enough to subtract transaction fee!')
+        # if the total available amount needs to be sent, then transaction fee should be equally subtracted from all receiving_outputs
+        if self.amount == 0:
+            total_sending_value = sum([output.value for output in receiving_outputs])
+            if total_sending_value < transaction_fee:
+                logging.getLogger('Spellbook').error('Aborting SendTransaction: The total value of the receiving outputs is less than the transaction fee: %s < %s' % (total_sending_value, transaction_fee))
+                return False
+
+            fee_share = transaction_fee/len(receiving_outputs)
+            for receiving_output in receiving_outputs:
+                if receiving_output.value < fee_share:
+                    logging.getLogger('Spellbook').error('Aborting SendTransaction: The value of at least one receiving output is not enough to subtract its share of the transaction fee: %s < %s' % (receiving_output.value, fee_share))
+                    return False
+                else:
+                    receiving_output.value -= fee_share
+
+            # Adjust the transaction fee in case dividing the transaction fee has caused some rounding errors
+            transaction_fee = fee_share * len(receiving_outputs)
+
+        # if a specific amount needs to be sent, then the transaction fee should be subtracted from the change output
+        elif self.amount > 0:
+            if change_output is None or change_output.value < transaction_fee:
+                logging.getLogger('Spellbook').error('Aborting SendTransaction: The value of the change output is less than the transaction fee: %s < %s' % (change_output.value, transaction_fee))
+                return False
+            else:
+                change_output.value -= transaction_fee
+
+        # Construct the transaction outputs again now that the transaction fee has been subtracted
+        tx_outputs = self.construct_transaction_outputs(receiving_outputs=receiving_outputs,
+                                                        change_output=change_output,
+                                                        spellbook_fee_output=spellbook_fee_output)
+
+        logging.getLogger('Spellbook').info('Creating new transaction:')
+        for tx_input in tx_inputs:
+            logging.getLogger('Spellbook').info('INPUT: %s -> %s (%s)' % (tx_input['address'], tx_input['value'], tx_input['output']))
+
+        for tx_output in tx_outputs:
+            logging.getLogger('Spellbook').info('OUTPUT: %s -> %s' % (tx_output['address'], tx_output['value']))
+
+        if self.op_return_data is not None:
+            logging.getLogger('Spellbook').info('OUTPUT: OP_RETURN -> %s' % self.op_return_data)
+
+        # Check if we are not paying to much fees compared to the amount we are sending, anything above 10% is too high
+        tx_fee_percentage = transaction_fee/float(total_value_in_inputs)*100
+        if tx_fee_percentage > 10:
+            logging.getLogger('Spellbook').error('Aborting SendTransaction: The transaction fee is too damn high: %s (%s percent of total input value)' % (transaction_fee, tx_fee_percentage))
             return False
         else:
-            tx_outputs[0]['value'] -= transaction_fee
+            logging.getLogger('Spellbook').info('TRANSACTION FEE: %s (%s percent of total input value)' % (transaction_fee, tx_fee_percentage))
 
         # Now make the real transaction including the transaction fee
         transaction = make_custom_tx(private_keys=private_keys, tx_inputs=tx_inputs, tx_outputs=tx_outputs, op_return_data=self.op_return_data, tx_fee=transaction_fee)
