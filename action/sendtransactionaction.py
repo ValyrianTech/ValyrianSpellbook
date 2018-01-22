@@ -83,25 +83,9 @@ class SendTransactionAction(Action):
                                                         spellbook_fee_output=spellbook_fee_output)
 
         # Get the necessary private keys from the hot wallet
-        private_keys = {}
-        hot_wallet = get_hot_wallet()
-
-        if self.wallet_type == 'Single':
-            if self.sending_address in hot_wallet:
-                private_keys[self.sending_address] = hot_wallet[self.sending_address]
-                hot_wallet = None
-            else:
-                logging.getLogger('Spellbook').error('Private key for address %s not found in hot wallet!' % self.sending_address)
-                hot_wallet = None
-                return False
-
-        elif self.wallet_type == 'BIP44':
-            xpriv_key = get_xpriv_key(mnemonic=' '.join(hot_wallet['mnemonic']), passphrase=hot_wallet['passphrase'], account=self.bip44_account)
-            hot_wallet = None
-            private_keys.update(get_private_key(xpriv_key, self.bip44_index))
-        else:
-            hot_wallet = None
-            raise NotImplementedError('Unknown wallet type: %s' % self.wallet_type)
+        private_keys = self.get_private_key()
+        if len(private_keys) == 0:
+            return False
 
         # Make transaction without fee first to get the size
         transaction = make_custom_tx(private_keys=private_keys, tx_inputs=tx_inputs, tx_outputs=tx_outputs, op_return_data=self.op_return_data)
@@ -170,6 +154,10 @@ class SendTransactionAction(Action):
 
         # Now make the real transaction including the transaction fee
         transaction = make_custom_tx(private_keys=private_keys, tx_inputs=tx_inputs, tx_outputs=tx_outputs, op_return_data=self.op_return_data, tx_fee=transaction_fee)
+
+        # explicitly delete local variable private_keys for security reasons as soon as possible
+        del private_keys
+
         if transaction is None:
             return False
 
@@ -178,6 +166,36 @@ class SendTransactionAction(Action):
         # Broadcast the transaction to the network
         # send_transaction # Todo: broadcast transaction
         return True
+
+    def get_private_key(self):
+        """
+        Get the private key of the sending address from the hot wallet
+
+        :return: a dict containing the private key of the sending address
+        """
+        private_keys = {}
+        hot_wallet = get_hot_wallet()
+
+        if self.wallet_type == 'Single':
+            if self.sending_address in hot_wallet:
+                private_keys[self.sending_address] = hot_wallet[self.sending_address]
+            else:
+                logging.getLogger('Spellbook').error('Private key for address %s not found in hot wallet!' % self.sending_address)
+
+            # explicitly delete local variable hot_wallet for security reasons as soon as possible
+            del hot_wallet
+
+        elif self.wallet_type == 'BIP44':
+            xpriv_key = get_xpriv_key(mnemonic=' '.join(hot_wallet['mnemonic']), passphrase=hot_wallet['passphrase'], account=self.bip44_account)
+            # explicitly delete local variable hot_wallet for security reasons as soon as possible
+            del hot_wallet
+            private_keys.update(get_private_key(xpriv_key, self.bip44_index))
+        else:
+            # explicitly delete local variable hot_wallet for security reasons as soon as possible
+            del hot_wallet
+            raise NotImplementedError('Unknown wallet type: %s' % self.wallet_type)
+
+        return private_keys
 
     @staticmethod
     def construct_transaction_inputs(sending_address):
