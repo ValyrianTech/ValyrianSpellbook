@@ -33,17 +33,7 @@ class SendTransactionAction(Action):
             logging.getLogger('Spellbook').error('SendTransaction action aborted: Total value is less than minimum amount: %s' % self.minimum_amount)
             return False
 
-        # Calculate the spellbook fee if necessary, this fee should not be confused with the transaction fee
-        # This fee is an optional percentage-based fee the spellbook will subtract from the value and send to a special fee address
-        spellbook_fee = 0
-        if self.fee_percentage > 0 and self.fee_address is not None:
-            fee_base = total_value_in_inputs if self.amount == 0 else self.amount
-            spellbook_fee = int(fee_base * self.fee_percentage/100.0)
-
-            if spellbook_fee < self.fee_minimum_amount:
-                spellbook_fee = self.fee_minimum_amount
-
-            logging.getLogger('Spellbook').info('Spellbook fee: %s' % spellbook_fee)
+        spellbook_fee = self.calculate_spellbook_fee(total_value_in_inputs)
 
         if self.amount == 0 and total_value_in_inputs < spellbook_fee:
             logging.getLogger('Spellbook').error('SendTransaction action aborted: Total input value is less than the spellbook fee: %s < %s' % (total_value_in_inputs, spellbook_fee))
@@ -196,6 +186,27 @@ class SendTransactionAction(Action):
             raise NotImplementedError('Unknown wallet type: %s' % self.wallet_type)
 
         return private_keys
+
+    def calculate_spellbook_fee(self, total_value_in_inputs):
+        """
+        Calculate the spellbook fee if necessary, this fee should not be confused with the transaction fee
+        This fee is an optional percentage-based fee the spellbook will subtract from the value and send to a special fee address
+        If the fee is below the specified minimum fee, then the minimum fee is used
+
+        :param total_value_in_inputs: The total value in the transaction inputs (in satoshis)
+        :return: The spellbook fee in satoshis
+        """
+        spellbook_fee = 0
+        if self.fee_percentage > 0 and self.fee_address is not None:
+            fee_base = total_value_in_inputs if self.amount == 0 else self.amount
+            spellbook_fee = int(fee_base * self.fee_percentage/100.0)
+
+            if spellbook_fee < self.fee_minimum_amount:
+                spellbook_fee = self.fee_minimum_amount
+
+            logging.getLogger('Spellbook').info('Spellbook fee: %s' % spellbook_fee)
+
+        return spellbook_fee
 
     @staticmethod
     def construct_transaction_inputs(sending_address):
