@@ -124,15 +124,7 @@ class SendTransactionAction(Action):
                                                         change_output=change_output,
                                                         spellbook_fee_output=spellbook_fee_output)
 
-        logging.getLogger('Spellbook').info('Creating new transaction:')
-        for tx_input in tx_inputs:
-            logging.getLogger('Spellbook').info('INPUT: %s -> %s (%s)' % (tx_input['address'], tx_input['value'], tx_input['output']))
-
-        for tx_output in tx_outputs:
-            logging.getLogger('Spellbook').info('OUTPUT: %s -> %s' % (tx_output['address'], tx_output['value']))
-
-        if self.op_return_data is not None:
-            logging.getLogger('Spellbook').info('OUTPUT: OP_RETURN -> %s' % self.op_return_data)
+        self.log_transaction_info(tx_inputs=tx_inputs, tx_outputs=tx_outputs)
 
         # Check if we are not paying to much fees compared to the amount we are sending, anything above 10% is too high
         tx_fee_percentage = transaction_fee/float(total_value_in_inputs)*100
@@ -297,6 +289,23 @@ class SendTransactionAction(Action):
 
     def get_forwarding_outputs(self):
         return []
+
+    def log_transaction_info(self, tx_inputs, tx_outputs):
+        """
+        Write information about the transaction in the logs
+
+        :param tx_inputs: The transaction inputs
+        :param tx_outputs: The transaction outputs
+        """
+        logging.getLogger('Spellbook').info('New transaction:')
+        for tx_input in tx_inputs:
+            logging.getLogger('Spellbook').info('INPUT: %s -> %s (%s)' % (tx_input['address'], tx_input['value'], tx_input['output']))
+
+        for tx_output in tx_outputs:
+            logging.getLogger('Spellbook').info('OUTPUT: %s -> %s' % (tx_output['address'], tx_output['value']))
+
+        if self.op_return_data is not None:
+            logging.getLogger('Spellbook').info('OUTPUT: OP_RETURN -> %s' % self.op_return_data)
 
 
 class TransactionOutput(object):
