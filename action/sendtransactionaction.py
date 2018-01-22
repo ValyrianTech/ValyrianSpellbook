@@ -65,16 +65,16 @@ class SendTransactionAction(Action):
         else:
             raise NotImplementedError('Unknown transaction type: %s' % self.transaction_type)
 
-        total_value_in_outputs = sum([output.value for output in receiving_outputs])
-        change_amount = total_value_in_inputs - total_value_in_outputs - spellbook_fee  # Todo fix possible rounding error
-        change_address = self.change_address if self.change_address is not None else self.sending_address
-
         change_output = None
-        if change_amount > 0:
+        # There should only be a change output if we are sending a specific amount, when sending all available funds there should never be a change output
+        if self.amount != 0:
+            total_value_in_outputs = sum([output.value for output in receiving_outputs])
+            change_amount = total_value_in_inputs - total_value_in_outputs - spellbook_fee
+            change_address = self.change_address if self.change_address is not None else self.sending_address
             change_output = TransactionOutput(change_address, change_amount)
 
         spellbook_fee_output = None
-        if self.fee_address and spellbook_fee > 0:
+        if self.fee_address is not None and spellbook_fee > 0:
             spellbook_fee_output = TransactionOutput(self.fee_address, spellbook_fee)
 
         # Construct temporary transaction outputs so we can calculate the transaction fee
@@ -138,8 +138,8 @@ class SendTransactionAction(Action):
             transaction_fee = fee_share * len(receiving_outputs)
 
         # if a specific amount needs to be sent, then the transaction fee should be subtracted from the change output
-        elif self.amount > 0:
-            if change_output is None or change_output.value < transaction_fee:
+        elif self.amount > 0 and change_output is not None:
+            if change_output.value < transaction_fee:
                 logging.getLogger('Spellbook').error('Aborting SendTransaction: The value of the change output is less than the transaction fee: %s < %s' % (change_output.value, transaction_fee))
                 return False
             else:
@@ -240,8 +240,26 @@ class SendTransactionAction(Action):
         return tx_outputs
 
     def get_receiving_outputs(self, sending_amount):
-        total_value = sum([value for address, value in self.distribution])
-        receiving_outputs = [TransactionOutput(address, int((value/float(total_value))*sending_amount)) for address, value in self.distribution]
+        """
+        Calculate the transaction outputs based on shares in a given distribution and the sending amount
+        Important: the total of the output values must be the same as the sending_amount,
+                   sometimes rounding errors can occur because of the distribution, if this happens
+                   then the first output gets the remaining amount
+
+        :param sending_amount: The total amount to send in satoshis (integer)
+        :return: A list of TransactionOutputs
+        """
+        total_shares = float(sum([shares for address, shares in self.distribution]))
+        receiving_outputs = []
+        remaining_amount = sending_amount
+        for address, shares in self.distribution:
+            receiving_value = int((shares/total_shares)*sending_amount)
+            remaining_amount -= receiving_value
+            receiving_outputs.append(TransactionOutput(address, receiving_value))
+
+        # If rounding errors are causing a few satoshis remaining, the first output gets them
+        if remaining_amount > 0:
+            receiving_outputs[0].value += remaining_amount
 
         return receiving_outputs
 
