@@ -29,6 +29,7 @@ def make_custom_tx(private_keys, tx_inputs, tx_outputs, tx_fee=0, op_return_data
 
     if tx_fee != total_input_value - total_output_value:
         logging.getLogger('Spellbook').error('Transaction fee does not match the difference between the total input value and the total output value!')
+        logging.getLogger('Spellbook').error('Total input: %s, Total output: %s, Transaction fee: %s' % (total_input_value, total_output_value, tx_fee))
         return
 
     # Check if all required private keys have been supplied
