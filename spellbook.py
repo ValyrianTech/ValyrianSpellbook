@@ -612,8 +612,9 @@ save_action_parser.add_argument('-ca', '--change_address', help='The address to 
 
 save_action_parser.add_argument('-d', '--op_return_data', help='The data to include as a OP_RETURN output in a SendTransaction action (max 80 chars)')
 
+save_action_parser.add_argument('-tt', '--transaction_type', help='The type of the transaction to send', choices=['Send2Single', 'Send2Many', 'Send2SIL', 'Send2LBL', 'Send2LRL', 'Send2LSL', 'Send2LAL'])
 save_action_parser.add_argument('-reg_a', '--registration_address', help='The address used for the registration of a distribution')
-save_action_parser.add_argument('-reg_b', '--registration_block_height', help='The block height used for the registration of a distribution, 0=latest block height', default=0)
+save_action_parser.add_argument('-reg_b', '--registration_block_height', help='The block height used for the registration of a distribution, 0=latest block height', default=0, type=int)
 save_action_parser.add_argument('-reg_x', '--registration_xpub', help='The xpub key used for the registration of a distribution')
 
 save_action_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
@@ -1112,6 +1113,9 @@ def save_action():
 
     if args.change_address is not None:
         data['change_address'] = args.change_address
+
+    if args.transaction_type is not None:
+        data['transaction_type'] = args.transaction_type
 
     if args.registration_address is not None:
         data['registration_address'] = args.registration_address
