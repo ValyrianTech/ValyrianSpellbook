@@ -7,6 +7,8 @@ from action import Action
 from actiontype import ActionType
 from transactiontype import TransactionType
 from data.data import utxos, prime_input_address
+from inputs.inputs import get_sil
+from linker.linker import get_lbl, get_lrl, get_lsl
 from feehelpers import get_optimal_fee
 from hot_wallet_helpers import get_hot_wallet
 from BIP44.BIP44 import get_xpriv_key, get_private_key
@@ -43,17 +45,7 @@ class SendTransactionAction(Action):
             return False
 
         sending_amount = total_value_in_inputs - spellbook_fee if self.amount == 0 else self.amount
-
-        if self.transaction_type == TransactionType.SEND2SINGLE:
-            receiving_outputs = [TransactionOutput(self.receiving_address, sending_amount)]
-        elif self.transaction_type == TransactionType.SEND2MANY:
-            receiving_outputs = self.get_receiving_outputs(sending_amount)
-        elif self.transaction_type in [TransactionType.SEND2SIL, TransactionType.SEND2LBL, TransactionType.SEND2LRL, TransactionType.SEND2LSL]:
-            receiving_outputs = self.get_distribution_outputs(transaction_type=self.transaction_type)
-        elif self.transaction_type == TransactionType.SEND2LAL:
-            receiving_outputs = self.get_forwarding_outputs()
-        else:
-            raise NotImplementedError('Unknown transaction type: %s' % self.transaction_type)
+        receiving_outputs = self.get_receiving_outputs(sending_amount)
 
         change_output = None
         # There should only be a change output if we are sending a specific amount, when sending all available funds there should never be a change output
@@ -260,6 +252,29 @@ class SendTransactionAction(Action):
 
         return tx_outputs
 
+    def get_distribution(self, transaction_type, sending_amount):
+        if transaction_type == 'Send2Single':
+            distribution = [(self.receiving_address, sending_amount)]
+        elif transaction_type == 'Send2Many':
+            distribution = self.distribution
+        elif transaction_type == 'Send2SIL':
+            data = get_sil(address=self.registration_address, block_height=self.registration_block_height)
+            distribution = [(recipient[0], recipient[1]) for recipient in data['SIL']]
+        elif transaction_type == 'Send2LBL':
+            data = get_lbl(address=self.registration_address, xpub=self.receiving_xpub, block_height=self.registration_block_height)
+            distribution = [(recipient[0], recipient[1]) for recipient in data['LBL']]
+        elif transaction_type == 'Send2LRL':
+            data = get_lrl(address=self.registration_address, xpub=self.receiving_xpub, block_height=self.registration_block_height)
+            distribution = [(recipient[0], recipient[1]) for recipient in data['LRL']]
+        elif transaction_type == 'Send2LBL':
+            data = get_lsl(address=self.registration_address, xpub=self.receiving_xpub, block_height=self.registration_block_height)
+            distribution = [(recipient[0], recipient[1]) for recipient in data['LSL']]
+        else:
+            raise NotImplementedError('Unknown transaction type %s' % transaction_type)
+
+        logging.getLogger('Spellbook').info('distribution: %s' % distribution)
+        return distribution
+
     def get_receiving_outputs(self, sending_amount):
         """
         Calculate the transaction outputs based on shares in a given distribution and the sending amount
@@ -270,10 +285,11 @@ class SendTransactionAction(Action):
         :param sending_amount: The total amount to send in satoshis (integer)
         :return: A list of TransactionOutputs
         """
-        total_shares = float(sum([shares for address, shares in self.distribution]))
+        distribution = self.get_distribution(transaction_type=self.transaction_type, sending_amount=sending_amount)
+        total_shares = float(sum([shares for address, shares in distribution]))
         receiving_outputs = []
         remaining_amount = sending_amount
-        for address, shares in self.distribution:
+        for address, shares in distribution:
             receiving_value = int((shares/total_shares)*sending_amount)
             remaining_amount -= receiving_value
             receiving_outputs.append(TransactionOutput(address, receiving_value))
@@ -284,12 +300,6 @@ class SendTransactionAction(Action):
 
         return receiving_outputs
 
-    def get_distribution_outputs(self, transaction_type):
-        return []
-
-    def get_forwarding_outputs(self):
-        return []
-
     def log_transaction_info(self, tx_inputs, tx_outputs):
         """
         Write information about the transaction in the logs
@@ -297,7 +307,11 @@ class SendTransactionAction(Action):
         :param tx_inputs: The transaction inputs
         :param tx_outputs: The transaction outputs
         """
-        logging.getLogger('Spellbook').info('New transaction:')
+        if self.amount == 0:
+            logging.getLogger('Spellbook').info('New %s transaction: sending ALL available funds' % self.transaction_type)
+        else:
+            logging.getLogger('Spellbook').info('New %s transaction: sending %s satoshis' % (self.transaction_type, self.amount))
+
         for tx_input in tx_inputs:
             logging.getLogger('Spellbook').info('INPUT: %s -> %s (%s)' % (tx_input['address'], tx_input['value'], tx_input['output']))
 
