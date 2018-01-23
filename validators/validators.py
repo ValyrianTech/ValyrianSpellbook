@@ -222,3 +222,7 @@ def valid_outputs(outputs):
 
 def valid_action_type(action_type):
     return action_type in ['Command', 'SendTransaction', 'RevealLink', 'RevealText', 'SendMail', 'Webhook']
+
+
+def valid_transaction_type(transaction_type):
+    return transaction_type in ['Send2Single', 'Send2Many', 'Send2SIL', 'Send2LBL', 'Send2LRL', 'Send2LSL', 'Send2LAL']
