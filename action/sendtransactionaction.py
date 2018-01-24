@@ -253,6 +253,8 @@ class SendTransactionAction(Action):
         return tx_outputs
 
     def get_distribution(self, transaction_type, sending_amount):
+        # Todo check if all required parameters are valid
+
         if transaction_type == 'Send2Single':
             distribution = [(self.receiving_address, sending_amount)]
         elif transaction_type == 'Send2Many':
@@ -261,13 +263,13 @@ class SendTransactionAction(Action):
             data = get_sil(address=self.registration_address, block_height=self.registration_block_height)
             distribution = [(recipient[0], recipient[1]) for recipient in data['SIL']]
         elif transaction_type == 'Send2LBL':
-            data = get_lbl(address=self.registration_address, xpub=self.receiving_xpub, block_height=self.registration_block_height)
+            data = get_lbl(address=self.registration_address, xpub=self.registration_xpub, block_height=self.registration_block_height)
             distribution = [(recipient[0], recipient[1]) for recipient in data['LBL']]
         elif transaction_type == 'Send2LRL':
-            data = get_lrl(address=self.registration_address, xpub=self.receiving_xpub, block_height=self.registration_block_height)
+            data = get_lrl(address=self.registration_address, xpub=self.registration_xpub, block_height=self.registration_block_height)
             distribution = [(recipient[0], recipient[1]) for recipient in data['LRL']]
         elif transaction_type == 'Send2LBL':
-            data = get_lsl(address=self.registration_address, xpub=self.receiving_xpub, block_height=self.registration_block_height)
+            data = get_lsl(address=self.registration_address, xpub=self.registration_xpub, block_height=self.registration_block_height)
             distribution = [(recipient[0], recipient[1]) for recipient in data['LSL']]
         else:
             raise NotImplementedError('Unknown transaction type %s' % transaction_type)
@@ -278,6 +280,9 @@ class SendTransactionAction(Action):
     def get_receiving_outputs(self, sending_amount):
         """
         Calculate the transaction outputs based on shares in a given distribution and the sending amount
+
+        Each output value must be greater or equal than the minimum output value, otherwise that output is excluded from the distribution
+
         Important: the total of the output values must be the same as the sending_amount,
                    sometimes rounding errors can occur because of the distribution, if this happens
                    then the first output gets the remaining amount
@@ -286,16 +291,33 @@ class SendTransactionAction(Action):
         :return: A list of TransactionOutputs
         """
         distribution = self.get_distribution(transaction_type=self.transaction_type, sending_amount=sending_amount)
-        total_shares = float(sum([shares for address, shares in distribution]))
         receiving_outputs = []
         remaining_amount = sending_amount
-        for address, shares in distribution:
-            receiving_value = int((shares/total_shares)*sending_amount)
-            remaining_amount -= receiving_value
-            receiving_outputs.append(TransactionOutput(address, receiving_value))
+
+        # Sort the distribution from highest share to lowest share
+        sorted_distribution = sorted(distribution, key=lambda x: x[1], reverse=True)
+
+        # Now iterate over the sorted distribution starting at the end, so we can safely delete the items with the
+        # lowest value until the receiving value is at least the minimum output value
+        for i in range(len(sorted_distribution)-1, -1, -1):
+            # We need to re-calculate the total shares at each step because an item could have been deleted in the previous step
+            total_shares = float(sum([share for address, share in sorted_distribution]))
+
+            address = sorted_distribution[i][0]
+            share = sorted_distribution[i][1]/float(total_shares)  # Calculate the share, this must be a float between 0 and 1  Todo check for divide by zero error
+
+            receiving_value = int(share * sending_amount)
+            if receiving_value < self.minimum_output_value:
+                logging.getLogger('Spellbook').info('Excluding %s from distribution because output value is less than minimum output value: %s < %s' % (address, receiving_value, self.minimum_output_value))
+                del sorted_distribution[i]
+            else:
+                remaining_amount -= receiving_value
+                receiving_outputs.append(TransactionOutput(address, receiving_value))
+                logging.getLogger('Spellbook').info('receiving output: %s -> %s' % (receiving_value, address))
 
         # If rounding errors are causing a few satoshis remaining, the first output gets them
         if remaining_amount > 0:
+            logging.getLogger('Spellbook').info('Remaining %s Satoshi(s) go to address %s' % (remaining_amount, receiving_outputs[0].address))
             receiving_outputs[0].value += remaining_amount
 
         return receiving_outputs
