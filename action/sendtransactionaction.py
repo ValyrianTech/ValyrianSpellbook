@@ -255,7 +255,7 @@ class SendTransactionAction(Action):
         if transaction_type == 'Send2Single':
             distribution = [(self.receiving_address, sending_amount)]
         elif transaction_type == 'Send2Many':
-            distribution = self.distribution
+            distribution = self.distribution  # Todo allow to specify distribution via cli
         elif transaction_type == 'Send2SIL':
             data = get_sil(address=self.registration_address, block_height=self.registration_block_height)
             distribution = [(recipient[0], recipient[1]) for recipient in data['SIL']]
@@ -344,7 +344,7 @@ class SendTransactionAction(Action):
     def is_fee_acceptable(transaction_fee, total_value_in_inputs):
         """
         Check if we are not paying to much fees compared to the amount we are sending, anything above the max_tx_fee_percentage is too high
-        This value is set in the configuration file under the [Transactions] section
+        This value is set in the configuration file under the [Transactions] section, 0=no check
 
         :param transaction_fee: The transaction fee in Satoshis
         :param total_value_in_inputs: The total value in the inputs in Satoshis
