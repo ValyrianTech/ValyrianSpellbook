@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from ConfigParser import ConfigParser
+from decorators import verify_config
+
 
 CONFIGURATION_FILE = 'configuration/Spellbook.conf'
 
@@ -75,3 +77,13 @@ def get_wallet_info():
     wallet_id = config.get('Wallet', 'default_wallet')
 
     return wallet_dir, wallet_id
+
+
+@verify_config('Transactions', 'max_tx_fee_percentage')
+def get_max_tx_fee_percentage():
+    # Read the spellbook configuration file
+    config = ConfigParser()
+    config.read(CONFIGURATION_FILE)
+
+    return float(config.get('Transactions', 'max_tx_fee_percentage'))
+
