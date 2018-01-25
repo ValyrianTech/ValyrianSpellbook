@@ -3,8 +3,14 @@
 
 import simplejson
 from bottle import request
+from ConfigParser import ConfigParser
+from functools import wraps
+
 from authentication import check_authentication, AuthenticationStatus
 from data.data import set_explorer, clear_explorer, get_last_explorer
+
+
+CONFIGURATION_FILE = 'configuration/Spellbook.conf'
 
 
 def authentication_required(f):
@@ -59,5 +65,36 @@ def output_json(f):
         output = f(*args, **kwargs)
         if output is not None:
             return simplejson.dumps(output, indent=4)
+
+    return decorated_function
+
+
+def verify_config(section, option):
+    """
+    Decorator that verifies that a specific section and option are present in the configfile
+
+    :param f: The function that requires information from the configfile
+    :param section: The section that needs to be present in the configfile
+    :param option: The option that needs to be present in the section of the configfile
+    :return: The result of the function
+    """
+    def decorated_function(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            # Read the spellbook configuration file
+            config = ConfigParser()
+            config.read(CONFIGURATION_FILE)
+
+            # Check if the spellbook configuration file contains the section
+            if not config.has_section(section):
+                raise Exception('Configuration file %s does not have a [%s] section ' % (CONFIGURATION_FILE, section))
+
+            # Check if the section has the option in it
+            if not config.has_option(section, option):
+                raise Exception("Configuration file %s does not have an option '%s' in the [%s] section" % (CONFIGURATION_FILE, option, section))
+
+            return f(*args, **kwargs)
+
+        return wrapper
 
     return decorated_function
