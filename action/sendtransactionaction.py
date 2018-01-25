@@ -13,6 +13,7 @@ from feehelpers import get_optimal_fee
 from hot_wallet_helpers import get_hot_wallet
 from BIP44.BIP44 import get_xpriv_key, get_private_key
 from transactionfactory import make_custom_tx
+from configurationhelpers import get_max_tx_fee_percentage
 
 
 class SendTransactionAction(Action):
@@ -77,7 +78,7 @@ class SendTransactionAction(Action):
 
         # Get the current optimal transaction fee
         optimal_fee = get_optimal_fee()
-        optimal_fee = 1
+        optimal_fee = 5
         logging.getLogger('Spellbook').info('Optimal transaction fee is %s sat/b' % optimal_fee)
 
         # Because the transaction is in hexadecimal, to calculate the size in bytes all we need to do is divide the number of characters by 2
@@ -118,13 +119,9 @@ class SendTransactionAction(Action):
 
         self.log_transaction_info(tx_inputs=tx_inputs, tx_outputs=tx_outputs)
 
-        # Check if we are not paying to much fees compared to the amount we are sending, anything above 10% is too high
-        tx_fee_percentage = transaction_fee/float(total_value_in_inputs)*100
-        if tx_fee_percentage > 10:
-            logging.getLogger('Spellbook').error('Aborting SendTransaction: The transaction fee is too damn high: %s (%s percent of total input value)' % (transaction_fee, tx_fee_percentage))
+        # Do a sanity check on the transaction fee compared to the total value in inputs, abort if the fee is to high
+        if not self.is_fee_acceptable(transaction_fee=transaction_fee, total_value_in_inputs=total_value_in_inputs):
             return False
-        else:
-            logging.getLogger('Spellbook').info('TRANSACTION FEE: %s (%s percent of total input value)' % (transaction_fee, tx_fee_percentage))
 
         # Now make the real transaction including the transaction fee
         transaction = make_custom_tx(private_keys=private_keys, tx_inputs=tx_inputs, tx_outputs=tx_outputs, op_return_data=self.op_return_data, tx_fee=transaction_fee)
@@ -342,6 +339,25 @@ class SendTransactionAction(Action):
 
         if self.op_return_data is not None:
             logging.getLogger('Spellbook').info('OUTPUT: OP_RETURN -> %s' % self.op_return_data)
+
+    @staticmethod
+    def is_fee_acceptable(transaction_fee, total_value_in_inputs):
+        """
+        Check if we are not paying to much fees compared to the amount we are sending, anything above the max_tx_fee_percentage is too high
+        This value is set in the configuration file under the [Transactions] section
+
+        :param transaction_fee: The transaction fee in Satoshis
+        :param total_value_in_inputs: The total value in the inputs in Satoshis
+        :return: True or False
+        """
+        tx_fee_percentage = transaction_fee/float(total_value_in_inputs)*100
+
+        if 0 < get_max_tx_fee_percentage() < tx_fee_percentage:
+            logging.getLogger('Spellbook').error('Aborting SendTransaction: The transaction fee is too damn high: %s (%s percent of total input value)' % (transaction_fee, tx_fee_percentage))
+            return False
+        else:
+            logging.getLogger('Spellbook').info('TRANSACTION FEE: %s (%s percent of total input value)' % (transaction_fee, tx_fee_percentage))
+            return True
 
 
 class TransactionOutput(object):
