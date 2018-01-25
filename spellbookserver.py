@@ -13,7 +13,7 @@ from logging.handlers import RotatingFileHandler
 from bottle import Bottle, request, response
 
 from hot_wallet_helpers import get_hot_wallet
-from configurationhelpers import get_host_and_port
+from configurationhelpers import get_host, get_port
 from authentication import initialize_api_keys_file
 from data.data import get_explorers, get_explorer_config, save_explorer, delete_explorer
 from data.data import latest_block, block_by_height, block_by_hash, prime_input_address
@@ -31,7 +31,8 @@ class SpellbookRESTAPI(Bottle):
         super(SpellbookRESTAPI, self).__init__()
 
         # Initialize variables
-        self.host, self.port = get_host_and_port()
+        self.host = get_host()
+        self.port = get_port()
 
         # make the directory for logs if it doesn't exist
         logs_dir = os.path.join('logs')

@@ -8,31 +8,21 @@ from decorators import verify_config
 CONFIGURATION_FILE = 'configuration/Spellbook.conf'
 
 
-def get_config():
+def spellbook_config():
     # Read the spellbook configuration file
     config = ConfigParser()
     config.read(CONFIGURATION_FILE)
+    return config
 
 
-def get_host_and_port():
-    # Read the spellbook configuration file
-    config = ConfigParser()
-    config.read(CONFIGURATION_FILE)
+@verify_config('RESTAPI', 'host')
+def get_host():
+    return spellbook_config().get('RESTAPI', 'host')
 
-    # Check if the spellbook configuration file contains a [RESTAPI] section
-    if not config.has_section('RESTAPI'):
-        raise Exception('Configuration file %s does not have a [RESTAPI] section ' % CONFIGURATION_FILE)
 
-    # Check if the [RESTAPI] section has options for 'host' and 'port'
-    if not config.has_option('RESTAPI', 'host'):
-        raise Exception("Configuration file %s does not have an option 'host' in the [RESTAPI] section" % CONFIGURATION_FILE)
-    host = config.get('RESTAPI', 'host')
-
-    if not config.has_option('RESTAPI', 'port'):
-        raise Exception("Configuration file %s does not have an option 'port' in the [RESTAPI] section" % CONFIGURATION_FILE)
-    port = config.get('RESTAPI', 'port')
-
-    return host, port
+@verify_config('RESTAPI', 'port')
+def get_port():
+    return int(spellbook_config().get('RESTAPI', 'port'))
 
 
 def get_key_and_secret():
