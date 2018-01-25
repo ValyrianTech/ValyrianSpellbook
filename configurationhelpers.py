@@ -47,17 +47,9 @@ def get_default_wallet():
 
 @verify_config('Transactions', 'max_tx_fee_percentage')
 def get_max_tx_fee_percentage():
-    # Read the spellbook configuration file
-    config = ConfigParser()
-    config.read(CONFIGURATION_FILE)
-
-    return float(config.get('Transactions', 'max_tx_fee_percentage'))
+    return float(spellbook_config().get('Transactions', 'max_tx_fee_percentage'))
 
 
 @verify_config('Transactions', 'minimum_output_value')
 def get_minimum_output_value():
-    # Read the spellbook configuration file
-    config = ConfigParser()
-    config.read(CONFIGURATION_FILE)
-
-    return int(config.get('Transactions', 'minimum_output_value'))
+    return int(spellbook_config().get('Transactions', 'minimum_output_value'))
