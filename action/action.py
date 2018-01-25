@@ -8,8 +8,11 @@ from datetime import datetime
 
 from jsonhelpers import save_to_json_file
 from validators.validators import valid_action_type, valid_address, valid_percentage, valid_xpub, valid_amount, valid_op_return, valid_block_height
+from validators.validators import valid_transaction_type
 from hot_wallet_helpers import get_hot_wallet
 from BIP44.BIP44 import get_xpub_key, get_address_from_xpub
+from transactiontype import TransactionType
+from configurationhelpers import get_minimum_output_value
 
 
 ACTIONS_DIR = 'json/public/actions'
@@ -32,19 +35,23 @@ class Action(object):
         self.allow_reveal = False
         self.fee_address = None
         self.fee_percentage = 0
+        self.fee_minimum_amount = 1000
         self.wallet_type = None
         self.sending_address = None
         self.bip44_account = None
         self.bip44_index = None
         self.receiving_address = None
         self.receiving_xpub = None
-        self.amount = None
+        self.amount = 0
         self.minimum_amount = None
         self.op_return_data = None
         self.change_address = None
         self.registration_address = None
         self.registration_block_height = None
         self.registration_xpub = None
+        self.distribution = None
+        self.transaction_type = TransactionType.SEND2MANY
+        self.minimum_output_value = get_minimum_output_value()
 
     def configure(self, **config):
         self.created = datetime.fromtimestamp(config['created']) if 'created' in config else datetime.now()
@@ -112,6 +119,12 @@ class Action(object):
         if 'change_address' in config and valid_address(config['change_address']):
             self.receiving_address = config['change_address']
 
+        if 'transaction_type' in config and valid_transaction_type(config['transaction_type']):
+            self.transaction_type = config['transaction_type']
+
+        if 'minimum_output_value' in config and valid_amount(config['minimum_output_value']):
+            self.minimum_output_value = config['minimum_output_value']
+
         if 'registration_address' in config and valid_address(config['registration_address']):
             self.registration_address = config['registration_address']
 
@@ -126,8 +139,8 @@ class Action(object):
             hot_wallet = get_hot_wallet()
             xpub_key = get_xpub_key(mnemonic=' '.join(hot_wallet['mnemonic']), passphrase=hot_wallet['passphrase'], account=self.bip44_account)
 
-            # Clear the hot wallet from memory as soon as possible
-            hot_wallet = None
+            # Explicitly delete the local variable hot wallet from memory as soon as possible for security reasons
+            del hot_wallet
 
             self.sending_address = get_address_from_xpub(xpub=xpub_key, i=self.bip44_index)
 
@@ -158,9 +171,11 @@ class Action(object):
                 'minimum_amount': self.minimum_amount,
                 'op_return_data': self.op_return_data,
                 'change_address': self.change_address,
+                'transaction_type': self.transaction_type,
+                'minimum_output_value': self.minimum_output_value,
                 'registration_address': self.registration_address,
                 'registration_block_height': self.registration_block_height,
-                'registration_xpub': self.receiving_xpub}
+                'registration_xpub': self.registration_xpub}
 
     @abstractmethod
     def run(self):
