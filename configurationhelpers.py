@@ -87,3 +87,11 @@ def get_max_tx_fee_percentage():
 
     return float(config.get('Transactions', 'max_tx_fee_percentage'))
 
+
+@verify_config('Transactions', 'minimum_output_value')
+def get_minimum_output_value():
+    # Read the spellbook configuration file
+    config = ConfigParser()
+    config.read(CONFIGURATION_FILE)
+
+    return int(config.get('Transactions', 'minimum_output_value'))
