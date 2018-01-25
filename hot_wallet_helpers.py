@@ -5,7 +5,7 @@ import os
 import getpass
 import simplejson
 from AESCipher import AESCipher
-from configurationhelpers import get_wallet_info
+from configurationhelpers import get_wallet_dir, get_default_wallet
 
 HOT_WALLET_PASSWORD = None
 
@@ -16,7 +16,7 @@ def get_hot_wallet():
     if HOT_WALLET_PASSWORD is None:
         prompt_decryption_password()
 
-    wallet_dir, wallet_id = get_wallet_info()
+    wallet_dir, wallet_id = get_wallet_dir(), get_default_wallet()
 
     try:
         cipher = AESCipher(key=HOT_WALLET_PASSWORD)
@@ -31,5 +31,6 @@ def get_hot_wallet():
 def prompt_decryption_password():
     global HOT_WALLET_PASSWORD
     # if this is running in pycharm console, make sure 'Emulate terminal in output console' is checked in the configuration
-    HOT_WALLET_PASSWORD = getpass.getpass('Enter the password to decrypt the hot wallet: ')
+    # HOT_WALLET_PASSWORD = getpass.getpass('Enter the password to decrypt the hot wallet: ')
+    HOT_WALLET_PASSWORD = ''  # Todo enable password prompt again after development is done
 
