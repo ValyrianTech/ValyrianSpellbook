@@ -50,7 +50,7 @@ class Action(object):
         self.registration_block_height = None
         self.registration_xpub = None
         self.distribution = None
-        self.transaction_type = TransactionType.SEND2MANY
+        self.transaction_type = TransactionType.SEND2SINGLE
         self.minimum_output_value = get_minimum_output_value()
 
     def configure(self, **config):
