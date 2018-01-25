@@ -35,27 +35,14 @@ def get_secret():
     return spellbook_config().get('Authentication', 'secret')
 
 
-def get_wallet_info():
-    # Read the spellbook configuration file
-    config = ConfigParser()
-    config.read(CONFIGURATION_FILE)
+@verify_config('Wallet', 'wallet_dir')
+def get_wallet_dir():
+    return spellbook_config().get('Wallet', 'wallet_dir')
 
-    # Check if the spellbook configuration file contains a [Wallet] section
-    if not config.has_section('Wallet'):
-        raise Exception('Configuration file %s does not have a [Wallet] section ' % CONFIGURATION_FILE)
 
-    # Check if the [Wallet] section has options for 'wallet_dir' and 'default_wallet'
-    if not config.has_option('Wallet', 'wallet_dir'):
-        raise Exception(
-            "Configuration file %s does not have an option 'wallet_dir' in the [Wallet] section" % CONFIGURATION_FILE)
-    wallet_dir = config.get('Wallet', 'wallet_dir')
-
-    if not config.has_option('Wallet', 'default_wallet'):
-        raise Exception(
-            "Configuration file %s does not have an option 'default_wallet' in the [Wallet] section" % CONFIGURATION_FILE)
-    wallet_id = config.get('Wallet', 'default_wallet')
-
-    return wallet_dir, wallet_id
+@verify_config('Wallet', 'default_wallet')
+def get_default_wallet():
+    return spellbook_config().get('Wallet', 'default_wallet')
 
 
 @verify_config('Transactions', 'max_tx_fee_percentage')
