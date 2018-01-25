@@ -25,25 +25,14 @@ def get_port():
     return int(spellbook_config().get('RESTAPI', 'port'))
 
 
-def get_key_and_secret():
-    # Read the spellbook configuration file
-    config = ConfigParser()
-    config.read(CONFIGURATION_FILE)
+@verify_config('Authentication', 'key')
+def get_key():
+    return spellbook_config().get('Authentication', 'key')
 
-    # Check if the spellbook configuration file contains a [Authentication] section
-    if not config.has_section('Authentication'):
-        raise Exception('Configuration file %s does not have a [Authentication] section ' % CONFIGURATION_FILE)
 
-    # Check if the [Authentication] section has options for 'host' and 'port'
-    if not config.has_option('Authentication', 'key'):
-        raise Exception("Configuration file %s does not have an option 'key' in the [Authentication] section" % CONFIGURATION_FILE)
-    key = config.get('Authentication', 'key')
-
-    if not config.has_option('Authentication', 'secret'):
-        raise Exception("Configuration file %s does not have an option 'secret' in the [Authentication] section" % CONFIGURATION_FILE)
-    secret = config.get('Authentication', 'secret')
-
-    return key, secret
+@verify_config('Authentication', 'secret')
+def get_secret():
+    return spellbook_config().get('Authentication', 'secret')
 
 
 def get_wallet_info():

@@ -8,7 +8,7 @@ import argparse
 import time
 from authentication import signature
 
-from configurationhelpers import get_host, get_port, get_key_and_secret
+from configurationhelpers import get_host, get_port, get_key, get_secret
 
 
 # Make sure we are in the correct working directory
@@ -17,7 +17,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 # ----------------------------------------------------------------------------------------------------------------
 
 host, port = get_host(), get_port()
-key, secret = get_key_and_secret()
+key, secret = get_key(), get_secret()
 
 # ----------------------------------------------------------------------------------------------------------------
 
