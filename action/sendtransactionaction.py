@@ -8,7 +8,7 @@ from actiontype import ActionType
 from transactiontype import TransactionType
 from data.data import utxos, prime_input_address
 from inputs.inputs import get_sil
-from linker.linker import get_lbl, get_lrl, get_lsl
+from linker.linker import get_lbl, get_lrl, get_lsl, get_lal
 from feehelpers import get_optimal_fee
 from hot_wallet_helpers import get_hot_wallet
 from BIP44.BIP44 import get_xpriv_key, get_private_key
@@ -20,6 +20,7 @@ class SendTransactionAction(Action):
     def __init__(self, action_id):
         super(SendTransactionAction, self).__init__(action_id=action_id)
         self.action_type = ActionType.SENDTRANSACTION
+        self.unspent_outputs = None
 
     def run(self):
         if self.sending_address is None:
@@ -28,7 +29,25 @@ class SendTransactionAction(Action):
 
         logging.getLogger('Spellbook').info('Activating SendTransaction action %s' % self.id)
 
-        tx_inputs = self.construct_transaction_inputs(self.sending_address)
+        # Retrieve the available utxos of the sending address and construct a list of TransactionInput objects containing the necessary information for the inputs of a transaction
+        # All available utxos will be used even if a subset would be enough, this is to avoid a scenario where the transaction fee would cause another utxo to be needed
+        # which would increase the transaction fee which could cause another utxo to be needed .... and so on
+        #
+        # The benefit of this is that it will result in automatic consolidation of utxos, in the long run this is preferred otherwise you will end up with many small
+        # utxos that might cost more in fees than they are worth
+        data = utxos(address=self.sending_address, confirmations=1)
+        if 'utxos' in data:
+            self.unspent_outputs = [TransactionInput(address=self.sending_address,
+                                                     value=utxo['value'],
+                                                     output_hash=utxo['output_hash'],
+                                                     output_n=utxo['output_n'],
+                                                     confirmations=utxo['confirmations']) for utxo in data['utxos']]
+        else:
+            error_msg = data['error'] if 'error' in data else ''
+            logging.getLogger('Spellbook').error('Error while retrieving utxos: %s' % error_msg)
+            return False
+
+        tx_inputs = self.construct_transaction_inputs()
         total_value_in_inputs = int(sum([utxo['value'] for utxo in tx_inputs]))
         logging.getLogger('Spellbook').info('Total available value in utxos: %d' % total_value_in_inputs)
 
@@ -189,32 +208,23 @@ class SendTransactionAction(Action):
 
         return spellbook_fee
 
-    @staticmethod
-    def construct_transaction_inputs(sending_address):
+    def construct_transaction_inputs(self):
         """
-        Retrieve the available utxos of the sending address and construct a list of dict object containing the necessary information for the inputs of a transaction
-        All available utxos will be used even if a subset would be enough, this is to avoid a scenario where the transaction fee would cause another utxo to be needed
-        which would increase the transaction fee which could cause another utxo to be needed .... and so on
+        Construct a list of dict object containing the necessary information for the inputs of a transaction
 
-        The benefit of this is that it will result in automatic consolidation of utxos, in the long run this is preferred otherwise you will end up with many small
-        utxos that might cost more in fees than they are worth
-
-        :param sending_address: The address that will be sending the transaction
         :return: A list of dicts containing the following keys for each utxo: 'address', 'value', 'output' and 'confirmations'
         """
-        unspent_outputs_data = utxos(address=sending_address, confirmations=1)
-        unspent_outputs = []
-        if 'utxos' in unspent_outputs_data and len(unspent_outputs_data['utxos']) > 0:
-            unspent_outputs = unspent_outputs_data['utxos']
-            logging.getLogger('Spellbook').info('utxos found: %s' % unspent_outputs)
+
+        if self.unspent_outputs is not None and len(self.unspent_outputs) > 0:
+            logging.getLogger('Spellbook').info('Found %s utxos for address %s' % (len(self.unspent_outputs), self.sending_address))
         else:
-            logging.getLogger('Spellbook').error('No utxos found for address %s' % sending_address)
+            logging.getLogger('Spellbook').error('No utxos found for address %s' % self.sending_address)
 
         # Construct the transaction inputs
-        tx_inputs = [{'address': sending_address,
-                      'value': utxo['value'],
-                      'output': '%s:%s' % (utxo['output_hash'], utxo['output_n']),  # output needs to be formatted as txid:i
-                      'confirmations': utxo['confirmations']} for utxo in unspent_outputs]
+        tx_inputs = [{'address': utxo.address,
+                      'value': utxo.value,
+                      'output': utxo.output,  # output needs to be formatted as txid:i
+                      'confirmations': utxo.confirmations} for utxo in self.unspent_outputs]
 
         return tx_inputs
 
@@ -268,6 +278,20 @@ class SendTransactionAction(Action):
         elif transaction_type == 'Send2LBL':
             data = get_lsl(address=self.registration_address, xpub=self.registration_xpub, block_height=self.registration_block_height)
             distribution = [(recipient[0], recipient[1]) for recipient in data['LSL']]
+        elif transaction_type == 'Send2LAL':
+            data = get_lal(address=self.registration_address, xpub=self.registration_xpub, block_height=self.registration_block_height)
+            logging.getLogger('Spellbook').info('LAL: %s' % data['LAL'])
+            distribution = []
+            for utxo in self.unspent_outputs:
+                prime_input_address_data = prime_input_address(utxo.output_hash)
+                prime_input_address_of_utxo = prime_input_address_data['prime_input_address'] if 'prime_input_address' in prime_input_address_data else None
+                logging.getLogger('Spellbook').info('Prime input address of %s is %s' % (utxo.output_hash, prime_input_address_of_utxo))
+
+                linked_address = [linked_address for input_address, linked_address in data['LAL'] if input_address == prime_input_address_of_utxo]
+                # There should be exactly 1 linked address
+                if len(linked_address) == 1:
+                    distribution.append((linked_address[0], utxo.value))
+
         else:
             raise NotImplementedError('Unknown transaction type %s' % transaction_type)
 
@@ -313,7 +337,7 @@ class SendTransactionAction(Action):
                 logging.getLogger('Spellbook').info('receiving output: %s -> %s' % (receiving_value, address))
 
         # If rounding errors are causing a few satoshis remaining, the first output gets them
-        if remaining_amount > 0:
+        if remaining_amount > 0 and len(receiving_outputs) > 0:
             logging.getLogger('Spellbook').info('Remaining %s Satoshi(s) go to address %s' % (remaining_amount, receiving_outputs[0].address))
             receiving_outputs[0].value += remaining_amount
 
@@ -358,6 +382,17 @@ class SendTransactionAction(Action):
         else:
             logging.getLogger('Spellbook').info('TRANSACTION FEE: %s (%s percent of total input value)' % (transaction_fee, tx_fee_percentage))
             return True
+
+
+class TransactionInput(object):
+    def __init__(self, address, value, output_hash, output_n, confirmations):
+        self.address = address
+        self.value = value
+        self.output_hash = output_hash
+        self.output_n = output_n
+        self.confirmations = confirmations
+
+        self.output = '%s:%s' % (self.output_hash, self.output_n)
 
 
 class TransactionOutput(object):
