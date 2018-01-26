@@ -279,7 +279,8 @@ class SendTransactionAction(Action):
             data = get_lsl(address=self.registration_address, xpub=self.registration_xpub, block_height=self.registration_block_height)
             distribution = [(recipient[0], recipient[1]) for recipient in data['LSL']]
         elif transaction_type == 'Send2LAL':
-            data = get_lal(address=self.registration_address, xpub=self.registration_xpub, block_height=self.registration_block_height)
+            # The registration address of a LAL must always be the sending address
+            data = get_lal(address=self.sending_address, xpub=self.registration_xpub, block_height=self.registration_block_height)
             logging.getLogger('Spellbook').info('LAL: %s' % data['LAL'])
             distribution = []
             for utxo in self.unspent_outputs:
@@ -291,6 +292,9 @@ class SendTransactionAction(Action):
                 # There should be exactly 1 linked address
                 if len(linked_address) == 1:
                     distribution.append((linked_address[0], utxo.value))
+                else:
+                    logging.getLogger('Spellbook').error('Something went wrong with the LAL: found %s linked addresses, should be exactly 1!' % len(linked_address))
+                    raise Exception('Something went wrong with the LAL: found %s linked addresses, should be exactly 1!' % len(linked_address))
 
         else:
             raise NotImplementedError('Unknown transaction type %s' % transaction_type)
