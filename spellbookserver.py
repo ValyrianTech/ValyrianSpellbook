@@ -113,7 +113,7 @@ class SpellbookRESTAPI(Bottle):
         self.route('/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.delete_action)
         self.route('/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>/run', method='GET', callback=self.run_action)
 
-        # Routes for RevealText and RevealLink actions
+        # Routes for RevealSecret actions
         self.route('/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>/reveal', method='GET', callback=self.get_reveal)
 
         # start the webserver for the REST API

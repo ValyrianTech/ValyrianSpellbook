@@ -585,7 +585,7 @@ examples:
                                            ''')
 
 save_action_parser.add_argument('action_id', help='The id of the action')
-save_action_parser.add_argument('-t', '--type', help='The type of the action', choices=['Command', 'SendTransaction', 'RevealLink', 'RevealText', 'SendMail', 'Webhook'])
+save_action_parser.add_argument('-t', '--type', help='The type of the action', choices=['Command', 'SendTransaction', 'RevealSecret', 'SendMail', 'Webhook'])
 
 save_action_parser.add_argument('-c', '--run_command', help='The command to run, only applicable to Command Actions')
 
@@ -595,8 +595,8 @@ save_action_parser.add_argument('-mb', '--mail_body_template', help='The name of
 
 save_action_parser.add_argument('-w', '--webhook', help='The url of a webhook, only applicable to Webhook Actions')
 
-save_action_parser.add_argument('-rt', '--reveal_text', help='The text to reveal when the action is activated, only applicable to RevealText Actions')
-save_action_parser.add_argument('-rl', '--reveal_link', help='The link to reveal when the action is activated, only applicable to RevealText Actions and RevealLink Actions')
+save_action_parser.add_argument('-rt', '--reveal_text', help='The text to reveal when the action is activated, only applicable to RevealSecret Actions')
+save_action_parser.add_argument('-rl', '--reveal_link', help='The link to reveal when the action is activated, only applicable to RevealSecret Actions')
 
 save_action_parser.add_argument('-fa', '--fee_address', help='The address to send the fee to')
 save_action_parser.add_argument('-fp', '--fee_percentage', help='The fee as a percentage', type=float)
@@ -664,10 +664,10 @@ run_action_parser.add_argument('-s', '--api_secret', help='API secret for the sp
 
 # Create parser for the get_reveal subcommand
 get_reveal_parser = subparsers.add_parser(name='get_reveal',
-                                          help='Get the reveal text or link from a RevealText or RevealLink action',
+                                          help='Get the reveal text or link from a RevealSecret action',
                                           formatter_class=argparse.RawDescriptionHelpFormatter,
                                           description='''
-Get the reveal text or link from a RevealText or RevealLink action.
+Get the reveal text or link from a RevealSecret action.
                                           ''',
                                           epilog='''
 examples:
