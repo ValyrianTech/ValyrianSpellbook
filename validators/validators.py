@@ -214,3 +214,7 @@ def valid_action_type(action_type):
 
 def valid_transaction_type(transaction_type):
     return transaction_type in ['Send2Single', 'Send2Many', 'Send2SIL', 'Send2LBL', 'Send2LRL', 'Send2LSL', 'Send2LAL']
+
+
+def valid_actions(actions):
+    return isinstance(actions, list) and all([isinstance(action_id, (str, unicode)) for action_id in actions])
