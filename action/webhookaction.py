@@ -18,11 +18,15 @@ class WebhookAction(Action):
             return False
 
         logging.getLogger('Spellbook').info('executing webhook: %s' % self.webhook)
-        r = requests.get(self.webhook)
-
-        if r.status_code == 200:
-            logging.getLogger('Spellbook').info('status code webhook: %s' % r.status_code)
-            return True
-        else:
-            logging.getLogger('Spellbook').error('Webhook failed: status code webhook: %s' % r.status_code)
+        try:
+            r = requests.get(self.webhook)
+        except Exception as ex:
+            logging.getLogger('Spellbook').error('Webhook failed: %s' % ex)
             return False
+        else:
+            if r.status_code == 200:
+                logging.getLogger('Spellbook').info('status code webhook: %s' % r.status_code)
+                return True
+            else:
+                logging.getLogger('Spellbook').error('Webhook failed: status code webhook: %s' % r.status_code)
+                return False
