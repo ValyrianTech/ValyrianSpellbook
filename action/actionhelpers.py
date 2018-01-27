@@ -9,7 +9,6 @@ from actiontype import ActionType
 from commandaction import CommandAction
 from sendtransactionaction import SendTransactionAction
 from revealsecretaction import RevealSecretAction
-from revealtextaction import RevealTextAction
 from sendmailaction import SendMailAction
 from webhookaction import WebhookAction
 
