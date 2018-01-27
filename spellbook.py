@@ -463,6 +463,8 @@ save_trigger_parser.add_argument('-ce', '--creator_email', help='The email of th
 save_trigger_parser.add_argument('-y', '--youtube', help='A video on youtube belonging to the trigger')
 save_trigger_parser.add_argument('-v', '--visibility', help='The visibility of the trigger (Public or Private)', choices=['Public', 'Private'])
 save_trigger_parser.add_argument('-st', '--status', help='The status of the trigger (Pending, Active or Disabled)', choices=['Pending', 'Active', 'Disabled'])
+save_trigger_parser.add_argument('-ac', '--actions', help='The action ids to run when the trigger activates', nargs='*')
+
 save_trigger_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
 save_trigger_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
 
@@ -993,6 +995,9 @@ def save_trigger():
 
     if args.status is not None:
         data['status'] = args.status
+
+    if args.actions is not None:
+        data['actions'] = args.actions
 
     try:
         r = requests.post('http://{host}:{port}/spellbook/triggers/{trigger_id}'.format(host=host, port=port, trigger_id=args.trigger_id), headers=add_authentication_headers(data=data), json=data)

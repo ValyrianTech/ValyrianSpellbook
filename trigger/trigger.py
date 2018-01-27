@@ -8,7 +8,8 @@ from datetime import datetime
 from abc import abstractmethod, ABCMeta
 
 from validators.validators import valid_description, valid_creator, valid_email, valid_youtube_id, valid_status, valid_visibility
-from validators.validators import valid_address, valid_amount, valid_block_height
+from validators.validators import valid_address, valid_amount, valid_block_height, valid_actions
+from action.actionhelpers import get_actions, get_action
 
 from jsonhelpers import save_to_json_file
 
@@ -76,6 +77,13 @@ class Trigger(object):
         if 'block_height' in config and valid_block_height(config['block_height']):
             self.block_height = config['block_height']
 
+        if 'actions' in config and valid_actions(config['actions']):
+            self.actions = config['actions']
+            configured_actions = get_actions()
+            for action_id in self.actions:
+                if action_id not in configured_actions:
+                    logging.getLogger('Spellbook').warning('Trigger %s contains unknown action: %s' % (self.id, action_id))
+
     @abstractmethod
     def conditions_fulfilled(self):
         """
@@ -86,10 +94,31 @@ class Trigger(object):
         pass
 
     def activate(self):
-        logging.getLogger('Spellbook').info('Activating trigger %s' % self.id)
-        for action in self.actions:
-            print action
+        """
+        Activate all actions on this trigger, if all actions are successful the 'triggered' status will be True
+        If an action fails, the remaining actions will not be executed and the 'triggered' status remains False so another attempt can be made the next time the trigger is checked
 
+        Important: actions of type SendTransaction should always be the last action in the list and there should only be maximum 1 SendTransaction
+
+        :return:
+        """
+        logging.getLogger('Spellbook').info('Activating trigger %s' % self.id)
+        configured_actions = get_actions()
+        for action_id in self.actions:
+            if action_id not in configured_actions:
+                logging.getLogger('Spellbook').error('Unknown action id: %s' % action_id)
+                return
+
+        for i, action_id in enumerate(self.actions):
+            logging.getLogger('Spellbook').info('Running action %s: %s' % (i+1, action_id))
+
+            action = get_action(action_id)
+            success = action.run()
+
+            if not success:
+                return
+
+        # All actions were successful
         self.triggered = True
         self.save()
 
@@ -110,4 +139,5 @@ class Trigger(object):
                 'youtube': self.youtube,
                 'status': self.status,
                 'visibility': self.visibility,
-                'created': int(time.mktime(self.created.timetuple()))}
+                'created': int(time.mktime(self.created.timetuple())),
+                'actions': self.actions}
