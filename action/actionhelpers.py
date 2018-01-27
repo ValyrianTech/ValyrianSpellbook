@@ -8,7 +8,7 @@ from jsonhelpers import load_from_json_file
 from actiontype import ActionType
 from commandaction import CommandAction
 from sendtransactionaction import SendTransactionAction
-from reveallinkaction import RevealLinkAction
+from revealsecretaction import RevealSecretAction
 from revealtextaction import RevealTextAction
 from sendmailaction import SendMailAction
 from webhookaction import WebhookAction
@@ -50,8 +50,7 @@ def get_action(action_id):
     The different action types are:
     - CommandAction
     - SendTransactionAction
-    - RevealLinkAction
-    - RevealTextAction
+    - RevealSecretAction
     - SendMailAction
     - WebhookAction
 
@@ -59,7 +58,7 @@ def get_action(action_id):
 
     :param action_id: The id of the action
     :return: A derived Action object (CommandAction, SendTransactionAction,
-             RevealLinkAction, RevealTextAction, SendMailAction or WebhookAction)
+             RevealSecretAction, SendMailAction or WebhookAction)
     """
     action_config = get_action_config(action_id)
     action = CommandAction(action_id)
@@ -68,10 +67,8 @@ def get_action(action_id):
             action = CommandAction(action_id)
         elif action_config['action_type'] == ActionType.SENDTRANSACTION:
             action = SendTransactionAction(action_id)
-        elif action_config['action_type'] == ActionType.REVEALLINK:
-            action = RevealLinkAction(action_id)
-        elif action_config['action_type'] == ActionType.REVEALTEXT:
-            action = RevealTextAction(action_id)
+        elif action_config['action_type'] == ActionType.REVEALSECRET:
+            action = RevealSecretAction(action_id)
         elif action_config['action_type'] == ActionType.SENDMAIL:
             action = SendMailAction(action_id)
         elif action_config['action_type'] == ActionType.WEBHOOK:
@@ -121,7 +118,7 @@ def run_action(action_id):
 
 def get_reveal(action_id):
     """
-    Get a revealed text and/or link from a RevealText or RevealLink Action.
+    Get a revealed text and/or link from a RevealSecret Action.
     Will return None as long as the action has not been activated.
     Only after the action is activated will the secret text or link be revealed
 
@@ -131,13 +128,6 @@ def get_reveal(action_id):
     if action.allow_reveal is False:
         return None
 
-    response = {}
-    if action.action_type == ActionType.REVEALTEXT:
-        response['reveal_text'] = action.reveal_text
-    elif action.action_type == ActionType.REVEALLINK:
-        response['reveal_text'] = action.reveal_text
-        response['reveal_link'] = action.reveal_link
-    else:
-        return None
+    response = {'reveal_text': action.reveal_text, 'reveal_link': action.reveal_link}
 
     return response

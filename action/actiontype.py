@@ -4,8 +4,7 @@
 
 class ActionType(object):
     COMMAND = 'Command'
-    REVEALLINK = 'RevealLink'
-    REVEALTEXT = 'RevealText'
+    REVEALSECRET = 'RevealSecret'
     SENDMAIL = 'SendMail'
     WEBHOOK = 'Webhook'
     SENDTRANSACTION = 'SendTransaction'
