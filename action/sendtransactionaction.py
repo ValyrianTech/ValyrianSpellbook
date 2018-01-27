@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import operator
 
 from action import Action
 from actiontype import ActionType
@@ -263,26 +264,26 @@ class SendTransactionAction(Action):
         # Todo check if all required parameters are valid
 
         if transaction_type == 'Send2Single':
-            distribution = [(self.receiving_address, sending_amount)]
+            distribution = {self.receiving_address: sending_amount}
         elif transaction_type == 'Send2Many':
-            distribution = self.distribution  # Todo allow to specify distribution via cli
+            distribution = self.distribution
         elif transaction_type == 'Send2SIL':
             data = get_sil(address=self.registration_address, block_height=self.registration_block_height)
-            distribution = [(recipient[0], recipient[1]) for recipient in data['SIL']]
+            distribution = {recipient[0]: recipient[1] for recipient in data['SIL']}
         elif transaction_type == 'Send2LBL':
             data = get_lbl(address=self.registration_address, xpub=self.registration_xpub, block_height=self.registration_block_height)
-            distribution = [(recipient[0], recipient[1]) for recipient in data['LBL']]
+            distribution = {recipient[0]: recipient[1] for recipient in data['LBL']}
         elif transaction_type == 'Send2LRL':
             data = get_lrl(address=self.registration_address, xpub=self.registration_xpub, block_height=self.registration_block_height)
-            distribution = [(recipient[0], recipient[1]) for recipient in data['LRL']]
-        elif transaction_type == 'Send2LBL':
+            distribution = {recipient[0]: recipient[1] for recipient in data['LRL']}
+        elif transaction_type == 'Send2LSL':
             data = get_lsl(address=self.registration_address, xpub=self.registration_xpub, block_height=self.registration_block_height)
-            distribution = [(recipient[0], recipient[1]) for recipient in data['LSL']]
+            distribution = {recipient[0]: recipient[1] for recipient in data['LSL']}
         elif transaction_type == 'Send2LAL':
             # The registration address of a LAL must always be the sending address
             data = get_lal(address=self.sending_address, xpub=self.registration_xpub, block_height=self.registration_block_height)
             logging.getLogger('Spellbook').info('LAL: %s' % data['LAL'])
-            distribution = []
+            distribution = {}
             for utxo in self.unspent_outputs:
                 prime_input_address_data = prime_input_address(utxo.output_hash)
                 prime_input_address_of_utxo = prime_input_address_data['prime_input_address'] if 'prime_input_address' in prime_input_address_data else None
@@ -291,7 +292,7 @@ class SendTransactionAction(Action):
                 linked_address = [linked_address for input_address, linked_address in data['LAL'] if input_address == prime_input_address_of_utxo]
                 # There should be exactly 1 linked address
                 if len(linked_address) == 1:
-                    distribution.append((linked_address[0], utxo.value))
+                    distribution[linked_address[0]] = utxo.value
                 else:
                     logging.getLogger('Spellbook').error('Something went wrong with the LAL: found %s linked addresses, should be exactly 1!' % len(linked_address))
                     raise Exception('Something went wrong with the LAL: found %s linked addresses, should be exactly 1!' % len(linked_address))
@@ -320,7 +321,7 @@ class SendTransactionAction(Action):
         remaining_amount = sending_amount
 
         # Sort the distribution from highest share to lowest share
-        sorted_distribution = sorted(distribution, key=lambda x: x[1], reverse=True)
+        sorted_distribution = sorted(distribution.items(), key=operator.itemgetter(1), reverse=True)
 
         # Now iterate over the sorted distribution starting at the end, so we can safely delete the items with the
         # lowest value until the receiving value is at least the minimum output value
