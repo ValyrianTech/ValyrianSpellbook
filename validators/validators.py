@@ -183,7 +183,7 @@ def valid_private_key(private_key):
 
 
 def valid_distribution(distribution):
-    if not isinstance(distribution, dict):
+    if not isinstance(distribution, dict) or len(distribution) == 0:
         return False
 
     return all([valid_address(key) and valid_amount(value) for key, value in distribution.items()])

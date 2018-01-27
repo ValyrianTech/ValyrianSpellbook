@@ -6,10 +6,10 @@ import sys
 import requests
 import argparse
 import time
+import simplejson
 from authentication import signature
 
 from configurationhelpers import get_host, get_port, get_key, get_secret
-from jsonhelpers import load_from_json_file
 from validators.validators import valid_distribution
 
 
@@ -1131,13 +1131,19 @@ def save_action():
         data['registration_xpub'] = args.registration_xpub
 
     if args.distribution is not None and os.path.isfile(args.distribution):
-        distribution = load_from_json_file(args.distribution)
+        with open(args.distribution, 'r') as input_file:
+            try:
+                distribution = simplejson.load(input_file)
+            except Exception as ex:
+                print >> sys.stderr, 'Distribution file %s is not a valid json file: %s' % (args.distribution, ex)
+                sys.exit(1)
+
         if valid_distribution(distribution):
             data['distribution'] = distribution
         else:
             print >> sys.stderr, 'Distribution file does not contain a valid distribution: %s' % distribution
+            print >> sys.stderr, 'Must be a dict where all keys are a valid address and the value is a integer greater than or equal to zero'
             sys.exit(1)
-
 
     try:
         r = requests.post('http://{host}:{port}/spellbook/actions/{action_id}'.format(host=host,
