@@ -9,6 +9,8 @@ import time
 from authentication import signature
 
 from configurationhelpers import get_host, get_port, get_key, get_secret
+from jsonhelpers import load_from_json_file
+from validators.validators import valid_distribution
 
 
 # Make sure we are in the correct working directory
@@ -610,7 +612,9 @@ save_action_parser.add_argument('-a', '--amount', help='The amount in satoshis t
 save_action_parser.add_argument('-ma', '--minimum_amount', help='The minimum amount in satoshis to forward', type=int)
 save_action_parser.add_argument('-ca', '--change_address', help='The address to receive the change if there is any, if not specified the sending address will receive the change')
 
-save_action_parser.add_argument('-d', '--op_return_data', help='The data to include as a OP_RETURN output in a SendTransaction action (max 80 chars)')
+save_action_parser.add_argument('-or', '--op_return_data', help='The data to include as a OP_RETURN output in a SendTransaction action (max 80 chars)')
+
+save_action_parser.add_argument('-d', '--distribution', help='The filename of a json file containing a custom distribution')
 
 save_action_parser.add_argument('-tt', '--transaction_type', help='The type of the transaction to send', choices=['Send2Single', 'Send2Many', 'Send2SIL', 'Send2LBL', 'Send2LRL', 'Send2LSL', 'Send2LAL'])
 save_action_parser.add_argument('-reg_a', '--registration_address', help='The address used for the registration of a distribution')
@@ -1125,6 +1129,15 @@ def save_action():
 
     if args.registration_xpub is not None:
         data['registration_xpub'] = args.registration_xpub
+
+    if args.distribution is not None and os.path.isfile(args.distribution):
+        distribution = load_from_json_file(args.distribution)
+        if valid_distribution(distribution):
+            data['distribution'] = distribution
+        else:
+            print >> sys.stderr, 'Distribution file does not contain a valid distribution: %s' % distribution
+            sys.exit(1)
+
 
     try:
         r = requests.post('http://{host}:{port}/spellbook/actions/{action_id}'.format(host=host,

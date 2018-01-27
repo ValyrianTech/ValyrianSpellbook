@@ -8,7 +8,7 @@ from datetime import datetime
 
 from jsonhelpers import save_to_json_file
 from validators.validators import valid_action_type, valid_address, valid_percentage, valid_xpub, valid_amount, valid_op_return, valid_block_height
-from validators.validators import valid_transaction_type
+from validators.validators import valid_transaction_type, valid_distribution
 from hot_wallet_helpers import get_hot_wallet
 from BIP44.BIP44 import get_xpub_key, get_address_from_xpub
 from transactiontype import TransactionType
@@ -134,6 +134,9 @@ class Action(object):
         if 'registration_xpub' in config and valid_xpub(config['registration_xpub']):
             self.registration_xpub = config['registration_xpub']
 
+        if 'distribution' in config and valid_distribution(config['distribution']):
+            self.distribution = config['distribution']
+
         # fill in the address in case of a BIP44 hot wallet
         if self.wallet_type == 'BIP44':
             hot_wallet = get_hot_wallet()
@@ -175,7 +178,8 @@ class Action(object):
                 'minimum_output_value': self.minimum_output_value,
                 'registration_address': self.registration_address,
                 'registration_block_height': self.registration_block_height,
-                'registration_xpub': self.registration_xpub}
+                'registration_xpub': self.registration_xpub,
+                'distribution': self.distribution}
 
     @abstractmethod
     def run(self):

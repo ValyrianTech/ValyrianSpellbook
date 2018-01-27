@@ -183,22 +183,10 @@ def valid_private_key(private_key):
 
 
 def valid_distribution(distribution):
-    valid = False
+    if not isinstance(distribution, dict):
+        return False
 
-    if isinstance(distribution, list):
-        if len(distribution) >= 1:
-            for recipient in distribution:
-                if isinstance(recipient, list):
-                    if len(recipient) >= 2:
-                        if (isinstance(recipient[0], str) or isinstance(recipient[0], unicode)) and isinstance(recipient[1], int):
-                            valid = True
-                        else:
-                            valid = False
-                            break
-                    else:
-                        valid = False
-                        break
-    return valid
+    return all([valid_address(key) and valid_amount(value) for key, value in distribution.items()])
 
 
 def valid_outputs(outputs):
