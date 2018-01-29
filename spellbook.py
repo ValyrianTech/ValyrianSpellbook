@@ -60,6 +60,7 @@ save_explorer_parser.add_argument('name', help='name of the explorer')
 save_explorer_parser.add_argument('type', help='type of the explorer', choices=['Blockchain.info', 'Blocktrail.com', 'Insight'])
 save_explorer_parser.add_argument('url', help='URL of the explorer')
 save_explorer_parser.add_argument('priority', help='priority of the explorer')
+save_explorer_parser.add_argument('--testnet', help='use TESTNET instead of mainnet', action='store_true')
 save_explorer_parser.add_argument('-b', '--blocktrail_key', help='API key for the explorer (only needed for blocktrail.com)', default='')
 save_explorer_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
 save_explorer_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
@@ -733,7 +734,8 @@ def save_explorer():
     data = {'type': args.type,
             'api_key': args.blocktrail_key,
             'url': args.url,
-            'priority': args.priority}
+            'priority': args.priority,
+            'testnet': args.testnet}
 
     try:
         r = requests.post('http://{host}:{port}/spellbook/explorers/{explorer_id}'.format(host=host, port=port, explorer_id=args.name), headers=add_authentication_headers(data=data), json=data)

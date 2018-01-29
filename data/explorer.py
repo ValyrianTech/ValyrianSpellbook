@@ -16,10 +16,12 @@ class Explorer(object):
         self.url = ''
         self.explorer_type = None
         self.priority = 0
+        self.testnet = False
 
     def json_encodable(self):
         return {'type': self.explorer_type,
                 'priority': self.priority,
                 'url': self.url,
-                'api_key': self.api_key}
+                'api_key': self.api_key,
+                'testnet': self.testnet}
 

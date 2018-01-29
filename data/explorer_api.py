@@ -7,10 +7,11 @@ from abc import abstractmethod, ABCMeta
 class ExplorerAPI(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self, url='', key=''):
+    def __init__(self, url='', key='', testnet=False):
         self.error = ''
         self.url = url
         self.key = key
+        self.testnet = testnet
 
     @abstractmethod
     def get_latest_block(self):

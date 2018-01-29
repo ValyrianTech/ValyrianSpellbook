@@ -11,15 +11,16 @@ from data.transaction import TX
 from data.explorer_api import ExplorerAPI
 
 
-API_URL = 'https://api.blocktrail.com'
-API_VERSION = 'v1'
-
-
 class BlocktrailComAPI(ExplorerAPI):
+    def __init__(self, url='', key='', testnet=False):
+        super(BlocktrailComAPI, self).__init__(key=key, testnet=testnet)
+
+        # Set the url of the api depending on testnet or mainnet
+        self.url = 'https://api.blocktrail.com/v1/tBTC' if self.testnet is True else 'https://api.blocktrail.com/v1/BTC'
 
     def get_latest_block(self):
         latest_block = {}
-        url = '{api_url}/{api_version}/btc/block/latest?api_key={api_key}'.format(api_url=API_URL, api_version=API_VERSION, api_key=self.key)
+        url = '{api_url}/block/latest?api_key={api_key}'.format(api_url=self.url, api_key=self.key)
         try:
             logging.getLogger('Spellbook').info('GET %s' % url)
             r = requests.get(url)
@@ -39,7 +40,7 @@ class BlocktrailComAPI(ExplorerAPI):
             return {'error': 'Received invalid data: %s' % data}
 
     def get_block_by_height(self, height):
-        url = '{api_url}/{api_version}/btc/block/{height}?api_key={api_key}'.format(api_url=API_URL, api_version=API_VERSION, height=height, api_key=self.key)
+        url = '{api_url}/block/{height}?api_key={api_key}'.format(api_url=self.url, height=height, api_key=self.key)
         try:
             logging.getLogger('Spellbook').info('GET %s' % url)
             r = requests.get(url)
@@ -60,7 +61,7 @@ class BlocktrailComAPI(ExplorerAPI):
             return {'error': 'Received invalid data: %s' % data}
 
     def get_block_by_hash(self, block_hash):
-        url = '{api_url}/{api_version}/btc/block/{hash}?api_key={api_key}'.format(api_url=API_URL, api_version=API_VERSION, hash=block_hash, api_key=self.key)
+        url = '{api_url}/block/{hash}?api_key={api_key}'.format(api_url=self.url, hash=block_hash, api_key=self.key)
         try:
             logging.getLogger('Spellbook').info('GET %s' % url)
             r = requests.get(url)
@@ -87,8 +88,7 @@ class BlocktrailComAPI(ExplorerAPI):
         page = 1
 
         while n_tx is None or len(transactions) < n_tx:
-            url = '{api_url}/{api_version}/btc/address/{address}/transactions?api_key={api_key}&limit={limit}&page={page}&sort_dir=asc'.format(
-                api_url=API_URL, api_version=API_VERSION, address=address, api_key=self.key, limit=limit, page=page)
+            url = '{api_url}/address/{address}/transactions?api_key={api_key}&limit={limit}&page={page}&sort_dir=asc'.format(api_url=self.url, address=address, api_key=self.key, limit=limit, page=page)
             try:
                 logging.getLogger('Spellbook').info('GET %s' % url)
                 r = requests.get(url)
@@ -138,7 +138,7 @@ class BlocktrailComAPI(ExplorerAPI):
             return {'transactions': txs}
 
     def get_balance(self, address):
-        url = '{api_url}/{api_version}/btc/address/{address}?api_key={api_key}'.format(api_url=API_URL, api_version=API_VERSION, address=address, api_key=self.key)
+        url = '{api_url}/address/{address}?api_key={api_key}'.format(api_url=self.url, address=address, api_key=self.key)
         try:
             logging.getLogger('Spellbook').info('GET %s' % url)
             r = requests.get(url)
@@ -157,7 +157,7 @@ class BlocktrailComAPI(ExplorerAPI):
             return {'error': 'Received invalid data: %s' % data}
 
     def get_prime_input_address(self, txid):
-        url = '{api_url}/{api_version}/btc/transaction/{txid}?api_key={api_key}'.format(api_url=API_URL, api_version=API_VERSION, txid=txid, api_key=self.key)
+        url = '{api_url}/transaction/{txid}?api_key={api_key}'.format(api_url=self.url, txid=txid, api_key=self.key)
         try:
             logging.getLogger('Spellbook').info('GET %s' % url)
             r = requests.get(url)
@@ -186,8 +186,7 @@ class BlocktrailComAPI(ExplorerAPI):
         page = 1
 
         while n_outputs is None or len(unspent_outputs) < n_outputs:
-            url = '{api_url}/{api_version}/btc/address/{address}/unspent-outputs?api_key={api_key}&limit={limit}&page={page}&sort_dir=asc'.format(
-                api_url=API_URL, api_version=API_VERSION, address=address, api_key=self.key, limit=limit, page=page)
+            url = '{api_url}/address/{address}/unspent-outputs?api_key={api_key}&limit={limit}&page={page}&sort_dir=asc'.format(api_url=self.url, address=address, api_key=self.key, limit=limit, page=page)
             try:
                 logging.getLogger('Spellbook').info('GET %s' % url)
                 r = requests.get(url)
@@ -223,3 +222,21 @@ class BlocktrailComAPI(ExplorerAPI):
                     utxos.append(utxo)
 
         return {'utxos': sorted(utxos, key=lambda k: (k['confirmations'], k['output_hash'], k['output_n']))}
+
+    def get_recommended_fee(self):
+        """
+        Get the recommended fee per KB
+
+        :return: a dict containing 'optimal', 'high_priority', 'low_priority' and 'min_relay_fee'
+        """
+        url = '{api_url}/fee-per-kb?api_key={api_key}'.format(api_url=self.url, api_key=self.key)
+        try:
+            logging.getLogger('Spellbook').info('GET %s' % url)
+            r = requests.get(url)
+            data = r.json()
+        except Exception as ex:
+            logging.getLogger('Spellbook').error('Unable to get optimal fee per kb from Blocktrail.com: %s' % ex)
+            return {'error': 'Unable to get optimal fee per kb from Blocktrail.com'}
+
+        return data
+

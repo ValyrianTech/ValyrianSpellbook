@@ -9,14 +9,15 @@ from data.transaction import TX
 from data.explorer_api import ExplorerAPI
 
 
-API_VERSION = 'v1'
-
-
 class BlockchainInfoAPI(ExplorerAPI):
+    def __init__(self, url='', key='', testnet=False):
+        super(BlockchainInfoAPI, self).__init__(url=url, testnet=testnet)
+        # Set the url of the api depending on testnet or mainnet
+        self.url = 'https://testnet.blockchain.info' if self.testnet is True else 'https://blockchain.info'
 
     def get_latest_block(self):
         latest_block = {}
-        url = 'https://blockchain.info/latestblock'
+        url = '{api_url}/latestblock'.format(api_url=self.url)
         try:
             logging.getLogger('Spellbook').info('GET %s' % url)
             r = requests.get(url)
@@ -30,11 +31,15 @@ class BlockchainInfoAPI(ExplorerAPI):
             latest_block['hash'] = data['hash']
             latest_block['time'] = data['time']
 
-            url = 'https://blockchain.info/rawblock/' + latest_block['hash']
+            url = '{api_url}/rawblock/{hash}'.format(api_url=self.url, hash=latest_block['hash'])
             try:
                 logging.getLogger('Spellbook').info('GET %s' % url)
                 r = requests.get(url)
                 data = r.json()
+            except ValueError:
+                logging.getLogger('Spellbook').error('Blockchain.info returned invalid json data: %s', r.text)
+                return {'error': 'Unable to get block %s from Blockchain.info' % latest_block['height']}
+
             except Exception as ex:
                 logging.getLogger('Spellbook').error('Unable to get block %s from Blockchain.info: %s' % (latest_block['height'], ex))
                 return {'error': 'Unable to get block %s from Blockchain.info' % latest_block['height']}
@@ -48,7 +53,7 @@ class BlockchainInfoAPI(ExplorerAPI):
             return {'error': 'Received invalid data: %s' % data}
 
     def get_block_by_hash(self, block_hash):
-        url = 'https://blockchain.info/rawblock/' + block_hash
+        url = '{api_url}/rawblock/{hash}'.format(api_url=self.url, hash=block_hash)
         try:
             logging.getLogger('Spellbook').info('GET %s' % url)
             r = requests.get(url)
@@ -68,7 +73,7 @@ class BlockchainInfoAPI(ExplorerAPI):
             return {'error': 'Received invalid data: %s' % data}
 
     def get_block_by_height(self, height):
-        url = 'https://blockchain.info/block-height/' + str(height) + '?format=json'
+        url = '{api_url}/block-height/{height}?format=json'.format(api_url=self.url, height=height)
         try:
             logging.getLogger('Spellbook').info('GET %s' % url)
             r = requests.get(url)
@@ -100,7 +105,7 @@ class BlockchainInfoAPI(ExplorerAPI):
 
         i = 0
         while n_tx is None or len(transactions) < n_tx:
-            url = 'https://blockchain.info/address/{address}?format=json&limit={limit}&offset={offset}'.format(address=address, limit=limit, offset=limit * i)
+            url = '{api_url}/address/{address}?format=json&limit={limit}&offset={offset}'.format(api_url=api_url, address=address, limit=limit, offset=limit * i)
             try:
                 logging.getLogger('Spellbook').info('GET %s' % url)
                 r = requests.get(url)
@@ -149,7 +154,7 @@ class BlockchainInfoAPI(ExplorerAPI):
             return {'transactions': txs}
 
     def get_balance(self, address):
-        url = 'https://blockchain.info/rawaddr/' + address + '?limit=0'
+        url = '{api_url}/rawaddr/{address}?limit=0'.format(api_url=self.url, address=address)
         try:
             logging.getLogger('Spellbook').info('GET %s' % url)
             r = requests.get(url)
@@ -168,7 +173,7 @@ class BlockchainInfoAPI(ExplorerAPI):
             return {'error': 'Received invalid data: %s' % data}
 
     def get_prime_input_address(self, txid):
-        url = 'https://blockchain.info/rawtx/' + str(txid)
+        url = '{api_url}/rawtx/{txid}'.format(api_url=self.url, txid=txid)
         try:
             logging.getLogger('Spellbook').info('GET %s' % url)
             r = requests.get(url)
@@ -195,7 +200,7 @@ class BlockchainInfoAPI(ExplorerAPI):
 
     def get_utxos(self, address, confirmations=3):
         limit = 1000  # max number of utxo given by blockchain.info is 1000, there is no 'offset' parameter available
-        url = 'https://blockchain.info/unspent?active=' + address + '&limit={limit}&confirmations={confirmations}'.format(address=address, limit=limit, confirmations=confirmations)
+        url = '{api_url}/unspent?active={address}&limit={limit}&confirmations={confirmations}'.format(api_url=self.url, address=address, limit=limit, confirmations=confirmations)
         try:
             logging.getLogger('Spellbook').info('GET %s' % url)
             r = requests.get(url)
