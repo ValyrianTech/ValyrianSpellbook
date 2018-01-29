@@ -78,6 +78,8 @@ def save_explorer(explorer_id, explorer_config):
         explorer.priority = int(explorer_config['priority'])
     if 'api_key' in explorer_config:
         explorer.api_key = explorer_config['api_key']
+    if 'testnet' in explorer_config:
+        explorer.testnet = explorer_config['testnet']
 
     explorers[explorer_id] = explorer.json_encodable()
     save_to_json_file(EXPLORERS_JSON_FILE, explorers)
@@ -102,11 +104,11 @@ def get_explorer_api(name):
     if name in explorers:
         explorer = explorers[name]
         if explorer['type'] == ExplorerType.BLOCKCHAIN_INFO:
-            return BlockchainInfoAPI()
+            return BlockchainInfoAPI(testnet=explorer['testnet'])
         elif explorer['type'] == ExplorerType.INSIGHT:
-            return InsightAPI(url=explorer['url'])
+            return InsightAPI(url=explorer['url'], testnet=explorer['testnet'])
         elif explorer['type'] == ExplorerType.BLOCKTRAIL_COM:
-            return BlocktrailComAPI(key=explorer['api_key'])
+            return BlocktrailComAPI(key=explorer['api_key'], testnet=explorer['testnet'])
         else:
             raise NotImplementedError('Unknown explorer API: %s' % name)
 
