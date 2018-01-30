@@ -45,6 +45,11 @@ def get_default_wallet():
     return spellbook_config().get('Wallet', 'default_wallet')
 
 
+@verify_config('Wallet', 'use_testnet')
+def get_use_testnet():
+    return True if spellbook_config().get('Wallet', 'use_testnet') in ['True', 'true'] else False
+
+
 @verify_config('Transactions', 'max_tx_fee_percentage')
 def get_max_tx_fee_percentage():
     return float(spellbook_config().get('Transactions', 'max_tx_fee_percentage'))
