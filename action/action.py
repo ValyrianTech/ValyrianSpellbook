@@ -10,9 +10,9 @@ from jsonhelpers import save_to_json_file
 from validators.validators import valid_action_type, valid_address, valid_percentage, valid_xpub, valid_amount, valid_op_return, valid_block_height
 from validators.validators import valid_transaction_type, valid_distribution
 from hot_wallet_helpers import get_hot_wallet
-from BIP44.BIP44 import get_xpub_key, get_address_from_xpub
+from BIP44.BIP44 import get_xpub_key, get_address_from_xpub, set_testnet
 from transactiontype import TransactionType
-from configurationhelpers import get_minimum_output_value
+from configurationhelpers import get_minimum_output_value, get_use_testnet
 
 
 ACTIONS_DIR = 'json/public/actions'
@@ -139,6 +139,9 @@ class Action(object):
 
         # fill in the address in case of a BIP44 hot wallet
         if self.wallet_type == 'BIP44':
+            # Set BIP44 module to use testnet if necessary, configured in the spellbook.conf file under [Wallet] -> use_testnet
+            set_testnet(get_use_testnet())
+
             hot_wallet = get_hot_wallet()
             xpub_key = get_xpub_key(mnemonic=' '.join(hot_wallet['mnemonic']), passphrase=hot_wallet['passphrase'], account=self.bip44_account)
 

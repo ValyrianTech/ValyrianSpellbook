@@ -12,9 +12,9 @@ from inputs.inputs import get_sil
 from linker.linker import get_lbl, get_lrl, get_lsl, get_lal
 from feehelpers import get_optimal_fee
 from hot_wallet_helpers import get_hot_wallet
-from BIP44.BIP44 import get_xpriv_key, get_private_key
+from BIP44.BIP44 import get_xpriv_key, get_private_key, set_testnet
 from transactionfactory import make_custom_tx
-from configurationhelpers import get_max_tx_fee_percentage
+from configurationhelpers import get_max_tx_fee_percentage, get_use_testnet
 
 
 class SendTransactionAction(Action):
@@ -177,6 +177,9 @@ class SendTransactionAction(Action):
             del hot_wallet
 
         elif self.wallet_type == 'BIP44':
+            # Set BIP44 module to use testnet if necessary, configured in the spellbook.conf file under [Wallet] -> use_testnet
+            set_testnet(get_use_testnet())
+
             xpriv_key = get_xpriv_key(mnemonic=' '.join(hot_wallet['mnemonic']), passphrase=hot_wallet['passphrase'], account=self.bip44_account)
             # explicitly delete local variable hot_wallet for security reasons as soon as possible
             del hot_wallet
