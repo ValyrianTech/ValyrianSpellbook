@@ -142,6 +142,8 @@ def query(query_type, param=None):
                 data = explorer_api.get_transactions(param[0])
             elif query_type == 'utxos':
                 data = explorer_api.get_utxos(*param)
+            elif query_type == 'push_tx':
+                data = explorer_api.push_tx(param[0])
             else:
                 raise NotImplementedError('Unknown query type: %s' % query_type)
 
@@ -201,6 +203,10 @@ def balance(address):
 
 def utxos(address, confirmations):
     return query('utxos', [address, confirmations])
+
+
+def push_tx(tx):
+    return query('push_tx', [tx])
 
 
 def set_explorer(explorer_id):
