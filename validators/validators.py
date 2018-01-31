@@ -8,19 +8,20 @@ ALL_CHARACTERS_REGEX = "^[a-zA-Z0-9àáâäãåąčćęèéêëėįìíîïłń�
 YOUTUBE_REGEX = "^(http(s?):\/\/)?(www\.)?youtu(be)?\.([a-z])+\/(watch(.*?)(\?|\&)v=)?(.*?)(&(.)*)?$"
 YOUTUBE_ID_REGEX = "^[a-zA-Z0-9_-]{11}$"
 URL_REGEX = "((([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-]+|(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]+)((?:\/[\+~%\/\.\w\-_]*)?\??(?:[\-\+=&;%@\.\w_]*)#?(?:[\.\!\/\\\w]*))?)"
-ADDRESS_REGEX = "^[13nm2][a-km-zA-HJ-NP-Z1-9]{25,34}$"
+MAINNET_ADDRESS_REGEX = "^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$"
+TESTNET_ADDRESS_REGEX = "^[nm2][a-km-zA-HJ-NP-Z1-9]{25,34}$"
 TXID_REGEX = "^[a-f0-9]{64}$"
 BLOCKPROFILE_REGEX = "^[0-9]*@[0-9]+:[a-zA-Z0-9]+=[a-zA-Z0-9 ]+$"
 EMAIL_REGEX = r"[^@]+@[^@]+\.[^@]+"
 
 
 def valid_address(address):
-    valid = False
-
-    if isinstance(address, (str, unicode)) and re.match(ADDRESS_REGEX, address):
-        valid = True
-
-    return valid
+    from configurationhelpers import get_use_testnet
+    testnet = get_use_testnet()
+    if testnet is True:
+        return isinstance(address, (str, unicode)) and re.match(TESTNET_ADDRESS_REGEX, address)
+    else:
+        return isinstance(address, (str, unicode)) and re.match(MAINNET_ADDRESS_REGEX, address)
 
 
 def valid_addresses(addresses):
@@ -47,11 +48,12 @@ def valid_txid(txid):
 
 
 def valid_xpub(xpub):
-    valid = False
-    if isinstance(xpub, (str, unicode)) and xpub[:4] == "xpub":
-        valid = True
-
-    return valid
+    from configurationhelpers import get_use_testnet
+    testnet = get_use_testnet()
+    if testnet is True:
+        return isinstance(xpub, (str, unicode)) and xpub[:4] == "tpub"
+    else:
+        return isinstance(xpub, (str, unicode)) and xpub[:4] == "xpub"
 
 
 def valid_description(description):
