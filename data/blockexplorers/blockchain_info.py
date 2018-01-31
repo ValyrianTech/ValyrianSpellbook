@@ -225,3 +225,19 @@ class BlockchainInfoAPI(ExplorerAPI):
                 utxos.append(utxo)
 
         return {'utxos': sorted(utxos, key=lambda k: (k['confirmations'], k['output_hash'], k['output_n']))}
+
+    def push_tx(self, tx):
+        url = '{api_url}/pushtx'.format(api_url=self.url)
+        logging.getLogger('Spellbook').info('POST %s' % url)
+        try:
+            r = requests.post(url, data=dict(tx=tx))
+        except Exception as ex:
+            logging.getLogger('Spellbook').error('Unable to push tx via Blockchain.info: %s' % ex)
+            return {'error': 'Unable to push tx Blockchain.info: %s' % ex}
+
+        data = r.text.strip()
+        if r.status_code == 200 and data == 'Transaction Submitted':
+            return {'success': True}
+        else:
+            logging.getLogger('Spellbook').error('Unable to push tx via Blockchain.info: %s' % data)
+            return {'error': 'Unable to push tx Blockchain.info: %s' % data}
