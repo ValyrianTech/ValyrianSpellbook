@@ -68,6 +68,10 @@ class SendTransactionAction(Action):
         sending_amount = total_value_in_inputs - spellbook_fee if self.amount == 0 else self.amount
         receiving_outputs = self.get_receiving_outputs(sending_amount)
 
+        if len(receiving_outputs) == 0:
+            logging.getLogger('Spellbook').error('SendTransaction action aborted: There are no receiving outputs!')
+            return False
+
         change_output = None
         # There should only be a change output if we are sending a specific amount, when sending all available funds there should never be a change output
         if self.amount != 0:
@@ -98,7 +102,6 @@ class SendTransactionAction(Action):
 
         # Get the current optimal transaction fee
         optimal_fee = get_optimal_fee()
-        optimal_fee = 5
         logging.getLogger('Spellbook').info('Optimal transaction fee is %s sat/b' % optimal_fee)
 
         # Because the transaction is in hexadecimal, to calculate the size in bytes all we need to do is divide the number of characters by 2
@@ -333,7 +336,7 @@ class SendTransactionAction(Action):
             total_shares = float(sum([share for address, share in sorted_distribution]))
 
             address = sorted_distribution[i][0]
-            share = sorted_distribution[i][1]/float(total_shares)  # Calculate the share, this must be a float between 0 and 1  Todo check for divide by zero error
+            share = sorted_distribution[i][1]/float(total_shares) if total_shares > 0 else 0  # Calculate the share, this must be a float between 0 and 1
 
             receiving_value = int(share * sending_amount)
             if receiving_value < self.minimum_output_value:
