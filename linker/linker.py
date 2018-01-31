@@ -48,7 +48,7 @@ def get_lbl(address, xpub, block_height=0):
 
     total = float(sum([row[1] for row in lbl]))
     for row in lbl:
-        row.append(row[1] / total)
+        row.append(row[1] / total if total > 0 else 0)
 
     return {'LBL': lbl}
 
@@ -72,7 +72,7 @@ def get_lrl(address, xpub, block_height=0):
 
     total = float(sum([row[1] for row in lrl]))
     for row in lrl:
-        row.append(row[1] / total)
+        row.append(row[1] / total if total > 0 else 0)
 
     return {'LRL': lrl}
 
@@ -96,6 +96,6 @@ def get_lsl(address, xpub, block_height=0):
 
     total = float(sum([row[1] for row in lsl]))
     for row in lsl:
-        row.append(row[1] / total)
+        row.append(row[1] / total if total > 0 else 0)
 
     return {'LSL': lsl}
