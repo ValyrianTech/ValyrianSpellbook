@@ -240,3 +240,11 @@ class BlocktrailComAPI(ExplorerAPI):
 
         return data
 
+    @staticmethod
+    def push_tx(tx):
+        # Must do import here to avoid circular import
+        from data.data import get_explorer_api
+
+        logging.getLogger('Spellbook').warning('Blocktrail.com api does not support broadcasting transactions, using Blockchain.info instead!')
+        blockchain_info_api = get_explorer_api('blockchain.info')
+        return blockchain_info_api.push_tx(tx)
