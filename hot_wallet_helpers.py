@@ -37,6 +37,11 @@ def prompt_decryption_password():
 
 
 def get_address_from_wallet(account, index):
+    xpub_key = get_xpub_key_from_wallet(account)
+    return get_address_from_xpub(xpub=xpub_key, i=index)
+
+
+def get_xpub_key_from_wallet(account):
     hot_wallet = get_hot_wallet()
     xpub_key = get_xpub_key(mnemonic=' '.join(hot_wallet['mnemonic']),
                             passphrase=hot_wallet['passphrase'],
@@ -45,5 +50,7 @@ def get_address_from_wallet(account, index):
     # Explicitly delete the local variable hot wallet from memory as soon as possible for security reasons
     del hot_wallet
 
-    return get_address_from_xpub(xpub=xpub_key, i=index)
+    return xpub_key
+
+
 
