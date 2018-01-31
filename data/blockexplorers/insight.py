@@ -191,3 +191,23 @@ class InsightAPI(ExplorerAPI):
                     utxos.append(utxo)
 
         return {'utxos': sorted(utxos, key=lambda k: (k['confirmations'], k['output_hash'], k['output_n']))}
+
+    def push_tx(self, tx):
+        url = '{api_url}/tx/send'.format(api_url=self.url)
+        logging.getLogger('Spellbook').info('POST %s' % url)
+        try:
+            r = requests.post(url, data=dict(rawtx=tx))
+        except Exception as ex:
+            logging.getLogger('Spellbook').error('Unable to push tx via %s: %s' % (self.url, ex))
+            return {'error': 'Unable to push tx via %s: %s' % (self.url, ex)}
+
+        try:
+            data = r.json()
+        except ValueError:
+            data = r.text
+
+        if r.status_code == 200 and isinstance(data, dict) and 'txid' in data:
+            return {'success': True}
+        else:
+            logging.getLogger('Spellbook').error('Unable to push tx via %s: %s' % (self.url, data))
+            return {'error': 'Unable to push tx via %s: %s' % (self.url, data)}
