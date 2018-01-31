@@ -123,7 +123,7 @@ def valid_email(email):
 def valid_amount(amount):
     valid = False
 
-    if isinstance(amount, int) and amount >= 0:
+    if isinstance(amount, (int, long)) and amount >= 0:
         valid = True
 
     return valid
