@@ -6,8 +6,7 @@ import operator
 
 from action import Action
 from actiontype import ActionType
-from transactiontype import TransactionType
-from data.data import utxos, prime_input_address
+from data.data import utxos, prime_input_address, push_tx
 from inputs.inputs import get_sil
 from linker.linker import get_lbl, get_lrl, get_lsl, get_lal
 from feehelpers import get_optimal_fee
@@ -158,8 +157,12 @@ class SendTransactionAction(Action):
         logging.getLogger('Spellbook').info('Raw transaction: %s' % transaction)
 
         # Broadcast the transaction to the network
-        # send_transaction # Todo: broadcast transaction
-        return True
+        response = push_tx(tx=transaction)
+        if 'success' in response and response['success'] is True:
+            return True
+        else:
+            logging.getLogger('Spellbook').error('Broadcasting tx failed: %s' % response['error'])
+            return False
 
     def get_private_key(self):
         """
