@@ -6,6 +6,7 @@ import getpass
 import simplejson
 from AESCipher import AESCipher
 from configurationhelpers import get_wallet_dir, get_default_wallet
+from BIP44.BIP44 import get_xpub_key, get_address_from_xpub
 
 HOT_WALLET_PASSWORD = None
 
@@ -33,4 +34,16 @@ def prompt_decryption_password():
     # if this is running in pycharm console, make sure 'Emulate terminal in output console' is checked in the configuration
     # HOT_WALLET_PASSWORD = getpass.getpass('Enter the password to decrypt the hot wallet: ')
     HOT_WALLET_PASSWORD = ''  # Todo enable password prompt again after development is done
+
+
+def get_address_from_wallet(account, index):
+    hot_wallet = get_hot_wallet()
+    xpub_key = get_xpub_key(mnemonic=' '.join(hot_wallet['mnemonic']),
+                            passphrase=hot_wallet['passphrase'],
+                            account=account)
+
+    # Explicitly delete the local variable hot wallet from memory as soon as possible for security reasons
+    del hot_wallet
+
+    return get_address_from_xpub(xpub=xpub_key, i=index)
 
