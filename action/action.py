@@ -9,8 +9,8 @@ from datetime import datetime
 from jsonhelpers import save_to_json_file
 from validators.validators import valid_action_type, valid_address, valid_percentage, valid_xpub, valid_amount, valid_op_return, valid_block_height
 from validators.validators import valid_transaction_type, valid_distribution
-from hot_wallet_helpers import get_hot_wallet
-from BIP44.BIP44 import get_xpub_key, get_address_from_xpub, set_testnet
+from hot_wallet_helpers import get_address_from_wallet
+from BIP44.BIP44 import set_testnet
 from transactiontype import TransactionType
 from configurationhelpers import get_minimum_output_value, get_use_testnet
 
@@ -142,13 +142,7 @@ class Action(object):
             # Set BIP44 module to use testnet if necessary, configured in the spellbook.conf file under [Wallet] -> use_testnet
             set_testnet(get_use_testnet())
 
-            hot_wallet = get_hot_wallet()
-            xpub_key = get_xpub_key(mnemonic=' '.join(hot_wallet['mnemonic']), passphrase=hot_wallet['passphrase'], account=self.bip44_account)
-
-            # Explicitly delete the local variable hot wallet from memory as soon as possible for security reasons
-            del hot_wallet
-
-            self.sending_address = get_address_from_xpub(xpub=xpub_key, i=self.bip44_index)
+            self.sending_address = get_address_from_wallet(self.bip44_account, self.bip44_index)
 
     def save(self):
         save_to_json_file(os.path.join(ACTIONS_DIR, '%s.json' % self.id), self.json_encodable())
