@@ -210,6 +210,10 @@ def valid_outputs(outputs):
     return valid
 
 
+def valid_trigger_type(trigger_type):
+    return trigger_type in ['Manual', 'Balance', 'Received', 'Sent', 'Block_height', 'Timestamp']
+
+
 def valid_action_type(action_type):
     return action_type in ['Command', 'SendTransaction', 'RevealSecret', 'SendMail', 'Webhook']
 
@@ -220,3 +224,7 @@ def valid_transaction_type(transaction_type):
 
 def valid_actions(actions):
     return isinstance(actions, list) and all([isinstance(action_id, (str, unicode)) for action_id in actions])
+
+
+def valid_timestamp(timestamp):
+    return isinstance(timestamp, int) and timestamp > 0

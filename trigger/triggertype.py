@@ -8,3 +8,10 @@ class TriggerType(object):
     RECEIVED = 'Received'  # Triggers when an address has a total received balance greater than or equal to a certain amount
     SENT = 'Sent'  # Triggers when an address has a total sent balance greater than or equal to a certain amount
     BLOCK_HEIGHT = 'Block_height'  # Triggers when a certain block height is reached
+    TIMESTAMP = 'Timestamp'  # Triggers when the time greater than or equal to a certain timestamp
+    # Todo new triggertype: SignedMessage
+    # Todo new triggertype: Recurring
+    # Todo new triggertype: TriggerSuccess
+    # Todo new triggertype: TriggerFailure
+    # Todo new triggertype: DeadManSwitch
+

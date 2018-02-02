@@ -8,7 +8,7 @@ from datetime import datetime
 from abc import abstractmethod, ABCMeta
 
 from validators.validators import valid_description, valid_creator, valid_email, valid_youtube_id, valid_status, valid_visibility
-from validators.validators import valid_address, valid_amount, valid_block_height, valid_actions
+from validators.validators import valid_address, valid_amount, valid_block_height, valid_actions, valid_timestamp, valid_trigger_type
 from action.actionhelpers import get_actions, get_action
 
 from jsonhelpers import save_to_json_file
@@ -23,6 +23,7 @@ class Trigger(object):
         self.id = trigger_id
         self.trigger_type = None
         self.block_height = None
+        self.timestamp = None
         self.address = None
         self.amount = None
         self.confirmations = 0
@@ -39,7 +40,7 @@ class Trigger(object):
     def configure(self, **config):
         self.created = datetime.fromtimestamp(config['created']) if 'created' in config else datetime.now()
 
-        if 'trigger_type' in config and config['trigger_type'] in ['Manual', 'Balance', 'Received', 'Sent', 'Block_height']:
+        if 'trigger_type' in config and valid_trigger_type(config['trigger_type']):
             self.trigger_type = config['trigger_type']
 
         if 'reset' in config and config['reset'] is True:
@@ -76,6 +77,9 @@ class Trigger(object):
 
         if 'block_height' in config and valid_block_height(config['block_height']):
             self.block_height = config['block_height']
+
+        if 'timestamp' in config and valid_timestamp(config['timestamp']):
+            self.timestamp = config['timestamp']
 
         if 'actions' in config and valid_actions(config['actions']):
             self.actions = config['actions']
@@ -132,6 +136,7 @@ class Trigger(object):
                 'amount': self.amount,
                 'confirmations': self.confirmations,
                 'block_height': self.block_height,
+                'timestamp': self.timestamp,
                 'triggered': self.triggered,
                 'description': self.description,
                 'creator_name': self.creator_name,
