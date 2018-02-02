@@ -12,6 +12,8 @@ from balancetrigger import BalanceTrigger
 from receivedtrigger import ReceivedTrigger
 from senttrigger import SentTrigger
 from blockheighttrigger import BlockHeightTrigger
+from timestamptrigger import TimestampTrigger
+
 
 TRIGGERS_DIR = 'json/public/triggers'
 
@@ -52,11 +54,12 @@ def get_trigger(trigger_id):
     - ReceivedTrigger
     - SentTrigger
     - BlockHeightTrigger
+    - TimestampTrigger
 
     If no config is known for the given trigger id then a ManualTrigger is returned
 
     :param trigger_id: The id of the trigger
-    :return: A derived Trigger object (ManualTrigger, BalanceTrigger, ReceivedTrigger, SentTrigger or BlockHeightTrigger)
+    :return: A child class of Trigger
     """
     trigger_config = get_trigger_config(trigger_id)
     trigger = ManualTrigger(trigger_id)
@@ -69,6 +72,8 @@ def get_trigger(trigger_id):
             trigger = SentTrigger(trigger_id)
         elif trigger_config['trigger_type'] == TriggerType.BLOCK_HEIGHT:
             trigger = BlockHeightTrigger(trigger_id)
+        elif trigger_config['trigger_type'] == TriggerType.TIMESTAMP:
+            trigger = TimestampTrigger(trigger_id)
         elif trigger_config['trigger_type'] == TriggerType.MANUAL:
             trigger = ManualTrigger(trigger_id)
         else:
