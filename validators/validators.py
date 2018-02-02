@@ -211,7 +211,7 @@ def valid_outputs(outputs):
 
 
 def valid_trigger_type(trigger_type):
-    return trigger_type in ['Manual', 'Balance', 'Received', 'Sent', 'Block_height', 'Timestamp']
+    return trigger_type in ['Manual', 'Balance', 'Received', 'Sent', 'Block_height', 'Timestamp', 'Recurring']
 
 
 def valid_action_type(action_type):

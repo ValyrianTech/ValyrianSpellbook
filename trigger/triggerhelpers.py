@@ -13,6 +13,7 @@ from receivedtrigger import ReceivedTrigger
 from senttrigger import SentTrigger
 from blockheighttrigger import BlockHeightTrigger
 from timestamptrigger import TimestampTrigger
+from recurringtrigger import RecurringTrigger
 
 
 TRIGGERS_DIR = 'json/public/triggers'
@@ -55,6 +56,7 @@ def get_trigger(trigger_id):
     - SentTrigger
     - BlockHeightTrigger
     - TimestampTrigger
+    - RecurringTrigger
 
     If no config is known for the given trigger id then a ManualTrigger is returned
 
@@ -74,6 +76,8 @@ def get_trigger(trigger_id):
             trigger = BlockHeightTrigger(trigger_id)
         elif trigger_config['trigger_type'] == TriggerType.TIMESTAMP:
             trigger = TimestampTrigger(trigger_id)
+        elif trigger_config['trigger_type'] == TriggerType.RECURRING:
+            trigger = RecurringTrigger(trigger_id)
         elif trigger_config['trigger_type'] == TriggerType.MANUAL:
             trigger = ManualTrigger(trigger_id)
         else:
