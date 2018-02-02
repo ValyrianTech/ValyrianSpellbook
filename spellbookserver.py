@@ -19,7 +19,7 @@ from data.data import get_explorers, get_explorer_config, save_explorer, delete_
 from data.data import latest_block, block_by_height, block_by_hash, prime_input_address
 from data.data import transactions, balance, utxos
 from decorators import authentication_required, use_explorer, output_json
-from inputs.inputs import get_sil, get_profile
+from inputs.inputs import get_sil, get_profile, get_sul
 from linker.linker import get_lal, get_lbl, get_lrl, get_lsl
 from randomaddress.randomaddress import random_address_from_sil, random_address_from_lbl, random_address_from_lrl, random_address_from_lsl
 from trigger.triggerhelpers import get_triggers, get_trigger_config, save_trigger, delete_trigger, activate_trigger, check_triggers
@@ -84,6 +84,9 @@ class SpellbookRESTAPI(Bottle):
 
         # Routes for Profile
         self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/profile', method='GET', callback=self.get_profile)
+
+        # Routes for Simplified UTXO List (SUL)
+        self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/SUL', method='GET', callback=self.get_sul)
 
         # Routes for Linked Lists
         self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/LAL', method='GET', callback=self.get_lal)
@@ -258,6 +261,13 @@ class SpellbookRESTAPI(Bottle):
     def get_profile(address):
         block_height = int(request.json['block_height'])
         return get_profile(address, block_height)
+
+    @staticmethod
+    @output_json
+    @use_explorer
+    def get_sul(address):
+        confirmations = int(request.json['confirmations'])
+        return get_sul(address, confirmations)
 
     @staticmethod
     @output_json
