@@ -141,3 +141,43 @@ def txs_to_profile(txs, address, block_height=0):
                                 else:
                                     profile[prime_input_address][from_address] = {variable_name: variable_value}
     return profile
+
+
+def get_sul(address, confirmations=1):
+    if not valid_address(address):
+        return {'error': 'Invalid address: ' + address}
+
+    utxos_data = data.utxos(address=address, confirmations=confirmations)
+    if 'utxos' in utxos_data:
+        sul = utxos_to_sul(utxos_data['utxos'])
+        return {'SUL': sul} if 'error' not in sul else {'error': sul['error']}
+    else:
+        return {'error': 'Unable to retrieve utxos of address %s' % address}
+
+
+def utxos_to_sul(utxos):
+    sul = []
+
+    for utxo in utxos:
+        prime_input_address_data = data.prime_input_address(utxo['output_hash'])
+        if 'prime_input_address' in prime_input_address_data:
+            prime_input_address = prime_input_address_data['prime_input_address']
+            recurring = False
+
+            for row in sul:
+                if row[0] == prime_input_address:
+                    row[1] += utxo['value']
+                    recurring = True
+                    break
+
+            if not recurring:
+                sul.append([prime_input_address, utxo['value'], 0])  # Third value is a placeholder for the share
+        else:
+            return {'error': 'Unable to retrieve prime input address of txid %s' % utxo['output_hash']}
+
+    # Calculate the share of each prime input address
+    total = float(sum([row[1] for row in sul]))
+    for row in sul:
+        row[2] = row[1]/total if total > 0 else 0
+
+    return sul

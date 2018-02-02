@@ -221,7 +221,7 @@ get_utxos_parser.add_argument('-e', '--explorer', help='Use specified explorer t
 # ----------------------------------------------------------------------------------------------------------------------
 
 # Create parser for the get_sil subcommand
-get_lal_parser = subparsers.add_parser(name='get_sil',
+get_sil_parser = subparsers.add_parser(name='get_sil',
                                        help='Get the Simplified Inputs List (SIL) of an address',
                                        formatter_class=argparse.RawDescriptionHelpFormatter,
                                        description='''
@@ -237,9 +237,9 @@ examples:
     -> Get the SIL of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the blockchain.info explorer to retrieve the data
                                        ''')
 
-get_lal_parser.add_argument('address', help='The address')
-get_lal_parser.add_argument('-b', '--block_height', help='The block height for the SIL (optional, default=latest block)', default=0)
-get_lal_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
+get_sil_parser.add_argument('address', help='The address')
+get_sil_parser.add_argument('-b', '--block_height', help='The block height for the SIL (optional, default=latest block)', default=0)
+get_sil_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
 
 
 # Create parser for the get_profile subcommand
@@ -262,6 +262,28 @@ examples:
 get_profile_parser.add_argument('address', help='The address')
 get_profile_parser.add_argument('-b', '--block_height', help='The block height for the profile (optional, default=latest block)', default=0)
 get_profile_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
+
+
+# Create parser for the get_sul subcommand
+get_sul_parser = subparsers.add_parser(name='get_sul',
+                                       help='Get the Simplified UTXO List (SIL) of an address',
+                                       formatter_class=argparse.RawDescriptionHelpFormatter,
+                                       description='''
+Get the Simplified UTXO List (SUL) of an address.
+                                       ''',
+                                       epilog='''
+examples:
+  - spellbook.py get_sul 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8
+    -> Get the SUL of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the default explorer
+  - spellbook.py get_sul 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 -c=6
+    -> Get the SUL of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 with at least 6 confirmations using the default explorer
+  - spellbook.py get_sul 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 --explorer=blockchain.info
+    -> Get the SUL of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the blockchain.info explorer to retrieve the data
+                                       ''')
+
+get_sul_parser.add_argument('address', help='The address')
+get_sul_parser.add_argument('-c', '--confirmations', help='The number of confirmations a utxo must have to be included in the SUL (optional, default=1)', default=1)
+get_sul_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
 
 # ----------------------------------------------------------------------------------------------------------------
 
@@ -857,6 +879,20 @@ def get_profile():
         print >> sys.stderr, 'Unable to get profile: %s' % ex
         sys.exit(1)
 
+
+def get_sul():
+    data = {'confirmations': args.confirmations}
+
+    try:
+        url = 'http://{host}:{port}/spellbook/addresses/{address}/SUL'.format(host=host, port=port, address=args.address)
+        if args.explorer is not None:
+            url += '?explorer={explorer}'.format(explorer=args.explorer)
+        r = requests.get(url, json=data)
+        print r.text
+    except Exception as ex:
+        print >> sys.stderr, 'Unable to get SUL: %s' % ex
+        sys.exit(1)
+
 # ----------------------------------------------------------------------------------------------------------------
 
 
@@ -1221,6 +1257,8 @@ elif args.command == 'get_sil':
     get_sil()
 elif args.command == 'get_profile':
     get_profile()
+elif args.command == 'get_sul':
+    get_sul()
 elif args.command == 'get_lal':
     get_lal()
 elif args.command == 'get_lbl':
