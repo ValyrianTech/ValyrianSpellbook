@@ -168,7 +168,7 @@ def valid_youtube_id(youtube):
 
 
 def valid_status(status):
-    return True if status in ['Pending', 'Active', 'Disabled'] else False
+    return True if status in ['Pending', 'Active', 'Disabled', 'Succeeded', 'Failed'] else False
 
 
 def valid_visibility(visibility):
@@ -211,7 +211,7 @@ def valid_outputs(outputs):
 
 
 def valid_trigger_type(trigger_type):
-    return trigger_type in ['Manual', 'Balance', 'Received', 'Sent', 'Block_height', 'Timestamp', 'Recurring']
+    return trigger_type in ['Manual', 'Balance', 'Received', 'Sent', 'Block_height', 'Timestamp', 'Recurring', 'TriggerStatus']
 
 
 def valid_action_type(action_type):
