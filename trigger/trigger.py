@@ -31,6 +31,8 @@ class Trigger(object):
         self.address = None
         self.amount = None
         self.confirmations = 0
+        self.previous_trigger = None
+        self.previous_trigger_status = None
         self.triggered = False
         self.description = None
         self.creator_name = None
@@ -47,8 +49,12 @@ class Trigger(object):
         if 'trigger_type' in config and valid_trigger_type(config['trigger_type']):
             self.trigger_type = config['trigger_type']
 
+        if 'status' in config and valid_status(config['status']):
+            self.status = config['status']
+
         if 'reset' in config and config['reset'] is True:
             self.triggered = False
+            self.status = 'Active'
         elif 'triggered' in config and config['triggered'] in [True, False]:
             self.triggered = config['triggered']
 
@@ -64,9 +70,6 @@ class Trigger(object):
         if 'youtube' in config and valid_youtube_id(config['youtube']):
             self.youtube = config['youtube']
 
-        if 'status' in config and valid_status(config['status']):
-            self.status = config['status']
-
         if 'visibility' in config and valid_visibility(config['visibility']):
             self.visibility = config['visibility']
 
@@ -78,6 +81,12 @@ class Trigger(object):
 
         if 'confirmations' in config:
             self.confirmations = config['confirmations']
+
+        if 'previous_trigger' in config:
+            self.previous_trigger = config['previous_trigger']
+
+        if 'previous_trigger_status' in config and config['previous_trigger_status'] in ['Succeeded', 'Failed']:
+            self.previous_trigger_status = config['previous_trigger_status']
 
         if 'block_height' in config and valid_block_height(config['block_height']):
             self.block_height = config['block_height']
@@ -139,10 +148,14 @@ class Trigger(object):
             success = action.run()
 
             if not success:
+                self.triggered = True
+                self.status = 'Failed'
+                self.save()
                 return
 
         # All actions were successful
         self.triggered = True
+        self.status = 'Succeeded'
         self.save()
 
     def save(self):
@@ -154,6 +167,8 @@ class Trigger(object):
                 'address': self.address,
                 'amount': self.amount,
                 'confirmations': self.confirmations,
+                'previous_trigger': self.previous_trigger,
+                'previous_trigger_status': self.previous_trigger_status,
                 'block_height': self.block_height,
                 'timestamp': self.timestamp,
                 'begin_time': self.begin_time,
