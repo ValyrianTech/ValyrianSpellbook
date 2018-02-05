@@ -60,9 +60,9 @@ class DeadMansSwitchTrigger(Trigger):
 class SwitchPhase(object):
     PHASE_0 = 0  # The dead man's switch is not armed yet
     PHASE_1 = 1  # The dead man's switch has been armed
-    PHASE_2 = 2  # The dead man's switch has been armed and 1 warning has been sent
-    PHASE_3 = 3  # The dead man's switch has been armed and 2 warnings has been sent
-    PHASE_4 = 4  # The dead man's switch has been armed and 3 warnings has been sent
+    PHASE_2 = 2  # The dead man's switch has been armed and 1 warning has been sent (50% of timeout has passed)
+    PHASE_3 = 3  # The dead man's switch has been armed and 2 warnings has been sent (75% of timeout has passed)
+    PHASE_4 = 4  # The dead man's switch has been armed and 3 warnings has been sent (90% of timeout has passed)
     PHASE_5 = 5  # The dead man's switch has been activated
 
 
