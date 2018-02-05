@@ -8,7 +8,6 @@ import ecdsa
 import base64
 import hashlib
 from ecdsa.util import string_to_number
-import sys
 
 VERBOSE = False
 # VERBOSE = True
@@ -25,7 +24,7 @@ generator_secp256k1 = ecdsa.ellipticcurve.Point(curve_secp256k1, _Gx, _Gy, _r)
 oid_secp256k1 = (1, 3, 132, 0, 10)
 SECP256k1 = ecdsa.curves.Curve("SECP256k1", curve_secp256k1, generator_secp256k1, oid_secp256k1)
 
-addrtype = 0
+addrtype = 0  # 0 for mainnet addresses, 111 for testnet addresses
 
 
 # from http://eli.thegreenplace.net/2009/03/07/computing-modular-square-roots-in-python/
@@ -242,6 +241,15 @@ def sign_message(private_key, message, compressed=False):
 def verify_message(address, signature, message):
     """ See http://www.secg.org/download/aid-780/sec1-v2.pdf for the math """
     from ecdsa import numbertheory, ellipticcurve, util
+
+    global addrtype
+    if address[0] in ['1', '3']:
+        # address is a mainnet address
+        addrtype = 0
+    elif address[0] in ['n', 'm', '2']:
+        # address is a testnet address
+        addrtype = 111
+
     curve = curve_secp256k1
     G = generator_secp256k1
     order = G.order()
@@ -312,11 +320,11 @@ def sign_message_with_private_key(base58_priv_key, message, compressed=True):
     encoded_priv_key_hex_string = encoded_priv_key_bytes.encode('hex')
 
     secret_hex_string = ''
-    if base58_priv_key[0] == 'L' or base58_priv_key[0] == 'K':
+    if base58_priv_key[0] in ['L', 'K', 'c']:  # mainnet: L or K, testnet: c
         assert len(encoded_priv_key_hex_string) == 76
         # strip leading 0x08, 0x01 compressed flag, checksum
         secret_hex_string = encoded_priv_key_hex_string[2:-10]
-    elif base58_priv_key[0] == '5':
+    elif base58_priv_key[0] in ['5', '9']:  # mainnet: 5, testnet: 9
         assert len(encoded_priv_key_hex_string) == 74
         # strip leading 0x08 and checksum
         secret_hex_string = encoded_priv_key_hex_string[2:-8]
@@ -357,11 +365,8 @@ def test_sign_messages():
     # print 'sig:\n', sign_and_verify(compressedPrivKey1, msg1, addressCompressesed1, False) # bad
 
 
-def sign_input_message():
+def sign_input_message(address, message, base58_priv_key):
     print 'Sign message\n'
-    address = raw_input("Enter address:\n")
-    message = raw_input("Enter message:\n")
-    base58_priv_key = raw_input("Enter private key:\n")
 
     """
     address = '14dD6ygPi5WXdwwBTt1FBZK3aD8uDem1FY'
@@ -370,47 +375,13 @@ def sign_input_message():
     #"""
 
     compressed = True
-    if base58_priv_key[0] == 'L' or base58_priv_key[0] == 'K':
+    if base58_priv_key[0] in ['L', 'K', 'c']:  # mainnet: L or K, testnet: c
         compressed = True
-    elif base58_priv_key[0] == '5':
+    elif base58_priv_key[0] in ['5', '9']:  # mainnet: 5, testnet: 9
         compressed = False
     else:
-        raise BaseException("error: private must start with 5 if uncompressed or L/K for compressed")
+        raise BaseException("error: private must start with 5 (mainnet) or 9 (testnet) if uncompressed or L/K (mainnet) or c (testnet) for compressed")
 
-    print '\n\n\n'
-    print address
-    print message
-    print base58_priv_key
-    print 'Signature:\n\n', sign_and_verify(base58_priv_key, message, address, compressed)
+    signature = sign_and_verify(base58_priv_key, message, address, compressed)
 
-
-def verify_input_message():
-    print 'Verify message\n'
-    address = raw_input("Enter address:\n")
-    message = raw_input("Enter message:\n")
-    signature = raw_input("Enter signature:\n")
-
-    """
-    address = '14dD6ygPi5WXdwwBTt1FBZK3aD8uDem1FY'
-    message = 'test message'
-    signature = 'IPn9bbEdNUp6+bneZqE2YJbq9Hv5aNILq9E5eZoMSF3/fBX4zjeIN6fpXfGSGPrZyKfHQ/c/kTSP+NIwmyTzMfk='
-    #"""
-
-    print '\n\n\n'
-    print address
-    print message
-    print signature
-    print 'Message verified:', verify_message(address, signature, message)
-
-
-def main():
-    argv = sys.argv
-    if len(argv) > 1 and argv[1] == '-s':
-        sign_input_message()
-    else:
-        verify_input_message()
-
-
-if __name__ == '__main__':
-    # test_sign_messages()
-    main()
+    return signature
