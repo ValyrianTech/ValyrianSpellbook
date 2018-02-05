@@ -6,7 +6,7 @@ import getpass
 import simplejson
 from AESCipher import AESCipher
 from configurationhelpers import get_wallet_dir, get_default_wallet
-from BIP44.BIP44 import get_xpub_key, get_address_from_xpub
+from BIP44.BIP44 import get_xpub_key, get_address_from_xpub, get_private_key, get_xpriv_key
 
 HOT_WALLET_PASSWORD = None
 
@@ -51,6 +51,23 @@ def get_xpub_key_from_wallet(account):
     del hot_wallet
 
     return xpub_key
+
+
+def get_xpriv_key_from_wallet(account):
+    hot_wallet = get_hot_wallet()
+    xpriv_key = get_xpriv_key(mnemonic=' '.join(hot_wallet['mnemonic']),
+                              passphrase=hot_wallet['passphrase'],
+                              account=account)
+
+    # Explicitly delete the local variable hot wallet from memory as soon as possible for security reasons
+    del hot_wallet
+
+    return xpriv_key
+
+
+def get_private_key_from_wallet(account, index):
+    xpriv_key = get_xpriv_key_from_wallet(account=account)
+    return get_private_key(xpriv=xpriv_key, i=index)
 
 
 
