@@ -211,7 +211,7 @@ def valid_outputs(outputs):
 
 
 def valid_trigger_type(trigger_type):
-    return trigger_type in ['Manual', 'Balance', 'Received', 'Sent', 'Block_height', 'Timestamp', 'Recurring', 'TriggerStatus']
+    return trigger_type in ['Manual', 'Balance', 'Received', 'Sent', 'Block_height', 'Timestamp', 'Recurring', 'TriggerStatus', 'DeadMansSwitch']
 
 
 def valid_action_type(action_type):
@@ -228,3 +228,8 @@ def valid_actions(actions):
 
 def valid_timestamp(timestamp):
     return isinstance(timestamp, int) and timestamp > 0
+
+
+def valid_phase(phase):
+    return phase in range(6)
+

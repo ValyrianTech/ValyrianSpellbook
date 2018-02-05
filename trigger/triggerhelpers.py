@@ -15,6 +15,7 @@ from blockheighttrigger import BlockHeightTrigger
 from timestamptrigger import TimestampTrigger
 from recurringtrigger import RecurringTrigger
 from triggerstatustrigger import TriggerStatusTrigger
+from deadmansswitchtrigger import DeadMansSwitchTrigger
 
 
 TRIGGERS_DIR = 'json/public/triggers'
@@ -82,6 +83,8 @@ def get_trigger(trigger_id):
             trigger = RecurringTrigger(trigger_id)
         elif trigger_config['trigger_type'] == TriggerType.TRIGGERSTATUS:
             trigger = TriggerStatusTrigger(trigger_id)
+        elif trigger_config['trigger_type'] == TriggerType.DEADMANSSWITCH:
+            trigger = DeadMansSwitchTrigger(trigger_id)
         elif trigger_config['trigger_type'] == TriggerType.MANUAL:
             trigger = ManualTrigger(trigger_id)
         else:
@@ -119,7 +122,7 @@ def delete_trigger(trigger_id):
 
 def activate_trigger(trigger_id):
     """
-    Activate a Manual trigger
+    Activate a Manual trigger or a DeadMansSwitch trigger
 
     :param trigger_id: The id of the trigger
     """
@@ -129,8 +132,10 @@ def activate_trigger(trigger_id):
     trigger = get_trigger(trigger_id)
     if trigger.trigger_type == TriggerType.MANUAL:
         trigger.activate()
+    elif trigger.trigger_type == TriggerType.DEADMANSSWITCH:
+        trigger.arm()
     else:
-        return {'error': 'Only triggers of type Manual can be activated manually'}
+        return {'error': 'Only triggers of type Manual or DeadmansSwitch can be activated manually'}
 
 
 def check_triggers(trigger_id=None):
