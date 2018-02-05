@@ -475,7 +475,7 @@ examples:
 
 save_trigger_parser.add_argument('trigger_id', help='The id of the trigger')
 save_trigger_parser.add_argument('-r', '--reset', help='Reset the trigger in case it has been triggered already', action='store_true')
-save_trigger_parser.add_argument('-t', '--type', help='The type of the trigger', choices=['Manual', 'Balance', 'Received', 'Sent', 'Block_height', 'Timestamp', 'Recurring', 'TriggerStatus'])
+save_trigger_parser.add_argument('-t', '--type', help='The type of the trigger', choices=['Manual', 'Balance', 'Received', 'Sent', 'Block_height', 'Timestamp', 'Recurring', 'TriggerStatus', 'DeadMansSwitch'])
 save_trigger_parser.add_argument('-a', '--address', help='The address to check the final balance, total received or total sent')
 save_trigger_parser.add_argument('-am', '--amount', help='The amount', type=int)
 save_trigger_parser.add_argument('-c', '--confirmations', help='The number of confirmations before the trigger is activated', default=3, type=int)
@@ -486,6 +486,8 @@ save_trigger_parser.add_argument('-et', '--end_time', help='The unix timestamp a
 save_trigger_parser.add_argument('-i', '--interval', help='The amount of seconds between each activation of the recurring trigger', type=int)
 save_trigger_parser.add_argument('-pt', '--previous_trigger', help='The id of the trigger of which to check the status')
 save_trigger_parser.add_argument('-pts', '--previous_trigger_status', help='The status a previous trigger must be for this trigger to activate', choices=['Succeeded', 'Failed'])
+save_trigger_parser.add_argument('-ti', '--timeout', help='The amount of seconds before an activated DeadMansSwitch times out', type=int)
+save_trigger_parser.add_argument('-we', '--warning_email', help='The email address to send a warning to when a DeadMansSwitch reaches 50%, 75% and 90% of the timeout')
 save_trigger_parser.add_argument('-d', '--description', help='A description of the trigger')
 save_trigger_parser.add_argument('-cn', '--creator_name', help='The name of the creator the trigger')
 save_trigger_parser.add_argument('-ce', '--creator_email', help='The email of the creator of the trigger')
@@ -1030,6 +1032,12 @@ def save_trigger():
 
     if args.interval is not None:
         data['interval'] = args.interval
+
+    if args.timeout is not None:
+        data['timeout'] = args.timeout
+
+    if args.warning_email is not None:
+        data['warning_email'] = args.warning_email
 
     if args.reset is not None:
         data['reset'] = True
