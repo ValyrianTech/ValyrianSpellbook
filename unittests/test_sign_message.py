@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import pytest
-from sign_message import verify_message, sign_input_message
+from sign_message import verify_message, sign_message
 from hot_wallet_helpers import get_address_from_wallet, get_private_key_from_wallet
 from BIP44.BIP44 import set_testnet
 
@@ -37,7 +37,7 @@ class TestSignMessage(object):
         print 'Message:', message
 
         # signature keeps changing, sign_input_message both signs and verifies
-        signature = sign_input_message(address, message, private_key)
+        signature = sign_message(address, message, private_key)
         print 'Signature:', signature
 
         assert verify_message(address=address, message=message, signature=signature)
@@ -63,7 +63,7 @@ class TestSignMessage(object):
         print 'Message:', message
 
         # signature keeps changing, sign_input_message both signs and verifies
-        signature = sign_input_message(address, message, private_key)
+        signature = sign_message(address, message, private_key)
         print 'Signature:', signature
 
         assert verify_message(address=address, message=message, signature=signature)
@@ -84,7 +84,7 @@ class TestSignMessage(object):
         print 'Address:', address
         print 'Message:', message
 
-        signature = sign_input_message(address, message, private_key)
+        signature = sign_message(address, message, private_key)
         print 'Signature:', signature
 
         assert verify_message(address=address, message=message, signature=signature)
@@ -124,7 +124,7 @@ class TestSignMessage(object):
         print 'Address:', address
         print 'Message:', message
 
-        signature = sign_input_message(address, message, private_key)
+        signature = sign_message(address, message, private_key)
         print 'Signature:', signature
 
         assert verify_message(address=address, message=message, signature=signature)
