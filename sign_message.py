@@ -9,9 +9,6 @@ import base64
 import hashlib
 from ecdsa.util import string_to_number
 
-VERBOSE = False
-# VERBOSE = True
-
 # secp256k1, http://www.oid-info.com/get/1.3.132.0.10
 _p = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2FL
 _r = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141L
@@ -186,7 +183,7 @@ def msg_magic(message):
     return "\x18Bitcoin Signed Message:\n" + chr(len(message)) + message
 
 
-def Hash(data):
+def double_sha256_hash(data):
     return hashlib.sha256(hashlib.sha256(data).digest()).digest()
 
 
@@ -198,7 +195,7 @@ def hash_160(public_key):
 
 def hash_160_to_bc_address(h160):
     vh160 = chr(addrtype) + h160
-    h = Hash(vh160)
+    h = double_sha256_hash(vh160)
     addr = vh160 + h[0:4]
     return b58encode(addr)
 
@@ -219,27 +216,15 @@ def encode_point(pubkey, compressed=False):
         return chr(4) + x_str + y_str
 
 
-def sign_message(private_key, message, compressed=False):
-    public_key = private_key.get_verifying_key()
-    signature = private_key.sign_digest(Hash(msg_magic(message)), sigencode=ecdsa.util.sigencode_string)
-    address = public_key_to_bc_address(encode_point(public_key, compressed))
-    assert public_key.verify_digest(signature, Hash(msg_magic(message)), sigdecode=ecdsa.util.sigdecode_string)
-    for i in range(4):
-        nV = 27 + i
-        if compressed:
-            nV += 4
-        sig = base64.b64encode(chr(nV) + signature)
-        try:
-            if verify_message(address, sig, message):
-                return sig
-        except:
-            continue
-    else:
-        raise BaseException("error: cannot sign message")
-
-
 def verify_message(address, signature, message):
-    """ See http://www.secg.org/download/aid-780/sec1-v2.pdf for the math """
+    """ See http://www.secg.org/download/aid-780/sec1-v2.pdf for the math
+    Verify that a messege is signed by the private key of the given address
+
+    :param address: The bitcoin address that signed the message
+    :param signature: The signature
+    :param message: The message
+    :return: True or False
+    """
     from ecdsa import numbertheory, ellipticcurve, util
 
     global addrtype
@@ -255,7 +240,9 @@ def verify_message(address, signature, message):
     order = G.order()
     # extract r,s from signature
     sig = base64.b64decode(signature)
-    if len(sig) != 65: raise BaseException("Wrong encoding")
+    if len(sig) != 65:
+        raise BaseException("Wrong encoding")
+
     r, s = util.sigdecode_string(sig[1:], order)
     nV = ord(sig[0])
     if nV < 27 or nV >= 35:
@@ -275,7 +262,7 @@ def verify_message(address, signature, message):
     # 1.4 the constructor checks that nR is at infinity
     R = ellipticcurve.Point(curve, x, y, order)
     # 1.5 compute e from message:
-    h = Hash(msg_magic(message))
+    h = double_sha256_hash(msg_magic(message))
     e = string_to_number(h)
     minus_e = -e % order
     # 1.6 compute Q = r^-1 (sR - eG)
@@ -286,21 +273,18 @@ def verify_message(address, signature, message):
     public_key.verify_digest(sig[1:], h, sigdecode=ecdsa.util.sigdecode_string)
     # check that we get the original signing address
     addr = public_key_to_bc_address(encode_point(public_key, compressed))
-    if address == addr:
-        return True
-    else:
-        # print addr
-        return False
+
+    return address == addr
 
 
 def sign_message_with_secret(secret, message, compressed=False):
     private_key = ecdsa.SigningKey.from_secret_exponent(secret, curve=SECP256k1)
 
     public_key = private_key.get_verifying_key()
-    signature = private_key.sign_digest(Hash(msg_magic(message)), sigencode=ecdsa.util.sigencode_string)
+    signature = private_key.sign_digest(double_sha256_hash(msg_magic(message)), sigencode=ecdsa.util.sigencode_string)
     address = public_key_to_bc_address(encode_point(public_key, compressed))
-    if VERBOSE: print 'address:\n', address
-    assert public_key.verify_digest(signature, Hash(msg_magic(message)), sigdecode=ecdsa.util.sigdecode_string)
+
+    assert public_key.verify_digest(signature, double_sha256_hash(msg_magic(message)), sigdecode=ecdsa.util.sigdecode_string)
     for i in range(4):
         nV = 27 + i
         if compressed:
@@ -315,73 +299,54 @@ def sign_message_with_secret(secret, message, compressed=False):
         raise BaseException("error: cannot sign message")
 
 
-def sign_message_with_private_key(base58_priv_key, message, compressed=True):
-    encoded_priv_key_bytes = b58decode(base58_priv_key, None)
+def sign_message_with_private_key(private_key, message):
+    encoded_priv_key_bytes = b58decode(private_key, None)
     encoded_priv_key_hex_string = encoded_priv_key_bytes.encode('hex')
 
-    secret_hex_string = ''
-    if base58_priv_key[0] in ['L', 'K', 'c']:  # mainnet: L or K, testnet: c
+    compressed = is_compressed(private_key)
+    if compressed:
         assert len(encoded_priv_key_hex_string) == 76
         # strip leading 0x08, 0x01 compressed flag, checksum
         secret_hex_string = encoded_priv_key_hex_string[2:-10]
-    elif base58_priv_key[0] in ['5', '9']:  # mainnet: 5, testnet: 9
+    else:
         assert len(encoded_priv_key_hex_string) == 74
         # strip leading 0x08 and checksum
         secret_hex_string = encoded_priv_key_hex_string[2:-8]
-    else:
-        raise BaseException("error: private must start with 5 if uncompressed or L/K for compressed")
 
-    if VERBOSE: print 'secret_hex_string:\n', secret_hex_string
     secret = int(secret_hex_string, 16)
 
-    checksum = Hash(encoded_priv_key_bytes[:-4])[:4].encode('hex')
-    if VERBOSE: print 'checksum:\n', checksum
+    checksum = double_sha256_hash(encoded_priv_key_bytes[:-4])[:4].encode('hex')
     assert checksum == encoded_priv_key_hex_string[-8:]  # make sure private key is valid
-    if VERBOSE: print 'secret:\n', secret
+
     return sign_message_with_secret(secret, message, compressed)
 
 
-def sign_and_verify(wifPrivateKey, message, bitcoinaddress, compressed=True):
-    sig = sign_message_with_private_key(wifPrivateKey, message, compressed)
-    assert verify_message(bitcoinaddress, sig, message)
-    if VERBOSE: print 'verify_message:', verify_message(bitcoinaddress, sig, message)
+def sign_and_verify(private_key, message, address):
+    sig = sign_message_with_private_key(private_key, message)
+    assert verify_message(address, sig, message)
+
     return sig
 
 
-def test_sign_messages():
-    wif1 = '5KMWWy2d3Mjc8LojNoj8Lcz9B1aWu8bRofUgGwQk959Dw5h2iyw'
-    compressedPrivKey1 = 'L41XHGJA5QX43QRG3FEwPbqD5BYvy6WxUxqAMM9oQdHJ5FcRHcGk'
-    addressUncompressesed1 = '1HUBHMij46Hae75JPdWjeZ5Q7KaL7EFRSD'
-    addressCompressesed1 = '14dD6ygPi5WXdwwBTt1FBZK3aD8uDem1FY'
-    msg1 = 'test message'
-    print 'sig:\n', sign_and_verify(wif1, msg1, addressUncompressesed1, False)  # good
-    print 'sig:\n', sign_and_verify(wif1, msg1, addressCompressesed1)  # good
-    # print 'sig:\n', sign_and_verify(wif1, msg1, addressUncompressesed1) # bad
-    # print 'sig:\n', sign_and_verify(wif1, msg1, addressCompressesed1, False) # bad
-
-    print 'sig:\n', sign_and_verify(compressedPrivKey1, msg1, addressCompressesed1)  # good
-    print 'sig:\n', sign_and_verify(compressedPrivKey1, msg1, addressUncompressesed1, False)  # good
-    # print 'sig:\n', sign_and_verify(compressedPrivKey1, msg1, addressUncompressesed1) # bad
-    # print 'sig:\n', sign_and_verify(compressedPrivKey1, msg1, addressCompressesed1, False) # bad
-
-
-def sign_input_message(address, message, base58_priv_key):
-    print 'Sign message\n'
-
+def sign_message(address, message, private_key):
     """
-    address = '14dD6ygPi5WXdwwBTt1FBZK3aD8uDem1FY'
-    message = 'test message'
-    base58_priv_key = 'L41XHGJA5QX43QRG3FEwPbqD5BYvy6WxUxqAMM9oQdHJ5FcRHcGk'
-    #"""
+    Sign a message with the private key of an address
 
-    compressed = True
-    if base58_priv_key[0] in ['L', 'K', 'c']:  # mainnet: L or K, testnet: c
+    :param address: A Bitcoin address
+    :param message: The message to sign
+    :param private_key: The private key of the address
+    :return: The signature
+    """
+    return sign_and_verify(private_key, message, address)
+
+
+def is_compressed(priv_key):
+    if priv_key[0] in ['L', 'K', 'c']:  # mainnet: L or K, testnet: c
         compressed = True
-    elif base58_priv_key[0] in ['5', '9']:  # mainnet: 5, testnet: 9
+    elif priv_key[0] in ['5', '9']:  # mainnet: 5, testnet: 9
         compressed = False
     else:
-        raise BaseException("error: private must start with 5 (mainnet) or 9 (testnet) if uncompressed or L/K (mainnet) or c (testnet) for compressed")
+        raise BaseException("error: private key must start with 5 (mainnet) or 9 (testnet) if uncompressed or L/K (mainnet) or c (testnet) for compressed")
 
-    signature = sign_and_verify(base58_priv_key, message, address, compressed)
+    return compressed
 
-    return signature
