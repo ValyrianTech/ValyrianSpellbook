@@ -22,7 +22,7 @@ from decorators import authentication_required, use_explorer, output_json
 from inputs.inputs import get_sil, get_profile, get_sul
 from linker.linker import get_lal, get_lbl, get_lrl, get_lsl
 from randomaddress.randomaddress import random_address_from_sil, random_address_from_lbl, random_address_from_lrl, random_address_from_lsl
-from trigger.triggerhelpers import get_triggers, get_trigger_config, save_trigger, delete_trigger, activate_trigger, check_triggers
+from trigger.triggerhelpers import get_triggers, get_trigger_config, save_trigger, delete_trigger, activate_trigger, check_triggers, verify_signed_message
 from action.actionhelpers import get_actions, get_action_config, save_action, delete_action, run_action, get_reveal
 
 
@@ -106,6 +106,7 @@ class SpellbookRESTAPI(Bottle):
         self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.save_trigger)
         self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.delete_trigger)
         self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/activate', method='GET', callback=self.activate_trigger)
+        self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/message', method='POST', callback=self.verify_signed_message)
         self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/check', method='GET', callback=self.check_trigger)
         self.route('/spellbook/check_triggers', method='GET', callback=self.check_all_triggers)
 
@@ -372,6 +373,11 @@ class SpellbookRESTAPI(Bottle):
     @authentication_required
     def activate_trigger(trigger_id):
         return activate_trigger(trigger_id)
+
+    @staticmethod
+    @output_json
+    def verify_signed_message(trigger_id):
+        return verify_signed_message(trigger_id, **request.json)
 
     @staticmethod
     @output_json

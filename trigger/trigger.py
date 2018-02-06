@@ -38,6 +38,7 @@ class Trigger(object):
         self.warning_email = None
         self.phase = 0
         self.activation_time = None
+        self.multi = None
         self.triggered = False
         self.description = None
         self.creator_name = None
@@ -100,6 +101,11 @@ class Trigger(object):
 
         if 'address' in config and valid_address(config['address']):
             self.address = config['address']
+        elif self.trigger_type == 'SignedMessage' and 'address' in config and config['address'] == '':
+            self.address = None
+
+        if 'multi' in config and config['multi'] in [True, False]:
+            self.multi = config['multi']
 
         if 'amount' in config and valid_amount(config['amount']):
             self.amount = config['amount']
@@ -204,6 +210,7 @@ class Trigger(object):
                 'end_time': self.end_time,
                 'interval': self.interval,
                 'next_activation': self.next_activation,
+                'multi': self.multi,
                 'triggered': self.triggered,
                 'description': self.description,
                 'creator_name': self.creator_name,

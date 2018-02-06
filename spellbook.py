@@ -475,7 +475,7 @@ examples:
 
 save_trigger_parser.add_argument('trigger_id', help='The id of the trigger')
 save_trigger_parser.add_argument('-r', '--reset', help='Reset the trigger in case it has been triggered already', action='store_true')
-save_trigger_parser.add_argument('-t', '--type', help='The type of the trigger', choices=['Manual', 'Balance', 'Received', 'Sent', 'Block_height', 'Timestamp', 'Recurring', 'TriggerStatus', 'DeadMansSwitch'])
+save_trigger_parser.add_argument('-t', '--type', help='The type of the trigger', choices=['Manual', 'Balance', 'Received', 'Sent', 'Block_height', 'Timestamp', 'Recurring', 'TriggerStatus', 'DeadMansSwitch', 'SignedMessage'])
 save_trigger_parser.add_argument('-a', '--address', help='The address to check the final balance, total received or total sent')
 save_trigger_parser.add_argument('-am', '--amount', help='The amount', type=int)
 save_trigger_parser.add_argument('-c', '--confirmations', help='The number of confirmations before the trigger is activated', default=3, type=int)
@@ -488,6 +488,7 @@ save_trigger_parser.add_argument('-pt', '--previous_trigger', help='The id of th
 save_trigger_parser.add_argument('-pts', '--previous_trigger_status', help='The status a previous trigger must be for this trigger to activate', choices=['Succeeded', 'Failed'])
 save_trigger_parser.add_argument('-ti', '--timeout', help='The amount of seconds before an activated DeadMansSwitch times out', type=int)
 save_trigger_parser.add_argument('-we', '--warning_email', help='The email address to send a warning to when a DeadMansSwitch reaches 50%, 75% and 90% of the timeout')
+save_trigger_parser.add_argument('-m', '--multi', help='Allow the trigger to activate multiple times', action='store_true')
 save_trigger_parser.add_argument('-d', '--description', help='A description of the trigger')
 save_trigger_parser.add_argument('-cn', '--creator_name', help='The name of the creator the trigger')
 save_trigger_parser.add_argument('-ce', '--creator_email', help='The email of the creator of the trigger')
@@ -537,6 +538,27 @@ examples:
 activate_trigger_parser.add_argument('trigger_id', help='The id of the trigger to activate')
 activate_trigger_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
 activate_trigger_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
+
+
+# Create parser for the send_signed_message subcommand
+send_signed_message_parser = subparsers.add_parser(name='send_signed_message',
+                                                   help='Send a signed message to a trigger',
+                                                   formatter_class=argparse.RawDescriptionHelpFormatter,
+                                                   description='''
+Send a signed message to a trigger.
+The trigger must be of type 'SignedMessage'
+                                                   ''',
+                                                   epilog='''
+examples:
+  - spellbook.py send_signed_message mytrigger address message signature
+    -> Send a signed message to the trigger with id 'mytrigger'
+
+                                                   ''')
+
+send_signed_message_parser.add_argument('trigger_id', help='The id of the trigger to activate')
+send_signed_message_parser.add_argument('address', help='The address that signed the message')
+send_signed_message_parser.add_argument('message', help='The message that was signed OR a filename containing the message')
+send_signed_message_parser.add_argument('signature', help='The signature of the message')
 
 
 # Create parser for the check_triggers subcommand
@@ -1042,6 +1064,9 @@ def save_trigger():
     if args.reset is not None:
         data['reset'] = True
 
+    if args.multi is not None:
+        data['multi'] = args.multi
+
     if args.previous_trigger is not None:
         data['previous_trigger'] = args.previous_trigger
 
@@ -1073,7 +1098,7 @@ def save_trigger():
         r = requests.post('http://{host}:{port}/spellbook/triggers/{trigger_id}'.format(host=host, port=port, trigger_id=args.trigger_id), headers=add_authentication_headers(data=data), json=data)
         print r.text
     except Exception as ex:
-        print >> sys.stderr, 'Unable to get explorer config: %s' % ex
+        print >> sys.stderr, 'Unable to save trigger: %s' % ex
         sys.exit(1)
 
 
@@ -1092,6 +1117,29 @@ def activate_trigger():
         print r.text
     except Exception as ex:
         print >> sys.stderr, 'Unable to activate trigger: %s' % ex
+        sys.exit(1)
+
+
+def send_signed_message():
+    data = {}
+    if args.address is not None:
+        data['address'] = args.address
+
+    if args.message is not None:
+        if os.path.isfile(args.message):
+            with open(args.message, 'r') as input_file:
+                data['message'] = input_file.read()
+        else:
+            data['message'] = args.message
+
+    if args.signature is not None:
+        data['signature'] = args.signature
+
+    try:
+        r = requests.post('http://{host}:{port}/spellbook/triggers/{trigger_id}/message'.format(host=host, port=port, trigger_id=args.trigger_id), json=data)
+        print r.text
+    except Exception as ex:
+        print >> sys.stderr, 'Unable to send signed message to trigger: %s' % ex
         sys.exit(1)
 
 
@@ -1311,6 +1359,8 @@ elif args.command == 'delete_trigger':
     delete_trigger()
 elif args.command == 'activate_trigger':
     activate_trigger()
+elif args.command == 'send_signed_message':
+    send_signed_message()
 elif args.command == 'check_triggers':
     check_triggers()
 elif args.command == 'get_actions':
