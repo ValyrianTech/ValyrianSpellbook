@@ -12,5 +12,5 @@ class TriggerType(object):
     RECURRING = 'Recurring'  # Triggers each x seconds between a start time and end time
     TRIGGERSTATUS = 'TriggerStatus'  # Triggers when another trigger has activated and results in a status 'Succeeded' or 'Failed'
     DEADMANSSWITCH = 'DeadMansSwitch'  # Triggers after it has been activated and a period of time has elapsed without being reset
-    # Todo new triggertype: SignedMessage
+    SIGNEDMESSAGE = 'SignedMessage'  # Triggers when a verified signed message is received
 

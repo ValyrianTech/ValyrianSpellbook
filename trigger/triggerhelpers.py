@@ -16,6 +16,8 @@ from timestamptrigger import TimestampTrigger
 from recurringtrigger import RecurringTrigger
 from triggerstatustrigger import TriggerStatusTrigger
 from deadmansswitchtrigger import DeadMansSwitchTrigger
+from signedmessagetrigger import SignedMessageTrigger
+from sign_message import verify_message
 
 
 TRIGGERS_DIR = 'json/public/triggers'
@@ -85,6 +87,8 @@ def get_trigger(trigger_id):
             trigger = TriggerStatusTrigger(trigger_id)
         elif trigger_config['trigger_type'] == TriggerType.DEADMANSSWITCH:
             trigger = DeadMansSwitchTrigger(trigger_id)
+        elif trigger_config['trigger_type'] == TriggerType.SIGNEDMESSAGE:
+            trigger = SignedMessageTrigger(trigger_id)
         elif trigger_config['trigger_type'] == TriggerType.MANUAL:
             trigger = ManualTrigger(trigger_id)
         else:
@@ -154,3 +158,28 @@ def check_triggers(trigger_id=None):
             logging.getLogger('Spellbook').info('Checking conditions of trigger %s' % trigger_id)
             if trigger.conditions_fulfilled() is True:
                 trigger.activate()
+
+
+def verify_signed_message(trigger_id, **data):
+    if not all(key in data for key in ['address', 'message', 'signature']):
+        return {'error': 'Request data does not contain all required keys: address, message and signature'}
+
+    triggers = get_triggers()
+    if trigger_id not in triggers:
+        return {'error': 'Unknown trigger id: %s' % trigger_id}
+
+    trigger = get_trigger(trigger_id)
+    if trigger.trigger_type != TriggerType.SIGNEDMESSAGE:
+        return {'error': 'Trigger %s is not a Signedmessage trigger' % trigger.trigger_type}
+
+    if trigger.address is not None and trigger.address != data['address']:
+        return {'error': 'Trigger %s only listens to signed messages from address %s' % (trigger.id, trigger.address)}
+
+    if verify_message(address=data['address'], message=data['message'], signature=data['signature']) is True:
+        if trigger.triggered is False:
+            logging.getLogger('Spellbook').info('Trigger %s received a verified signed message' % trigger_id)
+            trigger.process_message(address=data['address'], message=data['message'], signature=data['signature'])
+            trigger.activate()
+    else:
+        logging.getLogger('Spellbook').warning('Trigger %s received a bad signed message' % trigger_id)
+
