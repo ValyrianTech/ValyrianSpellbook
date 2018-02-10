@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import os
 import simplejson
 import logging
+import importlib
 
 from trigger import Trigger
 from triggertype import TriggerType
+from spellbookscripts.spellbookscript import SpellbookScript
 
 
 class SignedMessageTrigger(Trigger):
@@ -34,30 +37,25 @@ class SignedMessageTrigger(Trigger):
         self.message_address = address
         self.message_signature = signature
 
-        if message[:7] == 'IPFS=Qm':  # Todo better ipfs hash detection
-            ipfs_hash = message[5:]
-            logging.getLogger('Spellbook').info('Message contains a IPFS hash: %s' % ipfs_hash)
-            return self.process_ipfs_hash(ipfs_hash=ipfs_hash)
-        else:
-            try:
-                json_data = simplejson.loads(message)
-            except ValueError:
-                json_data = None
-
-            if json_data is not None:
-                logging.getLogger('Spellbook').info('Message contains json data: %s' % message)
-                return self.process_json_data(json_data=json_data)
-
+        if self.script is not None:
+            if not os.path.isfile('spellbookscripts\%s.py' % self.script):
+                logging.getLogger('Spellbook').error('Can not find Spellbook Script %s' % self.script)
+                return
             else:
-                logging.getLogger('Spellbook').info('Message contains simple text: %s' % message)
-                return self.process_text(message)
+                logging.getLogger('Spellbook').info('Loading Spellbook Script spellbookscripts\%s.py' % self.script)
+                try:
+                    script_module = importlib.import_module('spellbookscripts.%s' % self.script)
+                except Exception as ex:
+                    logging.getLogger('Spellbook').error('Failed to load Spellbook Script %s: %s' % (self.script, ex))
+                    return
 
-    def process_ipfs_hash(self, ipfs_hash):
-        pass
+                spellbook_script = getattr(script_module, self.script)
+                script = spellbook_script(address=self.message_address, signature=self.message_signature, message=message)
 
-    def process_json_data(self, json_data):
-        pass
+                if not isinstance(script, SpellbookScript):
+                    logging.getLogger('Spellbook').error('Script %s is not a valid Spellbook Script, instead it is a %s' % (self.script, type(script)))
+                    return
 
-    def process_text(self, text):
-        pass
+                script.process_message(message=message)
+                script.run_script()
 
