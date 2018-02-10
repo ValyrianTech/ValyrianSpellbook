@@ -18,28 +18,30 @@ class SpellbookScript(object):
         if not valid_address(self.address):
             raise Exception('%s is not a valid address!' % self.address)
 
+        self.process_message()
+
     @abstractmethod
     def run_script(self):
         pass
 
-    def process_message(self, message):
-        if message[:7] == 'IPFS=Qm':  # Todo better ipfs hash detection
-            ipfs_hash = message[5:]
+    def process_message(self):
+        if self.message[:7] == 'IPFS=Qm':  # Todo better ipfs hash detection
+            ipfs_hash = self.message[5:]
             logging.getLogger('Spellbook').info('Message contains a IPFS hash: %s' % ipfs_hash)
             return self.process_ipfs_hash(ipfs_hash=ipfs_hash)
         else:
             try:
-                json_data = simplejson.loads(message)
+                json_data = simplejson.loads(self.message)
             except ValueError:
                 json_data = None
 
             if json_data is not None:
-                logging.getLogger('Spellbook').info('Message contains json data: %s' % message)
+                logging.getLogger('Spellbook').info('Message contains json data: %s' % self.message)
                 return self.process_json_data(json_data=json_data)
 
             else:
-                logging.getLogger('Spellbook').info('Message contains simple text: %s' % message)
-                return self.process_text(message)
+                logging.getLogger('Spellbook').info('Message contains simple text: %s' % self.message)
+                return self.process_text(self.message)
 
     def process_ipfs_hash(self, ipfs_hash):
         logging.getLogger('Spellbook').info('Retrieving IPFS object if necessary')

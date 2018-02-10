@@ -56,6 +56,5 @@ class SignedMessageTrigger(Trigger):
                     logging.getLogger('Spellbook').error('Script %s is not a valid Spellbook Script, instead it is a %s' % (self.script, type(script)))
                     return
 
-                script.process_message(message=message)
                 script.run_script()
 
