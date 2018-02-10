@@ -23,6 +23,7 @@ class Trigger(object):
     def __init__(self, trigger_id):
         self.id = trigger_id
         self.trigger_type = None
+        self.script = None
         self.block_height = None
         self.timestamp = None
         self.begin_time = None
@@ -54,6 +55,9 @@ class Trigger(object):
 
         if 'trigger_type' in config and valid_trigger_type(config['trigger_type']):
             self.trigger_type = config['trigger_type']
+
+        if 'script' in config:
+            self.script = config['script']
 
         if 'status' in config and valid_status(config['status']):
             self.status = config['status']
@@ -195,6 +199,7 @@ class Trigger(object):
     def json_encodable(self):
         return {'id': self.id,
                 'trigger_type': self.trigger_type,
+                'script': self.script,
                 'address': self.address,
                 'amount': self.amount,
                 'confirmations': self.confirmations,
