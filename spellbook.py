@@ -476,6 +476,7 @@ examples:
 save_trigger_parser.add_argument('trigger_id', help='The id of the trigger')
 save_trigger_parser.add_argument('-r', '--reset', help='Reset the trigger in case it has been triggered already', action='store_true')
 save_trigger_parser.add_argument('-t', '--type', help='The type of the trigger', choices=['Manual', 'Balance', 'Received', 'Sent', 'Block_height', 'Timestamp', 'Recurring', 'TriggerStatus', 'DeadMansSwitch', 'SignedMessage'])
+save_trigger_parser.add_argument('-sc', '--script', help='The script to run when the trigger activates')
 save_trigger_parser.add_argument('-a', '--address', help='The address to check the final balance, total received or total sent')
 save_trigger_parser.add_argument('-am', '--amount', help='The amount', type=int)
 save_trigger_parser.add_argument('-c', '--confirmations', help='The number of confirmations before the trigger is activated', default=3, type=int)
@@ -1030,6 +1031,9 @@ def save_trigger():
     data = {}
     if args.type is not None:
         data['trigger_type'] = args.type
+
+    if args.script is not None:
+        data['script'] = args.script
 
     if args.address is not None:
         data['address'] = args.address
