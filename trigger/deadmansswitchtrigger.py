@@ -7,12 +7,17 @@ from datetime import datetime
 from trigger import Trigger
 from triggertype import TriggerType
 from mailhelpers import sendmail
+from validators.validators import valid_phase, valid_email, valid_amount, valid_timestamp
 
 
 class DeadMansSwitchTrigger(Trigger):
     def __init__(self, trigger_id):
         super(DeadMansSwitchTrigger, self).__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.DEADMANSSWITCH
+        self.timeout = None
+        self.warning_email = None
+        self.phase = 0
+        self.activation_time = None
 
     def conditions_fulfilled(self):
         if self.timeout is None or self.activation_time is None or self.warning_email is None:
@@ -56,6 +61,42 @@ class DeadMansSwitchTrigger(Trigger):
             sendmail(self.warning_email, "Warning: Dead Man's Switch %s has been armed" % self.id, 'deadmansswitchwarning')
             self.save()
 
+    def configure(self, **config):
+        super(DeadMansSwitchTrigger, self).configure(**config)
+
+        if 'timeout' in config and valid_amount(config['timeout']):
+            self.timeout = config['timeout']
+
+        if 'warning_email' in config and valid_email(config['warning_email']):
+            self.warning_email = config['warning_email']
+
+        if 'phase' in config and valid_phase(config['phase']):
+            self.phase = config['phase']
+
+        if 'activation_time' in config and valid_timestamp(config['activation_time']):
+            self.activation_time = config['activation_time']
+
+        if 'reset' in config and config['reset'] is True:
+            self.triggered = False
+            self.status = 'Active'
+
+            # Reset a Dead Man's Switch trigger if needed
+            if self.activation_time is not None and self.timeout is not None and self.phase >= 1:
+                self.activation_time = int(time.time()) + self.timeout
+                self.phase = 1
+                logging.getLogger('Spellbook').info("Dead Man's Switch %s has been reset, will activate in %s seconds on %s" % (
+                    self.id, self.timeout, datetime.fromtimestamp(self.activation_time)))
+
+    def json_encodable(self):
+        ret = super(DeadMansSwitchTrigger, self).json_encodable()
+
+        ret.update({
+            'timeout': self.timeout,
+            'warning_email': self.warning_email,
+            'phase': self.phase,
+            'activation_time': self.activation_time})
+        return ret
+
 
 class SwitchPhase(object):
     PHASE_0 = 0  # The dead man's switch is not armed yet
@@ -64,5 +105,3 @@ class SwitchPhase(object):
     PHASE_3 = 3  # The dead man's switch has been armed and 2 warnings has been sent (75% of timeout has passed)
     PHASE_4 = 4  # The dead man's switch has been armed and 3 warnings has been sent (90% of timeout has passed)
     PHASE_5 = 5  # The dead man's switch has been activated
-
-
