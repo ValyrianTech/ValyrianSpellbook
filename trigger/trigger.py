@@ -23,7 +23,6 @@ class Trigger(object):
         self.id = trigger_id
         self.trigger_type = None
         self.script = None
-        self.block_height = None
         self.address = None
         self.amount = None
         self.confirmations = 0
@@ -81,9 +80,6 @@ class Trigger(object):
 
         if 'confirmations' in config:
             self.confirmations = config['confirmations']
-
-        if 'block_height' in config and valid_block_height(config['block_height']):
-            self.block_height = config['block_height']
 
         if 'actions' in config and valid_actions(config['actions']):
             self.actions = config['actions']
@@ -144,7 +140,6 @@ class Trigger(object):
                 'address': self.address,
                 'amount': self.amount,
                 'confirmations': self.confirmations,
-                'block_height': self.block_height,
                 'triggered': self.triggered,
                 'description': self.description,
                 'creator_name': self.creator_name,
