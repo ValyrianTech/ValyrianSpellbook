@@ -23,8 +23,6 @@ class Trigger(object):
         self.id = trigger_id
         self.trigger_type = None
         self.script = None
-        self.address = None
-        self.amount = None
         self.confirmations = 0
         self.triggered = False
         self.description = None
@@ -69,14 +67,6 @@ class Trigger(object):
 
         if 'visibility' in config and valid_visibility(config['visibility']):
             self.visibility = config['visibility']
-
-        if 'address' in config and valid_address(config['address']):
-            self.address = config['address']
-        elif self.trigger_type == 'SignedMessage' and 'address' in config and config['address'] == '':
-            self.address = None
-
-        if 'amount' in config and valid_amount(config['amount']):
-            self.amount = config['amount']
 
         if 'confirmations' in config:
             self.confirmations = config['confirmations']
@@ -137,8 +127,6 @@ class Trigger(object):
         return {'id': self.id,
                 'trigger_type': self.trigger_type,
                 'script': self.script,
-                'address': self.address,
-                'amount': self.amount,
                 'confirmations': self.confirmations,
                 'triggered': self.triggered,
                 'description': self.description,
