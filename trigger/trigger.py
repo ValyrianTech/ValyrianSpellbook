@@ -24,11 +24,9 @@ class Trigger(object):
         self.trigger_type = None
         self.script = None
         self.block_height = None
-        self.next_activation = None
         self.address = None
         self.amount = None
         self.confirmations = 0
-        self.multi = None
         self.triggered = False
         self.description = None
         self.creator_name = None
@@ -77,9 +75,6 @@ class Trigger(object):
             self.address = config['address']
         elif self.trigger_type == 'SignedMessage' and 'address' in config and config['address'] == '':
             self.address = None
-
-        if 'multi' in config and config['multi'] in [True, False]:
-            self.multi = config['multi']
 
         if 'amount' in config and valid_amount(config['amount']):
             self.amount = config['amount']
@@ -150,7 +145,6 @@ class Trigger(object):
                 'amount': self.amount,
                 'confirmations': self.confirmations,
                 'block_height': self.block_height,
-                'multi': self.multi,
                 'triggered': self.triggered,
                 'description': self.description,
                 'creator_name': self.creator_name,

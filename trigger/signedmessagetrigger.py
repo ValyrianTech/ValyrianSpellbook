@@ -16,6 +16,7 @@ class SignedMessageTrigger(Trigger):
         self.trigger_type = TriggerType.SIGNEDMESSAGE
         self.message_address = None
         self.message_signature = None
+        self.multi = None
 
     def conditions_fulfilled(self):
         # SignedMessage triggers can only be triggered when a verified signed message is received, so always return False
@@ -29,6 +30,18 @@ class SignedMessageTrigger(Trigger):
         if self.multi is True and self.triggered is True:
             self.triggered = False
             self.save()
+
+    def configure(self, **config):
+        super(SignedMessageTrigger, self).configure(**config)
+        if 'multi' in config and config['multi'] in [True, False]:
+            self.multi = config['multi']
+
+    def json_encodable(self):
+        ret = super(SignedMessageTrigger, self).json_encodable()
+
+        ret.update({
+            'multi': self.multi})
+        return ret
 
     def process_message(self, address, message, signature):
         if not isinstance(message, (str, unicode)):
