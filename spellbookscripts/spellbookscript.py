@@ -18,6 +18,10 @@ class SpellbookScript(object):
         if not valid_address(self.address):
             raise Exception('%s is not a valid address!' % self.address)
 
+        self.json = None
+        self.ipfs = None
+        self.text = None
+
         self.process_message()
 
     @abstractmethod
@@ -45,9 +49,12 @@ class SpellbookScript(object):
 
     def process_ipfs_hash(self, ipfs_hash):
         logging.getLogger('Spellbook').info('Retrieving IPFS object if necessary')
+        self.ipfs = ipfs_hash
 
     def process_json_data(self, json_data):
         logging.getLogger('Spellbook').info('Processing JSON data')
+        self.json = json_data
 
     def process_text(self, text):
         logging.getLogger('Spellbook').info('Processing text data')
+        self.text = text
