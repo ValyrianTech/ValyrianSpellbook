@@ -28,8 +28,6 @@ class Trigger(object):
         self.address = None
         self.amount = None
         self.confirmations = 0
-        self.previous_trigger = None
-        self.previous_trigger_status = None
         self.multi = None
         self.triggered = False
         self.description = None
@@ -88,12 +86,6 @@ class Trigger(object):
 
         if 'confirmations' in config:
             self.confirmations = config['confirmations']
-
-        if 'previous_trigger' in config:
-            self.previous_trigger = config['previous_trigger']
-
-        if 'previous_trigger_status' in config and config['previous_trigger_status'] in ['Succeeded', 'Failed']:
-            self.previous_trigger_status = config['previous_trigger_status']
 
         if 'block_height' in config and valid_block_height(config['block_height']):
             self.block_height = config['block_height']
@@ -157,8 +149,6 @@ class Trigger(object):
                 'address': self.address,
                 'amount': self.amount,
                 'confirmations': self.confirmations,
-                'previous_trigger': self.previous_trigger,
-                'previous_trigger_status': self.previous_trigger_status,
                 'block_height': self.block_height,
                 'multi': self.multi,
                 'triggered': self.triggered,
