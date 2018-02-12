@@ -25,9 +25,7 @@ class Trigger(object):
         self.trigger_type = None
         self.script = None
         self.block_height = None
-        self.begin_time = None
-        self.end_time = None
-        self.interval = None
+
         self.next_activation = None
         self.address = None
         self.amount = None
@@ -125,20 +123,7 @@ class Trigger(object):
         if 'block_height' in config and valid_block_height(config['block_height']):
             self.block_height = config['block_height']
 
-        if 'interval' in config and valid_amount(config['interval']):
-            self.interval = config['interval']
 
-        if 'begin_time' in config and valid_timestamp(config['begin_time']):
-            self.begin_time = config['begin_time']
-
-        if 'end_time' in config and valid_timestamp(config['end_time']):
-            self.end_time = config['end_time']
-
-        if 'next_activation' in config and valid_timestamp(config['next_activation']):
-            self.next_activation = config['next_activation']
-        elif self.begin_time is not None:
-            self.next_activation = self.begin_time
-            logging.getLogger('Spellbook').info('Setting first activation of recurring trigger %s to %s' % (self.id, datetime.fromtimestamp(self.next_activation)))
 
         if 'actions' in config and valid_actions(config['actions']):
             self.actions = config['actions']
@@ -206,10 +191,7 @@ class Trigger(object):
                 'phase': self.phase,
                 'activation_time': self.activation_time,
                 'block_height': self.block_height,
-                'begin_time': self.begin_time,
-                'end_time': self.end_time,
-                'interval': self.interval,
-                'next_activation': self.next_activation,
+
                 'multi': self.multi,
                 'triggered': self.triggered,
                 'description': self.description,
