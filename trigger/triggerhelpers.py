@@ -50,7 +50,7 @@ def get_trigger_config(trigger_id):
     return trigger_config
 
 
-def get_trigger(trigger_id, trigger_type=TriggerType.MANUAL):
+def get_trigger(trigger_id, trigger_type=None):
     """
     Get the specified trigger, which is a subclass of Trigger
     The different trigger types are:
@@ -70,7 +70,7 @@ def get_trigger(trigger_id, trigger_type=TriggerType.MANUAL):
     """
     trigger_config = get_trigger_config(trigger_id)
 
-    if trigger_type != TriggerType.MANUAL:
+    if trigger_type is not None:
         trigger_config['trigger_type'] = trigger_type
 
     if trigger_config['trigger_type'] == TriggerType.BALANCE:
@@ -160,7 +160,6 @@ def check_triggers(trigger_id=None):
 
     for trigger_id in triggers:
         trigger = get_trigger(trigger_id=trigger_id)
-        print type(trigger)
         if trigger.triggered is False:
             logging.getLogger('Spellbook').info('Checking conditions of trigger %s' % trigger_id)
             if trigger.conditions_fulfilled() is True:

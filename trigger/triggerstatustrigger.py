@@ -9,6 +9,8 @@ class TriggerStatusTrigger(Trigger):
     def __init__(self, trigger_id):
         super(TriggerStatusTrigger, self).__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.TRIGGERSTATUS
+        self.previous_trigger = None
+        self.previous_trigger_status = None
 
     def conditions_fulfilled(self):
         # Avoid circular import here
@@ -20,3 +22,19 @@ class TriggerStatusTrigger(Trigger):
         previous_trigger = get_trigger(self.previous_trigger)
 
         return previous_trigger.triggered is True and previous_trigger.status == self.previous_trigger_status
+
+    def configure(self, **config):
+        super(TriggerStatusTrigger, self).configure(**config)
+        if 'previous_trigger' in config:
+            self.previous_trigger = config['previous_trigger']
+
+        if 'previous_trigger_status' in config and config['previous_trigger_status'] in ['Succeeded', 'Failed']:
+            self.previous_trigger_status = config['previous_trigger_status']
+
+    def json_encodable(self):
+        ret = super(TriggerStatusTrigger, self).json_encodable()
+
+        ret.update({
+            'previous_trigger': self.previous_trigger,
+            'previous_trigger_status': self.previous_trigger_status})
+        return ret
