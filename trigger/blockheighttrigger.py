@@ -4,7 +4,7 @@
 from trigger import Trigger
 from triggertype import TriggerType
 from data.data import latest_block
-from validators.validators import valid_block_height
+from validators.validators import valid_block_height, valid_amount
 
 
 class BlockHeightTrigger(Trigger):
@@ -12,6 +12,7 @@ class BlockHeightTrigger(Trigger):
         super(BlockHeightTrigger, self).__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.BLOCK_HEIGHT
         self.block_height = None
+        self.confirmations = 0
 
     def conditions_fulfilled(self):
         if self.block_height is None:
@@ -31,9 +32,13 @@ class BlockHeightTrigger(Trigger):
         if 'block_height' in config and valid_block_height(config['block_height']):
             self.block_height = config['block_height']
 
+        if 'confirmations' in config and valid_amount(config['confirmations']):
+            self.confirmations = config['confirmations']
+
     def json_encodable(self):
         ret = super(BlockHeightTrigger, self).json_encodable()
 
         ret.update({
-            'block_height': self.block_height})
+            'block_height': self.block_height,
+            'confirmations': self.confirmations})
         return ret

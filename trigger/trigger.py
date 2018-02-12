@@ -23,7 +23,6 @@ class Trigger(object):
         self.id = trigger_id
         self.trigger_type = None
         self.script = None
-        self.confirmations = 0
         self.triggered = False
         self.description = None
         self.creator_name = None
@@ -67,9 +66,6 @@ class Trigger(object):
 
         if 'visibility' in config and valid_visibility(config['visibility']):
             self.visibility = config['visibility']
-
-        if 'confirmations' in config:
-            self.confirmations = config['confirmations']
 
         if 'actions' in config and valid_actions(config['actions']):
             self.actions = config['actions']
@@ -127,7 +123,6 @@ class Trigger(object):
         return {'id': self.id,
                 'trigger_type': self.trigger_type,
                 'script': self.script,
-                'confirmations': self.confirmations,
                 'triggered': self.triggered,
                 'description': self.description,
                 'creator_name': self.creator_name,
