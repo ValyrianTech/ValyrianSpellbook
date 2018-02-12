@@ -9,7 +9,6 @@ from abc import abstractmethod, ABCMeta
 
 from validators.validators import valid_description, valid_creator, valid_email, valid_youtube_id, valid_status, valid_visibility
 from validators.validators import valid_address, valid_amount, valid_block_height, valid_actions, valid_timestamp, valid_trigger_type
-from validators.validators import valid_phase
 from action.actionhelpers import get_actions, get_action
 
 from jsonhelpers import save_to_json_file
@@ -25,17 +24,12 @@ class Trigger(object):
         self.trigger_type = None
         self.script = None
         self.block_height = None
-
         self.next_activation = None
         self.address = None
         self.amount = None
         self.confirmations = 0
         self.previous_trigger = None
         self.previous_trigger_status = None
-        self.timeout = None
-        self.warning_email = None
-        self.phase = 0
-        self.activation_time = None
         self.multi = None
         self.triggered = False
         self.description = None
@@ -59,28 +53,9 @@ class Trigger(object):
         if 'status' in config and valid_status(config['status']):
             self.status = config['status']
 
-        if 'timeout' in config and valid_amount(config['timeout']):
-            self.timeout = config['timeout']
-
-        if 'warning_email' in config and valid_email(config['warning_email']):
-            self.warning_email = config['warning_email']
-
-        if 'phase' in config and valid_phase(config['phase']):
-            self.phase = config['phase']
-
-        if 'activation_time' in config and valid_timestamp(config['activation_time']):
-            self.activation_time = config['activation_time']
-
         if 'reset' in config and config['reset'] is True:
             self.triggered = False
             self.status = 'Active'
-
-            # Reset a Dead Man's Switch trigger if needed
-            if self.activation_time is not None and self.timeout is not None and self.phase >= 1:
-                self.activation_time = int(time.time()) + self.timeout
-                self.phase = 1
-                logging.getLogger('Spellbook').info("Dead Man's Switch %s has been reset, will activate in %s seconds on %s" % (
-                    self.id, self.timeout, datetime.fromtimestamp(self.activation_time)))
 
         elif 'triggered' in config and config['triggered'] in [True, False]:
             self.triggered = config['triggered']
@@ -122,8 +97,6 @@ class Trigger(object):
 
         if 'block_height' in config and valid_block_height(config['block_height']):
             self.block_height = config['block_height']
-
-
 
         if 'actions' in config and valid_actions(config['actions']):
             self.actions = config['actions']
@@ -186,12 +159,7 @@ class Trigger(object):
                 'confirmations': self.confirmations,
                 'previous_trigger': self.previous_trigger,
                 'previous_trigger_status': self.previous_trigger_status,
-                'timeout': self.timeout,
-                'warning_email': self.warning_email,
-                'phase': self.phase,
-                'activation_time': self.activation_time,
                 'block_height': self.block_height,
-
                 'multi': self.multi,
                 'triggered': self.triggered,
                 'description': self.description,
