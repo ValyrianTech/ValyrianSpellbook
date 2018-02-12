@@ -25,7 +25,6 @@ class Trigger(object):
         self.trigger_type = None
         self.script = None
         self.block_height = None
-        self.timestamp = None
         self.begin_time = None
         self.end_time = None
         self.interval = None
@@ -126,9 +125,6 @@ class Trigger(object):
         if 'block_height' in config and valid_block_height(config['block_height']):
             self.block_height = config['block_height']
 
-        if 'timestamp' in config and valid_timestamp(config['timestamp']):
-            self.timestamp = config['timestamp']
-
         if 'interval' in config and valid_amount(config['interval']):
             self.interval = config['interval']
 
@@ -210,7 +206,6 @@ class Trigger(object):
                 'phase': self.phase,
                 'activation_time': self.activation_time,
                 'block_height': self.block_height,
-                'timestamp': self.timestamp,
                 'begin_time': self.begin_time,
                 'end_time': self.end_time,
                 'interval': self.interval,

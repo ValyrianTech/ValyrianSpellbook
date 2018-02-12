@@ -50,7 +50,7 @@ def get_trigger_config(trigger_id):
     return trigger_config
 
 
-def get_trigger(trigger_id):
+def get_trigger(trigger_id, trigger_type=TriggerType.MANUAL):
     """
     Get the specified trigger, which is a subclass of Trigger
     The different trigger types are:
@@ -69,30 +69,32 @@ def get_trigger(trigger_id):
     :return: A child class of Trigger
     """
     trigger_config = get_trigger_config(trigger_id)
-    trigger = ManualTrigger(trigger_id)
-    if 'trigger_type' in trigger_config:
-        if trigger_config['trigger_type'] == TriggerType.BALANCE:
-            trigger = BalanceTrigger(trigger_id)
-        elif trigger_config['trigger_type'] == TriggerType.RECEIVED:
-            trigger = ReceivedTrigger(trigger_id)
-        elif trigger_config['trigger_type'] == TriggerType.SENT:
-            trigger = SentTrigger(trigger_id)
-        elif trigger_config['trigger_type'] == TriggerType.BLOCK_HEIGHT:
-            trigger = BlockHeightTrigger(trigger_id)
-        elif trigger_config['trigger_type'] == TriggerType.TIMESTAMP:
-            trigger = TimestampTrigger(trigger_id)
-        elif trigger_config['trigger_type'] == TriggerType.RECURRING:
-            trigger = RecurringTrigger(trigger_id)
-        elif trigger_config['trigger_type'] == TriggerType.TRIGGERSTATUS:
-            trigger = TriggerStatusTrigger(trigger_id)
-        elif trigger_config['trigger_type'] == TriggerType.DEADMANSSWITCH:
-            trigger = DeadMansSwitchTrigger(trigger_id)
-        elif trigger_config['trigger_type'] == TriggerType.SIGNEDMESSAGE:
-            trigger = SignedMessageTrigger(trigger_id)
-        elif trigger_config['trigger_type'] == TriggerType.MANUAL:
-            trigger = ManualTrigger(trigger_id)
-        else:
-            raise NotImplementedError('Unknown trigger type: %s' % trigger_config['trigger_type'])
+
+    if trigger_type != TriggerType.MANUAL:
+        trigger_config['trigger_type'] = trigger_type
+
+    if trigger_config['trigger_type'] == TriggerType.BALANCE:
+        trigger = BalanceTrigger(trigger_id)
+    elif trigger_config['trigger_type'] == TriggerType.RECEIVED:
+        trigger = ReceivedTrigger(trigger_id)
+    elif trigger_config['trigger_type'] == TriggerType.SENT:
+        trigger = SentTrigger(trigger_id)
+    elif trigger_config['trigger_type'] == TriggerType.BLOCK_HEIGHT:
+        trigger = BlockHeightTrigger(trigger_id)
+    elif trigger_config['trigger_type'] == TriggerType.TIMESTAMP:
+        trigger = TimestampTrigger(trigger_id)
+    elif trigger_config['trigger_type'] == TriggerType.RECURRING:
+        trigger = RecurringTrigger(trigger_id)
+    elif trigger_config['trigger_type'] == TriggerType.TRIGGERSTATUS:
+        trigger = TriggerStatusTrigger(trigger_id)
+    elif trigger_config['trigger_type'] == TriggerType.DEADMANSSWITCH:
+        trigger = DeadMansSwitchTrigger(trigger_id)
+    elif trigger_config['trigger_type'] == TriggerType.SIGNEDMESSAGE:
+        trigger = SignedMessageTrigger(trigger_id)
+    elif trigger_config['trigger_type'] == TriggerType.MANUAL:
+        trigger = ManualTrigger(trigger_id)
+    else:
+        raise NotImplementedError('Unknown trigger type: %s' % trigger_config['trigger_type'])
 
     trigger.configure(**trigger_config)
 
@@ -106,7 +108,11 @@ def save_trigger(trigger_id, **trigger_config):
     :param trigger_id: The id of the trigger
     :param trigger_config: A dict containing the configuration for the trigger
     """
-    trigger = get_trigger(trigger_id)
+    if 'trigger_type' in trigger_config:
+        trigger = get_trigger(trigger_id, trigger_type=trigger_config['trigger_type'])
+    else:
+        trigger = get_trigger(trigger_id)
+
     trigger.configure(**trigger_config)
     trigger.save()
 
@@ -154,6 +160,7 @@ def check_triggers(trigger_id=None):
 
     for trigger_id in triggers:
         trigger = get_trigger(trigger_id=trigger_id)
+        print type(trigger)
         if trigger.triggered is False:
             logging.getLogger('Spellbook').info('Checking conditions of trigger %s' % trigger_id)
             if trigger.conditions_fulfilled() is True:
