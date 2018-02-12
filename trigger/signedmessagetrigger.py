@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
-import simplejson
 import logging
 import importlib
 
 from trigger import Trigger
 from triggertype import TriggerType
 from spellbookscripts.spellbookscript import SpellbookScript
+from validators.validators import valid_address
 
 
 class SignedMessageTrigger(Trigger):
@@ -37,6 +37,8 @@ class SignedMessageTrigger(Trigger):
         if 'multi' in config and config['multi'] in [True, False]:
             self.multi = config['multi']
 
+        if 'address' in config and valid_address(config['address']):
+            self.address = config['address']
         elif 'address' in config and config['address'] == '':
             self.address = None
 
