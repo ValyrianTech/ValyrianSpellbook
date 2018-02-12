@@ -6,7 +6,7 @@ import getpass
 import simplejson
 from AESCipher import AESCipher
 from configurationhelpers import get_wallet_dir, get_default_wallet
-from BIP44.BIP44 import get_xpub_key, get_address_from_xpub, get_private_key, get_xpriv_key
+from BIP44.BIP44 import get_xpub_key, get_address_from_xpub, get_private_key, get_xpriv_key, get_addresses_from_xpub
 
 HOT_WALLET_PASSWORD = None
 
@@ -68,6 +68,31 @@ def get_xpriv_key_from_wallet(account):
 def get_private_key_from_wallet(account, index):
     xpriv_key = get_xpriv_key_from_wallet(account=account)
     return get_private_key(xpriv=xpriv_key, i=index)
+
+
+def get_single_address_private_key(address):
+    hot_wallet = get_hot_wallet()
+
+    if address in hot_wallet:
+        return {address: hot_wallet[address]}
+
+
+def find_address_in_wallet(address, accounts=1, indexes=20):
+    hot_wallet = get_hot_wallet()
+
+    for account in range(accounts):
+        xpub_key = get_xpub_key(mnemonic=' '.join(hot_wallet['mnemonic']),
+                                passphrase=hot_wallet['passphrase'],
+                                account=account)
+
+        addresses = get_addresses_from_xpub(xpub=xpub_key, i=indexes)
+
+        if address in addresses:
+            return account, addresses.index(address)
+
+    return None, None
+
+
 
 
 
