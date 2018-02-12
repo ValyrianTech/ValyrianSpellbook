@@ -14,6 +14,7 @@ class SignedMessageTrigger(Trigger):
     def __init__(self, trigger_id):
         super(SignedMessageTrigger, self).__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.SIGNEDMESSAGE
+        self.address = None
         self.message_address = None
         self.message_signature = None
         self.multi = None
@@ -36,10 +37,14 @@ class SignedMessageTrigger(Trigger):
         if 'multi' in config and config['multi'] in [True, False]:
             self.multi = config['multi']
 
+        elif 'address' in config and config['address'] == '':
+            self.address = None
+
     def json_encodable(self):
         ret = super(SignedMessageTrigger, self).json_encodable()
 
         ret.update({
+            'address': self.address,
             'multi': self.multi})
         return ret
 
