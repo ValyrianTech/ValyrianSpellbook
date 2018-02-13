@@ -771,12 +771,8 @@ def get_explorers():
 
 
 def get_explorer_config():
-    try:
-        r = requests.get('http://{host}:{port}/spellbook/explorers/{explorer_id}'.format(host=host, port=port, explorer_id=args.name), headers=add_authentication_headers())
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable to get explorer config: %s' % ex
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/explorers/{explorer_id}'.format(host=host, port=port, explorer_id=args.name)
+    do_get_request(url=url, authenticate=True)
 
 
 def save_explorer():
