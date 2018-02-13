@@ -851,16 +851,8 @@ def get_sul():
 def get_lal():
     data = {'block_height': args.block_height,
             'xpub': args.xpub}
-
-    try:
-        url = 'http://{host}:{port}/spellbook/addresses/{address}/LAL'.format(host=host, port=port, address=args.address)
-        if args.explorer is not None:
-            url += '?explorer={explorer}'.format(explorer=args.explorer)
-        r = requests.get(url, json=data)
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable to get LAL: %s' % ex
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/addresses/{address}/LAL'.format(host=host, port=port, address=args.address)
+    do_get_request(url=url, json=data)
 
 
 def get_lbl():
@@ -1235,14 +1227,18 @@ def get_reveal():
         sys.exit(1)
 
 
-def do_get_request(url, authenticate=False):
-    headers = add_authentication_headers() if authenticate is True else None
-
-    if args.explorer is not None:
-        url += '?explorer={explorer}'.format(explorer=args.explorer)
+def do_get_request(url, authenticate=False, data=None):
+    headers = add_authentication_headers(data=data) if authenticate is True else None
 
     try:
-        r = requests.get(url, headers=headers)
+        explorer = getattr(args, 'explorer')
+        if explorer is not None:
+            url += '?explorer={explorer}'.format(explorer=args.explorer)
+    except AttributeError:
+        pass
+
+    try:
+        r = requests.get(url, headers=headers, json=data)
         print r.text
     except Exception as ex:
         print >> sys.stderr, 'GET %s failed: %s' % (url, ex)
@@ -1251,6 +1247,14 @@ def do_get_request(url, authenticate=False):
 
 def do_post_request(url, authenticate=False, data=None):
     headers = add_authentication_headers(data=data) if authenticate is True else None
+
+    try:
+        explorer = getattr(args, 'explorer')
+        if explorer is not None:
+            url += '?explorer={explorer}'.format(explorer=args.explorer)
+    except AttributeError:
+        pass
+
     try:
         r = requests.post(url, headers=headers, json=data)
         print r.text
@@ -1259,10 +1263,18 @@ def do_post_request(url, authenticate=False, data=None):
         sys.exit(1)
 
 
-def do_delete_request(url, authenticate=False):
-    headers = add_authentication_headers() if authenticate is True else None
+def do_delete_request(url, authenticate=False, data=None):
+    headers = add_authentication_headers(data=data) if authenticate is True else None
+
     try:
-        r = requests.delete(url, headers=headers)
+        explorer = getattr(args, 'explorer')
+        if explorer is not None:
+            url += '?explorer={explorer}'.format(explorer=args.explorer)
+    except AttributeError:
+        pass
+
+    try:
+        r = requests.delete(url, headers=headers, json=data)
         print r.text
     except Exception as ex:
         print >> sys.stderr, 'DELETE %s failed: %s' % (url, ex)
