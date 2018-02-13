@@ -44,7 +44,7 @@ examples:
 '''
 
 ########################################################################################################
-# delete_explorer                                                                                       #
+# delete_explorer                                                                                      #
 ########################################################################################################
 DELETE_EXPLORER_DESCRIPTION = 'Delete a specific explorer.'
 DELETE_EXPLORER_EPILOG = '''
@@ -54,5 +54,17 @@ examples:
   
   - spellbook.py delete_explorer ... -k=<myapikey> -s=<myapisecret>
     -> Use given api key and api secret to authenticate with the REST API
+'''
+
+########################################################################################################
+# get_latest_block                                                                                     #
+########################################################################################################
+GET_LATEST_BLOCK_DESCRIPTION = 'Get the latest block.'
+GET_LATEST_BLOCK_EPILOG = '''
+examples:
+  - spellbook.py get_latest_block
+    -> Get the latest block using the default explorer
     
+  - spellbook.py get_latest_block --explorer=blockchain.info
+    -> Get the latest block using the blockchain.info explorer to retrieve the data    
 '''

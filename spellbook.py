@@ -81,16 +81,8 @@ delete_explorer_parser.add_argument('-s', '--api_secret', help='API secret for t
 get_latest_block_parser = subparsers.add_parser(name='get_latest_block',
                                                 help='Get the latest block',
                                                 formatter_class=argparse.RawDescriptionHelpFormatter,
-                                                description='''
-Get the latest block
-                                                ''',
-                                                epilog='''
-examples:
-  - spellbook.py get_latest_block
-    -> Get the latest block using the default explorer
-  - spellbook.py get_latest_block --explorer=blockchain.info
-    -> Get the latest block using the blockchain.info explorer to retrieve the data
-                                                ''')
+                                                description=texts.GET_LATEST_BLOCK_DESCRIPTION,
+                                                epilog=texts.GET_LATEST_BLOCK_EPILOG)
 
 get_latest_block_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
 
