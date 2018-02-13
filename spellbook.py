@@ -804,51 +804,26 @@ def get_block():
 
 
 def get_prime_input_address():
-    try:
-        url = 'http://{host}:{port}/spellbook/transactions/{txid}/prime_input'.format(host=host, port=port, txid=args.txid)
-        if args.explorer is not None:
-            url += '?explorer={explorer}'.format(explorer=args.explorer)
-        r = requests.get(url)
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable get prime input address of transaction %s: %s' % (args.txid, ex)
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/transactions/{txid}/prime_input'.format(host=host, port=port, txid=args.txid)
+    do_get_request(url=url)
 
 
 def get_transactions():
-    try:
-        url = 'http://{host}:{port}/spellbook/addresses/{address}/transactions'.format(host=host, port=port, address=args.address)
-        if args.explorer is not None:
-            url += '?explorer={explorer}'.format(explorer=args.explorer)
-        r = requests.get(url)
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable get transactions of address %s: %s' % (args.address, ex)
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/addresses/{address}/transactions'.format(host=host, port=port, address=args.address)
+    do_get_request(url=url)
 
 
 def get_balance():
-    try:
-        url = 'http://{host}:{port}/spellbook/addresses/{address}/balance'.format(host=host, port=port, address=args.address)
-        if args.explorer is not None:
-            url += '?explorer={explorer}'.format(explorer=args.explorer)
-        r = requests.get(url)
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable get balance of address %s: %s' % (args.address, ex)
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/addresses/{address}/balance'.format(host=host, port=port, address=args.address)
+    do_get_request(url=url)
 
 
 def get_utxos():
-    try:
-        url = 'http://{host}:{port}/spellbook/addresses/{address}/utxos?confirmations={confirmations}'.format(host=host, port=port, address=args.address, confirmations=args.confirmations)
-        if args.explorer is not None:
-            url += '&explorer={explorer}'.format(explorer=args.explorer)
-        r = requests.get(url)
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable get UTXOs of address %s: %s' % (args.address, ex)
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/addresses/{address}/utxos?confirmations={confirmations}'.format(host=host,
+                                                                                                          port=port,
+                                                                                                          address=args.address,
+                                                                                                          confirmations=args.confirmations)
+    do_get_request(url=url)
 
 # ----------------------------------------------------------------------------------------------------------------
 
