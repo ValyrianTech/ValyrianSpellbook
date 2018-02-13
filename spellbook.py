@@ -799,15 +799,8 @@ def get_latest_block():
 
 
 def get_block():
-    try:
-        url = 'http://{host}:{port}/spellbook/blocks/{id}'.format(host=host, port=port, id=args.id)
-        if args.explorer is not None:
-            url += '?explorer={explorer}'.format(explorer=args.explorer)
-        r = requests.get(url)
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable get block %s: %s' % (args.id, ex)
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/blocks/{id}'.format(host=host, port=port, id=args.id)
+    do_get_request(url=url)
 
 
 def get_prime_input_address():
