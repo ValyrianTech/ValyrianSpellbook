@@ -1134,15 +1134,20 @@ def get_reveal():
     do_get_request(url=url)
 
 
-def do_get_request(url, authenticate=False, data=None):
-    headers = add_authentication_headers(data=data) if authenticate is True else None
-
+def specify_explorer(url):
     try:
         explorer = getattr(args, 'explorer')
         if explorer is not None:
             url += '?explorer={explorer}'.format(explorer=args.explorer)
     except AttributeError:
         pass
+
+    return url
+
+
+def do_get_request(url, authenticate=False, data=None):
+    url = specify_explorer(url)
+    headers = add_authentication_headers(data=data) if authenticate is True else None
 
     try:
         r = requests.get(url, headers=headers, json=data)
@@ -1153,14 +1158,8 @@ def do_get_request(url, authenticate=False, data=None):
 
 
 def do_post_request(url, authenticate=False, data=None):
+    url = specify_explorer(url)
     headers = add_authentication_headers(data=data) if authenticate is True else None
-
-    try:
-        explorer = getattr(args, 'explorer')
-        if explorer is not None:
-            url += '?explorer={explorer}'.format(explorer=args.explorer)
-    except AttributeError:
-        pass
 
     try:
         r = requests.post(url, headers=headers, json=data)
@@ -1171,14 +1170,8 @@ def do_post_request(url, authenticate=False, data=None):
 
 
 def do_delete_request(url, authenticate=False, data=None):
+    url = specify_explorer(url)
     headers = add_authentication_headers(data=data) if authenticate is True else None
-
-    try:
-        explorer = getattr(args, 'explorer')
-        if explorer is not None:
-            url += '?explorer={explorer}'.format(explorer=args.explorer)
-    except AttributeError:
-        pass
 
     try:
         r = requests.delete(url, headers=headers, json=data)
