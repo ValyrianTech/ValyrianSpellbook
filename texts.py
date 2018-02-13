@@ -29,3 +29,16 @@ examples:
   - spellbook.py save_explorer ... -k=<myapikey> -s=<myapisecret>
     -> Use given api key and api secret to authenticate with the REST API
 '''
+
+########################################################################################################
+# get_explorer_config                                                                                  #
+########################################################################################################
+GET_EXPLORER_CONFIG_DESCRIPTION = 'Get configuration info about a specific explorer'
+GET_EXPLORER_CONFIG_EPILOG = '''
+examples:
+  - spellbook.py get_explorer_config blocktrail.com
+    -> Get configuration info about a specific explorer with id 'blocktrail.com'
+    
+  - spellbook.py get_explorer_config ... -k=<myapikey> -s=<myapisecret>
+    -> Use given api key and api secret to authenticate with the REST API
+'''

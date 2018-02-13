@@ -56,14 +56,8 @@ save_explorer_parser.add_argument('-s', '--api_secret', help='API secret for the
 get_explorer_config_parser = subparsers.add_parser(name='get_explorer_config',
                                                    help='Get configuration info about a specific explorer',
                                                    formatter_class=argparse.RawDescriptionHelpFormatter,
-                                                   description='''
-Get configuration info about a specific explorer
-                                                   ''',
-                                                   epilog='''
-examples:
-  - spellbook.py get_explorer_config blocktrail
-    -> Get configuration info about a specific explorer
-                                                   ''')
+                                                   description=texts.GET_EXPLORER_CONFIG_DESCRIPTION,
+                                                   epilog=texts.GET_EXPLORER_CONFIG_EPILOG)
 
 get_explorer_config_parser.add_argument('name', help='Name of the explorer')
 get_explorer_config_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
