@@ -782,12 +782,8 @@ def save_explorer():
             'priority': args.priority,
             'testnet': args.testnet}
 
-    try:
-        r = requests.post('http://{host}:{port}/spellbook/explorers/{explorer_id}'.format(host=host, port=port, explorer_id=args.name), headers=add_authentication_headers(data=data), json=data)
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable to get explorer config: %s' % ex
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/explorers/{explorer_id}'.format(host=host, port=port, explorer_id=args.name)
+    do_post_request(url=url, authenticate=True, data=data)
 
 
 def delete_explorer():
@@ -1313,6 +1309,16 @@ def do_get_request(url, authenticate=False):
         print r.text
     except Exception as ex:
         print >> sys.stderr, 'GET %s failed: %s' % (url, ex)
+        sys.exit(1)
+
+
+def do_post_request(url, authenticate=False, data=None):
+    headers = add_authentication_headers(data=data) if authenticate is True else None
+    try:
+        r = requests.post(url, headers=headers, json=data)
+        print r.text
+    except Exception as ex:
+        print >> sys.stderr, 'POST %s failed: %s' % (url, ex)
         sys.exit(1)
 
 
