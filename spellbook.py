@@ -893,21 +893,13 @@ def get_random_address():
 
 
 def get_triggers():
-    try:
-        r = requests.get('http://{host}:{port}/spellbook/triggers'.format(host=host, port=port))
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable to get triggers: %s' % ex
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/triggers'.format(host=host, port=port)
+    do_get_request(url=url)
 
 
 def get_trigger():
-    try:
-        r = requests.get('http://{host}:{port}/spellbook/triggers/{trigger_id}'.format(host=host, port=port, trigger_id=args.trigger_id), headers=add_authentication_headers())
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable to get trigger config: %s' % ex
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/triggers/{trigger_id}'.format(host=host, port=port, trigger_id=args.trigger_id)
+    do_get_request(url=url, authenticate=True)
 
 
 def save_trigger():
@@ -981,30 +973,18 @@ def save_trigger():
     if args.actions is not None:
         data['actions'] = args.actions
 
-    try:
-        r = requests.post('http://{host}:{port}/spellbook/triggers/{trigger_id}'.format(host=host, port=port, trigger_id=args.trigger_id), headers=add_authentication_headers(data=data), json=data)
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable to save trigger: %s' % ex
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/triggers/{trigger_id}'.format(host=host, port=port, trigger_id=args.trigger_id)
+    do_post_request(url=url, authenticate=True, data=data)
 
 
 def delete_trigger():
-    try:
-        r = requests.delete('http://{host}:{port}/spellbook/triggers/{trigger_id}'.format(host=host, port=port, trigger_id=args.trigger_id), headers=add_authentication_headers())
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable to delete trigger: %s' % ex
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/triggers/{trigger_id}'.format(host=host, port=port, trigger_id=args.trigger_id)
+    do_delete_request(url=url, authenticate=True)
 
 
 def activate_trigger():
-    try:
-        r = requests.get('http://{host}:{port}/spellbook/triggers/{trigger_id}/activate'.format(host=host, port=port, trigger_id=args.trigger_id), headers=add_authentication_headers())
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable to activate trigger: %s' % ex
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/triggers/{trigger_id}/activate'.format(host=host, port=port, trigger_id=args.trigger_id)
+    do_get_request(url=url, authenticate=True)
 
 
 def send_signed_message():
@@ -1022,12 +1002,8 @@ def send_signed_message():
     if args.signature is not None:
         data['signature'] = args.signature
 
-    try:
-        r = requests.post('http://{host}:{port}/spellbook/triggers/{trigger_id}/message'.format(host=host, port=port, trigger_id=args.trigger_id), json=data)
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable to send signed message to trigger: %s' % ex
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/triggers/{trigger_id}/message'.format(host=host, port=port, trigger_id=args.trigger_id)
+    do_post_request(url=url, authenticate=True, data=data)
 
 
 def check_triggers():
@@ -1036,15 +1012,7 @@ def check_triggers():
     else:
         url = 'http://{host}:{port}/spellbook/check_triggers'.format(host=host, port=port)
 
-    if args.explorer is not None:
-        url += '?explorer={explorer}'.format(explorer=args.explorer)
-
-    try:
-        r = requests.get(url, headers=add_authentication_headers())
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable to check triggers: %s' % ex
-        sys.exit(1)
+    do_get_request(url=url)
 
 # ----------------------------------------------------------------------------------------------------------------
 # Actions
