@@ -68,14 +68,8 @@ get_explorer_config_parser.add_argument('-s', '--api_secret', help='API secret f
 delete_explorer_parser = subparsers.add_parser(name='delete_explorer',
                                                help='Delete a specific explorer',
                                                formatter_class=argparse.RawDescriptionHelpFormatter,
-                                               description='''
-Delete a specific explorer
-                                               ''',
-                                               epilog='''
-examples:
-  - spellbook.py delete_explorer blocktrail
-    -> Delete the explorer with id 'blocktrail'
-                                               ''')
+                                               description=texts.DELETE_EXPLORER_DESCRIPTION,
+                                               epilog=texts.DELETE_EXPLORER_EPILOG)
 
 delete_explorer_parser.add_argument('name', help='Name of the explorer')
 delete_explorer_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)

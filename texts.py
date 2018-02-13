@@ -14,7 +14,7 @@ examples:
 ########################################################################################################
 # save_explorer                                                                                        #
 ########################################################################################################
-SAVE_EXPLORER_DESCRIPTION = 'Save or update the configuration of an explorer in the spellbook'
+SAVE_EXPLORER_DESCRIPTION = 'Save or update the configuration of an explorer in the spellbook.'
 SAVE_EXPLORER_EPILOG = '''
 examples:
   - spellbook.py save_explorer blockchain.info Blockchain.info https://blockchain.info 1
@@ -33,7 +33,7 @@ examples:
 ########################################################################################################
 # get_explorer_config                                                                                  #
 ########################################################################################################
-GET_EXPLORER_CONFIG_DESCRIPTION = 'Get configuration info about a specific explorer'
+GET_EXPLORER_CONFIG_DESCRIPTION = 'Get configuration info about a specific explorer.'
 GET_EXPLORER_CONFIG_EPILOG = '''
 examples:
   - spellbook.py get_explorer_config blocktrail.com
@@ -41,4 +41,18 @@ examples:
     
   - spellbook.py get_explorer_config ... -k=<myapikey> -s=<myapisecret>
     -> Use given api key and api secret to authenticate with the REST API
+'''
+
+########################################################################################################
+# delete_explorer                                                                                       #
+########################################################################################################
+DELETE_EXPLORER_DESCRIPTION = 'Delete a specific explorer.'
+DELETE_EXPLORER_EPILOG = '''
+examples:
+  - spellbook.py delete_explorer blocktrail.com
+    -> Delete the explorer with id 'blocktrail.com'
+  
+  - spellbook.py delete_explorer ... -k=<myapikey> -s=<myapisecret>
+    -> Use given api key and api secret to authenticate with the REST API
+    
 '''
