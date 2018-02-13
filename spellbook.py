@@ -40,16 +40,8 @@ get_explorers_parser = subparsers.add_parser(name='get_explorers',
 save_explorer_parser = subparsers.add_parser(name='save_explorer',
                                              help='Save or update an explorer in the spellbook',
                                              formatter_class=argparse.RawDescriptionHelpFormatter,
-                                             description='''
-Save or update an explorer in the spellbook
-                                             ''',
-                                             epilog='''
-examples:
-  - spellbook.py save_explorer blocktrail
-    -> Save or update an explorer with name 'blocktrail' in the spellbook
-  - spellbook.py save_explorer blocktrail --key='ABC123'
-    -> Save or update an explorer with name 'blocktrail' and an API-key in the spellbook
-                                             ''')
+                                             description=texts.SAVE_EXPLORER_DESCRIPTION,
+                                             epilog=texts.SAVE_EXPLORER_EPILOG)
 
 save_explorer_parser.add_argument('name', help='name of the explorer')
 save_explorer_parser.add_argument('type', help='type of the explorer', choices=['Blockchain.info', 'Blocktrail.com', 'Insight'])
