@@ -830,44 +830,20 @@ def get_utxos():
 
 def get_sil():
     data = {'block_height': args.block_height}
-
-    try:
-        url = 'http://{host}:{port}/spellbook/addresses/{address}/SIL'.format(host=host, port=port, address=args.address)
-        if args.explorer is not None:
-            url += '?explorer={explorer}'.format(explorer=args.explorer)
-        r = requests.get(url, json=data)
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable to get SIL: %s' % ex
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/addresses/{address}/SIL'.format(host=host, port=port, address=args.address)
+    do_get_request(url=url)
 
 
 def get_profile():
     data = {'block_height': args.block_height}
-
-    try:
-        url = 'http://{host}:{port}/spellbook/addresses/{address}/profile'.format(host=host, port=port, address=args.address)
-        if args.explorer is not None:
-            url += '?explorer={explorer}'.format(explorer=args.explorer)
-        r = requests.get(url, json=data)
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable to get profile: %s' % ex
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/addresses/{address}/profile'.format(host=host, port=port, address=args.address)
+    do_get_request(url=url)
 
 
 def get_sul():
     data = {'confirmations': args.confirmations}
-
-    try:
-        url = 'http://{host}:{port}/spellbook/addresses/{address}/SUL'.format(host=host, port=port, address=args.address)
-        if args.explorer is not None:
-            url += '?explorer={explorer}'.format(explorer=args.explorer)
-        r = requests.get(url, json=data)
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable to get SUL: %s' % ex
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/addresses/{address}/SUL'.format(host=host, port=port, address=args.address)
+    do_get_request(url=url)
 
 # ----------------------------------------------------------------------------------------------------------------
 
