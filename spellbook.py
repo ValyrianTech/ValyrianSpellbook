@@ -794,15 +794,8 @@ def delete_explorer():
 
 
 def get_latest_block():
-    try:
-        url = 'http://{host}:{port}/spellbook/blocks/latest'.format(host=host, port=port)
-        if args.explorer is not None:
-            url += '?explorer={explorer}'.format(explorer=args.explorer)
-        r = requests.get(url)
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable get latest block: %s' % ex
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/blocks/latest'.format(host=host, port=port)
+    do_get_request(url=url)
 
 
 def get_block():
@@ -1300,6 +1293,10 @@ def get_reveal():
 
 def do_get_request(url, authenticate=False):
     headers = add_authentication_headers() if authenticate is True else None
+
+    if args.explorer is not None:
+        url += '?explorer={explorer}'.format(explorer=args.explorer)
+
     try:
         r = requests.get(url, headers=headers)
         print r.text
