@@ -766,12 +766,8 @@ def add_authentication_headers(headers=None, data=None):
 
 
 def get_explorers():
-    try:
-        r = requests.get('http://{host}:{port}/spellbook/explorers'.format(host=host, port=port))
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable to get explorers: %s' % ex
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/explorers'.format(host=host, port=port)
+    do_get_request(url)
 
 
 def get_explorer_config():
@@ -1312,6 +1308,17 @@ def get_reveal():
     except Exception as ex:
         print >> sys.stderr, 'Unable to get revealed text or link: %s' % ex
         sys.exit(1)
+
+
+def do_get_request(url, authenticate=False):
+    headers = add_authentication_headers() if authenticate is True else None
+    try:
+        r = requests.get(url, headers=headers)
+        print r.text
+    except Exception as ex:
+        print >> sys.stderr, 'GET %s failed: %s' % (url, ex)
+        sys.exit(1)
+
 
 # Parse the command line arguments
 args = parser.parse_args()
