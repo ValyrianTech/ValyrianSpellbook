@@ -787,12 +787,8 @@ def save_explorer():
 
 
 def delete_explorer():
-    try:
-        r = requests.delete('http://{host}:{port}/spellbook/explorers/{explorer_id}'.format(host=host, port=port, explorer_id=args.name), headers=add_authentication_headers())
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable to delete explorer: %s' % ex
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/explorers/{explorer_id}'.format(host=host, port=port, explorer_id=args.name)
+    do_delete_request(url=url, authenticate=True)
 
 # ----------------------------------------------------------------------------------------------------------------
 
@@ -1319,6 +1315,16 @@ def do_post_request(url, authenticate=False, data=None):
         print r.text
     except Exception as ex:
         print >> sys.stderr, 'POST %s failed: %s' % (url, ex)
+        sys.exit(1)
+
+
+def do_delete_request(url, authenticate=False):
+    headers = add_authentication_headers() if authenticate is True else None
+    try:
+        r = requests.delete(url, headers=headers)
+        print r.text
+    except Exception as ex:
+        print >> sys.stderr, 'DELETE %s failed: %s' % (url, ex)
         sys.exit(1)
 
 
