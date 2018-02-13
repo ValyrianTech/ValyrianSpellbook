@@ -1020,21 +1020,13 @@ def check_triggers():
 
 
 def get_actions():
-    try:
-        r = requests.get('http://{host}:{port}/spellbook/actions'.format(host=host, port=port))
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable to get actions: %s' % ex
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/actions'.format(host=host, port=port)
+    do_get_request(url=url)
 
 
 def get_action():
-    try:
-        r = requests.get('http://{host}:{port}/spellbook/actions/{action_id}'.format(host=host, port=port, action_id=args.action_id), headers=add_authentication_headers())
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable to get action config: %s' % ex
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/actions/{action_id}'.format(host=host, port=port, action_id=args.action_id)
+    do_get_request(url=url, authenticate=True)
 
 
 def save_action():
@@ -1123,46 +1115,23 @@ def save_action():
             print >> sys.stderr, 'Must be a dict where all keys are a valid address and the value is a integer greater than or equal to zero'
             sys.exit(1)
 
-    try:
-        r = requests.post('http://{host}:{port}/spellbook/actions/{action_id}'.format(host=host,
-                                                                                      port=port,
-                                                                                      action_id=args.action_id),
-                          headers=add_authentication_headers(data=data),
-                          json=data)
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable to save action config: %s' % ex
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/actions/{action_id}'.format(host=host, port=port, action_id=args.action_id)
+    do_post_request(url=url, authenticate=True, data=data)
 
 
 def delete_action():
-    try:
-        r = requests.delete('http://{host}:{port}/spellbook/actions/{action_id}'.format(host=host,
-                                                                                        port=port,
-                                                                                        action_id=args.action_id),
-                            headers=add_authentication_headers())
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable to delete action: %s' % ex
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/actions/{action_id}'.format(host=host, port=port, action_id=args.action_id)
+    do_delete_request(url=url, authenticate=True)
 
 
 def run_action():
-    try:
-        r = requests.get('http://{host}:{port}/spellbook/actions/{action_id}/run'.format(host=host, port=port, action_id=args.action_id), headers=add_authentication_headers())
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable to run action: %s' % ex
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/actions/{action_id}/run'.format(host=host, port=port, action_id=args.action_id)
+    do_get_request(url=url, authenticate=True)
 
 
 def get_reveal():
-    try:
-        r = requests.get('http://{host}:{port}/spellbook/actions/{action_id}/reveal'.format(host=host, port=port, action_id=args.action_id))
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable to get revealed text or link: %s' % ex
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/actions/{action_id}/reveal'.format(host=host, port=port, action_id=args.action_id)
+    do_get_request(url=url)
 
 
 def do_get_request(url, authenticate=False, data=None):
