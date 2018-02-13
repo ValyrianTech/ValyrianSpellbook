@@ -11,6 +11,7 @@ from authentication import signature
 
 from configurationhelpers import get_host, get_port, get_key, get_secret
 from validators.validators import valid_distribution
+import texts
 
 
 # Make sure we are in the correct working directory
@@ -32,14 +33,8 @@ subparsers = parser.add_subparsers(title='Spellbook subcommands', metavar='', de
 get_explorers_parser = subparsers.add_parser(name='get_explorers',
                                              help='Get list of configured explorers',
                                              formatter_class=argparse.RawDescriptionHelpFormatter,
-                                             description='''
-Get a list of configured explorers
-                                             ''',
-                                             epilog='''
-examples:
-  - spellbook.py get_explorers
-    -> Get a list of configured explorers
-                                             ''')
+                                             description=texts.GET_EXPLORERS_DESCRIPTION,
+                                             epilog=texts.GET_EXPLORERS_EPILOG)
 
 # Create parser for the save_explorer subcommand
 save_explorer_parser = subparsers.add_parser(name='save_explorer',
