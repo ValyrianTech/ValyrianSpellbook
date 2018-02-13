@@ -831,19 +831,19 @@ def get_utxos():
 def get_sil():
     data = {'block_height': args.block_height}
     url = 'http://{host}:{port}/spellbook/addresses/{address}/SIL'.format(host=host, port=port, address=args.address)
-    do_get_request(url=url)
+    do_get_request(url=url, data=data)
 
 
 def get_profile():
     data = {'block_height': args.block_height}
     url = 'http://{host}:{port}/spellbook/addresses/{address}/profile'.format(host=host, port=port, address=args.address)
-    do_get_request(url=url)
+    do_get_request(url=url, data=data)
 
 
 def get_sul():
     data = {'confirmations': args.confirmations}
     url = 'http://{host}:{port}/spellbook/addresses/{address}/SUL'.format(host=host, port=port, address=args.address)
-    do_get_request(url=url)
+    do_get_request(url=url, data=data)
 
 # ----------------------------------------------------------------------------------------------------------------
 
@@ -852,52 +852,28 @@ def get_lal():
     data = {'block_height': args.block_height,
             'xpub': args.xpub}
     url = 'http://{host}:{port}/spellbook/addresses/{address}/LAL'.format(host=host, port=port, address=args.address)
-    do_get_request(url=url, json=data)
+    do_get_request(url=url, data=data)
 
 
 def get_lbl():
     data = {'block_height': args.block_height,
             'xpub': args.xpub}
-
-    try:
-        url = 'http://{host}:{port}/spellbook/addresses/{address}/LBL'.format(host=host, port=port, address=args.address)
-        if args.explorer is not None:
-            url += '?explorer={explorer}'.format(explorer=args.explorer)
-        r = requests.get(url, json=data)
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable to get LBL: %s' % ex
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/addresses/{address}/LBL'.format(host=host, port=port, address=args.address)
+    do_get_request(url=url, data=data)
 
 
 def get_lrl():
     data = {'block_height': args.block_height,
             'xpub': args.xpub}
-
-    try:
-        url = 'http://{host}:{port}/spellbook/addresses/{address}/LRL'.format(host=host, port=port, address=args.address)
-        if args.explorer is not None:
-            url += '?explorer={explorer}'.format(explorer=args.explorer)
-        r = requests.get(url, json=data)
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable to get LRL: %s' % ex
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/addresses/{address}/LRL'.format(host=host, port=port, address=args.address)
+    do_get_request(url=url, data=data)
 
 
 def get_lsl():
     data = {'block_height': args.block_height,
             'xpub': args.xpub}
-
-    try:
-        url = 'http://{host}:{port}/spellbook/addresses/{address}/LSL'.format(host=host, port=port, address=args.address)
-        if args.explorer is not None:
-            url += '?explorer={explorer}'.format(explorer=args.explorer)
-        r = requests.get(url, json=data)
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable to get LSL: %s' % ex
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/addresses/{address}/LSL'.format(host=host, port=port, address=args.address)
+    do_get_request(url=url, data=data)
 
 # ----------------------------------------------------------------------------------------------------------------
 
