@@ -882,16 +882,10 @@ def get_random_address():
     data = {'rng_block_height': args.rng_block_height,
             'sil_block_height': args.block_height,
             'xpub': args.xpub}
-
-    try:
-        url = 'http://{host}:{port}/spellbook/addresses/{address}/random/{source}'.format(host=host, port=port, address=args.address, source=args.source)
-        if args.explorer is not None:
-            url += '?explorer={explorer}'.format(explorer=args.explorer)
-        r = requests.get(url, json=data)
-        print r.text
-    except Exception as ex:
-        print >> sys.stderr, 'Unable to get random address: %s' % ex
-        sys.exit(1)
+    url = 'http://{host}:{port}/spellbook/addresses/{address}/random/{source}'.format(host=host, port=port,
+                                                                                      address=args.address,
+                                                                                      source=args.source)
+    do_get_request(url=url, data=data)
 
 # ----------------------------------------------------------------------------------------------------------------
 # Triggers
