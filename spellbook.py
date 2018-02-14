@@ -324,15 +324,8 @@ save_trigger_parser.add_argument('-s', '--api_secret', help='API secret for the 
 delete_trigger_parser = subparsers.add_parser(name='delete_trigger',
                                               help='Delete a specified trigger',
                                               formatter_class=argparse.RawDescriptionHelpFormatter,
-                                              description='''
-Delete a specified trigger.
-                                              ''',
-                                              epilog='''
-examples:
-  - spellbook.py delete_trigger mytrigger
-    -> Delete the trigger with id 'mytrigger'
-
-                                              ''')
+                                              description=texts.DELETE_TRIGGER_DESCRIPTION,
+                                              epilog=texts.DELETE_TRIGGER_EPILOG)
 
 delete_trigger_parser.add_argument('trigger_id', help='The id of the trigger to delete')
 delete_trigger_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
