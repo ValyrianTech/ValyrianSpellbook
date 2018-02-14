@@ -456,15 +456,8 @@ save_action_parser.add_argument('-s', '--api_secret', help='API secret for the s
 delete_action_parser = subparsers.add_parser(name='delete_action',
                                              help='Delete a specified action',
                                              formatter_class=argparse.RawDescriptionHelpFormatter,
-                                             description='''
-Delete a specified action.
-                                             ''',
-                                             epilog='''
-examples:
-  - spellbook.py delete_action myaction
-    -> Delete the action with id 'myaction'
-
-                                             ''')
+                                             description=texts.DELETE_ACTION_DESCRIPTION,
+                                             epilog=texts.DELETE_ACTION_EPILOG)
 
 delete_action_parser.add_argument('action_id', help='The id of the action')
 delete_action_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)

@@ -381,3 +381,16 @@ examples:
   - spellbook.py get_action_config ... -k=<myapikey> -s=<myapisecret>
     -> Use given api key and api secret to authenticate with the REST API
 '''
+
+########################################################################################################
+# delete_action                                                                                        #
+########################################################################################################
+DELETE_ACTION_DESCRIPTION = 'Delete a specified action.'
+DELETE_ACTION_EPILOG = '''
+examples:
+  - spellbook.py delete_action myaction
+    -> Delete the action with id 'myaction'
+
+  - spellbook.py delete_action ... -k=<myapikey> -s=<myapisecret>
+    -> Use given api key and api secret to authenticate with the REST API
+'''
