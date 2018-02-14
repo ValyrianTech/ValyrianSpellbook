@@ -238,19 +238,8 @@ get_lsl_parser.add_argument('-e', '--explorer', help='Use specified explorer to 
 get_random_address_parser = subparsers.add_parser(name='get_random_address',
                                                   help='Get a random address from SIL, LBL, LRL or LSL where the chance of an address being picked is proportional to its value in the list',
                                                   formatter_class=argparse.RawDescriptionHelpFormatter,
-                                                  description='''
-Get a random address from SIL, LBL, LRL or LSL where the chance of an address being picked is proportional to its value in the list.
-                                                  ''',
-                                                  epilog='''
-examples:
-  - spellbook.py get_random_address SIL 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 480000
-    -> Get a random address from the SIL of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the blockhash of block 480000 as a random number
-    
-  - spellbook.py get_random_address SIL 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 480000 --block_height=450000
-    -> Get a random address from the SIL of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 at block 450000 using the blockhash of block 480000 as a random number
-
-  - spellbook.py get_random_address LBL 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 480000 --xpub=xpub6CUvzHsNLcxthhGJesNDPSh2gicdHLPAAeyucP2KW1vBKEMxvDWCYRJZzM4g7mNiQ4Zb9nG4y25884SnYAr1P674yQipYLU8pP5z8AmahmD
-    -> Get a random address from the LBL of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 with given xpub key using the blockhash of block 480000 as a random number                                                 ''')
+                                                  description=texts.GET_RANDOM_ADDRESS_DESCRIPTION,
+                                                  epilog=texts.GET_RANDOM_ADDRESS_EPILOG)
 
 get_random_address_parser.add_argument('source', help='The source of the distribution (SIL, LBL, LRL or LSL)', choices=['SIL', 'LBL', 'LRL', 'LSL'])
 get_random_address_parser.add_argument('address', help='The address')
