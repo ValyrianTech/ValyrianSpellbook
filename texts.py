@@ -316,7 +316,7 @@ examples:
 ########################################################################################################
 # activate_trigger                                                                                     #
 ########################################################################################################
-ACTIVATE_TRIGGER_DESCRIPTION = "Activate a specified manual trigger. The trigger must be of type 'Manual' or 'DeadMansSwitch"
+ACTIVATE_TRIGGER_DESCRIPTION = "Activate a specified manual trigger. The trigger must be of type 'Manual' or 'DeadMansSwitch'"
 ACTIVATE_TRIGGER_EPILOG = '''
 examples:
   - spellbook.py activate_trigger mytrigger
@@ -335,4 +335,23 @@ examples:
   - spellbook.py send_signed_message mytrigger <address> <message> <signature>
     -> Send a signed message to the trigger with id 'mytrigger'
        If <message> contains an existing filename, then the contents of that file are sent as message.
+'''
+
+########################################################################################################
+# check_triggers                                                                                       #
+########################################################################################################
+CHECK_TRIGGERS_DESCRIPTION = "Check triggers and activate them if conditions have been fulfilled."
+CHECK_TRIGGERS_EPILOG = '''
+examples:
+  - spellbook.py check_triggers
+    -> Check all triggers and activate them if conditions have been fulfilled
+
+  - spellbook.py check_triggers mytrigger
+    -> Check the trigger with id 'mytrigger' and activate it if conditions have been fulfilled
+
+  - spellbook.py check_triggers mytrigger --explorer=blocktrail.com
+    -> Check the trigger with id 'mytrigger' and activate it if conditions have been fulfilled using the blocktrail.com explorers
+
+  - spellbook.py check_triggers ... -k=<myapikey> -s=<myapisecret>
+    -> Use given api key and api secret to authenticate with the REST API
 '''
