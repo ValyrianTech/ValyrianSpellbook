@@ -112,16 +112,8 @@ get_prime_input_address_parser.add_argument('-e', '--explorer', help='Use specif
 get_transactions_parser = subparsers.add_parser(name='get_transactions',
                                                 help='Get all transactions that a specific address has received or sent',
                                                 formatter_class=argparse.RawDescriptionHelpFormatter,
-                                                description='''
-Get all transactions that a specific address has received or sent.
-                                                ''',
-                                                epilog='''
-examples:
-  - spellbook.py get_transactions 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8
-    -> Get all transactions of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the default explorer
-  - spellbook.py get_transactions 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 --explorer=blockchain.info
-    -> Get all transactions of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the blockchain.info explorer to retrieve the data
-                                                ''')
+                                                description=texts.GET_TRANSACTIONS_DESCRIPTION,
+                                                epilog=texts.GET_TRANSACTIONS_EPILOG)
 
 get_transactions_parser.add_argument('address', help='The address')
 get_transactions_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
