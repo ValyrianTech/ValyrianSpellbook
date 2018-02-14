@@ -385,15 +385,8 @@ get_actions_parser.add_argument('-i', '--trigger_id', help='The id of the trigge
 get_action_config_parser = subparsers.add_parser(name='get_action_config',
                                                  help='Get the configuration of specified action',
                                                  formatter_class=argparse.RawDescriptionHelpFormatter,
-                                                 description='''
-Get the configuration of specified action.
-                                                 ''',
-                                                 epilog='''
-examples:
-  - spellbook.py get_action_config myaction
-    -> Get the configuration of the action 'myaction'
-
-                                                 ''')
+                                                 description=texts.GET_ACTION_CONFIG_DESCRIPTION,
+                                                 epilog=texts.GET_ACTION_CONFIG_EPILOG)
 
 get_action_config_parser.add_argument('action_id', help='The id of the action')
 get_action_config_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)

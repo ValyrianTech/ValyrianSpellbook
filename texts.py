@@ -368,3 +368,16 @@ examples:
   - spellbook.py get_actions --trigger_id=mytrigger
     -> Get the list of all configured action_ids on trigger 'mytrigger'
 '''
+
+########################################################################################################
+# get_action_config                                                                                    #
+########################################################################################################
+GET_ACTION_CONFIG_DESCRIPTION = 'Get the configuration of specified action.'
+GET_ACTION_CONFIG_EPILOG = '''
+examples:
+  - spellbook.py get_action_config myaction
+    -> Get the configuration of the action 'myaction'
+
+  - spellbook.py get_action_config ... -k=<myapikey> -s=<myapisecret>
+    -> Use given api key and api secret to authenticate with the REST API
+'''
