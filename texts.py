@@ -296,3 +296,13 @@ examples:
   - spellbook.py get_trigger_config mytrigger
     -> Get the configuration of the trigger with id 'mytrigger'
 '''
+
+########################################################################################################
+# delete_trigger                                                                                       #
+########################################################################################################
+DELETE_TRIGGER_DESCRIPTION = 'Delete a specified trigger.'
+DELETE_TRIGGER_EPILOG = '''
+examples:
+  - spellbook.py delete_trigger mytrigger
+    -> Delete the trigger with id 'mytrigger'
+'''
