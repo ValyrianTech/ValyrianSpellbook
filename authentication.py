@@ -11,7 +11,7 @@ import base64
 
 from jsonhelpers import save_to_json_file, load_from_json_file
 
-API_KEYS_FILE = 'api_keys.json'
+API_KEYS_FILE = 'json/private/api_keys.json'
 LAST_NONCES = {}
 
 
