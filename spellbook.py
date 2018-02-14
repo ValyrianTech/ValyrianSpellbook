@@ -375,17 +375,8 @@ check_triggers_parser.add_argument('-s', '--api_secret', help='API secret for th
 get_actions_parser = subparsers.add_parser(name='get_actions',
                                            help='Get the list of configured action_ids',
                                            formatter_class=argparse.RawDescriptionHelpFormatter,
-                                           description='''
-Get the list of configured action_ids.
-                                           ''',
-                                           epilog='''
-examples:
-  - spellbook.py get_actions
-    -> Get the list of all configured action_ids
-
-  - spellbook.py get_actions --trigger_id=mytrigger
-    -> Get the list of all configured action_ids on trigger 'mytrigger'
-                                           ''')
+                                           description=texts.GET_ACTIONS_DESCRIPTION,
+                                           epilog=texts.GET_ACTIONS_EPILOG)
 
 get_actions_parser.add_argument('-i', '--trigger_id', help='The id of the trigger')
 
