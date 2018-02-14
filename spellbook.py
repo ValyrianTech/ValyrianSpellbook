@@ -255,17 +255,8 @@ get_random_address_parser.add_argument('-e', '--explorer', help='Use specified e
 get_triggers_parser = subparsers.add_parser(name='get_triggers',
                                             help='Get the list of configured triggers',
                                             formatter_class=argparse.RawDescriptionHelpFormatter,
-                                            description='''
-Get the list of configured triggers.
-                                            ''',
-                                            epilog='''
-examples:
-  - spellbook.py get_triggers
-    -> Get the list of all configured triggers
-    
-  - spellbook.py get_triggers --active
-    -> Get the list of active triggers
-                                            ''')
+                                            description=texts.GET_TRIGGERS_DESCRIPTION,
+                                            epilog=texts.GET_TRIGGERS_EPILOG)
 
 get_triggers_parser.add_argument('-a', '--active', help='Only get the triggers that are currently active')
 
