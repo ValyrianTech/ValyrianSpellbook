@@ -286,3 +286,13 @@ examples:
   - spellbook.py get_triggers --active
     -> Get the list of active triggers
 '''
+
+########################################################################################################
+# get_trigger_config                                                                                   #
+########################################################################################################
+GET_TRIGGER_CONFIG_DESCRIPTION = 'Get the configuration of specified trigger.'
+GET_TRIGGER_CONFIG_EPILOG = '''
+examples:
+  - spellbook.py get_trigger_config mytrigger
+    -> Get the configuration of the trigger with id 'mytrigger'
+'''
