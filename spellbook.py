@@ -123,16 +123,8 @@ get_transactions_parser.add_argument('-e', '--explorer', help='Use specified exp
 get_balance_parser = subparsers.add_parser(name='get_balance',
                                            help='Get the current balance of an address',
                                            formatter_class=argparse.RawDescriptionHelpFormatter,
-                                           description='''
-Get the current balance of an address.
-                                           ''',
-                                           epilog='''
-examples:
-  - spellbook.py get_balance 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8
-    -> Get the balance of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the default explorer
-  - spellbook.py get_balance 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 --explorer=blockchain.info
-    -> Get the balance of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the blockchain.info explorer to retrieve the data
-                                           ''')
+                                           description=texts.GET_BALANCE_DESCRIPTION,
+                                           epilog=texts.GET_BLOCK_EPILOG)
 
 get_balance_parser.add_argument('address', help='The address')
 get_balance_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
