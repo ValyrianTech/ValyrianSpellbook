@@ -361,15 +361,8 @@ send_signed_message_parser.add_argument('signature', help='The signature of the 
 check_triggers_parser = subparsers.add_parser(name='check_triggers',
                                               help='Check a triggers and activate it them if conditions have been fulfilled',
                                               formatter_class=argparse.RawDescriptionHelpFormatter,
-                                              description='''
-Check triggers and activate it them if conditions have been fulfilled
-                                             ''',
-                                              epilog='''
-examples:
-  - spellbook.py check_triggers mytrigger
-    -> Check the trigger with id 'mytrigger' and activate it if conditions have been fulfilled
-
-                                             ''')
+                                              description=texts.CHECK_TRIGGERS_DESCRIPTION,
+                                              epilog=texts.CHECK_TRIGGERS_EPILOG)
 
 check_triggers_parser.add_argument('trigger_id', help='The id of the trigger to check', nargs='?')
 check_triggers_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
