@@ -264,15 +264,8 @@ get_triggers_parser.add_argument('-a', '--active', help='Only get the triggers t
 get_trigger_config_parser = subparsers.add_parser(name='get_trigger_config',
                                                   help='Get the configuration of specified trigger',
                                                   formatter_class=argparse.RawDescriptionHelpFormatter,
-                                                  description='''
-Get the configuration of specified trigger.
-                                           ''',
-                                                  epilog='''
-examples:
-  - spellbook.py get_trigger_config mytrigger
-    -> Get the configuration of the trigger with id 'mytrigger'
-
-                                           ''')
+                                                  description=texts.GET_TRIGGER_CONFIG_DESCRIPTION,
+                                                  epilog=texts.GET_TRIGGER_CONFIG_EPILOG)
 
 get_trigger_config_parser.add_argument('trigger_id', help='The id of the trigger')
 get_trigger_config_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
