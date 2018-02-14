@@ -355,3 +355,16 @@ examples:
   - spellbook.py check_triggers ... -k=<myapikey> -s=<myapisecret>
     -> Use given api key and api secret to authenticate with the REST API
 '''
+
+########################################################################################################
+# get_actions                                                                                          #
+########################################################################################################
+GET_ACTIONS_DESCRIPTION = "Get the list of configured action_ids."
+GET_ACTIONS_EPILOG = '''
+examples:
+  - spellbook.py get_actions
+    -> Get the list of all configured action_ids
+
+  - spellbook.py get_actions --trigger_id=mytrigger
+    -> Get the list of all configured action_ids on trigger 'mytrigger'
+'''
