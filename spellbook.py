@@ -348,16 +348,8 @@ activate_trigger_parser.add_argument('-s', '--api_secret', help='API secret for 
 send_signed_message_parser = subparsers.add_parser(name='send_signed_message',
                                                    help='Send a signed message to a trigger',
                                                    formatter_class=argparse.RawDescriptionHelpFormatter,
-                                                   description='''
-Send a signed message to a trigger.
-The trigger must be of type 'SignedMessage'
-                                                   ''',
-                                                   epilog='''
-examples:
-  - spellbook.py send_signed_message mytrigger address message signature
-    -> Send a signed message to the trigger with id 'mytrigger'
-
-                                                   ''')
+                                                   description=texts.SEND_SIGNED_MESSAGE_DESCRIPTION,
+                                                   epilog=texts.SEND_SIGNED_MESSAGE_EPILOG)
 
 send_signed_message_parser.add_argument('trigger_id', help='The id of the trigger to activate')
 send_signed_message_parser.add_argument('address', help='The address that signed the message')
