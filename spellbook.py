@@ -220,28 +220,16 @@ get_lrl_parser.add_argument('-e', '--explorer', help='Use specified explorer to 
 
 
 # Create parser for the get_lsl subcommand
-get_lbl_parser = subparsers.add_parser(name='get_lsl',
+get_lsl_parser = subparsers.add_parser(name='get_lsl',
                                        help='Get the Linked Sent List (LSL) of an address and an xpub key',
                                        formatter_class=argparse.RawDescriptionHelpFormatter,
-                                       description='''
-Get the Linked Sent List (LSL) of an address and an xpub key.
-                                       ''',
-                                       epilog='''
-examples:
-  - spellbook.py get_lsl 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 xpub6CUvzHsNLcxthhGJesNDPSh2gicdHLPAAeyucP2KW1vBKEMxvDWCYRJZzM4g7mNiQ4Zb9nG4y25884SnYAr1P674yQipYLU8pP5z8AmahmD
-    -> Get the LSL of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 with xpub key xpub6CUvzHsNLcxthhGJesNDPSh2gicdHLPAAeyucP2KW1vBKEMxvDWCYRJZzM4g7mNiQ4Zb9nG4y25884SnYAr1P674yQipYLU8pP5z8AmahmD using the default explorer
-  
-  - spellbook.py get_lsl 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 xpub6CUvzHsNLcxthhGJesNDPSh2gicdHLPAAeyucP2KW1vBKEMxvDWCYRJZzM4g7mNiQ4Zb9nG4y25884SnYAr1P674yQipYLU8pP5z8AmahmD -b=478000
-    -> Get the LSL of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 with xpub key xpub6CUvzHsNLcxthhGJesNDPSh2gicdHLPAAeyucP2KW1vBKEMxvDWCYRJZzM4g7mNiQ4Zb9nG4y25884SnYAr1P674yQipYLU8pP5z8AmahmD at block height 478000 using the default explorer
-  
-  - spellbook.py get_lsl 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 xpub6CUvzHsNLcxthhGJesNDPSh2gicdHLPAAeyucP2KW1vBKEMxvDWCYRJZzM4g7mNiQ4Zb9nG4y25884SnYAr1P674yQipYLU8pP5z8AmahmD --explorer=blockchain.info
-    -> Get the LSL of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 with xpub key xpub6CUvzHsNLcxthhGJesNDPSh2gicdHLPAAeyucP2KW1vBKEMxvDWCYRJZzM4g7mNiQ4Zb9nG4y25884SnYAr1P674yQipYLU8pP5z8AmahmD using the blockchain.info explorer to retrieve the data
-                                       ''')
+                                       description=texts.GET_LSL_DESCRIPTION,
+                                       epilog=texts.GET_LSL_EPILOG)
 
-get_lbl_parser.add_argument('address', help='The address')
-get_lbl_parser.add_argument('xpub', help='The xpub key')
-get_lbl_parser.add_argument('-b', '--block_height', help='The block height for the SIL to link with the corresponding address from the xpub (optional, default=latest block)', default=0)
-get_lbl_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
+get_lsl_parser.add_argument('address', help='The address')
+get_lsl_parser.add_argument('xpub', help='The xpub key')
+get_lsl_parser.add_argument('-b', '--block_height', help='The block height for the SIL to link with the corresponding address from the xpub (optional, default=latest block)', default=0)
+get_lsl_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
 
 
 # ----------------------------------------------------------------------------------------------------------------
