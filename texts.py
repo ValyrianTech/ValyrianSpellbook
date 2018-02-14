@@ -407,3 +407,16 @@ examples:
   - spellbook.py run_action ... -k=<myapikey> -s=<myapisecret>
     -> Use given api key and api secret to authenticate with the REST API
 '''
+
+########################################################################################################
+# get_reveal                                                                                           #
+########################################################################################################
+GET_REVEAL_DESCRIPTION = 'Get the reveal text or link from a RevealSecret action.'
+GET_REVEAL_EPILOG = '''
+examples:
+  - spellbook.py get_reveal myaction
+    -> Get the reveal text or link of the action with id 'myaction'
+
+  - spellbook.py get_reveal ... -k=<myapikey> -s=<myapisecret>
+    -> Use given api key and api secret to authenticate with the REST API
+'''

@@ -480,15 +480,8 @@ run_action_parser.add_argument('-s', '--api_secret', help='API secret for the sp
 get_reveal_parser = subparsers.add_parser(name='get_reveal',
                                           help='Get the reveal text or link from a RevealSecret action',
                                           formatter_class=argparse.RawDescriptionHelpFormatter,
-                                          description='''
-Get the reveal text or link from a RevealSecret action.
-                                          ''',
-                                          epilog='''
-examples:
-  - spellbook.py get_reveal myaction
-    -> Get the reveal text or link of the action with id 'myaction'
-
-                                          ''')
+                                          description=texts.GET_REVEAL_DESCRIPTION,
+                                          epilog=texts.GET_REVEAL_EPILOG)
 
 get_reveal_parser.add_argument('action_id', help='The id of the action')
 get_reveal_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
