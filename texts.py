@@ -295,6 +295,9 @@ GET_TRIGGER_CONFIG_EPILOG = '''
 examples:
   - spellbook.py get_trigger_config mytrigger
     -> Get the configuration of the trigger with id 'mytrigger'
+
+  - spellbook.py get_trigger ... -k=<myapikey> -s=<myapisecret>
+    -> Use given api key and api secret to authenticate with the REST API
 '''
 
 ########################################################################################################
@@ -305,6 +308,9 @@ DELETE_TRIGGER_EPILOG = '''
 examples:
   - spellbook.py delete_trigger mytrigger
     -> Delete the trigger with id 'mytrigger'
+
+  - spellbook.py delete_trigger ... -k=<myapikey> -s=<myapisecret>
+    -> Use given api key and api secret to authenticate with the REST API
 '''
 
 ########################################################################################################
@@ -315,4 +321,7 @@ ACTIVATE_TRIGGER_EPILOG = '''
 examples:
   - spellbook.py activate_trigger mytrigger
     -> Activate the trigger with id 'mytrigger'
+
+  - spellbook.py activate_trigger ... -k=<myapikey> -s=<myapisecret>
+    -> Use given api key and api secret to authenticate with the REST API
 '''
