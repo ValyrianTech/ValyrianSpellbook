@@ -134,21 +134,11 @@ get_balance_parser.add_argument('-e', '--explorer', help='Use specified explorer
 get_utxos_parser = subparsers.add_parser(name='get_utxos',
                                          help='Get the current UTXOs of an address',
                                          formatter_class=argparse.RawDescriptionHelpFormatter,
-                                         description='''
-Get the UTXOs of an address with at least the specified number of confirmations (default=3).
-                                         ''',
-                                         epilog='''
-examples:
-  - spellbook.py get_utxos 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8
-    -> Get the UTXOs of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 with at least 3 confirmations using the default explorer
-  - spellbook.py get_utxos 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 -c=6
-    -> Get the UTXOs of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 with at least 6 confirmations using the default explorer
-  - spellbook.py get_utxos 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 --explorer=blockchain.info
-    -> Get the UTXOs of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the blockchain.info explorer to retrieve the data
-                                         ''')
+                                         description=texts.GET_UTXOS_DESCRIPTION,
+                                         epilog=texts.GET_UTXOS_EPILOG)
 
 get_utxos_parser.add_argument('address', help='The address')
-get_utxos_parser.add_argument('-c', '--confirmations', help='The number of confirmations required (default=3)', default=3)
+get_utxos_parser.add_argument('-c', '--confirmations', help='The number of confirmations required (default=1)', default=1)
 get_utxos_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
 
 # ----------------------------------------------------------------------------------------------------------------------
