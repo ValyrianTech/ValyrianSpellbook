@@ -171,3 +171,19 @@ examples:
   - spellbook.py get_profile 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 --explorer=blockchain.info
     -> Get the profile of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the blockchain.info explorer to retrieve the data
 '''
+
+########################################################################################################
+# get_sul                                                                                              #
+########################################################################################################
+GET_SUL_DESCRIPTION = 'Get the Simplified UTXO List (SUL) of an address.'
+GET_SUL_EPILOG = '''
+examples:
+  - spellbook.py get_sul 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8
+    -> Get the SUL of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the default explorer
+
+  - spellbook.py get_sul 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 -c=6
+    -> Get the SUL of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 with at least 6 confirmations using the default explorer
+
+  - spellbook.py get_sul 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 --explorer=blockchain.info
+    -> Get the SUL of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the blockchain.info explorer to retrieve the data
+'''

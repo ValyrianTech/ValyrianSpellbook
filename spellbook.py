@@ -171,18 +171,8 @@ get_profile_parser.add_argument('-e', '--explorer', help='Use specified explorer
 get_sul_parser = subparsers.add_parser(name='get_sul',
                                        help='Get the Simplified UTXO List (SIL) of an address',
                                        formatter_class=argparse.RawDescriptionHelpFormatter,
-                                       description='''
-Get the Simplified UTXO List (SUL) of an address.
-                                       ''',
-                                       epilog='''
-examples:
-  - spellbook.py get_sul 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8
-    -> Get the SUL of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the default explorer
-  - spellbook.py get_sul 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 -c=6
-    -> Get the SUL of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 with at least 6 confirmations using the default explorer
-  - spellbook.py get_sul 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 --explorer=blockchain.info
-    -> Get the SUL of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the blockchain.info explorer to retrieve the data
-                                       ''')
+                                       description=texts.GET_SUL_DESCRIPTION,
+                                       epilog=texts.GET_SUL_EPILOG)
 
 get_sul_parser.add_argument('address', help='The address')
 get_sul_parser.add_argument('-c', '--confirmations', help='The number of confirmations a utxo must have to be included in the SUL (optional, default=1)', default=1)
