@@ -468,15 +468,8 @@ delete_action_parser.add_argument('-s', '--api_secret', help='API secret for the
 run_action_parser = subparsers.add_parser(name='run_action',
                                           help='Run a specified action',
                                           formatter_class=argparse.RawDescriptionHelpFormatter,
-                                          description='''
-Run a specified action.
-                                          ''',
-                                          epilog='''
-examples:
-  - spellbook.py run_action myaction
-    -> Run the action with id 'myaction'
-
-                                          ''')
+                                          description=texts.RUN_ACTION_DESCRIPTION,
+                                          epilog=texts.RUN_ACTION_EPILOG)
 
 run_action_parser.add_argument('action_id', help='The id of the action')
 run_action_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
