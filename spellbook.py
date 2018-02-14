@@ -159,18 +159,8 @@ get_sil_parser.add_argument('-e', '--explorer', help='Use specified explorer to 
 get_profile_parser = subparsers.add_parser(name='get_profile',
                                            help='Get the profile of an address',
                                            formatter_class=argparse.RawDescriptionHelpFormatter,
-                                           description='''
-Get the profile of an address.
-                                           ''',
-                                           epilog='''
-examples:
-  - spellbook.py get_profile 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8
-    -> Get the profile of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the default explorer
-  - spellbook.py get_profile 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 -b=478000
-    -> Get the profile of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 at block height 478000 using the default explorer
-  - spellbook.py get_profile 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 --explorer=blockchain.info
-    -> Get the profile of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the blockchain.info explorer to retrieve the data
-                                           ''')
+                                           description=texts.GET_PROFILE_DESCRIPTION,
+                                           epilog=texts.GET_PROFILE_EPILOG)
 
 get_profile_parser.add_argument('address', help='The address')
 get_profile_parser.add_argument('-b', '--block_height', help='The block height for the profile (optional, default=latest block)', default=0)
