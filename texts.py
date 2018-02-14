@@ -70,7 +70,7 @@ examples:
 '''
 
 ########################################################################################################
-# get_block                                                                                     #
+# get_block                                                                                            #
 ########################################################################################################
 GET_BLOCK_DESCRIPTION = 'Get a block by a block hash or a block height.'
 GET_BLOCK_EPILOG = '''
@@ -83,4 +83,17 @@ examples:
   
   - spellbook.py get_block 488470 --explorer=blockchain.info
     -> Get block at height 488470 using the blockchain.info explorer to retrieve the data
+'''
+
+########################################################################################################
+# get_prime_input_address                                                                              #
+########################################################################################################
+GET_PRIME_INPUT_ADDRESS_DESCRIPTION = 'Get the prime input address of a transaction. This is the input address that comes first alphabetically.'
+GET_PRIME_INPUT_ADDRESS_EPILOG = '''
+examples:
+  - spellbook.py get_prime_input_address 39bb5f5d50882227f93b980df15ea676414f0363770a0174a13c8f55c877b598
+    -> Get the prime input address of tx 39bb5f5d50882227f93b980df15ea676414f0363770a0174a13c8f55c877b598 using the default explorer
+    
+  - spellbook.py get_prime_input_address 39bb5f5d50882227f93b980df15ea676414f0363770a0174a13c8f55c877b598 --explorer=blockchain.info
+    -> Get the prime input address of tx 39bb5f5d50882227f93b980df15ea676414f0363770a0174a13c8f55c877b598 using the blockchain.info explorer to retrieve the data
 '''

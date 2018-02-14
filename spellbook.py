@@ -101,16 +101,8 @@ get_block_parser.add_argument('-e', '--explorer', help='Use specified explorer t
 get_prime_input_address_parser = subparsers.add_parser(name='get_prime_input_address',
                                                        help='Get the prime input address of a transaction',
                                                        formatter_class=argparse.RawDescriptionHelpFormatter,
-                                                       description='''
-Get the prime input address of a transaction. This is the input address that comes first alphabetically.
-                                                       ''',
-                                                       epilog='''
-examples:
-  - spellbook.py get_prime_input_address 39bb5f5d50882227f93b980df15ea676414f0363770a0174a13c8f55c877b598
-    -> Get the prime input address of tx 39bb5f5d50882227f93b980df15ea676414f0363770a0174a13c8f55c877b598 using the default explorer
-  - spellbook.py get_prime_input_address 39bb5f5d50882227f93b980df15ea676414f0363770a0174a13c8f55c877b598 --explorer=blockchain.info
-    -> Get the prime input address of tx 39bb5f5d50882227f93b980df15ea676414f0363770a0174a13c8f55c877b598 using the blockchain.info explorer to retrieve the data
-                                                       ''')
+                                                       description=texts.GET_PRIME_INPUT_ADDRESS_DESCRIPTION,
+                                                       epilog=texts.GET_PRIME_INPUT_ADDRESS_EPILOG)
 
 get_prime_input_address_parser.add_argument('txid', help='The txid of the transaction')
 get_prime_input_address_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
