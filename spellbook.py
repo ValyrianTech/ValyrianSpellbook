@@ -336,16 +336,8 @@ delete_trigger_parser.add_argument('-s', '--api_secret', help='API secret for th
 activate_trigger_parser = subparsers.add_parser(name='activate_trigger',
                                                 help='Activate a specified manual trigger',
                                                 formatter_class=argparse.RawDescriptionHelpFormatter,
-                                                description='''
-Activate a specified manual trigger.
-The trigger must be of type 'Manual'
-                                                ''',
-                                                epilog='''
-examples:
-  - spellbook.py activate_trigger mytrigger
-    -> Activate the trigger with id 'mytrigger'
-
-                                                ''')
+                                                description=texts.ACTIVATE_TRIGGER_DESCRIPTION,
+                                                epilog=texts.ACTIVATE_TRIGGER_EPILOG)
 
 activate_trigger_parser.add_argument('trigger_id', help='The id of the trigger to activate')
 activate_trigger_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)

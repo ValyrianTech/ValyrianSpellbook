@@ -306,3 +306,13 @@ examples:
   - spellbook.py delete_trigger mytrigger
     -> Delete the trigger with id 'mytrigger'
 '''
+
+########################################################################################################
+# activate_trigger                                                                                       #
+########################################################################################################
+ACTIVATE_TRIGGER_DESCRIPTION = "Activate a specified manual trigger. The trigger must be of type 'Manual' or 'DeadMansSwitch"
+ACTIVATE_TRIGGER_EPILOG = '''
+examples:
+  - spellbook.py activate_trigger mytrigger
+    -> Activate the trigger with id 'mytrigger'
+'''
