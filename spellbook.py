@@ -147,18 +147,8 @@ get_utxos_parser.add_argument('-e', '--explorer', help='Use specified explorer t
 get_sil_parser = subparsers.add_parser(name='get_sil',
                                        help='Get the Simplified Inputs List (SIL) of an address',
                                        formatter_class=argparse.RawDescriptionHelpFormatter,
-                                       description='''
-Get the Simplified Inputs List (SIL) of an address.
-                                       ''',
-                                       epilog='''
-examples:
-  - spellbook.py get_sil 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8
-    -> Get the SIL of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the default explorer
-  - spellbook.py get_sil 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 -b=478000
-    -> Get the SIL of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 at block height 478000 using the default explorer
-  - spellbook.py get_sil 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 --explorer=blockchain.info
-    -> Get the SIL of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the blockchain.info explorer to retrieve the data
-                                       ''')
+                                       description=texts.GET_SIL_DESCRIPTION,
+                                       epilog=texts.GET_SIL_EPILOG)
 
 get_sil_parser.add_argument('address', help='The address')
 get_sil_parser.add_argument('-b', '--block_height', help='The block height for the SIL (optional, default=latest block)', default=0)

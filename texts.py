@@ -125,7 +125,7 @@ examples:
 '''
 
 ########################################################################################################
-# get_utxos                                                                                          #
+# get_utxos                                                                                            #
 ########################################################################################################
 GET_UTXOS_DESCRIPTION = 'Get the UTXOs of an address with at least the specified number of confirmations (default=1).'
 GET_UTXOS_EPILOG = '''
@@ -138,4 +138,20 @@ examples:
 
   - spellbook.py get_utxos 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 --explorer=blockchain.info
     -> Get the UTXOs of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the blockchain.info explorer to retrieve the data
+'''
+
+########################################################################################################
+# get_sil                                                                                              #
+########################################################################################################
+GET_SIL_DESCRIPTION = 'Get the Simplified Inputs List (SIL) of an address.'
+GET_SIL_EPILOG = '''
+examples:
+  - spellbook.py get_sil 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8
+    -> Get the SIL of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the default explorer
+
+  - spellbook.py get_sil 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 -b=478000
+    -> Get the SIL of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 at block height 478000 using the default explorer
+
+  - spellbook.py get_sil 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 --explorer=blockchain.info
+    -> Get the SIL of address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 using the blockchain.info explorer to retrieve the data
 '''
