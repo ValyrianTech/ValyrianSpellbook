@@ -314,7 +314,7 @@ examples:
 '''
 
 ########################################################################################################
-# activate_trigger                                                                                       #
+# activate_trigger                                                                                     #
 ########################################################################################################
 ACTIVATE_TRIGGER_DESCRIPTION = "Activate a specified manual trigger. The trigger must be of type 'Manual' or 'DeadMansSwitch"
 ACTIVATE_TRIGGER_EPILOG = '''
@@ -324,4 +324,15 @@ examples:
 
   - spellbook.py activate_trigger ... -k=<myapikey> -s=<myapisecret>
     -> Use given api key and api secret to authenticate with the REST API
+'''
+
+########################################################################################################
+# send_signed_message                                                                                  #
+########################################################################################################
+SEND_SIGNED_MESSAGE_DESCRIPTION = "Send a signed message to a trigger. The trigger must be of type 'SignedMessage'"
+SEND_SIGNED_MESSAGE_EPILOG = '''
+examples:
+  - spellbook.py send_signed_message mytrigger <address> <message> <signature>
+    -> Send a signed message to the trigger with id 'mytrigger'
+       If <message> contains an existing filename, then the contents of that file are sent as message.
 '''
