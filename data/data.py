@@ -13,7 +13,7 @@ from blockexplorers.insight import InsightAPI
 from validators.validators import valid_address
 
 
-EXPLORERS_JSON_FILE = 'data/explorers.json'
+EXPLORERS_JSON_FILE = 'json/private/explorers.json'
 EXPLORER = None
 
 
