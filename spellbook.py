@@ -90,18 +90,8 @@ get_latest_block_parser.add_argument('-e', '--explorer', help='Use specified exp
 get_block_parser = subparsers.add_parser(name='get_block',
                                          help='Get a block by height or hash',
                                          formatter_class=argparse.RawDescriptionHelpFormatter,
-                                         description='''
-Get a block by height or hash
-                                         ''',
-                                         epilog='''
-examples:
-  - spellbook.py get_block 488470
-    -> Get block 488470 using the default explorer
-  - spellbook.py get_block 000000000000000000f6af507822a695390bada30cbd0c517c12442effb277af
-    -> Get block 000000000000000000f6af507822a695390bada30cbd0c517c12442effb277af using the default explorer
-  - spellbook.py get_block 488470 --explorer=blockchain.info
-    -> Get block 488470 using the blockchain.info explorer to retrieve the data
-                                         ''')
+                                         description=texts.GET_BLOCK_DESCRIPTION,
+                                         epilog=texts.GET_BLOCK_EPILOG)
 
 get_block_parser.add_argument('id', help='The height OR the hash of the block')
 get_block_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')

@@ -68,3 +68,19 @@ examples:
   - spellbook.py get_latest_block --explorer=blockchain.info
     -> Get the latest block using the blockchain.info explorer to retrieve the data    
 '''
+
+########################################################################################################
+# get_block                                                                                     #
+########################################################################################################
+GET_BLOCK_DESCRIPTION = 'Get a block by a block hash or a block height.'
+GET_BLOCK_EPILOG = '''
+examples:
+  - spellbook.py get_block 488470
+    -> Get block at height 488470 using the default explorer
+  
+  - spellbook.py get_block 000000000000000000f6af507822a695390bada30cbd0c517c12442effb277af
+    -> Get block with hash 000000000000000000f6af507822a695390bada30cbd0c517c12442effb277af using the default explorer
+  
+  - spellbook.py get_block 488470 --explorer=blockchain.info
+    -> Get block at height 488470 using the blockchain.info explorer to retrieve the data
+'''
