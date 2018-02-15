@@ -25,9 +25,6 @@ class Action(object):
         self.id = action_id
         self.action_type = None
         self.created = None
-        self.reveal_text = None
-        self.reveal_link = None
-        self.allow_reveal = False
         self.fee_address = None
         self.fee_percentage = 0
         self.fee_minimum_amount = 1000
@@ -53,15 +50,6 @@ class Action(object):
 
         if 'action_type' in config and valid_action_type(config['action_type']):
             self.action_type = config['action_type']
-
-        if 'reveal_text' in config:
-            self.reveal_text = config['reveal_text']
-
-        if 'reveal_link' in config:
-            self.reveal_link = config['reveal_link']
-
-        if 'allow_reveal' in config:
-            self.allow_reveal = config['allow_reveal']
 
         if 'fee_address' in config and valid_address(config['fee_address']):
             self.fee_address = config['fee_address']
@@ -131,12 +119,6 @@ class Action(object):
         return {'id': self.id,
                 'action_type': self.action_type,
                 'created': int(time.mktime(self.created.timetuple())),
-                'mail_recipients': self.mail_recipients,
-                'mail_subject': self.mail_subject,
-                'mail_body_template': self.mail_body_template,
-                'reveal_text': self.reveal_text,
-                'reveal_link': self.reveal_link,
-                'allow_reveal': self.allow_reveal,
                 'fee_address': self.fee_address,
                 'fee_percentage': self.fee_percentage,
                 'wallet_type': self.wallet_type,
