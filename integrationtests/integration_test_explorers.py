@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
 from integration_test_helpers import spellbook_call
+
+# Change working dir up one level
+os.chdir("..")
 
 print 'Starting Spellbook integration test: explorers'
 print '----------------------------------------------\n'
@@ -17,6 +21,7 @@ if configured_explorers:
         response = spellbook_call('get_explorer_config', explorer_id)
         print '----> Deleting explorer %s' % explorer_id
         response = spellbook_call('delete_explorer', explorer_id)
+        assert response is None
 
     print '\nGetting the list of configured explorers, should be empty'
     response = spellbook_call('get_explorers')
@@ -29,7 +34,10 @@ response = spellbook_call('save_explorer', 'blockchain.info', 'Blockchain.info',
 assert response is None
 
 response = spellbook_call('get_explorer_config', 'blockchain.info')
-assert response == {"priority": 10, "url": "https://blockchain.info", "api_key": "", "type": "Blockchain.info"}
+assert response['priority'] == 10
+assert response['url'] == 'https://blockchain.info'
+assert response['api_key'] == ''
+assert response['type'] == 'Blockchain.info'
 
 print '--------------------------------------------------------------------------------------------------------'
 print 'Saving blockexplorer.com'
@@ -37,7 +45,10 @@ response = spellbook_call('save_explorer', 'blockexplorer.com', 'Insight', 'http
 assert response is None
 
 response = spellbook_call('get_explorer_config', 'blockexplorer.com')
-assert response == {"priority": 2, "url": "https://blockexplorer.com/api", "api_key": "", "type": "Insight"}
+assert response['priority'] == 2
+assert response['url'] == "https://blockexplorer.com/api"
+assert response['api_key'] == ''
+assert response['type'] == 'Insight'
 
 print '--------------------------------------------------------------------------------------------------------'
 print 'Saving blocktrail.com'
@@ -49,7 +60,10 @@ response = spellbook_call('save_explorer', 'blocktrail.com', 'Blocktrail.com', '
 assert response is None
 
 response = spellbook_call('get_explorer_config', 'blocktrail.com')
-assert response == {"priority": 3, "url": "https://api.blocktrail.com/v1", "api_key": blocktrail_key, "type": "Blocktrail.com"}
+assert response['priority'] == 3
+assert response['url'] == "https://api.blocktrail.com/v1"
+assert response['api_key'] == blocktrail_key
+assert response['type'] == 'Blocktrail.com'
 
 print '--------------------------------------------------------------------------------------------------------'
 print 'Getting the list of configured explorers'
