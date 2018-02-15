@@ -25,9 +25,6 @@ class Action(object):
         self.id = action_id
         self.action_type = None
         self.created = None
-        self.mail_recipients = None
-        self.mail_subject = None
-        self.mail_body_template = None
         self.reveal_text = None
         self.reveal_link = None
         self.allow_reveal = False
@@ -56,15 +53,6 @@ class Action(object):
 
         if 'action_type' in config and valid_action_type(config['action_type']):
             self.action_type = config['action_type']
-
-        if 'mail_recipients' in config:
-            self.mail_recipients = config['mail_recipients']
-
-        if 'mail_subject' in config:
-            self.mail_subject = config['mail_subject']
-
-        if 'mail_body_template' in config:
-            self.mail_body_template = config['mail_body_template']
 
         if 'reveal_text' in config:
             self.reveal_text = config['reveal_text']
