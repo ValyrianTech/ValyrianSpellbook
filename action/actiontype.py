@@ -8,3 +8,4 @@ class ActionType(object):
     SENDMAIL = 'SendMail'
     WEBHOOK = 'Webhook'
     SENDTRANSACTION = 'SendTransaction'
+    # Todo SendTweetAction
