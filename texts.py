@@ -402,6 +402,25 @@ examples:
 '''
 
 ########################################################################################################
+# save_action                                                                                          #
+########################################################################################################
+SAVE_ACTION_DESCRIPTION = 'Save or update the configuration of an action.'
+SAVE_ACTION_EPILOG = '''
+examples:
+  - spellbook.py save_trigger myaction
+   -> Save an action with id 'myaction'
+
+  - spellbook.py save_trigger myaction -t=Command -c='ping 127.0.0.1'
+   -> Save an action with id 'myaction' that runs the ping command when run
+
+  - spellbook.py save_trigger myaction -t=SendMail -mr=info@valyrian.tech -ms='email subject' -mb=template1
+   -> Save an action with id 'myaction' that sends an email to info@valyrian.tech with subject 'email subject' and uses template1 for the body
+
+  - spellbook.py save_trigger ... -k=<myapikey> -s=<myapisecret>
+    -> Use given api key and api secret to authenticate with the REST API
+'''
+
+########################################################################################################
 # delete_action                                                                                        #
 ########################################################################################################
 DELETE_ACTION_DESCRIPTION = 'Delete a specified action.'
