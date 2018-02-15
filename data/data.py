@@ -1,17 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
 import logging
-
-from explorer import Explorer, ExplorerType
-from jsonhelpers import save_to_json_file, load_from_json_file
+import os
 
 from blockexplorers.blockchain_info import BlockchainInfoAPI
 from blockexplorers.blocktrail_com import BlocktrailComAPI
 from blockexplorers.insight import InsightAPI
+from explorer import Explorer, ExplorerType
+from helpers.jsonhelpers import save_to_json_file, load_from_json_file
 from validators.validators import valid_address
-
 
 EXPLORERS_JSON_FILE = 'json/private/explorers.json'
 EXPLORER = None

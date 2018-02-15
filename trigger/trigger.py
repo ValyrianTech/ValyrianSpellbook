@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import logging
 import os
 import time
-import logging
-from datetime import datetime
 from abc import abstractmethod, ABCMeta
+from datetime import datetime
 
-from validators.validators import valid_description, valid_creator, valid_email, valid_youtube_id, valid_status, valid_visibility
-from validators.validators import valid_address, valid_amount, valid_block_height, valid_actions, valid_timestamp, valid_trigger_type
 from action.actionhelpers import get_actions, get_action
-
-from jsonhelpers import save_to_json_file
+from helpers.jsonhelpers import save_to_json_file
+from validators.validators import valid_actions, valid_trigger_type
+from validators.validators import valid_description, valid_creator, valid_email, valid_youtube_id, valid_status, \
+    valid_visibility
 
 TRIGGERS_DIR = 'json/public/triggers'
 
@@ -39,7 +39,7 @@ class Trigger(object):
         if 'trigger_type' in config and valid_trigger_type(config['trigger_type']):
             self.trigger_type = config['trigger_type']
 
-        if 'script' in config:
+        if 'script' in config:  # Todo add validator for script
             self.script = config['script']
 
         if 'status' in config and valid_status(config['status']):
