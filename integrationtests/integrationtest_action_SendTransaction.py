@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import os
-from integration_test_helpers import spellbook_call
-from hot_wallet_helpers import get_address_from_wallet, get_xpub_key_from_wallet
-from BIP44.BIP44 import set_testnet
-from configurationhelpers import get_use_testnet
 
+from BIP44.BIP44 import set_testnet
+from helpers.configurationhelpers import get_use_testnet
+from hot_wallet_helpers import get_address_from_wallet, get_xpub_key_from_wallet
+from integration_test_helpers import spellbook_call
 
 # Change working dir up one level
 os.chdir("..")
