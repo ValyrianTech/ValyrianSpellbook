@@ -29,7 +29,6 @@ class Action(object):
         self.mail_recipients = None
         self.mail_subject = None
         self.mail_body_template = None
-        self.webhook = None
         self.reveal_text = None
         self.reveal_link = None
         self.allow_reveal = False
@@ -70,9 +69,6 @@ class Action(object):
 
         if 'mail_body_template' in config:
             self.mail_body_template = config['mail_body_template']
-
-        if 'webhook' in config:
-            self.webhook = config['webhook']
 
         if 'reveal_text' in config:
             self.reveal_text = config['reveal_text']
@@ -155,7 +151,6 @@ class Action(object):
                 'mail_recipients': self.mail_recipients,
                 'mail_subject': self.mail_subject,
                 'mail_body_template': self.mail_body_template,
-                'webhook': self.webhook,
                 'reveal_text': self.reveal_text,
                 'reveal_link': self.reveal_link,
                 'allow_reveal': self.allow_reveal,
