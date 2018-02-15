@@ -19,7 +19,7 @@ from data.data import latest_block, block_by_height, block_by_hash, prime_input_
 from data.data import transactions, balance, utxos
 from decorators import authentication_required, use_explorer, output_json
 from helpers.configurationhelpers import get_host, get_port
-from helpers.hot_wallet_helpers import get_hot_wallet
+from helpers.hotwallethelpers import get_hot_wallet
 from inputs.inputs import get_sil, get_profile, get_sul
 from linker.linker import get_lal, get_lbl, get_lrl, get_lsl
 from randomaddress.randomaddress import random_address_from_sil, random_address_from_lbl, random_address_from_lrl, \
