@@ -97,12 +97,7 @@ def valid_text(text):
 
 
 def valid_url(url):
-    valid = False
-
-    if isinstance(url, (str, unicode)) and re.match(URL_REGEX, url):
-        valid = True
-
-    return valid
+    return isinstance(url, (str, unicode)) and re.match(URL_REGEX, url)
 
 
 def valid_creator(creator):
