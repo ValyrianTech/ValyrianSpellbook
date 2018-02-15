@@ -12,6 +12,7 @@ class CommandAction(Action):
     def __init__(self, action_id):
         super(CommandAction, self).__init__(action_id=action_id)
         self.action_type = ActionType.COMMAND
+        self.run_command = None
 
     def run(self):
         if self.run_command is None or self.run_command == '':
@@ -30,3 +31,13 @@ class CommandAction(Action):
             logging.getLogger('Spellbook').error('Command error: %s' % stripped_error)
 
         return True if command_process.returncode == 0 else False
+
+    def configure(self, **config):
+        super(CommandAction, self).configure(**config)
+        if 'run_command' in config:
+            self.run_command = config['run_command']
+
+    def json_encodable(self):
+        ret = super(CommandAction, self).json_encodable()
+        ret.update({'run_command': self.run_command})
+        return ret
