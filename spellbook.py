@@ -385,20 +385,8 @@ get_action_config_parser.add_argument('-s', '--api_secret', help='API secret for
 save_action_parser = subparsers.add_parser(name='save_action',
                                            help='Save or update the configuration of an action',
                                            formatter_class=argparse.RawDescriptionHelpFormatter,
-                                           description='''
-Save or update the configuration of an action.
-                                           ''',
-                                           epilog='''
-examples:
-  - spellbook.py save_trigger myaction
-   -> Save an action with id 'myaction'
-
-  - spellbook.py save_trigger myaction -t=Command -c='ping 127.0.0.1'
-   -> Save an action with id 'myaction' that runs the ping command when run
-
-  - spellbook.py save_trigger myaction -t=SendMail -mr=info@valyrian.tech -ms='email subject' -mb=template1
-   -> Save an action with id 'myaction' that sends an email to info@valyrian.tech with subject 'email subject' and uses template1 for the body
-                                           ''')
+                                           description=texts.SAVE_ACTION_DESCRIPTION,
+                                           epilog=texts.SAVE_ACTION_EPILOG)
 
 save_action_parser.add_argument('action_id', help='The id of the action')
 save_action_parser.add_argument('-t', '--type', help='The type of the action', choices=['Command', 'SendTransaction', 'RevealSecret', 'SendMail', 'Webhook'])
