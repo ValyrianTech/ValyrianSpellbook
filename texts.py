@@ -301,6 +301,25 @@ examples:
 '''
 
 ########################################################################################################
+# save_trigger                                                                                         #
+########################################################################################################
+SAVE_TRIGGER_DESCRIPTION = 'Save or update the configuration of a trigger.'
+SAVE_TRIGGER_EPILOG = '''
+examples:
+  - spellbook.py save_trigger mytrigger --reset
+   -> Reset the trigger with id mytrigger in case it has been triggered already
+
+  - spellbook.py save_trigger mytrigger -t=Balance
+    -> Save or update a trigger with id 'mytrigger' of type 'Balance'
+
+  - spellbook.py save_trigger mytrigger -d='A short description'
+    -> Save or update a trigger with id 'mytrigger' with a description
+
+  - spellbook.py save_trigger ... -k=<myapikey> -s=<myapisecret>
+    -> Use given api key and api secret to authenticate with the REST API
+'''
+
+########################################################################################################
 # delete_trigger                                                                                       #
 ########################################################################################################
 DELETE_TRIGGER_DESCRIPTION = 'Delete a specified trigger.'
