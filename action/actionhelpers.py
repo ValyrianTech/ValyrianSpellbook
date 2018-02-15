@@ -43,7 +43,7 @@ def get_action_config(action_id):
     return action_config
 
 
-def get_action(action_id):
+def get_action(action_id, action_type=None):
     """
     Get the specified action, which is a subclass of Action
     The different action types are:
@@ -60,20 +60,22 @@ def get_action(action_id):
              RevealSecretAction, SendMailAction or WebhookAction)
     """
     action_config = get_action_config(action_id)
-    action = CommandAction(action_id)
-    if 'action_type' in action_config:
-        if action_config['action_type'] == ActionType.COMMAND:
-            action = CommandAction(action_id)
-        elif action_config['action_type'] == ActionType.SENDTRANSACTION:
-            action = SendTransactionAction(action_id)
-        elif action_config['action_type'] == ActionType.REVEALSECRET:
-            action = RevealSecretAction(action_id)
-        elif action_config['action_type'] == ActionType.SENDMAIL:
-            action = SendMailAction(action_id)
-        elif action_config['action_type'] == ActionType.WEBHOOK:
-            action = WebhookAction(action_id)
-        else:
-            raise NotImplementedError('Unknown action type: %s' % action_config['action_type'])
+
+    if action_type is not None:
+        action_config['action_type'] = action_type
+
+    if action_config['action_type'] == ActionType.COMMAND:
+        action = CommandAction(action_id)
+    elif action_config['action_type'] == ActionType.SENDTRANSACTION:
+        action = SendTransactionAction(action_id)
+    elif action_config['action_type'] == ActionType.REVEALSECRET:
+        action = RevealSecretAction(action_id)
+    elif action_config['action_type'] == ActionType.SENDMAIL:
+        action = SendMailAction(action_id)
+    elif action_config['action_type'] == ActionType.WEBHOOK:
+        action = WebhookAction(action_id)
+    else:
+        raise NotImplementedError('Unknown action type: %s' % action_config['action_type'])
 
     action.configure(**action_config)
 
@@ -87,7 +89,11 @@ def save_action(action_id, **action_config):
     :param action_id: The id of the action
     :param action_config: A dict containing the configuration for the action
     """
-    action = get_action(action_id)
+    if 'action_type' in action_config:
+        action = get_action(action_id, action_type=action_config['action_type'])
+    else:
+        action = get_action(action_id)
+
     action.configure(**action_config)
     action.save()
 
