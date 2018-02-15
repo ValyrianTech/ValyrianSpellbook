@@ -1,18 +1,18 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import argparse
 import os
 import sys
-import requests
-import argparse
 import time
+
+import requests
 import simplejson
-from authentication import signature
 
-from configurationhelpers import get_host, get_port, get_key, get_secret
-from validators.validators import valid_distribution
 import texts
-
+from authentication import signature
+from helpers.configurationhelpers import get_host, get_port, get_key, get_secret
+from validators.validators import valid_distribution
 
 # Make sure we are in the correct working directory
 os.chdir(os.path.dirname(os.path.abspath(__file__)))

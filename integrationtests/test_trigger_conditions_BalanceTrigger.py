@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import os
-from integration_test_helpers import spellbook_call
-from BIP44.BIP44 import set_testnet
-from configurationhelpers import get_use_testnet
-from hot_wallet_helpers import get_address_from_wallet
-from data.data import balance
 
+from BIP44.BIP44 import set_testnet
+from data.data import balance
+from helpers.configurationhelpers import get_use_testnet
+from hot_wallet_helpers import get_address_from_wallet
+from integration_test_helpers import spellbook_call
 
 # Change working dir up one level
 os.chdir("..")

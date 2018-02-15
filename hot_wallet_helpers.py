@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import os
-import getpass
+
 import simplejson
+
 from AESCipher import AESCipher
-from configurationhelpers import get_wallet_dir, get_default_wallet
 from BIP44.BIP44 import get_xpub_key, get_address_from_xpub, get_private_key, get_xpriv_key, get_addresses_from_xpub
+from helpers.configurationhelpers import get_wallet_dir, get_default_wallet
 
 HOT_WALLET_PASSWORD = None
 

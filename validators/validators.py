@@ -16,7 +16,7 @@ EMAIL_REGEX = r"[^@]+@[^@]+\.[^@]+"
 
 
 def valid_address(address):
-    from configurationhelpers import get_use_testnet
+    from helpers.configurationhelpers import get_use_testnet
     testnet = get_use_testnet()
     if testnet is True:
         return isinstance(address, (str, unicode)) and re.match(TESTNET_ADDRESS_REGEX, address)
@@ -48,7 +48,7 @@ def valid_txid(txid):
 
 
 def valid_xpub(xpub):
-    from configurationhelpers import get_use_testnet
+    from helpers.configurationhelpers import get_use_testnet
     testnet = get_use_testnet()
     if testnet is True:
         return isinstance(xpub, (str, unicode)) and xpub[:4] == "tpub"
