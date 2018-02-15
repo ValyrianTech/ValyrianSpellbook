@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import pytest
-from sign_message import verify_message, sign_message
-from hot_wallet_helpers import get_address_from_wallet, get_private_key_from_wallet
+
 from BIP44.BIP44 import set_testnet
+from helpers.hot_wallet_helpers import get_address_from_wallet, get_private_key_from_wallet
+from sign_message import verify_message, sign_message
 
 
 class TestSignMessage(object):
