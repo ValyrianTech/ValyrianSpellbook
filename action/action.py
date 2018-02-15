@@ -6,7 +6,7 @@ import time
 from abc import abstractmethod, ABCMeta
 from datetime import datetime
 
-from jsonhelpers import save_to_json_file
+from helpers.jsonhelpers import save_to_json_file
 from validators.validators import valid_action_type
 
 ACTIONS_DIR = 'json/public/actions'
