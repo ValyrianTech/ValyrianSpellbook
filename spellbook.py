@@ -276,20 +276,8 @@ get_trigger_config_parser.add_argument('-s', '--api_secret', help='API secret fo
 save_trigger_parser = subparsers.add_parser(name='save_trigger',
                                             help='Save or update the configuration of a trigger',
                                             formatter_class=argparse.RawDescriptionHelpFormatter,
-                                            description='''
-Save or update the configuration of a trigger.
-                                            ''',
-                                            epilog='''
-examples:
-  - spellbook.py save_trigger mytrigger --reset
-   -> Reset the trigger with id mytrigger in case it has been triggered already
-
-  - spellbook.py save_trigger mytrigger -t=Balance
-    -> Save or update a trigger with id 'mytrigger' of type 'Balance'
-
-  - spellbook.py save_trigger mytrigger -d='A short description'
-    -> Save or update a trigger with id 'mytrigger' with a description
-                                            ''')
+                                            description=texts.SAVE_TRIGGER_DESCRIPTION,
+                                            epilog=texts.SAVE_TRIGGER_EPILOG)
 
 save_trigger_parser.add_argument('trigger_id', help='The id of the trigger')
 save_trigger_parser.add_argument('-r', '--reset', help='Reset the trigger in case it has been triggered already', action='store_true')
