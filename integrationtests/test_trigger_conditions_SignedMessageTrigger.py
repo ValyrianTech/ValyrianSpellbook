@@ -7,7 +7,7 @@ import simplejson
 
 from BIP44.BIP44 import set_testnet
 from helpers.configurationhelpers import get_use_testnet
-from hot_wallet_helpers import get_address_from_wallet, get_private_key_from_wallet
+from helpers.hot_wallet_helpers import get_address_from_wallet, get_private_key_from_wallet
 from integration_test_helpers import spellbook_call
 from sign_message import sign_message
 

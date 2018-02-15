@@ -11,8 +11,8 @@ from data.data import utxos, prime_input_address, push_tx
 from feehelpers import get_optimal_fee
 from helpers.configurationhelpers import get_max_tx_fee_percentage, get_use_testnet
 from helpers.configurationhelpers import get_minimum_output_value
-from hot_wallet_helpers import get_address_from_wallet
-from hot_wallet_helpers import get_hot_wallet
+from helpers.hot_wallet_helpers import get_address_from_wallet
+from helpers.hot_wallet_helpers import get_hot_wallet
 from inputs.inputs import get_sil
 from linker.linker import get_lbl, get_lrl, get_lsl, get_lal
 from transactionfactory import make_custom_tx
