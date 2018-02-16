@@ -97,6 +97,12 @@ def delete_explorer(explorer_id):
 
 
 def get_explorer_api(name):
+    """
+    The the correct explorer API object
+
+    :param name: The name of the explorer
+    :return: An ExplorerAPI object
+    """
     explorers = load_from_json_file(EXPLORERS_JSON_FILE)
 
     if name in explorers:
@@ -112,6 +118,15 @@ def get_explorer_api(name):
 
 
 def query(query_type, param=None):
+    """
+    Do a query
+    If an explorer is unavailable, the next explorer in the list will be tried
+
+
+    :param query_type: The type of query
+    :param param:  The parameters for the query
+    :return: The response of the query
+    """
     global EXPLORER
 
     if param is None:
@@ -163,26 +178,62 @@ def query(query_type, param=None):
 
 
 def block(height_or_hash):
+    """
+    Get a block by height or hash
+
+    :param height_or_hash: A block height or a block hash
+    :return: A dict containing info about the block
+    """
     return query('block', [height_or_hash])
 
 
 def block_by_height(height):
+    """
+    Get a block by height
+
+    :param height: A block height
+    :return: A dict containing info about the block
+    """
     return query('block_by_height', [height])
 
 
 def block_by_hash(block_hash):
+    """
+    Get a block by hash
+
+    :param block_hash: A block hash
+    :return: A dict containing info about the block
+    """
     return query('block_by_hash', [block_hash])
 
 
 def latest_block():
+    """
+    Get the latest block
+
+    :return: A dict containing info about the latest block
+    """
     return query('latest_block', None)
 
 
 def prime_input_address(txid):
+    """
+    Get the prime input address of a transaction
+    This is the input address that comes first alphabetically
+
+    :param txid: A transaction id
+    :return: A dict containing info about the prime input address
+    """
     return query('prime_input_address', [txid])
 
 
 def transactions(address):
+    """
+    Get the transactions of an address
+
+    :param address: The address
+    :return: A dict containing info about the transactions of the address
+    """
     response = {'success': 0}
     if valid_address(address):
         response = query('transactions', [address])
@@ -196,28 +247,61 @@ def transactions(address):
 
 
 def balance(address):
+    """
+    Get the balance of an address
+    Will return 3 types of balances: final balance, total received and total sent
+
+    :param address: The address
+    :return: A dict containing info about the balance of the address
+    """
     return query('balance', [address])
 
 
 def utxos(address, confirmations):
+    """
+    Get the utxos of an address that have at least x confirmations
+
+    :param address: The address
+    :param confirmations: The number of required confirmations
+    :return: A dict containing info about the utxos of the address
+    """
     return query('utxos', [address, confirmations])
 
 
 def push_tx(tx):
+    """
+    Push a raw transaction to the network
+
+    :param tx: A raw transaction
+    :return: A dict containing 'success' or 'error'
+    """
     return query('push_tx', [tx])
 
 
 def set_explorer(explorer_id):
+    """
+    Set a specific explorer to use in a global variable
+
+    :param explorer_id: The id of the explorer
+    """
     global EXPLORER
     EXPLORER = explorer_id
 
 
 def clear_explorer():
+    """
+    Clear the global variable EXPLORER
+    """
     global EXPLORER
     EXPLORER = None
 
 
 def get_last_explorer():
+    """
+    Get the last used explorer
+
+    :return: The id of the last used explorer
+    """
     global EXPLORER
     return EXPLORER
 
