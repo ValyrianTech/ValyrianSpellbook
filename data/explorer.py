@@ -7,11 +7,13 @@ class ExplorerType(object):
     BLOCKTRAIL_COM = 'Blocktrail.com'
     INSIGHT = 'Insight'
     BITCOIN_CORE = 'Bitcoin Core'
-    GOCOIN = 'GoCoin'
 
 
 class Explorer(object):
     def __init__(self):
+        """
+        Constructor of the Explorer object
+        """
         self.api_key = ''
         self.url = ''
         self.explorer_type = None
@@ -19,6 +21,11 @@ class Explorer(object):
         self.testnet = False
 
     def json_encodable(self):
+        """
+        Get the explorer configuration
+
+        :return: A dict containing info about the explorer
+        """
         return {'type': self.explorer_type,
                 'priority': self.priority,
                 'url': self.url,
