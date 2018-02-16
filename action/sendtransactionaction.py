@@ -47,6 +47,25 @@ class SendTransactionAction(Action):
         self.unspent_outputs = None
 
     def configure(self, **config):
+        """
+        Configure the action with given config settings
+
+        :param config: A dict containing the configuration settings
+                       - config['fee_address']               : An address to send the spellbook fee to
+                       - config['fee_percentage']            : The percentage to calculate the spellbook fee
+                       - config['wallet_type']               : The type of wallet (Single or BIP44)
+                       - config['sending_address']           : The address that will be sending the transaction
+                       - config['bip44_account']             : An account number of a BIP44 wallet
+                       - config['bip44_index']               : An index number of a BIP44 account
+                       - config['receiving_address']         : The address to receive the transaction
+                       - config['receiving_xpub']            : The xpub key to derive the receiving addresses from
+                       - config['amount']                    : The amount to send
+                       - config['minimum_amount']            : The minimum amount that needs to be available
+                       - config['registration_address']      : An address used for the registration of a SIL, LBL, LRL or LSL
+                       - config['registration_block_height'] : An block height used for the registration of a SIL
+                       - config['registration_xpub']         : An xpub key used for the registration of a LBL, LRL or LSL
+                       - config['distribution']              : A dict containing a distribution (each address should be a key in the dict with the value being the share)
+        """
         super(SendTransactionAction, self).configure(**config)
         if 'fee_address' in config and valid_address(config['fee_address']):
             self.fee_address = config['fee_address']
@@ -110,6 +129,11 @@ class SendTransactionAction(Action):
             self.sending_address = get_address_from_wallet(self.bip44_account, self.bip44_index)
 
     def json_encodable(self):
+        """
+        Get the action config in a json encodable format
+
+        :return: A dict containing the configuration settings
+        """
         ret = super(SendTransactionAction, self).json_encodable()
         ret.update({'fee_address': self.fee_address,
                     'fee_percentage': self.fee_percentage,
@@ -132,6 +156,11 @@ class SendTransactionAction(Action):
         return ret
 
     def run(self):
+        """
+        Run the action
+
+        :return: True upon success, False upon failure
+        """
         if self.sending_address is None:
             logging.getLogger('Spellbook').error('Can not activate SendTransaction action: sending address is None!')
             return False
