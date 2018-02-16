@@ -58,3 +58,28 @@ def get_max_tx_fee_percentage():
 @verify_config('Transactions', 'minimum_output_value')
 def get_minimum_output_value():
     return int(spellbook_config().get('Transactions', 'minimum_output_value'))
+
+
+@verify_config('SMTP', 'from_address')
+def get_smtp_from_address():
+    return spellbook_config().get('SMTP', 'from_address')
+
+
+@verify_config('SMTP', 'host')
+def get_smtp_host():
+    return spellbook_config().get('SMTP', 'host')
+
+
+@verify_config('SMTP', 'port')
+def get_smtp_port():
+    return spellbook_config().get('SMTP', 'port')
+
+
+@verify_config('SMTP', 'user')
+def get_smtp_user():
+    return spellbook_config().get('SMTP', 'user')
+
+
+@verify_config('SMTP', 'password')
+def get_smtp_password():
+    return spellbook_config().get('SMTP', 'password')

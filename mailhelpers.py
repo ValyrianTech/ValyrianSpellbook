@@ -1,7 +1,8 @@
 import os
 import smtplib
 import logging
-from ConfigParser import ConfigParser
+
+from helpers.configurationhelpers import get_smtp_from_address, get_smtp_host, get_smtp_port, get_smtp_user, get_smtp_password
 
 
 FROM_ADDRESS = ''
@@ -15,41 +16,14 @@ TEMPLATE_DIR = 'email_templates'
 
 def load_smtp_settings():
     global FROM_ADDRESS, HOST, PORT, USER, PASSWORD
-    # Read the RESTAPI configuration file
-    spellbook_configuration_file = 'configuration/Spellbook.conf'
-    config = ConfigParser()
-    config.read(spellbook_configuration_file)
-
-    # Check if the spellbook configuration file contains a [SMTP] section
-    if not config.has_section('SMTP'):
-        raise Exception('Configuration file %s does not have a [SMTP] section ' % spellbook_configuration_file)
-
-    # Check if the [SMTP] section has options for 'from_address'
-    if not config.has_option('SMTP', 'from_address'):
-        raise Exception("Configuration file %s does not have an option 'from_address' in the [SMTP] section" % spellbook_configuration_file)
-    FROM_ADDRESS = config.get('SMTP', 'from_address')
-
-    # Check if the [SMTP] section has options for 'host'
-    if not config.has_option('SMTP', 'host'):
-        raise Exception("Configuration file %s does not have an option 'host' in the [SMTP] section" % spellbook_configuration_file)
-    HOST = config.get('SMTP', 'host')
-
-    # Check if the [SMTP] section has options for 'port'
-    if not config.has_option('SMTP', 'port'):
-        raise Exception("Configuration file %s does not have an option 'port' in the [SMTP] section" % spellbook_configuration_file)
-    PORT = config.get('SMTP', 'port')
-
-    # Check if the [SMTP] section has options for 'user'
-    if not config.has_option('SMTP', 'user'):
-        raise Exception("Configuration file %s does not have an option 'user' in the [SMTP] section" % spellbook_configuration_file)
-    USER = config.get('SMTP', 'user')
-
-    # Check if the [SMTP] section has options for 'password'
-    if not config.has_option('SMTP', 'password'):
-        raise Exception("Configuration file %s does not have an option 'password' in the [SMTP] section" % spellbook_configuration_file)
-    PASSWORD = config.get('SMTP', 'password')
+    FROM_ADDRESS = get_smtp_from_address()
+    HOST = get_smtp_host()
+    PORT = get_smtp_port()
+    USER = get_smtp_user()
+    PASSWORD = get_smtp_password()
 
 
+# Todo add variables in the body
 def sendmail(recipients, subject, body_template):
     """
     Send an email using the smtp settings in the Spellbook.conf file
