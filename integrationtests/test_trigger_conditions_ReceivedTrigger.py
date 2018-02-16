@@ -3,8 +3,8 @@
 
 import os
 
-from BIP44.BIP44 import set_testnet
 from data.data import balance
+from helpers.BIP44 import set_testnet
 from helpers.configurationhelpers import get_use_testnet
 from helpers.hotwallethelpers import get_address_from_wallet
 from integration_test_helpers import spellbook_call

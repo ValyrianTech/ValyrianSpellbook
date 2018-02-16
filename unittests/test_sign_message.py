@@ -3,7 +3,7 @@
 
 import pytest
 
-from BIP44.BIP44 import set_testnet
+from helpers.BIP44 import set_testnet
 from helpers.hotwallethelpers import get_address_from_wallet, get_private_key_from_wallet
 from sign_message import verify_message, sign_message
 
