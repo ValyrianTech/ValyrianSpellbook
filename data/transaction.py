@@ -7,6 +7,9 @@ import logging
 
 class TX(object):
     def __init__(self):
+        """
+        Constructor of a TX object
+        """
         self.txid = ''
         self.inputs = []
         self.outputs = []
@@ -14,12 +17,21 @@ class TX(object):
         self.confirmations = 0
 
     def print_tx(self):
+        """
+        Print info about the transaction
+        """
         print '\nblock ', str(self.block_height), "(" + str(self.confirmations) + " confirmations)", self.txid
         print 'IN:', self.inputs
         print 'OUT:', self.outputs
         print 'primeInput:', self.prime_input_address()
 
     def prime_input_address(self):
+        """
+        Get the prime input address of a transaction
+        This is the input address that comes first alphabetically
+
+        :return: The prime input address
+        """
         addresses = []
         for tx_input in self.inputs:
             addresses.append(tx_input['address'])
@@ -27,9 +39,21 @@ class TX(object):
         return sorted(addresses)[0]
 
     def received_value(self, address):
+        """
+        Get the total value an address received in this transaction
+
+        :param address: The address receiving the funds
+        :return: The total amount received by the address
+        """
         return sum([output['value'] for output in self.outputs if output['address'] == address])
 
     def is_receiving_tx(self, address):
+        """
+        Is this a receiving transaction for given address?
+
+        :param address: The address
+        :return: True if the transaction is a receiving transaction to the address otherwise False
+        """
         received = True
         for tx_input in self.inputs:
             if tx_input['address'] == address:
@@ -38,6 +62,12 @@ class TX(object):
         return received
 
     def sent_value(self, address):
+        """
+        Get the total sent value for given address in this transaction
+
+        :param address: The address
+        :return: The total amount sent by the address
+        """
         value = 0
         for tx_input in self.inputs:
             if tx_input['address'] == address:
@@ -51,6 +81,12 @@ class TX(object):
         return value-change
 
     def is_sending_tx(self, address):
+        """
+        Is this a sending transaction for given address?
+
+        :param address: The address
+        :return: True if the transaction is a sending transaction to the address otherwise False
+        """
         sending = False
         for tx_input in self.inputs:
             if tx_input['address'] == address:
@@ -59,6 +95,12 @@ class TX(object):
         return sending
 
     def to_dict(self, address):
+        """
+        Convert to a json encodable dict
+
+        :param address: The address
+        :return: A dict containing info about the transaction from the pov of the address
+        """
         tx_dict = {"txid": self.txid,
                    "prime_input_address": self.prime_input_address(),
                    "inputs": self.inputs,
@@ -66,6 +108,7 @@ class TX(object):
                    "block_height": self.block_height,
                    "confirmations": self.confirmations,
                    "receiving": self.is_receiving_tx(address)}
+
         if tx_dict["receiving"] is True:
             tx_dict["receivedValue"] = self.received_value(address)
         else:
@@ -75,6 +118,12 @@ class TX(object):
 
     @staticmethod
     def decode_op_return(hex_data):
+        """
+        Decode OP_RETURN data
+
+        :param hex_data: The data in hex format
+        :return: The decoded data
+        """
         unhex_data = None
         if hex_data[:2] == '6a':
             if hex_data[2:4] == '4c':
