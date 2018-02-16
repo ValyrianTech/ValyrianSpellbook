@@ -105,7 +105,7 @@ class BlockchainInfoAPI(ExplorerAPI):
 
         i = 0
         while n_tx is None or len(transactions) < n_tx:
-            url = '{api_url}/address/{address}?format=json&limit={limit}&offset={offset}'.format(api_url=api_url, address=address, limit=limit, offset=limit * i)
+            url = '{api_url}/address/{address}?format=json&limit={limit}&offset={offset}'.format(api_url=self.url, address=address, limit=limit, offset=limit * i)
             try:
                 logging.getLogger('Spellbook').info('GET %s' % url)
                 r = requests.get(url)
