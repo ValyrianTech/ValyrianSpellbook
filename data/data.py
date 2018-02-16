@@ -98,7 +98,7 @@ def delete_explorer(explorer_id):
 
 def get_explorer_api(name):
     """
-    The the correct explorer API object
+    Get the correct explorer API object
 
     :param name: The name of the explorer
     :return: An ExplorerAPI object
