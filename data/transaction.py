@@ -27,12 +27,7 @@ class TX(object):
         return sorted(addresses)[0]
 
     def received_value(self, address):
-        value = 0
-        for output in self.outputs:
-            if output['address'] == address:
-                value += output['value']
-
-        return value
+        return sum([output['value'] for output in self.outputs if output['address'] == address])
 
     def is_receiving_tx(self, address):
         received = True
