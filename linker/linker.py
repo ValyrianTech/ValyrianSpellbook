@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from data.data import balance
+from helpers.BIP44 import get_addresses_from_xpub
 from inputs.inputs import get_sil
-from BIP44.BIP44 import get_addresses_from_xpub
 from validators.validators import valid_address, valid_xpub
 
 
