@@ -15,6 +15,11 @@ class CommandAction(Action):
         self.run_command = None
 
     def run(self):
+        """
+        Run the action
+
+        :return: True upon success, False upon failure
+        """
         if self.run_command is None or self.run_command == '':
             return False
 
@@ -33,11 +38,22 @@ class CommandAction(Action):
         return True if command_process.returncode == 0 else False
 
     def configure(self, **config):
+        """
+        Configure the action with given config settings
+
+        :param config: A dict containing the configuration settings
+                       - config['run_command']  : The command to run
+        """
         super(CommandAction, self).configure(**config)
         if 'run_command' in config:
             self.run_command = config['run_command']
 
     def json_encodable(self):
+        """
+        Get the action config in a json encodable format
+
+        :return: A dict containing the configuration settings
+        """
         ret = super(CommandAction, self).json_encodable()
         ret.update({'run_command': self.run_command})
         return ret
