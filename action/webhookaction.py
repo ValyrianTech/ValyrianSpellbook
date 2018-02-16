@@ -16,6 +16,11 @@ class WebhookAction(Action):
         self.webhook = None
 
     def run(self):
+        """
+        Run the action
+
+        :return: True upon success, False upon failure
+        """
         if self.webhook is None:
             return False
 
@@ -34,11 +39,22 @@ class WebhookAction(Action):
                 return False
 
     def configure(self, **config):
+        """
+        Configure the action with given config settings
+
+        :param config: A dict containing the configuration settings
+                       - config['webhook']    : An url of the webhook
+        """
         super(WebhookAction, self).configure(**config)
         if 'webhook' in config and valid_url(config['webhook']):
             self.webhook = config['webhook']
 
     def json_encodable(self):
+        """
+        Get the action config in a json encodable format
+
+        :return: A dict containing the configuration settings
+        """
         ret = super(WebhookAction, self).json_encodable()
         ret.update({'webhook': self.webhook})
         return ret
