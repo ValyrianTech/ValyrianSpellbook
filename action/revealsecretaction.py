@@ -16,12 +16,25 @@ class RevealSecretAction(Action):
         self.allow_reveal = False
 
     def run(self):
+        """
+        Run the action
+
+        :return: True upon success, False upon failure
+        """
         logging.getLogger('Spellbook').info('Allowing reveal of RevealSecret action %s' % self.id)
         self.allow_reveal = True
         self.save()
         return True
 
     def configure(self, **config):
+        """
+        Configure the action with given config settings
+
+        :param config: A dict containing the configuration settings
+                       - config['reveal_text']  : A secret text
+                       - config['reveal_link']  : A secret link
+                       - config['allow_reveal'] : Is the secret allowed to be revealed?
+        """
         super(RevealSecretAction, self).configure(**config)
         if 'reveal_text' in config:
             self.reveal_text = config['reveal_text']
@@ -33,6 +46,11 @@ class RevealSecretAction(Action):
             self.allow_reveal = config['allow_reveal']
 
     def json_encodable(self):
+        """
+        Get the action config in a json encodable format
+
+        :return: A dict containing the configuration settings
+        """
         ret = super(RevealSecretAction, self).json_encodable()
         ret.update({'reveal_text': self.reveal_text,
                     'reveal_link': self.reveal_link,
