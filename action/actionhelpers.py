@@ -55,6 +55,7 @@ def get_action(action_id, action_type=None):
     If no config is known for the given action id then a CommandAction is returned
 
     :param action_id: The id of the action
+    :param action_type: The type of action (optional)
     :return: A derived Action object (CommandAction, SendTransactionAction,
              RevealSecretAction, SendMailAction or WebhookAction)
     """
