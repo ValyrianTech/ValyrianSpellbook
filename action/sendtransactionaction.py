@@ -186,6 +186,9 @@ class SendTransactionAction(Action):
             return False
 
         tx_inputs = self.construct_transaction_inputs()
+        if len(tx_inputs) == 0:
+            return False
+
         total_value_in_inputs = int(sum([utxo['value'] for utxo in tx_inputs]))
         logging.getLogger('Spellbook').info('Total available value in utxos: %d' % total_value_in_inputs)
 
