@@ -65,6 +65,7 @@ def get_trigger(trigger_id, trigger_type=None):
     If no config is known for the given trigger id then a ManualTrigger is returned
 
     :param trigger_id: The id of the trigger
+    :param trigger_type: The type of the trigger (optional)
     :return: A child class of Trigger
     """
     trigger_config = get_trigger_config(trigger_id)
@@ -159,7 +160,7 @@ def check_triggers(trigger_id=None):
 
     for trigger_id in triggers:
         trigger = get_trigger(trigger_id=trigger_id)
-        if trigger.triggered is False:
+        if trigger.status == 'Active':
             logging.getLogger('Spellbook').info('Checking conditions of trigger %s' % trigger_id)
             if trigger.conditions_fulfilled() is True:
                 trigger.activate()
@@ -181,7 +182,7 @@ def verify_signed_message(trigger_id, **data):
         return {'error': 'Trigger %s only listens to signed messages from address %s' % (trigger.id, trigger.address)}
 
     if verify_message(address=data['address'], message=data['message'], signature=data['signature']) is True:
-        if trigger.triggered is False:
+        if trigger.status == 'Active':
             logging.getLogger('Spellbook').info('Trigger %s received a verified signed message' % trigger_id)
             trigger.process_message(address=data['address'], message=data['message'], signature=data['signature'])
             trigger.activate()
