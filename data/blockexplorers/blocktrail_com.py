@@ -129,7 +129,9 @@ class BlocktrailComAPI(ExplorerAPI):
 
                 tx.outputs.append(tx_out)
 
-            txs.append(tx.to_dict(address))
+            # Only append confirmed transactions
+            if tx.block_height is not None:
+                txs.append(tx.to_dict(address))
 
         if n_tx != len(txs):
             return {'error': 'Not all transactions are retrieved! expected {expected} but only got {received}'.format(
