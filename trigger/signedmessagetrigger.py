@@ -17,26 +17,13 @@ class SignedMessageTrigger(Trigger):
         self.address = None
         self.message_address = None
         self.message_signature = None
-        self.multi = None
 
     def conditions_fulfilled(self):
         # SignedMessage triggers can only be triggered when a verified signed message is received, so always return False
         return False
 
-    def activate(self):
-        super(SignedMessageTrigger, self).activate()
-
-        # SignedMessage triggers must always be ready to receive a new signed message if multi is True
-        # If multi is False then the trigger can only be activated once
-        if self.multi is True and self.triggered is True:
-            self.triggered = False
-            self.save()
-
     def configure(self, **config):
         super(SignedMessageTrigger, self).configure(**config)
-        if 'multi' in config and config['multi'] in [True, False]:
-            self.multi = config['multi']
-
         if 'address' in config and valid_address(config['address']):
             self.address = config['address']
         elif 'address' in config and config['address'] == '':
@@ -44,10 +31,7 @@ class SignedMessageTrigger(Trigger):
 
     def json_encodable(self):
         ret = super(SignedMessageTrigger, self).json_encodable()
-
-        ret.update({
-            'address': self.address,
-            'multi': self.multi})
+        ret.update({'address': self.address})
         return ret
 
     def process_message(self, address, message, signature):

@@ -9,7 +9,7 @@ from datetime import datetime
 
 from action.actionhelpers import get_actions, get_action
 from helpers.jsonhelpers import save_to_json_file
-from validators.validators import valid_actions, valid_trigger_type
+from validators.validators import valid_actions, valid_trigger_type, valid_amount
 from validators.validators import valid_description, valid_creator, valid_email, valid_youtube_id, valid_status, \
     valid_visibility
 
@@ -23,7 +23,8 @@ class Trigger(object):
         self.id = trigger_id
         self.trigger_type = None
         self.script = None
-        self.triggered = False
+        self.triggered = 0
+        self.multi = False
         self.description = None
         self.creator_name = None
         self.creator_email = None
@@ -42,14 +43,17 @@ class Trigger(object):
         if 'script' in config:  # Todo add validator for script
             self.script = config['script']
 
+        if 'multi' in config and config['multi'] in [True, False]:
+            self.multi = config['multi']
+
         if 'status' in config and valid_status(config['status']):
             self.status = config['status']
 
         if 'reset' in config and config['reset'] is True:
-            self.triggered = False
+            self.triggered = 0
             self.status = 'Active'
 
-        elif 'triggered' in config and config['triggered'] in [True, False]:
+        elif 'triggered' in config and valid_amount(config['triggered']):
             self.triggered = config['triggered']
 
         if 'description' in config and valid_description(config['description']):
@@ -106,14 +110,15 @@ class Trigger(object):
             success = action.run()
 
             if not success:
-                self.triggered = True
-                self.status = 'Failed'
+                self.triggered += 1
+                self.status = 'Failed' if self.multi is False else 'Active'
                 self.save()
                 return
 
         # All actions were successful
-        self.triggered = True
-        self.status = 'Succeeded'
+        self.triggered += 1
+
+        self.status = 'Succeeded' if self.multi is False else 'Active'
         self.save()
 
     def save(self):
@@ -124,6 +129,7 @@ class Trigger(object):
                 'trigger_type': self.trigger_type,
                 'script': self.script,
                 'triggered': self.triggered,
+                'multi': self.multi,
                 'description': self.description,
                 'creator_name': self.creator_name,
                 'creator_email': self.creator_email,
