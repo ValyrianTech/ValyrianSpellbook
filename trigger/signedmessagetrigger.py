@@ -15,6 +15,7 @@ class SignedMessageTrigger(Trigger):
         super(SignedMessageTrigger, self).__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.SIGNEDMESSAGE
         self.address = None
+        self.message = None
         self.message_address = None
         self.message_signature = None
 
@@ -34,31 +35,18 @@ class SignedMessageTrigger(Trigger):
         ret.update({'address': self.address})
         return ret
 
+    def get_script_variables(self):
+        ret = super(SignedMessageTrigger, self).json_encodable()
+        ret.update({'message': self.message,
+                    'address': self.message_address,
+                    'signature': self.message_signature})
+        return ret
+
     def process_message(self, address, message, signature):
         if not isinstance(message, (str, unicode)):
             return
 
+        self.message = message
         self.message_address = address
         self.message_signature = signature
-
-        if self.script is not None:
-            if not os.path.isfile('spellbookscripts\%s.py' % self.script):
-                logging.getLogger('Spellbook').error('Can not find Spellbook Script %s' % self.script)
-                return
-            else:
-                logging.getLogger('Spellbook').info('Loading Spellbook Script spellbookscripts\%s.py' % self.script)
-                try:
-                    script_module = importlib.import_module('spellbookscripts.%s' % self.script)
-                except Exception as ex:
-                    logging.getLogger('Spellbook').error('Failed to load Spellbook Script %s: %s' % (self.script, ex))
-                    return
-
-                spellbook_script = getattr(script_module, self.script)
-                script = spellbook_script(address=self.message_address, signature=self.message_signature, message=message)
-
-                if not isinstance(script, SpellbookScript):
-                    logging.getLogger('Spellbook').error('Script %s is not a valid Spellbook Script, instead it is a %s' % (self.script, type(script)))
-                    return
-
-                script.run_script()
 
