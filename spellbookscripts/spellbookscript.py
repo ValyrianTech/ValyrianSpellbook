@@ -36,6 +36,9 @@ class SpellbookScript(object):
         self.ipfs = None
         self.text = None
 
+        if self.message is not None:
+            self.process_message()
+
     @abstractmethod
     def run_script(self):
         pass
