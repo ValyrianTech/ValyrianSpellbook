@@ -3,7 +3,7 @@
 
 from validators.validators import valid_address, valid_xpub
 from data.data import block_by_height, latest_block
-from inputs.inputs import get_sil
+from inputs.inputs import get_sil, get_sul
 from linker.linker import get_lbl, get_lrl, get_lsl
 
 
@@ -39,6 +39,15 @@ def random_address_from_sil(address, sil_block_height=0, rng_block_height=0):
 
     return RandomAddress(address=address,
                          sil_block_height=sil_block_height).get(source='SIL',
+                                                                rng_block_height=rng_block_height)
+
+
+def random_address_from_sul(address, sil_block_height=0, rng_block_height=0):
+    if not valid_address(address):
+        return {'error': 'Invalid address: %s' % address}
+
+    return RandomAddress(address=address,
+                         sil_block_height=sil_block_height).get(source='SUL',
                                                                 rng_block_height=rng_block_height)
 
 
@@ -108,6 +117,8 @@ class RandomAddress(object):
         """
         if source == 'SIL':
             distribution_data = get_sil(self.address, self.block_height)
+        elif source == 'SUL':
+            distribution_data = get_sul(self.address, confirmations=1)
         elif source == 'LBL':
             distribution_data = get_lbl(self.address, self.xpub, self.block_height)
         elif source == 'LRL':
@@ -130,6 +141,9 @@ class RandomAddress(object):
                     'chosen_index': The index of the address in the distribution
                     'target': The total of the values in the distribution multiplied by the random number
         """
+        if not distribution:
+            return {}
+
         values = [item[1] for item in distribution]
         chosen_index = self.get_chosen_index(values, random_number)
         chosen_address = distribution[chosen_index][0]
