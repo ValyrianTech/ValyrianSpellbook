@@ -730,7 +730,7 @@ def send_signed_message():
         data['signature'] = args.signature
 
     url = 'http://{host}:{port}/spellbook/triggers/{trigger_id}/message'.format(host=host, port=port, trigger_id=args.trigger_id)
-    do_post_request(url=url, authenticate=True, data=data)
+    do_post_request(url=url, data=data)
 
 
 def check_triggers():
@@ -739,7 +739,7 @@ def check_triggers():
     else:
         url = 'http://{host}:{port}/spellbook/check_triggers'.format(host=host, port=port)
 
-    do_get_request(url=url)
+    do_get_request(url=url, authenticate=True)
 
 # ----------------------------------------------------------------------------------------------------------------
 # Actions
@@ -865,7 +865,7 @@ def specify_explorer(url):
     try:
         explorer = getattr(args, 'explorer')
         if explorer is not None:
-            url += '?explorer={explorer}'.format(explorer=args.explorer)
+            url += '?explorer={explorer}'.format(explorer=args.explorer)  # todo bugfix if there are already url parameters
     except AttributeError:
         pass
 
