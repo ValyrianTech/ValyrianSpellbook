@@ -38,7 +38,7 @@ response = spellbook_call('get_trigger_config', trigger_name)
 assert response['trigger_type'] == trigger_type
 assert response['timeout'] == timeout
 assert response['warning_email'] == warning_email
-assert response['triggered'] is False
+assert response['triggered'] == 0
 
 print 'Checking DeadMansSwitch trigger, should not activate'
 response = spellbook_call('check_triggers', trigger_name)
@@ -47,7 +47,7 @@ assert response is None
 response = spellbook_call('get_trigger_config', trigger_name)
 assert response['trigger_type'] == trigger_type
 assert response['timeout'] == timeout
-assert response['triggered'] is False
+assert response['triggered'] == 0
 assert response['phase'] == 0
 
 print 'Sleeping %s seconds...' % timeout
@@ -60,7 +60,7 @@ assert response is None
 response = spellbook_call('get_trigger_config', trigger_name)
 assert response['trigger_type'] == trigger_type
 assert response['timeout'] == timeout
-assert response['triggered'] is False
+assert response['triggered'] == 0
 assert response['phase'] == 0
 assert response['activation_time'] is None
 
@@ -88,7 +88,7 @@ assert response is None
 response = spellbook_call('get_trigger_config', trigger_name)
 assert response['trigger_type'] == trigger_type
 assert response['timeout'] == timeout
-assert response['triggered'] is False
+assert response['triggered'] == 0
 assert response['phase'] == 2
 
 # --------------------------------------------------------------------------------------------------------
@@ -102,7 +102,7 @@ assert response is None
 response = spellbook_call('get_trigger_config', trigger_name)
 assert response['trigger_type'] == trigger_type
 assert response['timeout'] == timeout
-assert response['triggered'] is False
+assert response['triggered'] == 0
 assert response['phase'] == 3
 
 # --------------------------------------------------------------------------------------------------------
@@ -116,7 +116,7 @@ assert response is None
 response = spellbook_call('get_trigger_config', trigger_name)
 assert response['trigger_type'] == trigger_type
 assert response['timeout'] == timeout
-assert response['triggered'] is False
+assert response['triggered'] == 0
 assert response['phase'] == 4
 
 # --------------------------------------------------------------------------------------------------------
@@ -127,7 +127,7 @@ assert response is None
 response = spellbook_call('get_trigger_config', trigger_name)
 assert response['trigger_type'] == trigger_type
 assert response['timeout'] == timeout
-assert response['triggered'] is False
+assert response['triggered'] == 0
 assert response['phase'] == 4
 
 # --------------------------------------------------------------------------------------------------------
@@ -139,7 +139,7 @@ new_activation_time = int(time.time()) + timeout
 response = spellbook_call('get_trigger_config', trigger_name)
 assert response['trigger_type'] == trigger_type
 assert response['timeout'] == timeout
-assert response['triggered'] is False
+assert response['triggered'] == 0
 assert response['phase'] == 1
 assert response['activation_time'] == new_activation_time
 
@@ -154,7 +154,7 @@ assert response is None
 response = spellbook_call('get_trigger_config', trigger_name)
 assert response['trigger_type'] == trigger_type
 assert response['timeout'] == timeout
-assert response['triggered'] is False
+assert response['triggered'] == 0
 assert response['phase'] == 2
 
 # --------------------------------------------------------------------------------------------------------
@@ -166,7 +166,7 @@ assert response is None
 response = spellbook_call('get_trigger_config', trigger_name)
 assert response['trigger_type'] == trigger_type
 assert response['timeout'] == timeout
-assert response['triggered'] is False
+assert response['triggered'] == 0
 assert response['phase'] == 3
 
 # --------------------------------------------------------------------------------------------------------
@@ -178,7 +178,7 @@ assert response is None
 response = spellbook_call('get_trigger_config', trigger_name)
 assert response['trigger_type'] == trigger_type
 assert response['timeout'] == timeout
-assert response['triggered'] is False
+assert response['triggered'] == 0
 assert response['phase'] == 4
 
 # --------------------------------------------------------------------------------------------------------
@@ -189,7 +189,7 @@ assert response is None
 response = spellbook_call('get_trigger_config', trigger_name)
 assert response['trigger_type'] == trigger_type
 assert response['timeout'] == timeout
-assert response['triggered'] is False
+assert response['triggered'] == 0
 assert response['phase'] == 4
 
 
@@ -204,7 +204,7 @@ assert response is None
 response = spellbook_call('get_trigger_config', trigger_name)
 assert response['trigger_type'] == trigger_type
 assert response['timeout'] == timeout
-assert response['triggered'] is True
+assert response['triggered'] > 0
 assert response['phase'] == 5
 
 
