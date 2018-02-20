@@ -164,7 +164,7 @@ class BlockchainInfoAPI(ExplorerAPI):
             return {'error': 'Unable to get balance of address %s from Blockchain.info' % address}
 
         if all(key in data for key in ('final_balance', 'total_received', 'total_sent', 'n_tx')):
-            balance = {'final': data['final_balance'],
+            balance = {'final': data['final_balance'],  # Todo blockchain.info also reports 0conf txs here, these should not be counted in the balance
                        'received': data['total_received'],
                        'sent': data['total_sent'],
                        'n_tx': data['n_tx']}
