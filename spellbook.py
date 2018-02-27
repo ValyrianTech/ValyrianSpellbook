@@ -865,7 +865,8 @@ def specify_explorer(url):
     try:
         explorer = getattr(args, 'explorer')
         if explorer is not None:
-            url += '?explorer={explorer}'.format(explorer=args.explorer)  # todo bugfix if there are already url parameters
+            url += '?' if '?' not in url else '&'
+            url += 'explorer={explorer}'.format(explorer=args.explorer)
     except AttributeError:
         pass
 
