@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import re
+import os
 
 
 ALL_CHARACTERS_REGEX = "^[a-zA-Z0-9àáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$"
@@ -227,4 +228,8 @@ def valid_timestamp(timestamp):
 
 def valid_phase(phase):
     return phase in range(6)
+
+
+def valid_script(script):
+    return os.path.isfile('spellbookscripts\%s.py' % script)
 
