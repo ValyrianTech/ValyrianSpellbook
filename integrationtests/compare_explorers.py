@@ -68,6 +68,7 @@ class Comparison(object):
         for i in range(len(self.explorers)):
 
             for key in keys:
+                print ''
                 print 'comparing key %s from %s and %s: ' % (key, self.explorers[i], self.explorers[i - 1]),
                 first = response_data[self.explorers[i]][key]
                 second = response_data[self.explorers[i-1]][key]
