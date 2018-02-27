@@ -154,23 +154,37 @@ class BlockchainInfoAPI(ExplorerAPI):
             return {'transactions': txs}
 
     def get_balance(self, address):
-        url = '{api_url}/rawaddr/{address}?limit=0'.format(api_url=self.url, address=address)
+        url = '{api_url}/q/addressbalance/{address}?confirmations=1'.format(api_url=self.url, address=address)
         try:
             logging.getLogger('Spellbook').info('GET %s' % url)
             r = requests.get(url)
-            data = r.json()
+            final_balance = int(r.text)
         except Exception as ex:
             logging.getLogger('Spellbook').error('Unable to get balance of address %s from Blockchain.info: %s' % (address, ex))
             return {'error': 'Unable to get balance of address %s from Blockchain.info' % address}
 
-        if all(key in data for key in ('final_balance', 'total_received', 'total_sent', 'n_tx')):
-            balance = {'final': data['final_balance'],  # Todo blockchain.info also reports 0conf txs here, these should not be counted in the balance
-                       'received': data['total_received'],
-                       'sent': data['total_sent'],
-                       'n_tx': data['n_tx']}
-            return {'balance': balance}
-        else:
-            return {'error': 'Received invalid data: %s' % data}
+        url = '{api_url}/q/getreceivedbyaddress/{address}?confirmations=1'.format(api_url=self.url, address=address)
+        try:
+            logging.getLogger('Spellbook').info('GET %s' % url)
+            r = requests.get(url)
+            received_balance = int(r.text)
+        except Exception as ex:
+            logging.getLogger('Spellbook').error('Unable to get balance of address %s from Blockchain.info: %s' % (address, ex))
+            return {'error': 'Unable to get balance of address %s from Blockchain.info' % address}
+
+        url = '{api_url}/q/getsentbyaddress/{address}?confirmations=1'.format(api_url=self.url, address=address)
+        try:
+            logging.getLogger('Spellbook').info('GET %s' % url)
+            r = requests.get(url)
+            sent_balance = int(r.text)
+        except Exception as ex:
+            logging.getLogger('Spellbook').error('Unable to get balance of address %s from Blockchain.info: %s' % (address, ex))
+            return {'error': 'Unable to get balance of address %s from Blockchain.info' % address}
+
+        balance = {'final': final_balance,
+                   'received': received_balance,
+                   'sent': sent_balance}
+        return {'balance': balance}
 
     def get_prime_input_address(self, txid):
         url = '{api_url}/rawtx/{txid}'.format(api_url=self.url, txid=txid)

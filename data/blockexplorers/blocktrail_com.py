@@ -132,6 +132,9 @@ class BlocktrailComAPI(ExplorerAPI):
             # Only append confirmed transactions
             if tx.block_height is not None:
                 txs.append(tx.to_dict(address))
+            else:
+                # subtract 1 from total txs because it is unconfirmed
+                n_tx -= 1
 
         if n_tx != len(txs):
             return {'error': 'Not all transactions are retrieved! expected {expected} but only got {received}'.format(
@@ -149,11 +152,10 @@ class BlocktrailComAPI(ExplorerAPI):
             logging.getLogger('Spellbook').error('Unable to get balance of address %s from Blocktrail.com: %s' % (address, ex))
             return {'error': 'Unable to get balance of address %s from Blocktrail.com' % address}
 
-        if all(key in data for key in ('balance', 'received', 'sent', 'transactions')):
+        if all(key in data for key in ('balance', 'received', 'sent')):
             balance = {'final': data['balance'],
                        'received': data['received'],
-                       'sent': data['sent'],
-                       'n_tx': data['transactions']}
+                       'sent': data['sent']}
             return {'balance': balance}
         else:
             return {'error': 'Received invalid data: %s' % data}

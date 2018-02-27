@@ -111,7 +111,12 @@ class InsightAPI(ExplorerAPI):
 
                 tx.outputs.append(tx_out)
 
-            txs.insert(0, tx.to_dict(address))
+            # Only add confirmed txs
+            if tx.block_height is not None:
+                txs.insert(0, tx.to_dict(address))
+            else:
+                # subtract 1 from total txs because it is unconfirmed
+                n_tx -= 1
 
         if n_tx != len(txs):
             return {'error': 'Not all transactions are retrieved! expected {expected} but only got {received}'.format(
@@ -138,8 +143,7 @@ class InsightAPI(ExplorerAPI):
 
             balance = {'final': final_balance,
                        'received': received,
-                       'sent': received - final_balance,
-                       'n_tx': len(txs)}
+                       'sent': received - final_balance}
 
             return {'balance': balance}
         else:
