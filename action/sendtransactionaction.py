@@ -411,27 +411,104 @@ class SendTransactionAction(Action):
         return tx_outputs
 
     def get_distribution(self, transaction_type, sending_amount):
-        # Todo check if all required parameters are valid
+        if not valid_amount(sending_amount) or sending_amount == 0:
+            logging.getLogger('Spellbook').error('Unable to get distribution: invalid sending_amount: %s' % sending_amount)
+            raise Exception('Unable to get distribution: invalid sending_amount: %s' % sending_amount)
 
         if transaction_type == 'Send2Single':
+            if not valid_address(self.receiving_address):
+                logging.getLogger('Spellbook').error('Unable to get distribution: invalid receiving_address: %s' % self.receiving_address)
+                raise Exception('Unable to get distribution: invalid receiving_address: %s' % self.receiving_address)
             distribution = {self.receiving_address: sending_amount}
+
         elif transaction_type == 'Send2Many':
+            if not valid_distribution(self.distribution):
+                logging.getLogger('Spellbook').error('Unable to get distribution: invalid distribution: %s' % self.distribution)
+                raise Exception('Unable to get distribution: invalid distribution: %s' % self.distribution)
             distribution = self.distribution
+
         elif transaction_type == 'Send2SIL':
+            if not valid_address(self.registration_address):
+                logging.getLogger('Spellbook').error('Unable to get distribution: invalid registration_address: %s' % self.registration_address)
+                raise Exception('Unable to get distribution: invalid registration_address: %s' % self.registration_address)
+            if not valid_block_height(self.registration_block_height):
+                logging.getLogger('Spellbook').error('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
+                raise Exception('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
+
             data = get_sil(address=self.registration_address, block_height=self.registration_block_height)
+            if 'SIL' not in data:
+                logging.getLogger('Spellbook').error('Unable to get distribution: invalid SIL data: %s' % data)
+                raise Exception('Unable to get distribution: invalid SIL: %s' % data)
             distribution = {recipient[0]: recipient[1] for recipient in data['SIL']}
+
         elif transaction_type == 'Send2LBL':
+            if not valid_address(self.registration_address):
+                logging.getLogger('Spellbook').error('Unable to get distribution: invalid registration_address: %s' % self.registration_address)
+                raise Exception('Unable to get distribution: invalid registration_address: %s' % self.registration_address)
+            if not valid_xpub(self.registration_xpub):
+                logging.getLogger('Spellbook').error('Unable to get distribution: invalid registration_xpub: %s' % self.registration_xpub)
+                raise Exception('Unable to get distribution: invalid registration_xpub: %s' % self.registration_xpub)
+            if not valid_block_height(self.registration_block_height):
+                logging.getLogger('Spellbook').error('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
+                raise Exception('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
+
             data = get_lbl(address=self.registration_address, xpub=self.registration_xpub, block_height=self.registration_block_height)
+            if 'LBL' not in data:
+                logging.getLogger('Spellbook').error('Unable to get distribution: invalid LBL data: %s' % data)
+                raise Exception('Unable to get distribution: invalid LBL: %s' % data)
             distribution = {recipient[0]: recipient[1] for recipient in data['LBL']}
+
         elif transaction_type == 'Send2LRL':
+            if not valid_address(self.registration_address):
+                logging.getLogger('Spellbook').error('Unable to get distribution: invalid registration_address: %s' % self.registration_address)
+                raise Exception('Unable to get distribution: invalid registration_address: %s' % self.registration_address)
+            if not valid_xpub(self.registration_xpub):
+                logging.getLogger('Spellbook').error('Unable to get distribution: invalid registration_xpub: %s' % self.registration_xpub)
+                raise Exception('Unable to get distribution: invalid registration_xpub: %s' % self.registration_xpub)
+            if not valid_block_height(self.registration_block_height):
+                logging.getLogger('Spellbook').error('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
+                raise Exception('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
+
             data = get_lrl(address=self.registration_address, xpub=self.registration_xpub, block_height=self.registration_block_height)
+            if 'LRL' not in data:
+                logging.getLogger('Spellbook').error('Unable to get distribution: invalid LRL data: %s' % data)
+                raise Exception('Unable to get distribution: invalid LRL: %s' % data)
             distribution = {recipient[0]: recipient[1] for recipient in data['LRL']}
+
         elif transaction_type == 'Send2LSL':
+            if not valid_address(self.registration_address):
+                logging.getLogger('Spellbook').error('Unable to get distribution: invalid registration_address: %s' % self.registration_address)
+                raise Exception('Unable to get distribution: invalid registration_address: %s' % self.registration_address)
+            if not valid_xpub(self.registration_xpub):
+                logging.getLogger('Spellbook').error('Unable to get distribution: invalid registration_xpub: %s' % self.registration_xpub)
+                raise Exception('Unable to get distribution: invalid registration_xpub: %s' % self.registration_xpub)
+            if not valid_block_height(self.registration_block_height):
+                logging.getLogger('Spellbook').error('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
+                raise Exception('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
+
             data = get_lsl(address=self.registration_address, xpub=self.registration_xpub, block_height=self.registration_block_height)
+            if 'LSL' not in data:
+                logging.getLogger('Spellbook').error('Unable to get distribution: invalid LSL data: %s' % data)
+                raise Exception('Unable to get distribution: invalid LSL: %s' % data)
             distribution = {recipient[0]: recipient[1] for recipient in data['LSL']}
+
         elif transaction_type == 'Send2LAL':
+            if not valid_address(self.sending_address):
+                logging.getLogger('Spellbook').error('Unable to get distribution: invalid sending_address: %s' % self.sending_address)
+                raise Exception('Unable to get distribution: invalid sending_address: %s' % self.sending_address)
+            if not valid_xpub(self.registration_xpub):
+                logging.getLogger('Spellbook').error('Unable to get distribution: invalid registration_xpub: %s' % self.registration_xpub)
+                raise Exception('Unable to get distribution: invalid registration_xpub: %s' % self.registration_xpub)
+            if not valid_block_height(self.registration_block_height):
+                logging.getLogger('Spellbook').error('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
+                raise Exception('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
+
             # The registration address of a LAL must always be the sending address
             data = get_lal(address=self.sending_address, xpub=self.registration_xpub, block_height=self.registration_block_height)
+            if 'LAL' not in data:
+                logging.getLogger('Spellbook').error('Unable to get distribution: invalid LAL data: %s' % data)
+                raise Exception('Unable to get distribution: invalid LAL: %s' % data)
+
             logging.getLogger('Spellbook').info('LAL: %s' % data['LAL'])
             distribution = {}
             for utxo in self.unspent_outputs:
