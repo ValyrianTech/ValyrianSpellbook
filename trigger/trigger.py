@@ -10,9 +10,8 @@ import importlib
 
 from action.actionhelpers import get_actions, get_action
 from helpers.jsonhelpers import save_to_json_file
-from validators.validators import valid_actions, valid_trigger_type, valid_amount
-from validators.validators import valid_description, valid_creator, valid_email, valid_youtube_id, valid_status, \
-    valid_visibility
+from validators.validators import valid_actions, valid_trigger_type, valid_amount, valid_script
+from validators.validators import valid_description, valid_creator, valid_email, valid_youtube_id, valid_status, valid_visibility
 from spellbookscripts.spellbookscript import SpellbookScript
 
 TRIGGERS_DIR = 'json/public/triggers'
@@ -42,7 +41,7 @@ class Trigger(object):
         if 'trigger_type' in config and valid_trigger_type(config['trigger_type']):
             self.trigger_type = config['trigger_type']
 
-        if 'script' in config:  # Todo add validator for script
+        if 'script' in config and valid_script(config['script']):
             self.script = config['script']
 
         if 'multi' in config and config['multi'] in [True, False]:
