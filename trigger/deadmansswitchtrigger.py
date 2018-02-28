@@ -23,32 +23,34 @@ class DeadMansSwitchTrigger(Trigger):
         if self.timeout is None or self.activation_time is None or self.warning_email is None:
             return False
 
+        email_variables = {'activation_time': datetime.fromtimestamp(self.activation_time).strftime('%Y-%m-%d %H:%M:%S')}
+
         if self.phase == SwitchPhase.PHASE_1 and int(time.time()) >= int(self.activation_time - (self.timeout * 0.5)):
             # 50% of timeout has passed, send first warning and move to phase 2
             self.phase = SwitchPhase.PHASE_2
             logging.getLogger('Spellbook').info("Dead Man's Switch %s is now in phase %s, sending first warning email" % (self.id, self.phase))
-            sendmail(self.warning_email, "First warning: Dead Man's Switch %s at 50 percent" % self.id, 'deadmansswitchwarning')
+            sendmail(self.warning_email, "First warning: Dead Man's Switch %s at 50 percent" % self.id, 'deadmansswitchwarning', email_variables)
             self.save()
 
         if self.phase == SwitchPhase.PHASE_2 and int(time.time()) >= int(self.activation_time - (self.timeout * 0.25)):
             # 75% of timeout has passed, send second warning and move to phase 3
             self.phase = SwitchPhase.PHASE_3
             logging.getLogger('Spellbook').info("Dead Man's Switch %s is now in phase %s, sending second warning email" % (self.id, self.phase))
-            sendmail(self.warning_email, "Second warning: Dead Man's Switch %s at 75 percent" % self.id, 'deadmansswitchwarning')
+            sendmail(self.warning_email, "Second warning: Dead Man's Switch %s at 75 percent" % self.id, 'deadmansswitchwarning', email_variables)
             self.save()
 
         if self.phase == SwitchPhase.PHASE_3 and int(time.time()) >= int(self.activation_time - (self.timeout * 0.1)):
             # 90% of timeout has passed, send final warning and move to phase 4
             self.phase = SwitchPhase.PHASE_4
             logging.getLogger('Spellbook').info("Dead Man's Switch %s is now in phase %s, sending final warning email" % (self.id, self.phase))
-            sendmail(self.warning_email, "Final warning: Dead Man's Switch %s at 90 percent" % self.id, 'deadmansswitchwarning')
+            sendmail(self.warning_email, "Final warning: Dead Man's Switch %s at 90 percent" % self.id, 'deadmansswitchwarning', email_variables)
             self.save()
 
         if self.phase == SwitchPhase.PHASE_4 and int(time.time()) >= int(self.activation_time):
             # 90% of timeout has passed, send final warning and move to phase 4
             self.phase = SwitchPhase.PHASE_5
             logging.getLogger('Spellbook').info("Dead Man's Switch %s is now in phase %s, activating trigger" % (self.id, self.phase))
-            sendmail(self.warning_email, "Dead Man's Switch %s activated" % self.id, 'deadmansswitchactivated')
+            sendmail(self.warning_email, "Dead Man's Switch %s activated" % self.id, 'deadmansswitchactivated', email_variables)
             self.save()
 
         return self.phase == SwitchPhase.PHASE_5
@@ -57,8 +59,9 @@ class DeadMansSwitchTrigger(Trigger):
         if self.phase == SwitchPhase.PHASE_0:
             self.phase = SwitchPhase.PHASE_1
             self.activation_time = int(time.time()) + self.timeout
-            logging.getLogger('Spellbook').info("Dead Man's Switch %s has been armed, will activate in %s seconds on %s" % (self.id, self.timeout, datetime.fromtimestamp(self.activation_time)))
-            sendmail(self.warning_email, "Warning: Dead Man's Switch %s has been armed" % self.id, 'deadmansswitchwarning')
+            logging.getLogger('Spellbook').info("Dead Man's Switch %s has been armed, will activate in %s seconds on %s" % (self.id, self.timeout, datetime.fromtimestamp(self.activation_time).strftime('%Y-%m-%d %H:%M:%S')))
+            email_variables = {'activation_time': datetime.fromtimestamp(self.activation_time).strftime('%Y-%m-%d %H:%M:%S')}
+            sendmail(self.warning_email, "Warning: Dead Man's Switch %s has been armed" % self.id, 'deadmansswitchwarning', email_variables)
             self.save()
 
     def configure(self, **config):
