@@ -1,0 +1,19 @@
+Some notes about blockexplorers:
+
+- 0-confirmation transactions are not included in results!!
+- Bech32 only supported by Blockchain.info currently!
+
+
+Blocktrail.com:
+- block timestamp is in UTC format which requires converting back to unix timestamp, possible timezone issues!
+- no pushtx, uses blockchain.info instead
+- no bech32
+
+Insight:
+- Total received balance and total sent balance are calculated wrong when the change address is the same as the sending address, as a result, when calculating
+the balance, all transactions need to be retrieved.
+- When retrieving transactions, outputs that are currently a 0-conf transaction will be displayed as 'spent' unlike blocktrail and blockchain.info
+- no bech32
+
+Blockchain.info:
+- Block size is different than Blocktrail.com and Insight explorers
