@@ -26,16 +26,20 @@ def load_smtp_settings():
     PASSWORD = get_smtp_password()
 
 
-# Todo add variables in the body
-def sendmail(recipients, subject, body_template):
+def sendmail(recipients, subject, body_template, variables=None):
     """
     Send an email using the smtp settings in the Spellbook.conf file
 
     :param recipients: Email address(es) of the recipient(s) separated by semicolon
     :param subject: The subject for the email
     :param body_template: The filename of the body template for the email
+    :param variables: A dict containing the variables that will be replaced in the email body template
+                      The body template can contain variables like #MYVARIABLE#, if the dict contains a key MYVARIABLE (without #), then it will be replaced by the value of that key
     :return: True upon success, False upon failure
     """
+    if variables is None:
+        variables = {}
+
     # Load the smtp settings
     load_smtp_settings()
 
@@ -53,6 +57,10 @@ def sendmail(recipients, subject, body_template):
     except IOError:
         logging.getLogger('Spellbook').error('Template for email not found: %s' % body_template)
         return False
+
+    # Replace all placeholder values in the body like #myvariable# with the correct value
+    for variable, value in variables.items():
+        body = body.replace('#%s#' % variable, value)
 
     # Attempt to connect to the smtp server and send the message.
     try:
