@@ -25,27 +25,8 @@ def valid_address(address):
         return isinstance(address, (str, unicode)) and re.match(MAINNET_ADDRESS_REGEX, address)
 
 
-def valid_addresses(addresses):
-    valid = False
-
-    if isinstance(addresses, (str, unicode)):
-        for address in addresses.split("|"):
-            if valid_address(address):
-                valid = True
-            else:
-                valid = False
-                break
-
-    return valid
-
-
 def valid_txid(txid):
-    valid = False
-
-    if isinstance(txid, (str, unicode)) and re.match(TXID_REGEX, txid):
-        valid = True
-
-    return valid
+    return isinstance(txid, (str, unicode)) and re.match(TXID_REGEX, txid)
 
 
 def valid_xpub(xpub):
@@ -58,21 +39,11 @@ def valid_xpub(xpub):
 
 
 def valid_description(description):
-    valid = False
-
-    if isinstance(description, (str, unicode)) and len(description) <= 250:
-        valid = True
-
-    return valid
+    return isinstance(description, (str, unicode)) and len(description) <= 250
 
 
 def valid_op_return(message):
-    valid = False
-
-    if isinstance(message, (str, unicode)) and 0 < len(message) <= 80:
-        valid = True
-
-    return valid
+    return isinstance(message, (str, unicode)) and 0 < len(message) <= 80
 
 
 def valid_blockprofile_message(message):
@@ -89,12 +60,7 @@ def valid_blockprofile_message(message):
 
 
 def valid_text(text):
-    valid = False
-
-    if isinstance(text, (str, unicode)):
-        valid = True
-
-    return valid
+    return isinstance(text, (str, unicode))
 
 
 def valid_url(url):
@@ -102,65 +68,31 @@ def valid_url(url):
 
 
 def valid_creator(creator):
-    valid = False
-
-    if isinstance(creator, (str, unicode)) and re.match(ALL_CHARACTERS_REGEX, creator):
-        valid = True
-
-    return valid
+    return isinstance(creator, (str, unicode)) and re.match(ALL_CHARACTERS_REGEX, creator)
 
 
 def valid_email(email):
-    valid = False
-    if isinstance(email, (str, unicode)) and re.match(EMAIL_REGEX, email):
-        valid = True
-
-    return valid
+    return isinstance(email, (str, unicode)) and re.match(EMAIL_REGEX, email)
 
 
 def valid_amount(amount):
-    valid = False
-
-    if isinstance(amount, (int, long)) and amount >= 0:
-        valid = True
-
-    return valid
+    return isinstance(amount, (int, long)) and amount >= 0
 
 
 def valid_block_height(block_height):
-    valid = False
-
-    if isinstance(block_height, int) and block_height >= 0:
-        valid = True
-
-    return valid
+    return isinstance(block_height, int) and block_height >= 0
 
 
 def valid_percentage(percentage):
-    valid = False
-
-    if isinstance(percentage, (int, float)) and 0.0 <= percentage <= 100.0:
-        valid = True
-
-    return valid
+    return isinstance(percentage, (int, float)) and 0.0 <= percentage <= 100.0
 
 
 def valid_youtube(youtube):
-    valid = False
-
-    if isinstance(youtube, (str, unicode)) and re.match(YOUTUBE_REGEX, youtube):
-        valid = True
-
-    return valid
+    return isinstance(youtube, (str, unicode)) and re.match(YOUTUBE_REGEX, youtube)
 
 
 def valid_youtube_id(youtube):
-    valid = False
-
-    if isinstance(youtube, (str, unicode)) and re.match(YOUTUBE_ID_REGEX, youtube):
-        valid = True
-
-    return valid
+    return isinstance(youtube, (str, unicode)) and re.match(YOUTUBE_ID_REGEX, youtube)
 
 
 def valid_status(status):
@@ -172,12 +104,7 @@ def valid_visibility(visibility):
 
 
 def valid_private_key(private_key):
-    valid = False
-
-    if isinstance(private_key, (str, unicode)) and len(private_key) > 0:
-        valid = True
-
-    return valid
+    return isinstance(private_key, (str, unicode)) and len(private_key) > 0
 
 
 def valid_distribution(distribution):
