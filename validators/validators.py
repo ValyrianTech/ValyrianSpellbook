@@ -14,19 +14,21 @@ TESTNET_ADDRESS_REGEX = "^[nm2][a-km-zA-HJ-NP-Z1-9]{25,34}$"
 TXID_REGEX = "^[a-f0-9]{64}$"
 BLOCKPROFILE_REGEX = "^[0-9]*@[0-9]+:[a-zA-Z0-9]+=[a-zA-Z0-9 ]+$"
 EMAIL_REGEX = r"[^@]+@[^@]+\.[^@]+"
+TESTNET_BECH32_ADDRESS_REGEX = '^tb1[ac-hj-np-z02-9]{6,90}$'
+MAINNET_BECH32_ADDRESS_REGEX = '^bc1[ac-hj-np-z02-9]{6,90}$'
 
 
 def valid_address(address):
     from helpers.configurationhelpers import get_use_testnet
     testnet = get_use_testnet()
     if testnet is True:
-        return isinstance(address, (str, unicode)) and re.match(TESTNET_ADDRESS_REGEX, address)
+        return isinstance(address, (str, unicode)) and (re.match(TESTNET_ADDRESS_REGEX, address) is not None or re.match(TESTNET_BECH32_ADDRESS_REGEX, address) is not None)
     else:
-        return isinstance(address, (str, unicode)) and re.match(MAINNET_ADDRESS_REGEX, address)
+        return isinstance(address, (str, unicode)) and (re.match(MAINNET_ADDRESS_REGEX, address) is not None or re.match(MAINNET_BECH32_ADDRESS_REGEX, address) is not None)
 
 
 def valid_txid(txid):
-    return isinstance(txid, (str, unicode)) and re.match(TXID_REGEX, txid)
+    return isinstance(txid, (str, unicode)) and re.match(TXID_REGEX, txid) is not None
 
 
 def valid_xpub(xpub):
@@ -51,7 +53,7 @@ def valid_blockprofile_message(message):
     all_valid = True
     if isinstance(message, (str, unicode)):
         for message_part in message.split("|"):
-            if re.match(BLOCKPROFILE_REGEX, message_part):
+            if re.match(BLOCKPROFILE_REGEX, message_part) is not None:
                 valid = True
             else:
                 all_valid = False
@@ -64,15 +66,15 @@ def valid_text(text):
 
 
 def valid_url(url):
-    return isinstance(url, (str, unicode)) and re.match(URL_REGEX, url)
+    return isinstance(url, (str, unicode)) and re.match(URL_REGEX, url) is not None
 
 
 def valid_creator(creator):
-    return isinstance(creator, (str, unicode)) and re.match(ALL_CHARACTERS_REGEX, creator)
+    return isinstance(creator, (str, unicode)) and re.match(ALL_CHARACTERS_REGEX, creator) is not None
 
 
 def valid_email(email):
-    return isinstance(email, (str, unicode)) and re.match(EMAIL_REGEX, email)
+    return isinstance(email, (str, unicode)) and re.match(EMAIL_REGEX, email) is not None
 
 
 def valid_amount(amount):
@@ -88,11 +90,11 @@ def valid_percentage(percentage):
 
 
 def valid_youtube(youtube):
-    return isinstance(youtube, (str, unicode)) and re.match(YOUTUBE_REGEX, youtube)
+    return isinstance(youtube, (str, unicode)) and re.match(YOUTUBE_REGEX, youtube) is not None
 
 
 def valid_youtube_id(youtube):
-    return isinstance(youtube, (str, unicode)) and re.match(YOUTUBE_ID_REGEX, youtube)
+    return isinstance(youtube, (str, unicode)) and re.match(YOUTUBE_ID_REGEX, youtube) is not None
 
 
 def valid_status(status):
@@ -103,7 +105,7 @@ def valid_visibility(visibility):
     return True if visibility in ['Public', 'Private'] else False
 
 
-def valid_private_key(private_key):
+def valid_private_key(private_key):  # Todo better validation
     return isinstance(private_key, (str, unicode)) and len(private_key) > 0
 
 
