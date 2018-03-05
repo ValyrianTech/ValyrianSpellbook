@@ -327,3 +327,34 @@ class TestValidators(object):
         print description
         assert validators.valid_outputs(outputs) == expected
 
+    @pytest.mark.parametrize('address, expected, description', [
+        ["BC1QW508D6QEJXTDG4Y5R3ZARVARY0C5XW7KV8F3T4", True, "Valid bech32 address"],
+        ["bc1pw508d6qejxtdg4y5r3zarvary0c5xw7kw508d6qejxtdg4y5r3zarvary0c5xw7k7grplx", True, "Valid bech32 address"],
+        ["BC1SW50QA3JX3S", True, "Valid bech32 address"],
+        ["bc1zw508d6qejxtdg4y5r3zarvaryvg6kdaj", True, "Valid bech32 address"],
+
+        ["tc1qw508d6qejxtdg4y5r3zarvary0c5xw7kg3g4ty", False, "Invalid human-readable part"],
+        ["bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t5", False, "Invalid checksum"],
+        # ["BC13W508D6QEJXTDG4Y5R3ZARVARY0C5XW7KN40WF2",False, "Invalid witness version"],
+        ["bc1rw5uspcuh", False, "Invalid program length"],
+        ["bc10w508d6qejxtdg4y5r3zarvary0c5xw7kw508d6qejxtdg4y5r3zarvary0c5xw7kw5rljs90", False, "Invalid program length"],
+        # ["BC1QR508D6QEJXTDG4Y5R3ZARVARYV98GJ9P", False, "Invalid program length for witness version 0 (per BIP141)"],
+        # ["bc1zw508d6qejxtdg4y5r3zarvaryvqyzf3du", False, "zero padding of more than 4 bits"],
+        ["bc1gmk9yu", False, "Empty data section"],
+    ])
+    def test_valid_bech32_address_mainnet(self, address, expected, description):
+        helpers.configurationhelpers.get_use_testnet = mock.MagicMock(return_value=False)
+        print description
+        assert validators.valid_bech32_address(address) == expected
+
+    @pytest.mark.parametrize('address, expected, description', [
+        ["tb1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q0sl5k7", True, "Valid bech32 address"],
+        ["tb1qqqqqp399et2xygdj5xreqhjjvcmzhxw4aywxecjdzew6hylgvsesrxh6hy", True, "Valid bech32 address"],
+
+        ["tb1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q0sL5k7", False, "Mixed case"],
+        # ["tb1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3pjxtptv", False, "Non-zero padding in 8-to-5 conversion"],
+    ])
+    def test_valid_bech32_address_testnet(self, address, expected, description):
+        helpers.configurationhelpers.get_use_testnet = mock.MagicMock(return_value=True)
+        print description
+        assert validators.valid_bech32_address(address) == expected
