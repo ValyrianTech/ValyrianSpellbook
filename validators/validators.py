@@ -3,6 +3,7 @@
 
 import re
 import os
+from helpers.bech32 import bech32_decode
 
 
 ALL_CHARACTERS_REGEX = "^[a-zA-Z0-9àáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$"
@@ -14,17 +15,22 @@ TESTNET_ADDRESS_REGEX = "^[nm2][a-km-zA-HJ-NP-Z1-9]{25,34}$"
 TXID_REGEX = "^[a-f0-9]{64}$"
 BLOCKPROFILE_REGEX = "^[0-9]*@[0-9]+:[a-zA-Z0-9]+=[a-zA-Z0-9 ]+$"
 EMAIL_REGEX = r"[^@]+@[^@]+\.[^@]+"
-TESTNET_BECH32_ADDRESS_REGEX = '^tb1[ac-hj-np-z02-9]{6,90}$'
-MAINNET_BECH32_ADDRESS_REGEX = '^bc1[ac-hj-np-z02-9]{6,90}$'
+LOWERCASE_TESTNET_BECH32_ADDRESS_REGEX = '^tb1[ac-hj-np-z02-9]{11,71}$'
+LOWERCASE_MAINNET_BECH32_ADDRESS_REGEX = '^bc1[ac-hj-np-z02-9]{11,71}$'
+UPPERCASE_TESTNET_BECH32_ADDRESS_REGEX = '^TB1[AC-HJ-NP-Z02-9]{11,71}$'
+UPPERCASE_MAINNET_BECH32_ADDRESS_REGEX = '^BC1[AC-HJ-NP-Z02-9]{11,71}$'
 
 
 def valid_address(address):
+    if not isinstance(address, (str, unicode)):
+        return False
+
     from helpers.configurationhelpers import get_use_testnet
     testnet = get_use_testnet()
     if testnet is True:
-        return isinstance(address, (str, unicode)) and (re.match(TESTNET_ADDRESS_REGEX, address) is not None or re.match(TESTNET_BECH32_ADDRESS_REGEX, address) is not None)
+        return re.match(TESTNET_ADDRESS_REGEX, address) is not None or valid_bech32_address(address)
     else:
-        return isinstance(address, (str, unicode)) and (re.match(MAINNET_ADDRESS_REGEX, address) is not None or re.match(MAINNET_BECH32_ADDRESS_REGEX, address) is not None)
+        return re.match(MAINNET_ADDRESS_REGEX, address) is not None or valid_bech32_address(address)
 
 
 def valid_txid(txid):
@@ -162,3 +168,18 @@ def valid_phase(phase):
 def valid_script(script):
     return os.path.isfile('spellbookscripts\%s.py' % script)
 
+
+def valid_bech32_address(address):
+    if not isinstance(address, (str, unicode)):
+        return False
+
+    hrp, data = bech32_decode(address)
+    if (hrp, data) == (None, None):
+        return False
+
+    from helpers.configurationhelpers import get_use_testnet
+    testnet = get_use_testnet()
+    if testnet is True:
+        return re.match(LOWERCASE_TESTNET_BECH32_ADDRESS_REGEX, address) is not None or re.match(UPPERCASE_TESTNET_BECH32_ADDRESS_REGEX, address) is not None
+    else:
+        return re.match(LOWERCASE_MAINNET_BECH32_ADDRESS_REGEX, address) is not None or re.match(UPPERCASE_MAINNET_BECH32_ADDRESS_REGEX, address) is not None
