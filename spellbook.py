@@ -294,7 +294,7 @@ save_trigger_parser.add_argument('-i', '--interval', help='The amount of seconds
 save_trigger_parser.add_argument('-pt', '--previous_trigger', help='The id of the trigger of which to check the status')
 save_trigger_parser.add_argument('-pts', '--previous_trigger_status', help='The status a previous trigger must be for this trigger to activate', choices=['Succeeded', 'Failed'])
 save_trigger_parser.add_argument('-ti', '--timeout', help='The amount of seconds before an activated DeadMansSwitch times out', type=int)
-save_trigger_parser.add_argument('-we', '--warning_email', help='The email address to send a warning to when a DeadMansSwitch reaches 50%, 75% and 90% of the timeout')
+save_trigger_parser.add_argument('-we', '--warning_email', help='The email address to send a warning to when a DeadMansSwitch reaches 50%%, 75%% and 90%% of the timeout')
 save_trigger_parser.add_argument('-m', '--multi', help='Allow the trigger to activate multiple times', action='store_true')
 save_trigger_parser.add_argument('-d', '--description', help='A description of the trigger')
 save_trigger_parser.add_argument('-cn', '--creator_name', help='The name of the creator the trigger')
