@@ -24,7 +24,7 @@ class RecurringTrigger(Trigger):
 
         if self.end_time <= int(time.time()):
             logging.getLogger('Spellbook').info('Recurring trigger %s has reached its end time' % self.id)
-            self.triggered = True
+            self.status = 'Succeeded'
             self.save()
             return False
 
@@ -33,10 +33,9 @@ class RecurringTrigger(Trigger):
     def activate(self):
         super(RecurringTrigger, self).activate()
 
-        if self.triggered is True and self.next_activation + self.interval <= self.end_time:
+        if self.next_activation + self.interval <= self.end_time:
             self.next_activation += self.interval
             logging.getLogger('Spellbook').info('Setting next activation of recurring trigger %s to %s' % (self.id, datetime.fromtimestamp(self.next_activation)))
-            self.triggered = False
             self.save()
 
     def configure(self, **config):
@@ -56,6 +55,8 @@ class RecurringTrigger(Trigger):
         elif self.begin_time is not None:
             self.next_activation = self.begin_time
             logging.getLogger('Spellbook').info('Setting first activation of recurring trigger %s to %s' % (self.id, datetime.fromtimestamp(self.next_activation)))
+
+        self.multi = True
 
     def json_encodable(self):
         ret = super(RecurringTrigger, self).json_encodable()
