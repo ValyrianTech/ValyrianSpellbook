@@ -83,3 +83,13 @@ def get_smtp_user():
 @verify_config('SMTP', 'password')
 def get_smtp_password():
     return spellbook_config().get('SMTP', 'password')
+
+
+@verify_config('IPFS', 'host')
+def get_ipfs_host():
+    return spellbook_config().get('IPFS', 'host')
+
+
+@verify_config('IPFS', 'port')
+def get_ipfs_port():
+    return spellbook_config().get('IPFS', 'port')
