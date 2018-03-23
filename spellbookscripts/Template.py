@@ -7,6 +7,9 @@ from spellbookscript import SpellbookScript
 
 
 class Template(SpellbookScript):
+    def __init__(self, *args, **kwargs):
+        super(Template, self).__init__(*args, **kwargs)
+
 
     def run_script(self):
         logging.getLogger('Spellbook').info('Running Spellbook Script: %s' % os.path.splitext(os.path.basename(__file__))[0])
