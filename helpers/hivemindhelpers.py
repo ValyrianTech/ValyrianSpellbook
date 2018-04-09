@@ -7,6 +7,10 @@ from helpers.jsonhelpers import load_from_json_file, save_to_json_file
 HIVEMINDS_DIR = 'json/public/hiveminds'
 HIVEMINDS_FILE = os.path.join(HIVEMINDS_DIR, 'hiveminds.json')
 
+# create the hiveminds directory if necessary
+if not os.path.isabs(HIVEMINDS_DIR):
+    os.makedirs(HIVEMINDS_DIR)
+
 # if hiveminds file doesn't exist create an empty one
 if not os.path.isfile(HIVEMINDS_FILE):
     save_to_json_file(filename=HIVEMINDS_FILE, data={})
