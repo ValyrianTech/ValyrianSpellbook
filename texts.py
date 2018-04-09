@@ -458,3 +458,14 @@ examples:
   - spellbook.py get_reveal ... -k=<myapikey> -s=<myapisecret>
     -> Use given api key and api secret to authenticate with the REST API
 '''
+
+########################################################################################################
+# get_hivemind                                                                                           #
+########################################################################################################
+GET_HIVEMIND_DESCRIPTION = 'Get the latest hivemind state hash of a hivemind'
+GET_HIVEMIND_EPILOG = '''
+examples:
+  - spellbook.py get_hivemind 48383fbf86fbc142cd7b0a070e36867fd84a93a79bdf5a59e9087eb8aa1244a0
+    -> Get the latest hivemind state hash of the hivemind with id '48383fbf86fbc142cd7b0a070e36867fd84a93a79bdf5a59e9087eb8aa1244a0'
+
+'''
