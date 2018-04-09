@@ -464,6 +464,16 @@ get_reveal_parser.add_argument('-k', '--api_key', help='API key for the spellboo
 get_reveal_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
 
 
+# Create parser for the get_hivemind subcommand
+get_hivemind_parser = subparsers.add_parser(name='get_hivemind',
+                                            help='Get the latest hivemind state hash of a given hivemind',
+                                            formatter_class=argparse.RawDescriptionHelpFormatter,
+                                            description=texts.GET_HIVEMIND_DESCRIPTION,
+                                            epilog=texts.GET_HIVEMIND_EPILOG)
+
+get_hivemind_parser.add_argument('hivemind_id', help='The id of the hivemind')
+
+
 def add_authentication_headers(headers=None, data=None):
     """
     Add custom headers for API_Key and API_Sign
@@ -861,6 +871,11 @@ def get_reveal():
     do_get_request(url=url)
 
 
+def get_hivemind():
+    url = 'http://{host}:{port}/spellbook/hiveminds/{hivemind_id}'.format(host=host, port=port, hivemind_id=args.hivemind_id)
+    do_get_request(url=url)
+
+
 def specify_explorer(url):
     try:
         explorer = getattr(args, 'explorer')
@@ -975,3 +990,5 @@ elif args.command == 'run_action':
     run_action()
 elif args.command == 'get_reveal':
     get_reveal()
+elif args.command == 'get_hivemind':
+    get_hivemind()
