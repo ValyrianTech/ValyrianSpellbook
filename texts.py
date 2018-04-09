@@ -455,8 +455,6 @@ examples:
   - spellbook.py get_reveal myaction
     -> Get the reveal text or link of the action with id 'myaction'
 
-  - spellbook.py get_reveal ... -k=<myapikey> -s=<myapisecret>
-    -> Use given api key and api secret to authenticate with the REST API
 '''
 
 ########################################################################################################
