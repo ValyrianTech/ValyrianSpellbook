@@ -460,8 +460,6 @@ get_reveal_parser = subparsers.add_parser(name='get_reveal',
                                           epilog=texts.GET_REVEAL_EPILOG)
 
 get_reveal_parser.add_argument('action_id', help='The id of the action')
-get_reveal_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
-get_reveal_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
 
 
 # Create parser for the get_hivemind subcommand
