@@ -101,8 +101,7 @@ class Trigger(object):
         script = self.load_script()
 
         if script is not None:
-            kwargs = self.get_script_variables()
-            new_actions = script(**kwargs).run_script()
+            new_actions = script.run_script()
             if new_actions is not None:
                 self.actions.extend(new_actions)
 
@@ -131,7 +130,9 @@ class Trigger(object):
         self.save()
 
         if script is not None:
-            script().cleanup()
+            script.cleanup()
+
+        return script.http_response
 
     def get_script_variables(self):
         return self.json_encodable()
@@ -168,11 +169,12 @@ class Trigger(object):
                     return
 
                 spellbook_script = getattr(script_module, self.script)
-                script = spellbook_script()
+                kwargs = self.get_script_variables()
+                script = spellbook_script(**kwargs)
 
                 if not isinstance(script, SpellbookScript):
                     logging.getLogger('Spellbook').error(
                         'Script %s is not a valid Spellbook Script, instead it is a %s' % (self.script, type(script)))
                     return
 
-                return spellbook_script
+                return script
