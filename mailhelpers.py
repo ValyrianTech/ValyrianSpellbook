@@ -58,9 +58,9 @@ def sendmail(recipients, subject, body_template, variables=None):
         logging.getLogger('Spellbook').error('Template for email not found: %s' % body_template)
         return False
 
-    # Replace all placeholder values in the body like #myvariable# with the correct value
+    # Replace all placeholder values in the body like $myvariable$ with the correct value
     for variable, value in variables.items():
-        body = body.replace('#%s#' % variable, value)
+        body = body.replace('$%s$' % str(variable), str(value))
 
     # Attempt to connect to the smtp server and send the message.
     try:
