@@ -114,3 +114,11 @@ logs/
 
 # txt files
 *.txt
+
+# setupscripts
+setupscripts/
+
+# spellbookscripts
+spellbookscripts/
+!spellbookscripts/spellbookscript.py
+!spellbookscripts/Template.py
