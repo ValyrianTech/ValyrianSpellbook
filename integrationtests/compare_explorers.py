@@ -4,7 +4,9 @@
 import sys
 import argparse
 import time
+import copy
 from integration_test_helpers import spellbook_call
+from pprint import pprint
 
 
 KEYNOTFOUNDIN1 = '<KEYNOTFOUNDIN1>'       # KeyNotFound for dictDiff
@@ -68,10 +70,12 @@ class Comparison(object):
         for i in range(len(self.explorers)):
 
             for key in keys:
+
                 print ''
                 print 'comparing key %s from %s and %s: ' % (key, self.explorers[i], self.explorers[i - 1]),
-                first = response_data[self.explorers[i]][key]
-                second = response_data[self.explorers[i-1]][key]
+                first = copy.deepcopy(response_data[self.explorers[i]][key])
+                second = copy.deepcopy(response_data[self.explorers[i-1]][key])
+
                 if cmp(first, second) != 0:
                     print 'Not equal!'
                     if isinstance(first, dict) and isinstance(second, dict):
@@ -79,7 +83,12 @@ class Comparison(object):
                     elif isinstance(first, list) and isinstance(second, list):
                         for j in range(len(first)):
                             if isinstance(first[j], dict) and isinstance(second[j], dict):
-                                print dict_diff(first[j], second[j])
+                                difference = dict_diff(first[j], second[j])
+                                if difference:
+                                    print 'transaction is different!!'
+                                    print first[j]['txid']
+                                    print second[j]['txid']
+                                    pprint(difference)
 
                     all_ok = False
 
