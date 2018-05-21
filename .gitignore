@@ -125,3 +125,6 @@ spellbookscripts/
 
 # spellbookconfiguration
 configuration/Spellbook.conf
+
+# IPFS
+ipfs/
