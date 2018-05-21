@@ -129,3 +129,14 @@ class TestSignMessage(object):
         print 'Signature:', signature
 
         assert verify_message(address=address, message=message, signature=signature)
+
+    def test_sign_message_with_a_message_of_256_chars(self):
+        address = get_address_from_wallet(account=0, index=0)
+        message = ''.join(['a' for _ in range(255)])
+        private_key = get_private_key_from_wallet(account=0, index=0)[address]
+
+        signature = sign_message(address, message, private_key)
+        print 'Signature:', signature
+
+        assert verify_message(address=address, message=message, signature=signature)
+
