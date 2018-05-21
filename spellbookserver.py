@@ -26,7 +26,7 @@ from randomaddress.randomaddress import random_address_from_sil, random_address_
     random_address_from_lsl
 from trigger.triggerhelpers import get_triggers, get_trigger_config, save_trigger, delete_trigger, activate_trigger, \
     check_triggers, verify_signed_message
-from helpers.hivemindhelpers import get_hivemind
+from helpers.hivemindhelpers import get_hivemind_state_hash
 
 
 class SpellbookRESTAPI(Bottle):
@@ -124,7 +124,7 @@ class SpellbookRESTAPI(Bottle):
         self.route('/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>/reveal', method='GET', callback=self.get_reveal)
 
         # Routes for Hiveminds
-        self.route('/spellbook/hiveminds/<action_id:re:[a-fA-F0-9]+>', method='GET', callback=self.get_hivemind)
+        self.route('/spellbook/hiveminds/<hivemind_id:re:[a-fA-F0-9]+>', method='GET', callback=self.get_hivemind)
 
         # start the webserver for the REST API
         self.run(host=self.host, port=self.port)
@@ -444,7 +444,7 @@ class SpellbookRESTAPI(Bottle):
     @staticmethod
     @output_json
     def get_hivemind(hivemind_id):
-        return get_hivemind(hivemind_id)
+        return get_hivemind_state_hash(hivemind_id)
 
 
 if __name__ == "__main__":
