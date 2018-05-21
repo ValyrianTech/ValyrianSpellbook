@@ -35,7 +35,7 @@ fee_address = get_address_from_wallet(0, 3)
 fee_percentage = 1.0
 
 wallet_type = 'BIP44'
-bip44_account = 0
+bip44_account = 1
 bip44_index = 0
 
 minimum_amount = 10000000000  # 100 BTC
