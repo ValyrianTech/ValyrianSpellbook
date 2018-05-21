@@ -2,7 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import pytest
-from taghash import TagHash
+import os
+
+# Change working dir up one level
+os.chdir("..")
+
+from taghash.taghash import TagHash
 
 
 class TestTagHash(object):
