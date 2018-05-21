@@ -122,3 +122,6 @@ setupscripts/
 spellbookscripts/
 !spellbookscripts/spellbookscript.py
 !spellbookscripts/Template.py
+
+# spellbookconfiguration
+configuration/Spellbook.conf
