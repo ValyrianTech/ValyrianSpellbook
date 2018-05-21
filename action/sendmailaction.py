@@ -13,6 +13,7 @@ class SendMailAction(Action):
         self.mail_recipients = None
         self.mail_subject = None
         self.mail_body_template = None
+        self.mail_variables = None
 
     def run(self):
         """
@@ -20,7 +21,7 @@ class SendMailAction(Action):
 
         :return: True upon success, False upon failure
         """
-        return sendmail(self.mail_recipients, self.mail_subject, self.mail_body_template)
+        return sendmail(recipients=self.mail_recipients, subject=self.mail_subject, body_template=self.mail_body_template, variables=self.mail_variables)
 
     def configure(self, **config):
         """
@@ -41,6 +42,9 @@ class SendMailAction(Action):
         if 'mail_body_template' in config:
             self.mail_body_template = config['mail_body_template']
 
+        if 'mail_variables' in config and isinstance(config['mail_variables'], dict):
+            self.mail_variables = config['mail_variables']
+
     def json_encodable(self):
         """
         Get the action config in a json encodable format
@@ -50,5 +54,6 @@ class SendMailAction(Action):
         ret = super(SendMailAction, self).json_encodable()
         ret.update({'mail_recipients': self.mail_recipients,
                     'mail_subject': self.mail_subject,
-                    'mail_body_template': self.mail_body_template})
+                    'mail_body_template': self.mail_body_template,
+                    'mail_variables': self.mail_variables})
         return ret
