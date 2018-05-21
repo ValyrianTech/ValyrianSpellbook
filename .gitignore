@@ -111,3 +111,6 @@ logs/
 
 # csv files
 *.csv
+
+# txt files
+*.txt
