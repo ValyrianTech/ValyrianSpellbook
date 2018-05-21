@@ -185,7 +185,7 @@ def verify_signed_message(trigger_id, **data):
         if trigger.status == 'Active':
             logging.getLogger('Spellbook').info('Trigger %s received a verified signed message' % trigger_id)
             trigger.process_message(address=data['address'], message=data['message'], signature=data['signature'])
-            trigger.activate()
+            return trigger.activate()
     else:
         logging.getLogger('Spellbook').warning('Trigger %s received a bad signed message' % trigger_id)
 
