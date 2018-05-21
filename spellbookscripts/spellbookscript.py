@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 import logging
 import simplejson
+import ipfsapi
 
 from abc import abstractmethod, ABCMeta
 from validators.validators import valid_address
+from helpers.ipfshelpers import get_json
 
 
 class SpellbookScript(object):
@@ -35,6 +37,8 @@ class SpellbookScript(object):
         self.json = None
         self.ipfs = None
         self.text = None
+
+        self.http_response = None
 
         if self.message is not None:
             self.process_message()
@@ -67,8 +71,19 @@ class SpellbookScript(object):
                 return self.process_text(self.message)
 
     def process_ipfs_hash(self, ipfs_hash):
-        logging.getLogger('Spellbook').info('Retrieving IPFS object if necessary')
-        self.ipfs = ipfs_hash
+        logging.getLogger('Spellbook').info('Retrieving IPFS object')
+        try:
+            data = get_json(multihash=ipfs_hash)
+            if isinstance(data, dict):
+                self.json = data
+            elif isinstance(data, (str, unicode)):
+                self.json = simplejson.loads(data)
+            else:
+                raise Exception('IPFS hash does not contain a dict or a json string: %s -> %s' % (ipfs_hash, data))
+            logging.getLogger('Spellbook').info('Message contains json data: %s' % self.json)
+        except Exception as ex:
+            logging.getLogger('Spellbook').error('IPFS hash does not contain valid json data: %s' % ex)
+            return
 
     def process_json_data(self, json_data):
         logging.getLogger('Spellbook').info('Processing JSON data')
