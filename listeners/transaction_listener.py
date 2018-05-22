@@ -67,9 +67,9 @@ if __name__ == "__main__":
     exclusive_group.add_argument('-a', '--address', help='Watch a single address')
     exclusive_group.add_argument('-w', '--watchlist', help='the watchlist.json file containing the addresses and events to watch (default=watchlist.json)', default='watchlist.json')
 
-    parser.add_argument('-s', '--send', help='Watch for an address to SEND a transaction', action='store_true')
-    parser.add_argument('-r', '--receive', help='Watch for an address to RECEIVE a transaction', action='store_true')
-    parser.add_argument('-c', '--command', help='The command to run when the watched address sends or receives a transaction', type=str)
+    parser.add_argument('-s', '--send', help='Watch for an address to SEND a transaction (single address only)', action='store_true')
+    parser.add_argument('-r', '--receive', help='Watch for an address to RECEIVE a transaction (single address only)', action='store_true')
+    parser.add_argument('-c', '--command', help='The command to run when the watched address sends or receives a transaction (single address only)', type=str)
     parser.add_argument('-e', '--exit', help='Stop listening when a watched address sends or receives a transaction', action='store_true')
     parser.add_argument('-to', '--timeout', help='Stop listening after x seconds', type=int)
     parser.add_argument('-t', '--testnet', help='Use testnet instead of mainnet', action='store_true')
