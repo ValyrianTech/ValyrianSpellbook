@@ -55,23 +55,37 @@ def on_open(ws):
 if __name__ == "__main__":
     # Create main parser
     parser = argparse.ArgumentParser(description='Transaction listener')
-    parser.add_argument('-w', '--watchlist', help='the watchlist.json file containing the addresses and events to watch (default=watchlist.json', default='watchlist.json')
+    exclusive_group = parser.add_mutually_exclusive_group()
+    exclusive_group.add_argument('-a', '--address', help='Watch a single address')
+    exclusive_group.add_argument('-w', '--watchlist', help='the watchlist.json file containing the addresses and events to watch (default=watchlist.json', default='watchlist.json')
+
+    parser.add_argument('-s', '--send', help='Watch for an address to SEND a transaction', action='store_true')
+    parser.add_argument('-r', '--receive', help='Watch for an address to RECEIVE a transaction', action='store_true')
+    parser.add_argument('-c', '--command', help='The command to run when the watched address sends or receives a transaction', type=str)
+    parser.add_argument('-e', '--exit', help='Stop listening when a watched address sends or receives a transaction', action='store_true')
     parser.add_argument('-t', '--testnet', help='Use testnet instead of mainnet', action='store_true')
-    parser.add_argument('-e', '--exit', help='Stop listening when the watched address sends or receives a transaction', action='store_true')
 
     args = parser.parse_args()
 
     EXIT_ON_EVENT = args.exit
 
-    # Load the json file
-    try:
-        with open(args.watchlist, 'r') as input_file:
-            try:
-                WATCHLIST = simplejson.load(input_file)
-            except Exception as ex:
-                raise Exception('%s does not contain a valid dictionary: %s' % (args.watchlist, ex))
-    except IOError:
-        raise Exception('File %s does not exists' % args.watchlist)
+    if args.address is not None:
+        WATCHLIST = {args.address: {}}
+        if args.send is True:
+            WATCHLIST[args.address]['SEND'] = args.command
+
+        if args.receive is True:
+            WATCHLIST[args.address]['RECEIVE'] = args.command
+    else:
+        # Load the json file
+        try:
+            with open(args.watchlist, 'r') as input_file:
+                try:
+                    WATCHLIST = simplejson.load(input_file)
+                except Exception as ex:
+                    raise Exception('%s does not contain a valid dictionary: %s' % (args.watchlist, ex))
+        except IOError:
+            raise Exception('File %s does not exists' % args.watchlist)
 
     if args.testnet is True:
         url = "wss://testnet-ws.smartbit.com.au/v1/blockchain"
