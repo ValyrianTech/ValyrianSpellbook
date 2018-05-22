@@ -5,9 +5,11 @@ import websocket
 import simplejson
 import argparse
 import sys
+import time
 
 WATCHLIST = {}
 EXIT_ON_EVENT = False
+EXIT_ON_TIMEOUT = None
 
 
 def on_message(ws, message):
@@ -34,6 +36,12 @@ def on_message(ws, message):
                 event_found = True
 
     if EXIT_ON_EVENT is True and event_found is True:
+        print 'Event found, exiting now'
+        ws.send('{"type":"new-transaction", "unsubscribe": true}')
+        sys.exit()
+
+    if EXIT_ON_TIMEOUT is not None and int(time.time()) >= EXIT_ON_TIMEOUT:
+        print 'Timeout occurred, exiting now'
         ws.send('{"type":"new-transaction", "unsubscribe": true}')
         sys.exit()
 
@@ -63,11 +71,15 @@ if __name__ == "__main__":
     parser.add_argument('-r', '--receive', help='Watch for an address to RECEIVE a transaction', action='store_true')
     parser.add_argument('-c', '--command', help='The command to run when the watched address sends or receives a transaction', type=str)
     parser.add_argument('-e', '--exit', help='Stop listening when a watched address sends or receives a transaction', action='store_true')
+    parser.add_argument('-to', '--timeout', help='Stop listening after x seconds', type=int)
     parser.add_argument('-t', '--testnet', help='Use testnet instead of mainnet', action='store_true')
 
     args = parser.parse_args()
 
     EXIT_ON_EVENT = args.exit
+
+    if args.timeout is not None:
+        EXIT_ON_TIMEOUT = int(time.time()) + args.timeout
 
     if args.address is not None:
         WATCHLIST = {args.address: {}}
