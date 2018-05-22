@@ -4,11 +4,14 @@
 import websocket
 import simplejson
 import argparse
+import sys
 
 WATCHLIST = {}
+EXIT_ON_EVENT = False
 
 
 def on_message(ws, message):
+    event_found = False
     transaction = simplejson.loads(message)
     if transaction['type'] != 'new-transaction':
         return
@@ -20,6 +23,7 @@ def on_message(ws, message):
             print input_address, tx_input['value_int']
             if input_address in WATCHLIST and 'SEND' in WATCHLIST[input_address]:
                 print 'Executing command: %s' % WATCHLIST[input_address]['SEND']
+                event_found = True
 
     print 'To: '
     for tx_output in transaction['payload']['outputs']:
@@ -27,6 +31,11 @@ def on_message(ws, message):
             print output_address, tx_output['value_int']
             if output_address in WATCHLIST and 'RECEIVE' in WATCHLIST[output_address]:
                 print 'Executing command: %s' % WATCHLIST[output_address]['RECEIVE']
+                event_found = True
+
+    if EXIT_ON_EVENT is True and event_found is True:
+        ws.send('{"type":"new-transaction", "unsubscribe": true}')
+        sys.exit()
 
 
 def on_error(ws, error):
@@ -34,7 +43,6 @@ def on_error(ws, error):
 
 
 def on_close(ws):
-    ws.send('{"type":"new-transaction", "unsubscribe": true}')
     print "### websocket closed ###"
 
 
@@ -49,8 +57,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Transaction listener')
     parser.add_argument('-w', '--watchlist', help='the watchlist.json file containing the addresses and events to watch (default=watchlist.json', default='watchlist.json')
     parser.add_argument('-t', '--testnet', help='Use testnet instead of mainnet', action='store_true')
+    parser.add_argument('-e', '--exit', help='Stop listening when the watched address sends or receives a transaction', action='store_true')
 
     args = parser.parse_args()
+
+    EXIT_ON_EVENT = args.exit
 
     # Load the json file
     try:
