@@ -57,7 +57,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Transaction listener')
     exclusive_group = parser.add_mutually_exclusive_group()
     exclusive_group.add_argument('-a', '--address', help='Watch a single address')
-    exclusive_group.add_argument('-w', '--watchlist', help='the watchlist.json file containing the addresses and events to watch (default=watchlist.json', default='watchlist.json')
+    exclusive_group.add_argument('-w', '--watchlist', help='the watchlist.json file containing the addresses and events to watch (default=watchlist.json)', default='watchlist.json')
 
     parser.add_argument('-s', '--send', help='Watch for an address to SEND a transaction', action='store_true')
     parser.add_argument('-r', '--receive', help='Watch for an address to RECEIVE a transaction', action='store_true')
