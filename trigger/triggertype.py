@@ -13,4 +13,7 @@ class TriggerType(object):
     TRIGGERSTATUS = 'TriggerStatus'  # Triggers when another trigger has activated and results in a status 'Succeeded' or 'Failed'
     DEADMANSSWITCH = 'DeadMansSwitch'  # Triggers after it has been activated and a period of time has elapsed without being reset
     SIGNEDMESSAGE = 'SignedMessage'  # Triggers when a verified signed message is received
+    HTTPGETREQUEST = 'HTTPGetRequest'  # Triggers when a HTTP GET request is made
+    HTTPPOSTREQUEST = 'HTTPPostRequest'  # Triggers when a HTTP POST request is made
+    HTTPDELETEREQUEST = 'HTTPDeleteRequest'  # Triggers when a HTTP DELETE request is made
 

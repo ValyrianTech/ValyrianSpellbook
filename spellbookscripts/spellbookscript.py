@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 import logging
 import simplejson
-import ipfsapi
 
 from abc import abstractmethod, ABCMeta
 from validators.validators import valid_address
@@ -34,7 +33,7 @@ class SpellbookScript(object):
         self.created = kwargs['created'] if 'created' in kwargs else None
         self.actions = kwargs['actions'] if 'actions' in kwargs else None
 
-        self.json = None
+        self.json = kwargs['json'] if 'json' in kwargs else None
         self.ipfs = None
         self.text = None
 
