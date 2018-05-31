@@ -281,7 +281,7 @@ save_trigger_parser = subparsers.add_parser(name='save_trigger',
 
 save_trigger_parser.add_argument('trigger_id', help='The id of the trigger')
 save_trigger_parser.add_argument('-r', '--reset', help='Reset the trigger in case it has been triggered already', action='store_true')
-save_trigger_parser.add_argument('-t', '--type', help='The type of the trigger', choices=['Manual', 'Balance', 'Received', 'Sent', 'Block_height', 'Timestamp', 'Recurring', 'TriggerStatus', 'DeadMansSwitch', 'SignedMessage'])
+save_trigger_parser.add_argument('-t', '--type', help='The type of the trigger', choices=['Manual', 'Balance', 'Received', 'Sent', 'Block_height', 'Timestamp', 'Recurring', 'TriggerStatus', 'DeadMansSwitch', 'SignedMessage', 'HTTPGetRequest', 'HTTPPostRequest', 'HTTPDeleteRequest'])
 save_trigger_parser.add_argument('-sc', '--script', help='The script to run when the trigger activates')
 save_trigger_parser.add_argument('-a', '--address', help='The address to check the final balance, total received or total sent')
 save_trigger_parser.add_argument('-am', '--amount', help='The amount', type=int)

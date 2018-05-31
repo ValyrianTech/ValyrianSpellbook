@@ -25,7 +25,7 @@ from linker.linker import get_lal, get_lbl, get_lrl, get_lsl
 from randomaddress.randomaddress import random_address_from_sil, random_address_from_lbl, random_address_from_lrl, \
     random_address_from_lsl
 from trigger.triggerhelpers import get_triggers, get_trigger_config, save_trigger, delete_trigger, activate_trigger, \
-    check_triggers, verify_signed_message
+    check_triggers, verify_signed_message, http_get_request, http_post_request, http_delete_request
 from helpers.hivemindhelpers import get_hivemind_state_hash
 
 
@@ -110,6 +110,9 @@ class SpellbookRESTAPI(Bottle):
         self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.delete_trigger)
         self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/activate', method='GET', callback=self.activate_trigger)
         self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/message', method='POST', callback=self.verify_signed_message)
+        self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/get', method='GET', callback=self.http_get_request)
+        self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/post', method='POST', callback=self.http_post_request)
+        self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/delete', method='DELETE', callback=self.http_delete_request)
         self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/check', method='GET', callback=self.check_trigger)
         self.route('/spellbook/check_triggers', method='GET', callback=self.check_all_triggers)
 
@@ -384,6 +387,24 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     def verify_signed_message(trigger_id):
         return verify_signed_message(trigger_id, **request.json)
+
+    @staticmethod
+    @output_json
+    def http_get_request(trigger_id):
+        data = request.json if request.json is not None else {}
+        return http_get_request(trigger_id, **data)
+
+    @staticmethod
+    @output_json
+    def http_post_request(trigger_id):
+        data = request.json if request.json is not None else {}
+        return http_post_request(trigger_id, **data)
+
+    @staticmethod
+    @output_json
+    def http_delete_request(trigger_id):
+        data = request.json if request.json is not None else {}
+        return http_delete_request(trigger_id, **data)
 
     @staticmethod
     @output_json

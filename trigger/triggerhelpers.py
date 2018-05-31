@@ -17,6 +17,9 @@ from sign_message import verify_message
 from signedmessagetrigger import SignedMessageTrigger
 from timestamptrigger import TimestampTrigger
 from triggerstatustrigger import TriggerStatusTrigger
+from httpgetrequesttrigger import HTTPGetRequestTrigger
+from httppostrequesttrigger import HTTPPostRequestTrigger
+from httpdeleterequesttrigger import HTTPDeleteRequestTrigger
 from triggertype import TriggerType
 
 TRIGGERS_DIR = 'json/public/triggers'
@@ -93,6 +96,12 @@ def get_trigger(trigger_id, trigger_type=None):
         trigger = SignedMessageTrigger(trigger_id)
     elif trigger_config['trigger_type'] == TriggerType.MANUAL:
         trigger = ManualTrigger(trigger_id)
+    elif trigger_config['trigger_type'] == TriggerType.HTTPGETREQUEST:
+        trigger = HTTPGetRequestTrigger(trigger_id)
+    elif trigger_config['trigger_type'] == TriggerType.HTTPPOSTREQUEST:
+        trigger = HTTPPostRequestTrigger(trigger_id)
+    elif trigger_config['trigger_type'] == TriggerType.HTTPDELETEREQUEST:
+        trigger = HTTPDeleteRequestTrigger(trigger_id)
     else:
         raise NotImplementedError('Unknown trigger type: %s' % trigger_config['trigger_type'])
 
@@ -189,3 +198,50 @@ def verify_signed_message(trigger_id, **data):
     else:
         logging.getLogger('Spellbook').warning('Trigger %s received a bad signed message' % trigger_id)
 
+
+def http_get_request(trigger_id, **data):
+    triggers = get_triggers()
+    if trigger_id not in triggers:
+        return {'error': 'Unknown trigger id: %s' % trigger_id}
+
+    trigger = get_trigger(trigger_id)
+    if trigger.trigger_type != TriggerType.HTTPGETREQUEST:
+        return {'error': 'Trigger %s is not a HTTP GET request trigger but a %s trigger' % (trigger_id, trigger.trigger_type)}
+
+    if trigger.status == 'Active':
+        logging.getLogger('Spellbook').info('Trigger %s received a HTTP GET request' % trigger_id)
+        if len(data) > 0:
+            trigger.set_json_data(data=data)
+        return trigger.activate()
+
+
+def http_post_request(trigger_id, **data):
+    triggers = get_triggers()
+    if trigger_id not in triggers:
+        return {'error': 'Unknown trigger id: %s' % trigger_id}
+
+    trigger = get_trigger(trigger_id)
+    if trigger.trigger_type != TriggerType.HTTPPOSTREQUEST:
+        return {'error': 'Trigger %s is not a HTTP POST request trigger but a %s trigger' % (trigger_id, trigger.trigger_type)}
+
+    if trigger.status == 'Active':
+        logging.getLogger('Spellbook').info('Trigger %s received a HTTP POST request' % trigger_id)
+        if len(data) > 0:
+            trigger.set_json_data(data=data)
+        return trigger.activate()
+
+
+def http_delete_request(trigger_id, **data):
+    triggers = get_triggers()
+    if trigger_id not in triggers:
+        return {'error': 'Unknown trigger id: %s' % trigger_id}
+
+    trigger = get_trigger(trigger_id)
+    if trigger.trigger_type != TriggerType.HTTPDELETEREQUEST:
+        return {'error': 'Trigger %s is not a HTTP DELETE request trigger but a %s trigger' % (trigger_id, trigger.trigger_type)}
+
+    if trigger.status == 'Active':
+        logging.getLogger('Spellbook').info('Trigger %s received a HTTP DELETE request' % trigger_id)
+        if len(data) > 0:
+            trigger.set_json_data(data=data)
+        return trigger.activate()
