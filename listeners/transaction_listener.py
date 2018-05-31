@@ -5,7 +5,28 @@ import websocket
 import simplejson
 import argparse
 import sys
+import os
 import time
+import logging
+from logging.handlers import RotatingFileHandler
+from runcommandprocess import RunCommandProcess
+
+LOG = logging.getLogger('transaction_listener_log')
+
+stream_handler = logging.StreamHandler(sys.stdout)
+stream_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(message)s'))
+LOG.addHandler(stream_handler)
+
+# make the directory for logs if it doesn't exist
+logs_dir = os.path.join('logs')
+if not os.path.isdir(logs_dir):
+    os.makedirs(logs_dir)
+
+file_handler = RotatingFileHandler(os.path.join('logs', 'transaction_listener_log.txt'), maxBytes=10000000, backupCount=5)
+file_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(message)s'))
+LOG.addHandler(file_handler)
+
+LOG.setLevel(logging.DEBUG)
 
 WATCHLIST = {}
 EXIT_ON_EVENT = False
@@ -18,45 +39,49 @@ def on_message(ws, message):
     if transaction['type'] != 'new-transaction':
         return
 
-    print '\n\nNew transaction:', transaction['payload']['txid']
-    print 'From: '
+    LOG.info('New transaction: %s' % transaction['payload']['txid'])
+    LOG.info('\tFrom: ')
     for tx_input in transaction['payload']['inputs']:
         for input_address in tx_input['addresses']:
-            print input_address, tx_input['value_int']
+            LOG.info('\t\t%s -> %s' % (input_address, tx_input['value_int']))
             if input_address in WATCHLIST and 'SEND' in WATCHLIST[input_address]:
-                print 'Executing command: %s' % WATCHLIST[input_address]['SEND']
+                LOG.info('Executing command: %s' % WATCHLIST[input_address]['SEND'])
                 event_found = True
+                run_command_process = RunCommandProcess(command=WATCHLIST[input_address]['SEND'])
+                run_command_process.start()
 
-    print 'To: '
+    LOG.info('\tTo: ')
     for tx_output in transaction['payload']['outputs']:
         for output_address in tx_output['addresses']:
-            print output_address, tx_output['value_int']
+            LOG.info('\t\t%s -> %s' % (output_address, tx_output['value_int']))
             if output_address in WATCHLIST and 'RECEIVE' in WATCHLIST[output_address]:
-                print 'Executing command: %s' % WATCHLIST[output_address]['RECEIVE']
+                LOG.info('Executing command: %s' % WATCHLIST[output_address]['RECEIVE'])
                 event_found = True
+                run_command_process = RunCommandProcess(command=WATCHLIST[output_address]['RECEIVE'])
+                run_command_process.start()
 
     if EXIT_ON_EVENT is True and event_found is True:
-        print 'Event found, exiting now'
+        LOG.info('Event found, exiting now')
         ws.send('{"type":"new-transaction", "unsubscribe": true}')
         sys.exit()
 
     if EXIT_ON_TIMEOUT is not None and int(time.time()) >= EXIT_ON_TIMEOUT:
-        print 'Timeout occurred, exiting now'
+        LOG.info('Timeout occurred, exiting now')
         ws.send('{"type":"new-transaction", "unsubscribe": true}')
         sys.exit()
 
 
 def on_error(ws, error):
-    print error
+    LOG.error(error)
 
 
 def on_close(ws):
-    print "### websocket closed ###"
+    LOG.info("### websocket closed ###")
 
 
 def on_open(ws):
-    print "### websocket opened ###"
-    print "Subscribing to new transactions"
+    LOG.info("### websocket opened ###")
+    LOG.info("Subscribing to new transactions")
     ws.send('{"type":"new-transaction"}')
 
 
