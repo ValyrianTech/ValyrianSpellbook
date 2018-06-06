@@ -6,6 +6,7 @@ import os
 
 from actiontype import ActionType
 from commandaction import CommandAction
+from spawnprocessaction import SpawnProcessAction
 from helpers.jsonhelpers import load_from_json_file
 from revealsecretaction import RevealSecretAction
 from sendmailaction import SendMailAction
@@ -47,6 +48,7 @@ def get_action(action_id, action_type=None):
     Get the specified action, which is a subclass of Action
     The different action types are:
     - CommandAction
+    - SpawnProcessAction
     - SendTransactionAction
     - RevealSecretAction
     - SendMailAction
@@ -66,6 +68,8 @@ def get_action(action_id, action_type=None):
 
     if action_config['action_type'] == ActionType.COMMAND:
         action = CommandAction(action_id)
+    elif action_config['action_type'] == ActionType.SPAWNPROCESS:
+        action = SpawnProcessAction(action_id)
     elif action_config['action_type'] == ActionType.SENDTRANSACTION:
         action = SendTransactionAction(action_id)
     elif action_config['action_type'] == ActionType.REVEALSECRET:

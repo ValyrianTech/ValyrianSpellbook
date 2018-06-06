@@ -4,6 +4,7 @@
 
 class ActionType(object):
     COMMAND = 'Command'
+    SPAWNPROCESS = 'SpawnProcess'
     REVEALSECRET = 'RevealSecret'
     SENDMAIL = 'SendMail'
     WEBHOOK = 'Webhook'
