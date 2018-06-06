@@ -26,7 +26,7 @@ file_handler = RotatingFileHandler(os.path.join('logs', 'transaction_listener_lo
 file_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(message)s'))
 LOG.addHandler(file_handler)
 
-LOG.setLevel(logging.DEBUG)
+LOG.setLevel(logging.WARNING)
 
 WATCHLIST = {}
 EXIT_ON_EVENT = False
@@ -72,7 +72,7 @@ def on_message(ws, message):
 
 
 def on_error(ws, error):
-    LOG.error(error)
+    LOG.info('ERROR: %s' % error)  # use info level here instead of error level because for some reason an error is raised when the program exits
 
 
 def on_close(ws):
@@ -98,8 +98,12 @@ if __name__ == "__main__":
     parser.add_argument('-e', '--exit', help='Stop listening when a watched address sends or receives a transaction', action='store_true')
     parser.add_argument('-to', '--timeout', help='Stop listening after x seconds', type=int)
     parser.add_argument('-t', '--testnet', help='Use testnet instead of mainnet', action='store_true')
+    parser.add_argument('-v', '--verbose', help='Run the listener in verbose mode ', action='store_true')
 
     args = parser.parse_args()
+
+    if args.verbose is True:
+        LOG.setLevel(logging.INFO)
 
     EXIT_ON_EVENT = args.exit
 
