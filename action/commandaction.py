@@ -23,10 +23,8 @@ class CommandAction(Action):
         if self.run_command is None or self.run_command == '':
             return False
 
-        command_args = [str(arg) for arg in self.run_command.split()]
-
-        logging.getLogger('Spellbook').info('Running command: %s' % ' '.join(command_args))
-        command_process = Popen(command_args, stdout=PIPE, stderr=PIPE, shell=True)
+        logging.getLogger('Spellbook').info('Running command: %s' % self.run_command)
+        command_process = Popen(self.run_command, stdout=PIPE, stderr=PIPE, shell=True)
         output, error = command_process.communicate()
         stripped_output = output.strip()
         logging.getLogger('Spellbook').info('Command output: %s' % stripped_output)
