@@ -160,6 +160,30 @@ class BlocktrailComAPI(ExplorerAPI):
         else:
             return {'error': 'Received invalid data: %s' % data}
 
+    def get_transaction(self, txid):
+        url = '{api_url}/transaction/{txid}?api_key={api_key}'.format(api_url=self.url, txid=txid, api_key=self.key)
+        try:
+            logging.getLogger('Spellbook').info('GET %s' % url)
+            r = requests.get(url)
+            data = r.json()
+        except Exception as ex:
+            logging.getLogger('Spellbook').error('Unable to get transaction %s from Blocktrail.com: %s' % (txid, ex))
+            return {'error': 'Unable to get transaction %s from Blocktrail.com' % txid}
+
+        return data
+        # if 'inputs' in data:
+        #     tx_inputs = data['inputs']
+        #
+        #     input_addresses = []
+        #     for i in range(0, len(tx_inputs)):
+        #         input_addresses.append(tx_inputs[i]['address'])
+        #
+        #     if len(input_addresses) > 0:
+        #         prime_input_address = sorted(input_addresses)[0]
+        #         return {'prime_input_address': prime_input_address}
+        #
+        # return {'error': 'Received invalid data: %s' % data}
+
     def get_prime_input_address(self, txid):
         url = '{api_url}/transaction/{txid}?api_key={api_key}'.format(api_url=self.url, txid=txid, api_key=self.key)
         try:
