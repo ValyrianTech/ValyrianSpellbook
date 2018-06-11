@@ -147,6 +147,8 @@ def query(query_type, param=None):
                 data = explorer_api.get_block_by_hash(param[0])
             elif query_type == 'latest_block':
                 data = explorer_api.get_latest_block()
+            elif query_type == 'transaction':
+                data = explorer_api.get_transaction(param[0])
             elif query_type == 'prime_input_address':
                 data = explorer_api.get_prime_input_address(param[0])
             elif query_type == 'balance':
@@ -214,6 +216,15 @@ def latest_block():
     :return: A dict containing info about the latest block
     """
     return query('latest_block', None)
+
+def transaction(txid):
+    """
+    Get a transaction
+
+    :param txid: A transaction id
+    :return: A dict containing info about the transaction
+    """
+    return query('transaction', [txid])
 
 
 def prime_input_address(txid):
