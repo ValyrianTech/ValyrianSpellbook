@@ -131,8 +131,7 @@ class Trigger(object):
 
         if script is not None:
             script.cleanup()
-
-        return script.http_response
+            return script.http_response
 
     def get_script_variables(self):
         return self.json_encodable()
