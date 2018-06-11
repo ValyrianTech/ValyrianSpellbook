@@ -19,7 +19,6 @@ class BlocktrailComAPI(ExplorerAPI):
         self.url = 'https://api.blocktrail.com/v1/tBTC' if self.testnet is True else 'https://api.blocktrail.com/v1/BTC'
 
     def get_latest_block(self):
-        latest_block = {}
         url = '{api_url}/block/latest?api_key={api_key}'.format(api_url=self.url, api_key=self.key)
         try:
             logging.getLogger('Spellbook').info('GET %s' % url)
@@ -29,13 +28,8 @@ class BlocktrailComAPI(ExplorerAPI):
             logging.getLogger('Spellbook').error('Unable to get latest block from Blocktrail.com: %s' % ex)
             return {'error': 'Unable to get latest block from Blocktrail.com'}
 
-        if all(key in data for key in ('height', 'hash', 'block_time', 'merkleroot', 'byte_size')):
-            latest_block['height'] = data['height']
-            latest_block['hash'] = data['hash']
-            latest_block['time'] = calendar.timegm(datetime.strptime(data['block_time'], "%Y-%m-%dT%H:%M:%S+0000").utctimetuple())
-            latest_block['merkleroot'] = data['merkleroot']
-            latest_block['size'] = data['byte_size']
-            return {'block': latest_block}
+        if all(key in data for key in ('height', 'hash')):
+            return self.get_block_by_hash(data['hash'])
         else:
             return {'error': 'Received invalid data: %s' % data}
 
