@@ -64,7 +64,7 @@ def output_json(f):
     def decorated_function(*args, **kwargs):
         output = f(*args, **kwargs)
         if output is not None:
-            return simplejson.dumps(output, indent=4)
+            return simplejson.dumps(output, indent=4, sort_keys=True)
 
     return decorated_function
 
