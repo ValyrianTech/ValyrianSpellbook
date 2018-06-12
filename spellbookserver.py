@@ -190,6 +190,7 @@ class SpellbookRESTAPI(Bottle):
     @staticmethod
     @output_json
     def get_explorers():
+        response.content_type = 'application/json'
         explorers = get_explorers()
         if explorers is not None:
             return explorers
@@ -205,6 +206,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @authentication_required
     def get_explorer_config(explorer_id):
+        response.content_type = 'application/json'
         explorer_config = get_explorer_config(explorer_id)
         if explorer_config is not None:
             return explorer_config
@@ -220,48 +222,56 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_latest_block():
+        response.content_type = 'application/json'
         return latest_block()
 
     @staticmethod
     @output_json
     @use_explorer
     def get_block_by_height(height):
+        response.content_type = 'application/json'
         return block_by_height(height)
 
     @staticmethod
     @output_json
     @use_explorer
     def get_block_by_hash(block_hash):
+        response.content_type = 'application/json'
         return block_by_hash(block_hash)
 
     @staticmethod
     @output_json
     @use_explorer
     def get_prime_input_address(txid):
+        response.content_type = 'application/json'
         return prime_input_address(txid)
 
     @staticmethod
     @output_json
     @use_explorer
     def get_transactions(address):
+        response.content_type = 'application/json'
         return transactions(address)
 
     @staticmethod
     @output_json
     @use_explorer
     def get_balance(address):
+        response.content_type = 'application/json'
         return balance(address)
 
     @staticmethod
     @output_json
     @use_explorer
     def get_utxos(address):
+        response.content_type = 'application/json'
         return utxos(address, int(request.query.confirmations))
 
     @staticmethod
     @output_json
     @use_explorer
     def get_sil(address):
+        response.content_type = 'application/json'
         block_height = int(request.json['block_height'])
         return get_sil(address, block_height)
 
@@ -269,6 +279,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_profile(address):
+        response.content_type = 'application/json'
         block_height = int(request.json['block_height'])
         return get_profile(address, block_height)
 
@@ -276,6 +287,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_sul(address):
+        response.content_type = 'application/json'
         confirmations = int(request.json['confirmations'])
         return get_sul(address, confirmations)
 
@@ -283,6 +295,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_lal(address):
+        response.content_type = 'application/json'
         block_height = int(request.json['block_height'])
         xpub = request.json['xpub']
         return get_lal(address, xpub, block_height)
@@ -291,6 +304,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_lbl(address):
+        response.content_type = 'application/json'
         block_height = int(request.json['block_height'])
         xpub = request.json['xpub']
         return get_lbl(address, xpub, block_height)
@@ -299,6 +313,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_lrl(address):
+        response.content_type = 'application/json'
         block_height = int(request.json['block_height'])
         xpub = request.json['xpub']
         return get_lrl(address, xpub, block_height)
@@ -307,6 +322,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_lsl(address):
+        response.content_type = 'application/json'
         block_height = int(request.json['block_height'])
         xpub = request.json['xpub']
         return get_lsl(address, xpub, block_height)
@@ -315,6 +331,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_random_address_from_sil(address):
+        response.content_type = 'application/json'
         rng_block_height = int(request.json['rng_block_height'])
         sil_block_height = int(request.json['sil_block_height'])
         return random_address_from_sil(address=address, sil_block_height=sil_block_height, rng_block_height=rng_block_height)
@@ -323,6 +340,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_random_address_from_lbl(address):
+        response.content_type = 'application/json'
         rng_block_height = int(request.json['rng_block_height'])
         sil_block_height = int(request.json['sil_block_height'])
         xpub = request.json['xpub']
@@ -332,6 +350,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_random_address_from_lrl(address):
+        response.content_type = 'application/json'
         rng_block_height = int(request.json['rng_block_height'])
         sil_block_height = int(request.json['sil_block_height'])
         xpub = request.json['xpub']
@@ -341,6 +360,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_random_address_from_lsl(address):
+        response.content_type = 'application/json'
         rng_block_height = int(request.json['rng_block_height'])
         sil_block_height = int(request.json['sil_block_height'])
         xpub = request.json['xpub']
@@ -349,6 +369,7 @@ class SpellbookRESTAPI(Bottle):
     @staticmethod
     @output_json
     def get_triggers():
+        response.content_type = 'application/json'
         triggers = get_triggers()
         if triggers is not None:
             return triggers
@@ -359,6 +380,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @authentication_required
     def get_trigger(trigger_id):
+        response.content_type = 'application/json'
         trigger_config = get_trigger_config(trigger_id)
         if trigger_config is not None:
             return trigger_config
@@ -369,40 +391,47 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @authentication_required
     def save_trigger(trigger_id):
+        response.content_type = 'application/json'
         return save_trigger(trigger_id, **request.json)
 
     @staticmethod
     @output_json
     @authentication_required
     def delete_trigger(trigger_id):
+        response.content_type = 'application/json'
         return delete_trigger(trigger_id)
 
     @staticmethod
     @output_json
     @authentication_required
     def activate_trigger(trigger_id):
+        response.content_type = 'application/json'
         return activate_trigger(trigger_id)
 
     @staticmethod
     @output_json
     def verify_signed_message(trigger_id):
+        response.content_type = 'application/json'
         return verify_signed_message(trigger_id, **request.json)
 
     @staticmethod
     @output_json
     def http_get_request(trigger_id):
+        response.content_type = 'application/json'
         data = request.json if request.json is not None else {}
         return http_get_request(trigger_id, **data)
 
     @staticmethod
     @output_json
     def http_post_request(trigger_id):
+        response.content_type = 'application/json'
         data = request.json if request.json is not None else {}
         return http_post_request(trigger_id, **data)
 
     @staticmethod
     @output_json
     def http_delete_request(trigger_id):
+        response.content_type = 'application/json'
         data = request.json if request.json is not None else {}
         return http_delete_request(trigger_id, **data)
 
@@ -411,6 +440,7 @@ class SpellbookRESTAPI(Bottle):
     @use_explorer
     @authentication_required
     def check_trigger(trigger_id):
+        response.content_type = 'application/json'
         return check_triggers(trigger_id)
 
     @staticmethod
@@ -418,11 +448,13 @@ class SpellbookRESTAPI(Bottle):
     @use_explorer
     @authentication_required
     def check_all_triggers():
+        response.content_type = 'application/json'
         return check_triggers()
 
     @staticmethod
     @output_json
     def get_actions():
+        response.content_type = 'application/json'
         actions = get_actions()
         if actions is not None:
             return actions
@@ -433,6 +465,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @authentication_required
     def get_action(action_id):
+        response.content_type = 'application/json'
         action_config = get_action_config(action_id)
         if action_config is not None:
             return action_config
@@ -443,28 +476,33 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @authentication_required
     def save_action(action_id):
+        response.content_type = 'application/json'
         return save_action(action_id, **request.json)
 
     @staticmethod
     @output_json
     @authentication_required
     def delete_action(action_id):
+        response.content_type = 'application/json'
         return delete_action(action_id)
 
     @staticmethod
     @output_json
     @authentication_required
     def run_action(action_id):
+        response.content_type = 'application/json'
         return run_action(action_id)
 
     @staticmethod
     @output_json
     def get_reveal(action_id):
+        response.content_type = 'application/json'
         return get_reveal(action_id)
 
     @staticmethod
     @output_json
     def get_hivemind(hivemind_id):
+        response.content_type = 'application/json'
         return get_hivemind_state_hash(hivemind_id)
 
 
