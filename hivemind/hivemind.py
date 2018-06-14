@@ -16,7 +16,7 @@ class HivemindQuestion(object):
         :param question_hash: The ipfs hash of the hivemind question
         """
         self.hivemind_id = None
-        self.question = ''
+        self.questions = []
         self.description = ''
         self.tags = None
         self.answer_type = 'String'
@@ -26,9 +26,9 @@ class HivemindQuestion(object):
         if question_hash is not None:
             self.load(hivemind_hash=question_hash)
 
-    def set_question(self, question):
-        if isinstance(question, (str, unicode)):
-            self.question = question
+    def add_question(self, question):
+        if isinstance(question, (str, unicode)) and question not in self.questions:
+            self.questions.append(question)
 
     def set_description(self, description):
         if isinstance(description, (str, unicode)):
@@ -81,7 +81,7 @@ class HivemindQuestion(object):
             raise Exception('constraints contain an invalid key: %s' % constraints)
 
     def id(self):
-        taghash = TagHash(tags=self.question)
+        taghash = TagHash(tags=self.questions[0])
         taghash.add_tag(tag=self.answer_type)
         if self.tags is not None:
             taghash.add_tag(tag=self.tags)
@@ -96,7 +96,7 @@ class HivemindQuestion(object):
         :return: A string containing info about the hivemind question
         """
         info = 'Hivemind ID: %s\n' % self.hivemind_id
-        info += 'Hivemind question: %s\n' % self.question
+        info += 'Hivemind question: %s\n' % self.questions[0]
         info += 'Hivemind description: %s\n' % self.description
         info += 'Hivemind tags: %s\n' % self.tags
         info += 'Answer type: %s\n' % self.answer_type
@@ -104,11 +104,14 @@ class HivemindQuestion(object):
         for constraint_type, constraint_value in self.constraints.items():
             info += 'Constraint %s: %s\n' % (constraint_type, constraint_value)
 
+        for i, additional_question in enumerate(self.questions[1:]):
+            info += 'Additional question %s: %s\n' % (i + 1, additional_question)
+
         return info
 
     def save(self):
         hivemind_data = {'hivemind_id': self.id(),
-                         'question': self.question,
+                         'questions': self.questions,
                          'description': self.description,
                          'tags': self.tags,
                          'answer_type': self.answer_type,
@@ -120,7 +123,7 @@ class HivemindQuestion(object):
     def load(self, hivemind_hash):
         hivemind_data = get_json(hivemind_hash)
 
-        self.question = hivemind_data['question']
+        self.questions = hivemind_data['questions']
         self.description = hivemind_data['description']
         self.tags = hivemind_data['tags']
         self.answer_type = hivemind_data['answer_type']
@@ -445,10 +448,10 @@ class HivemindState(object):
         self.hivemind_question_hash = None
         self.hivemind_question = None
         self.options = []
-        self.opinions = {}
+        self.opinions = [{}]  # opinions are recorded for each question separately
         self.weights = {}
-        self.results = {}
-        self.contributions = {}
+        self.results = [{}]  # results are recorded for each question separately
+        self.contributions = [{}]  # contributions are recorded for each question separately
         self.previous_state_hash = None
 
         if state_hash is not None:
@@ -457,6 +460,9 @@ class HivemindState(object):
     def set_hivemind_question(self, question_hash):
         self.hivemind_question_hash = question_hash
         self.hivemind_question = HivemindQuestion(question_hash=self.hivemind_question_hash)
+        self.opinions = [{} for _ in range(len(self.hivemind_question.questions))]
+        self.results = [{} for _ in range(len(self.hivemind_question.questions))]
+        self.contributions = [{} for _ in range(len(self.hivemind_question.questions))]
 
     def load(self, hivemind_state_hash):
         hivemind_state_data = get_json(hivemind_state_hash)
@@ -484,12 +490,12 @@ class HivemindState(object):
         self.previous_state_hash = state_hash
         return state_hash
 
-    def clear_results(self):
+    def clear_results(self, question_index=0):
         """
         Clear results of the hivemind
         """
-        for opinionator in self.results:
-            self.results[opinionator] = {'win': 0, 'loss': 0, 'unknown': 0, 'score': 0}
+        for opinionator in self.results[question_index]:
+            self.results[question_index][opinionator] = {'win': 0, 'loss': 0, 'unknown': 0, 'score': 0}
 
     def add_option(self, option_hash):
         if not isinstance(self.hivemind_question, HivemindQuestion):
@@ -499,24 +505,26 @@ class HivemindState(object):
         if isinstance(option, HivemindOption) and option.is_valid():
             if option_hash not in self.options:
                 self.options.append(option_hash)
-                self.results[option_hash] = {'win': 0, 'loss': 0, 'unknown': 0, 'score': 0}
+                for i in range(len(self.hivemind_question.questions)):
+                    self.results[i][option_hash] = {'win': 0, 'loss': 0, 'unknown': 0, 'score': 0}
 
-    def add_opinion(self, opinion_hash, signature, weight=1.0):
+    def add_opinion(self, opinion_hash, signature, weight=1.0, question_index=0):
         opinion = HivemindOpinion(opinion_hash=opinion_hash)
         if isinstance(opinion, HivemindOpinion) and opinion.is_valid():
-            self.opinions[opinion.opinionator] = [opinion_hash, signature, int(time.time())]
+            self.opinions[question_index][opinion.opinionator] = [opinion_hash, signature, int(time.time())]
             self.set_weight(opinionator=opinion.opinionator, weight=weight)
 
-    def get_opinion(self, opinionator):
+    def get_opinion(self, opinionator, question_index=0):
         """
         Get the Opinion object of a certain opinionator
 
         :param opinionator: The opinionator
+        :param question_index: The index of the question in the HivemindQuestion (default=0)
         :return: An Opinion object
         """
         opinion = None
-        if opinionator in self.opinions:
-            opinion = HivemindOpinion(opinion_hash=self.opinions[opinionator])
+        if opinionator in self.opinions[question_index]:
+            opinion = HivemindOpinion(opinion_hash=self.opinions[question_index][opinionator])
 
         return opinion
 
@@ -544,7 +552,7 @@ class HivemindState(object):
         """
         ret = "================================================================================="
         ret += '\nHivemind id: ' + self.hivemind_question.hivemind_id
-        ret += '\nHivemind question: ' + self.hivemind_question.question
+        ret += '\nHivemind main question: ' + self.hivemind_question.questions[0]
         ret += '\nHivemind description: ' + self.hivemind_question.description
         if self.hivemind_question.tags is not None:
             ret += '\nHivemind tags: ' + self.hivemind_question.tags
@@ -553,8 +561,11 @@ class HivemindState(object):
             ret += '\nOption constraints: ' + str(self.hivemind_question.constraints)
         ret += '\n' + "================================================================================="
         ret += '\n' + self.options_info()
-        ret += '\n' + self.opinions_info()
-        ret += '\n' + self.results_info()
+
+        for i, question in enumerate(self.hivemind_question.questions):
+            ret += '\nHivemind question %s: %s' % (i, self.hivemind_question.questions[i])
+            ret += '\n' + self.opinions_info(question_index=i)
+            ret += '\n' + self.results_info(question_index=i)
 
         return ret
 
@@ -574,14 +585,14 @@ class HivemindState(object):
 
         return ret
 
-    def opinions_info(self):
+    def opinions_info(self, question_index=0):
         """
         Print out a list of the Opinions of the hivemind
         """
         ret = "Opinions"
         ret += "\n========"
         # opinion_data is a list containing [opinion_hash, signature of 'IPFS=opinion_hash', timestamp]
-        for opinionator, opinion_data in self.opinions.items():
+        for opinionator, opinion_data in self.opinions[question_index].items():
             ret += '\nTimestamp: %s, Signature: %s' % (opinion_data[2], opinion_data[1])
             opinion = HivemindOpinion(opinion_hash=opinion_data[0])
             ret += '\n' + opinion.info()
@@ -589,55 +600,54 @@ class HivemindState(object):
 
         return ret
 
-    def calculate_results(self):
+    def calculate_results(self, question_index=0):
         """
         Calculate the results of the hivemind
         """
-        logging.getLogger('Spellbook').info('Calculating results...')
-        self.clear_results()
+        logging.getLogger('Spellbook').info('Calculating results for question %s...' % question_index)
+        self.clear_results(question_index=question_index)
         for a, b in combinations(self.options, 2):
-            for opinionator in self.opinions:
-                winner = compare(a, b, self.opinions[opinionator][0])
+            for opinionator in self.opinions[question_index]:
+                winner = compare(a, b, self.opinions[question_index][opinionator][0])
                 weight = self.weights[opinionator] if opinionator in self.weights else 0
                 if winner == a:
-                    self.results[a]['win'] += weight
-                    self.results[b]['loss'] += weight
+                    self.results[question_index][a]['win'] += weight
+                    self.results[question_index][b]['loss'] += weight
                 elif winner == b:
-                    self.results[b]['win'] += weight
-                    self.results[a]['loss'] += weight
+                    self.results[question_index][b]['win'] += weight
+                    self.results[question_index][a]['loss'] += weight
                 elif winner is None:
-                    self.results[a]['unknown'] += weight
-                    self.results[b]['unknown'] += weight
+                    self.results[question_index][a]['unknown'] += weight
+                    self.results[question_index][b]['unknown'] += weight
 
-        self.calculate_scores()
-        self.calculate_contributions()
-        results_info = self.results_info()
+        self.calculate_scores(question_index=question_index)
+        self.calculate_contributions(question_index=question_index)
+        results_info = self.results_info(question_index=question_index)
         for line in results_info.split('\n'):
             logging.getLogger('Spellbook').info(line)
 
-    def calculate_scores(self):
+    def calculate_scores(self, question_index=0):
         """
         Calculate the scores of all Options
         """
-        for option_id in self.results:
-            if self.results[option_id]['win'] + self.results[option_id]['loss'] + self.results[option_id]['unknown'] > 0:
-                self.results[option_id]['score'] = self.results[option_id]['win'] / float(
-                    self.results[option_id]['win'] + self.results[option_id]['loss'] + self.results[option_id][
-                        'unknown'])
+        for option_id in self.results[question_index]:
+            if self.results[question_index][option_id]['win'] + self.results[question_index][option_id]['loss'] + self.results[question_index][option_id]['unknown'] > 0:
+                self.results[question_index][option_id]['score'] = self.results[question_index][option_id]['win'] / float(
+                    self.results[question_index][option_id]['win'] + self.results[question_index][option_id]['loss'] + self.results[question_index][option_id]['unknown'])
 
-    def get_score(self, option_hash):
-        return self.results[option_hash]['score']
+    def get_score(self, option_hash, question_index=0):
+        return self.results[question_index][option_hash]['score']
 
-    def get_options(self):
+    def get_options(self, question_index=0):
         """
         Get the list of Options as sorted by the hivemind
 
         :return: A list of Option objects sorted by highest score
         """
-        return [HivemindOption(option_hash=option[0]) for option in sorted(self.results.items(), key=lambda x: x[1]['score'], reverse=True)]
+        return [HivemindOption(option_hash=option[0]) for option in sorted(self.results[question_index].items(), key=lambda x: x[1]['score'], reverse=True)]
 
-    def consensus(self):
-        sorted_options = self.get_options()
+    def consensus(self, question_index=0):
+        sorted_options = self.get_options(question_index=question_index)
         if len(sorted_options) == 0:
             return None
         elif len(sorted_options) == 1:
@@ -648,55 +658,56 @@ class HivemindState(object):
         else:
             return None
 
-    def ranked_consensus(self):
-        return [option.value for option in self.get_options()]
+    def ranked_consensus(self, question_index=0):
+        return [option.value for option in self.get_options(question_index=question_index)]
 
-    def get_consensus(self):
+    def get_consensus(self, question_index=0):
         if self.hivemind_question.consensus_type == 'Single':
-            return self.consensus()
+            return self.consensus(question_index=question_index)
         elif self.hivemind_question.consensus_type == 'Ranked':
-            return self.ranked_consensus()
+            return self.ranked_consensus(question_index=question_index)
 
-    def results_info(self):
+    def results_info(self, question_index=0):
         """
         Print out the results of the hivemind
         """
-        ret = 'Results:\n========'
+        ret = self.hivemind_question.questions[question_index]
+        ret += '\nResults:\n========'
         i = 0
-        for option_hash, option_result in sorted(self.results.items(), key=lambda x: x[1]['score'], reverse=True):
+        for option_hash, option_result in sorted(self.results[question_index].items(), key=lambda x: x[1]['score'], reverse=True):
             i += 1
             option = HivemindOption(option_hash=option_hash)
             ret += '\n%s: (%g%%) : %s' % (i, round(option_result['score']*100, 2), option.get())
 
         ret += '\n================'
-        ret += '\nCurrent consensus: %s' % self.get_consensus()
+        ret += '\nCurrent consensus: %s' % self.get_consensus(question_index=question_index)
         ret += '\n================'
 
         ret += '\nContributions:'
         ret += '\n================'
-        for opinionator, contribution in self.contributions.items():
+        for opinionator, contribution in self.contributions[question_index].items():
             ret += '\n%s: %s' % (opinionator, contribution)
         ret += '\n================'
 
         return ret
 
-    def calculate_contributions(self):
+    def calculate_contributions(self, question_index):
         # Clear contributions
-        self.contributions = {}
+        self.contributions[question_index] = {}
 
         deviances = {}
         total_deviance = 0
         multipliers = {}
 
         # sort the option hashes by highest score
-        option_hashes_by_score = [option[0] for option in sorted(self.results.items(), key=lambda x: x[1]['score'], reverse=True)]
+        option_hashes_by_score = [option[0] for option in sorted(self.results[question_index].items(), key=lambda x: x[1]['score'], reverse=True)]
 
         # sort the opinionators by the timestamp of their opinion
-        opinionators_by_timestamp = [opinionator for opinionator, opinion_data in sorted(self.opinions.items(), key=lambda x: x[1][2])]
+        opinionators_by_timestamp = [opinionator for opinionator, opinion_data in sorted(self.opinions[question_index].items(), key=lambda x: x[1][2])]
 
         for i, opinionator in enumerate(opinionators_by_timestamp):
             deviance = 0
-            opinion = HivemindOpinion(opinion_hash=self.opinions[opinionator][0])
+            opinion = HivemindOpinion(opinion_hash=self.opinions[question_index][opinionator][0])
 
             # Calculate the 'early bird' multiplier (whoever gives their opinion first gets the highest multiplier, value is between 0 and 1), if opinion is an empty list, then multiplier is 0
             multipliers[opinionator] = 1 - (i/float(len(opinionators_by_timestamp))) if len(opinion.ranked_choice) > 0 else 0
@@ -712,9 +723,9 @@ class HivemindState(object):
             deviances[opinionator] = deviance
 
         if total_deviance != 0:  # to avoid divide by zero
-            self.contributions = {opinionator: (1-(deviances[opinionator]/float(total_deviance)))*multipliers[opinionator] for opinionator in deviances}
+            self.contributions[question_index] = {opinionator: (1-(deviances[opinionator]/float(total_deviance)))*multipliers[opinionator] for opinionator in deviances}
         else:  # everyone has perfect opinion, but contributions should still be multiplied by the 'early bird' multiplier
-            self.contributions = {opinionator: 1*multipliers[opinionator] for opinionator in deviances}
+            self.contributions[question_index] = {opinionator: 1*multipliers[opinionator] for opinionator in deviances}
 
 
 def compare(a, b, opinion_hash):

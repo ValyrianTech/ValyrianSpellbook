@@ -41,8 +41,8 @@ print 'option_type:', option_type
 hivemind = HivemindQuestion()
 assert isinstance(hivemind, HivemindQuestion)
 
-hivemind.set_question(question=question)
-assert hivemind.question == question
+hivemind.add_question(question=question)
+assert hivemind.questions[0] == question
 
 hivemind.set_description(description=description)
 assert hivemind.description == description
@@ -107,15 +107,15 @@ for i in range(n_opinions):
     print ''
 
 print 'All opinions:'
-print hivemind_state.opinions
-assert len(hivemind_state.opinions) == n_opinions
+print hivemind_state.opinions[0]
+assert len(hivemind_state.opinions[0]) == n_opinions
 
 print ''
 
 hivemind_state_hash = hivemind_state.save()
 print 'Hivemind state hash:', hivemind_state_hash
 
-hivemind_state.calculate_results()
+hivemind_state.calculate_results(question_index=0)
 print ''
 print hivemind_state.info()
 
@@ -123,7 +123,7 @@ scores = {}
 
 for option_value in option_values:
     option_hash = option_hashes[option_value]
-    scores[option_value] = hivemind_state.get_score(option_hash=option_hash)
+    scores[option_value] = hivemind_state.get_score(option_hash=option_hash, question_index=0)
 
 
 # Check that adding an opinion with more ranked options is better than fewer ranked options
@@ -144,17 +144,17 @@ for n_options in range(len(option_values)):
     print '%s = %s' % (opinionator, opinion.ranked_choice)
     print 'saved as %s' % opinion.opinion_hash
     signature = sign_message(private_key=get_private_key_from_wallet(account=3, index=0)[opinionator], message='IPFS=%s' % opinion.opinion_hash, address=opinionator)
-    hivemind_state.add_opinion(opinion_hash=opinion.opinion_hash, signature=signature, weight=1.0)
+    hivemind_state.add_opinion(opinion_hash=opinion.opinion_hash, signature=signature, weight=1.0, question_index=0)
     print ''
 
     hivemind_state_hash = hivemind_state.save()
     print 'Hivemind state hash:', hivemind_state_hash
 
-    hivemind_state.calculate_results()
+    hivemind_state.calculate_results(question_index=0)
     print hivemind_state.info()
 
     for option_value in my_ranked_choice:
-        new_score = hivemind_state.get_score(option_hashes[option_value])
+        new_score = hivemind_state.get_score(option_hash=option_hashes[option_value], question_index=0)
 
         print 'Checking that option %s has a higher or equal score than previously (old score: %s)' % (option_value, scores[option_value])
         if new_score > scores[option_value]:
@@ -167,7 +167,7 @@ for n_options in range(len(option_values)):
         scores[option_value] = new_score
 
     for non_chosen_option in [option_value for option_value in option_values if option_value not in my_ranked_choice]:
-        new_score = hivemind_state.get_score(option_hashes[non_chosen_option])
+        new_score = hivemind_state.get_score(option_hash=option_hashes[non_chosen_option], question_index=0)
         print 'Checking that option %s has a lesser or equal score than previously (old score: %s)' % (non_chosen_option, scores[non_chosen_option])
         if new_score < scores[non_chosen_option]:
             print 'Score has gone DOWN: %s' % new_score
