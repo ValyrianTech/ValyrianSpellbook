@@ -14,7 +14,7 @@ logger.addHandler(stream_handler)
 from hivemind.hivemind import HivemindQuestion, HivemindOption, HivemindState, HivemindOpinion
 
 hivemind_question = HivemindQuestion()
-hivemind_question.set_question(question='What is the Answer to the Ultimate Question of Life, the Universe, and Everything?')
+hivemind_question.add_question(question='What is the Answer to the Ultimate Question of Life, the Universe, and Everything?')
 hivemind_question.set_description(description='What is the meaning of life?')
 hivemind_question.set_tags(tags="Don't panic!")
 hivemind_question.answer_type = 'String'
