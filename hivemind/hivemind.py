@@ -20,6 +20,7 @@ class HivemindQuestion(object):
         self.description = ''
         self.tags = None
         self.answer_type = 'String'
+        self.consensus_type = 'Single'  # Single or Ranked: Is the expected result of this question a single answer or a ranked list?
         self.constraints = None
 
         if question_hash is not None:
@@ -42,6 +43,12 @@ class HivemindQuestion(object):
             self.answer_type = answer_type
         else:
             raise Exception('Invalid answer_type: %s (must be one of the following: "String", "Bool", "Integer", "Float", "Hivemind", "Image", "Video", "Complex", "Address")' % answer_type)
+
+    def set_consensus_type(self, consensus_type):
+        if consensus_type in ['Single', 'Ranked']:
+            self.consensus_type = consensus_type
+        else:
+            raise Exception('Consensus_type must be either Single or Ranked, got %s' % consensus_type)
 
     def set_constraints(self, constraints):
         if not isinstance(constraints, dict):
@@ -105,6 +112,7 @@ class HivemindQuestion(object):
                          'description': self.description,
                          'tags': self.tags,
                          'answer_type': self.answer_type,
+                         'consensus_type': self.consensus_type,
                          'constraints': self.constraints}
 
         return add_json(hivemind_data)
@@ -116,6 +124,7 @@ class HivemindQuestion(object):
         self.description = hivemind_data['description']
         self.tags = hivemind_data['tags']
         self.answer_type = hivemind_data['answer_type']
+        self.consensus_type = hivemind_data['consensus_type']
         self.constraints = hivemind_data['constraints']
         self.hivemind_id = self.id()
 
@@ -642,6 +651,12 @@ class HivemindState(object):
     def ranked_consensus(self):
         return [option.value for option in self.get_options()]
 
+    def get_consensus(self):
+        if self.hivemind_question.consensus_type == 'Single':
+            return self.consensus()
+        elif self.hivemind_question.consensus_type == 'Ranked':
+            return self.ranked_consensus()
+
     def results_info(self):
         """
         Print out the results of the hivemind
@@ -654,7 +669,7 @@ class HivemindState(object):
             ret += '\n%s: (%g%%) : %s' % (i, round(option_result['score']*100, 2), option.get())
 
         ret += '\n================'
-        ret += '\nCurrent consensus: %s' % self.consensus()
+        ret += '\nCurrent consensus: %s' % self.get_consensus()
         ret += '\n================'
 
         ret += '\nContributions:'

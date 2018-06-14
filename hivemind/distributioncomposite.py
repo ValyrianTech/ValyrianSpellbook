@@ -23,10 +23,10 @@ class DistributionComposite(CompositeHivemind):
         budget_slope_state = HivemindState(state_hash=budget_slope_state_hash)
 
         # todo check if there is a consensus on each value
-        priority = priority_state.ranked_consensus()
-        number_of_recipients = number_of_recipients_state.consensus()
-        budget = budget_state.ranked_consensus()
-        budget_slope = budget_slope_state.consensus()
+        priority = priority_state.get_consensus()
+        number_of_recipients = number_of_recipients_state.get_consensus()
+        budget = budget_state.get_consensus()
+        budget_slope = budget_slope_state.get_consensus()
 
         logging.getLogger('Spellbook').info('Distribution composite hivemind %s:' % self.composite_id)
         logging.getLogger('Spellbook').info('Recipients ordered by priority: %s' % priority)
@@ -38,11 +38,13 @@ class DistributionComposite(CompositeHivemind):
 
         distribution = {}
         units = 1
-        for recipient in reversed(budget):
-            if recipient in recipients:
-                logging.getLogger('Spellbook').info('adding recipient %s with %s units' %(recipient, units))
-                distribution[recipient] = units
-                units += budget_slope
+
+        if budget is not None and budget_slope is not None:
+            for recipient in reversed(budget):
+                if recipient in recipients:
+                    logging.getLogger('Spellbook').info('adding recipient %s with %s units' %(recipient, units))
+                    distribution[recipient] = units
+                    units += budget_slope
 
         logging.getLogger('Spellbook').info(distribution)
 
