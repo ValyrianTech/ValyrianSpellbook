@@ -335,6 +335,7 @@ class HivemindOpinion(object):
         self.hivemind_state = None
 
         self.ranked_choice = []
+        self.auto_complete = None
 
         if opinion_hash is not None:
             self.load(opinion_hash=opinion_hash)
@@ -361,7 +362,33 @@ class HivemindOpinion(object):
 
         :return: The list of sorted option ids
         """
-        return self.ranked_choice
+        if self.hivemind_state.hivemind_question.answer_type not in ['Integer', 'Float']:
+            return self.ranked_choice
+        elif self.auto_complete is None or len(self.ranked_choice) > 1:  # if more than one ranked choice is given, then auto_complete is overruled
+            return self.ranked_choice
+        elif self.auto_complete in ['MAX', 'MIN', 'CLOSEST', 'CLOSEST_HIGH', 'CLOSEST_LOW']:
+            my_opinion_value = HivemindOption(option_hash=self.ranked_choice[0]).get()
+            sorted_option_hashes = sorted(self.hivemind_state.options, key=lambda x: HivemindOption(option_hash=x).get())
+
+            if self.auto_complete == 'MAX':
+                completed_ranking = [option_hash for option_hash in sorted_option_hashes if HivemindOption(option_hash=option_hash).get() <= my_opinion_value]
+
+            elif self.auto_complete == 'MIN':
+                completed_ranking = [option_hash for option_hash in sorted_option_hashes if HivemindOption(option_hash=option_hash).get() >= my_opinion_value]
+
+            elif self.auto_complete == 'CLOSEST':
+                completed_ranking = sorted(self.hivemind_state.options, key=lambda x: abs(HivemindOption(option_hash=x).get() - my_opinion_value))
+
+            elif self.auto_complete == 'CLOSEST_HIGH':
+                completed_ranking = sorted(self.hivemind_state.options, key=lambda x: (abs(HivemindOption(option_hash=x).get() - my_opinion_value), -HivemindOption(option_hash=x).get()))
+
+            elif self.auto_complete == 'CLOSEST_LOW':
+                completed_ranking = sorted(self.hivemind_state.options, key=lambda x: (abs(HivemindOption(option_hash=x).get() - my_opinion_value), HivemindOption(option_hash=x).get()))
+
+            else:
+                raise Exception('Unknown auto_complete type: %s' % self.auto_complete)
+
+            return completed_ranking
 
     def set_hivemind_state(self, hivemind_state_hash):
         self.hivemind_state_hash = hivemind_state_hash
@@ -430,7 +457,8 @@ class HivemindOpinion(object):
     def save(self):
         opinion_data = {'hivemind_state_hash': self.hivemind_state_hash,
                         'opinionator': self.opinionator,
-                        'ranked_choice': self.ranked_choice}
+                        'ranked_choice': self.ranked_choice,
+                        'auto_complete': self.auto_complete}
 
         self.opinion_hash = add_json(opinion_data)
         return self.opinion_hash
@@ -441,6 +469,7 @@ class HivemindOpinion(object):
         self.set_hivemind_state(hivemind_state_hash=opinion_data['hivemind_state_hash'])
         self.opinionator = opinion_data['opinionator']
         self.ranked_choice = opinion_data['ranked_choice']
+        self.auto_complete = opinion_data['auto_complete']
 
 
 class HivemindState(object):
