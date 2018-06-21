@@ -45,9 +45,12 @@ def on_message(ws, message):
         for input_address in tx_input['addresses']:
             LOG.info('\t\t%s -> %s' % (input_address, tx_input['value_int']))
             if input_address in WATCHLIST and 'SEND' in WATCHLIST[input_address]:
-                LOG.info('Executing command: %s' % WATCHLIST[input_address]['SEND'])
+
                 event_found = True
-                run_command_process = RunCommandProcess(command=WATCHLIST[input_address]['SEND'])
+                command = WATCHLIST[input_address]['SEND']
+                command = command.replace('#txid#', transaction['payload']['txid'])
+                LOG.info('Executing command: %s' % command)
+                run_command_process = RunCommandProcess(command=command)
                 run_command_process.start()
 
     LOG.info('\tTo: ')
@@ -55,9 +58,12 @@ def on_message(ws, message):
         for output_address in tx_output['addresses']:
             LOG.info('\t\t%s -> %s' % (output_address, tx_output['value_int']))
             if output_address in WATCHLIST and 'RECEIVE' in WATCHLIST[output_address]:
-                LOG.info('Executing command: %s' % WATCHLIST[output_address]['RECEIVE'])
+
                 event_found = True
-                run_command_process = RunCommandProcess(command=WATCHLIST[output_address]['RECEIVE'])
+                command = WATCHLIST[output_address]['RECEIVE']
+                command = command.replace('#txid#', transaction['payload']['txid'])
+                LOG.info('Executing command: %s' % command)
+                run_command_process = RunCommandProcess(command=command)
                 run_command_process.start()
 
     if EXIT_ON_EVENT is True and event_found is True:
@@ -102,6 +108,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    print args.command
+
     if args.verbose is True:
         LOG.setLevel(logging.INFO)
 
@@ -113,10 +121,10 @@ if __name__ == "__main__":
     if args.address is not None:
         WATCHLIST = {args.address: {}}
         if args.send is True:
-            WATCHLIST[args.address]['SEND'] = args.command
+            WATCHLIST[args.address]['SEND'] = ''.join(args.command)
 
         if args.receive is True:
-            WATCHLIST[args.address]['RECEIVE'] = args.command
+            WATCHLIST[args.address]['RECEIVE'] = ''.join(args.command)
     else:
         # Load the json file
         try:
@@ -132,6 +140,10 @@ if __name__ == "__main__":
         url = "wss://testnet-ws.smartbit.com.au/v1/blockchain"
     else:
         url = "wss://ws.smartbit.com.au/v1/blockchain"
+
+    LOG.info('Starting transaction listener')
+    LOG.info('Watchlist:')
+    LOG.info(WATCHLIST)
 
     # websocket.enableTrace(True)
     websocket = websocket.WebSocketApp(url=url,
