@@ -12,7 +12,7 @@ from logging.handlers import RotatingFileHandler
 
 from bottle import Bottle, request, response
 
-from helpers.loghelpers import LOG
+from helpers.loghelpers import LOG, REQUESTS_LOG
 from action.actionhelpers import get_actions, get_action_config, save_action, delete_action, run_action, get_reveal
 from authentication import initialize_api_keys_file
 from data.data import get_explorers, get_explorer_config, save_explorer, delete_explorer
@@ -38,32 +38,21 @@ class SpellbookRESTAPI(Bottle):
         self.host = get_host()
         self.port = get_port()
 
-        # make the directory for logs if it doesn't exist
-        logs_dir = os.path.join('logs')
-        if not os.path.isdir(logs_dir):
-            os.makedirs(logs_dir)
-
-        # Initialize the log
-        self.log = self.initialize_log(logs_dir)
-
-        # Initialize a separate log for the http requests to the REST API
-        self.requests_log = self.initialize_requests_log(logs_dir)
-
         # Log the requests to the REST API in a separate file by installing a custom LoggingPlugin
         self.install(self.log_to_logger)
 
         # Make sure that an api_keys.json file is present, the first time the server is started
         # a new random api key and secret pair will be generated
         if not os.path.isfile('json/private/api_keys.json'):
-            self.log.info('Generating new API keys')
+            LOG.info('Generating new API keys')
             initialize_api_keys_file()
 
-        self.log.info('Starting Bitcoin Spellbook')
+        LOG.info('Starting Bitcoin Spellbook')
 
         try:
             get_hot_wallet()
         except Exception as ex:
-            self.log.error('Unable to decrypt hot wallet: %s' % ex)
+            LOG.error('Unable to decrypt hot wallet: %s' % ex)
             sys.exit(1)
 
         # Initialize the routes for the REST API
@@ -133,22 +122,22 @@ class SpellbookRESTAPI(Bottle):
         # start the webserver for the REST API
         self.run(host=self.host, port=self.port)
 
-    @staticmethod
-    def initialize_log(logs_dir):
-        # Create a log file for the Core daemon
-        logger = LOG
-
-        stream_handler = logging.StreamHandler(sys.stdout)
-        stream_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(message)s'))
-        logger.addHandler(stream_handler)
-
-        file_handler = RotatingFileHandler(os.path.join(logs_dir, 'spellbook.txt'), maxBytes=10000000, backupCount=5)
-        file_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(message)s'))
-        logger.addHandler(file_handler)
-
-        logger.setLevel(logging.DEBUG)
-
-        return logger
+    # @staticmethod
+    # def initialize_log(logs_dir):
+    #     # Create a log file for the Core daemon
+    #     logger = LOG
+    #
+    #     stream_handler = logging.StreamHandler(sys.stdout)
+    #     stream_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(message)s'))
+    #     logger.addHandler(stream_handler)
+    #
+    #     file_handler = RotatingFileHandler(os.path.join(logs_dir, 'spellbook.txt'), maxBytes=10000000, backupCount=5)
+    #     file_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(message)s'))
+    #     logger.addHandler(file_handler)
+    #
+    #     logger.setLevel(logging.DEBUG)
+    #
+    #     return logger
 
     @staticmethod
     def initialize_requests_log(logs_dir):
@@ -173,18 +162,18 @@ class SpellbookRESTAPI(Bottle):
                 actual_response = fn(*args, **kwargs)
             except Exception as ex:
                 response_status = '500 ' + str(ex)
-                self.log.error('%s caused an exception: %s' % (request.url, ex))
+                LOG.error('%s caused an exception: %s' % (request.url, ex))
                 traceback.print_exc()
             else:
                 response_status = response.status
 
             end_time = int(round(time.time() * 1000))
-            self.requests_log.info('%s | %s | %s | %s | %s ms | %s' % (request_time,
-                                                                       request.remote_addr,
-                                                                       request.method,
-                                                                       response_status,
-                                                                       end_time - start_time,
-                                                                       request.url))
+            REQUESTS_LOG.info('%s | %s | %s | %s | %s ms | %s' % (request_time,
+                                                                  request.remote_addr,
+                                                                  request.method,
+                                                                  response_status,
+                                                                  end_time - start_time,
+                                                                  request.url))
             return actual_response
         return _log_to_logger
 
