@@ -2,17 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import pytest
-import logging
 import os
-import sys
 
 # Change working dir up one level
 os.chdir("..")
-
-logger = logging.getLogger('Spellbook')
-stream_handler = logging.StreamHandler(sys.stdout)
-stream_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(message)s'))
-logger.addHandler(stream_handler)
 
 from hivemind.hivemind import HivemindQuestion, HivemindOption
 
