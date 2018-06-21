@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import logging
 from runcommandprocess import RunCommandProcess
 
+from helpers.loghelpers import LOG
 from action import Action
 from actiontype import ActionType
 
@@ -27,7 +27,7 @@ class SpawnProcessAction(Action):
             process = RunCommandProcess(command=self.run_command)
             process.start()
         except Exception as ex:
-            logging.getLogger('Spellbook').error('Spawning process failed: %s' % ex)
+            LOG.error('Spawning process failed: %s' % ex)
             return False
 
         return True

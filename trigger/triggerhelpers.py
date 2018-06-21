@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import glob
-import logging
 import os
 
+from helpers.loghelpers import LOG
 from balancetrigger import BalanceTrigger
 from blockheighttrigger import BlockHeightTrigger
 from deadmansswitchtrigger import DeadMansSwitchTrigger
@@ -170,7 +170,7 @@ def check_triggers(trigger_id=None):
     for trigger_id in triggers:
         trigger = get_trigger(trigger_id=trigger_id)
         if trigger.status == 'Active':
-            logging.getLogger('Spellbook').info('Checking conditions of trigger %s' % trigger_id)
+            LOG.info('Checking conditions of trigger %s' % trigger_id)
             if trigger.conditions_fulfilled() is True:
                 trigger.activate()
 
@@ -192,11 +192,11 @@ def verify_signed_message(trigger_id, **data):
 
     if verify_message(address=data['address'], message=data['message'], signature=data['signature']) is True:
         if trigger.status == 'Active':
-            logging.getLogger('Spellbook').info('Trigger %s received a verified signed message' % trigger_id)
+            LOG.info('Trigger %s received a verified signed message' % trigger_id)
             trigger.process_message(address=data['address'], message=data['message'], signature=data['signature'])
             return trigger.activate()
     else:
-        logging.getLogger('Spellbook').warning('Trigger %s received a bad signed message' % trigger_id)
+        LOG.warning('Trigger %s received a bad signed message' % trigger_id)
 
 
 def http_get_request(trigger_id, **data):
@@ -209,7 +209,7 @@ def http_get_request(trigger_id, **data):
         return {'error': 'Trigger %s is not a HTTP GET request trigger but a %s trigger' % (trigger_id, trigger.trigger_type)}
 
     if trigger.status == 'Active':
-        logging.getLogger('Spellbook').info('Trigger %s received a HTTP GET request' % trigger_id)
+        LOG.info('Trigger %s received a HTTP GET request' % trigger_id)
         if len(data) > 0:
             trigger.set_json_data(data=data)
         return trigger.activate()
@@ -225,7 +225,7 @@ def http_post_request(trigger_id, **data):
         return {'error': 'Trigger %s is not a HTTP POST request trigger but a %s trigger' % (trigger_id, trigger.trigger_type)}
 
     if trigger.status == 'Active':
-        logging.getLogger('Spellbook').info('Trigger %s received a HTTP POST request' % trigger_id)
+        LOG.info('Trigger %s received a HTTP POST request' % trigger_id)
         if len(data) > 0:
             trigger.set_json_data(data=data)
         return trigger.activate()
@@ -241,7 +241,7 @@ def http_delete_request(trigger_id, **data):
         return {'error': 'Trigger %s is not a HTTP DELETE request trigger but a %s trigger' % (trigger_id, trigger.trigger_type)}
 
     if trigger.status == 'Active':
-        logging.getLogger('Spellbook').info('Trigger %s received a HTTP DELETE request' % trigger_id)
+        LOG.info('Trigger %s received a HTTP DELETE request' % trigger_id)
         if len(data) > 0:
             trigger.set_json_data(data=data)
         return trigger.activate()

@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import time
-import logging
 from datetime import datetime
 
+from helpers.loghelpers import LOG
 from trigger import Trigger
 from triggertype import TriggerType
 from validators.validators import valid_amount, valid_timestamp
@@ -23,7 +23,7 @@ class RecurringTrigger(Trigger):
             return False
 
         if self.end_time <= int(time.time()):
-            logging.getLogger('Spellbook').info('Recurring trigger %s has reached its end time' % self.id)
+            LOG.info('Recurring trigger %s has reached its end time' % self.id)
             self.status = 'Succeeded'
             self.save()
             return False
@@ -35,7 +35,7 @@ class RecurringTrigger(Trigger):
 
         if self.next_activation + self.interval <= self.end_time:
             self.next_activation += self.interval
-            logging.getLogger('Spellbook').info('Setting next activation of recurring trigger %s to %s' % (self.id, datetime.fromtimestamp(self.next_activation)))
+            LOG.info('Setting next activation of recurring trigger %s to %s' % (self.id, datetime.fromtimestamp(self.next_activation)))
             self.save()
 
     def configure(self, **config):
@@ -54,7 +54,7 @@ class RecurringTrigger(Trigger):
             self.next_activation = config['next_activation']
         elif self.begin_time is not None:
             self.next_activation = self.begin_time
-            logging.getLogger('Spellbook').info('Setting first activation of recurring trigger %s to %s' % (self.id, datetime.fromtimestamp(self.next_activation)))
+            LOG.info('Setting first activation of recurring trigger %s to %s' % (self.id, datetime.fromtimestamp(self.next_activation)))
 
         self.multi = True
 

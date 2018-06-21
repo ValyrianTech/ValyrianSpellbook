@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import logging
+
+from helpers.loghelpers import LOG
 from compositehivemind import CompositeHivemind
 from hivemind import HivemindState
 from helpers.hivemindhelpers import get_hivemind_state_hash
@@ -9,7 +10,7 @@ from helpers.hivemindhelpers import get_hivemind_state_hash
 class DistributionComposite(CompositeHivemind):
     def get_result(self):
         if not all(key in self.components for key in ('priority', 'number_of_recipients', 'budget', 'budget_slope')):
-            logging.getLogger('Spellbook').error('Distribution Composite hivemind does not contain all necessary components!')
+            LOG.error('Distribution Composite hivemind does not contain all necessary components!')
             return
 
         priority_state_hash = get_hivemind_state_hash(self.components['priority'])
@@ -28,11 +29,11 @@ class DistributionComposite(CompositeHivemind):
         budget = budget_state.get_consensus()
         budget_slope = budget_slope_state.get_consensus()
 
-        logging.getLogger('Spellbook').info('Distribution composite hivemind %s:' % self.composite_id)
-        logging.getLogger('Spellbook').info('Recipients ordered by priority: %s' % priority)
-        logging.getLogger('Spellbook').info('Number of recipients: %s' % number_of_recipients)
-        logging.getLogger('Spellbook').info('Recipients ordered by budget: %s' % budget)
-        logging.getLogger('Spellbook').info('Budget slope: %s' % budget_slope)
+        LOG.info('Distribution composite hivemind %s:' % self.composite_id)
+        LOG.info('Recipients ordered by priority: %s' % priority)
+        LOG.info('Number of recipients: %s' % number_of_recipients)
+        LOG.info('Recipients ordered by budget: %s' % budget)
+        LOG.info('Budget slope: %s' % budget_slope)
 
         recipients = priority[:number_of_recipients]
 
@@ -42,10 +43,10 @@ class DistributionComposite(CompositeHivemind):
         if budget is not None and budget_slope is not None:
             for recipient in reversed(budget):
                 if recipient in recipients:
-                    logging.getLogger('Spellbook').info('adding recipient %s with %s units' %(recipient, units))
+                    LOG.info('adding recipient %s with %s units' %(recipient, units))
                     distribution[recipient] = units
                     units += budget_slope
 
-        logging.getLogger('Spellbook').info(distribution)
+        LOG.info(distribution)
 
         return distribution

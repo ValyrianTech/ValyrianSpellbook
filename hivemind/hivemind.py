@@ -1,8 +1,9 @@
-import logging
+
 import re
 import time
 from itertools import combinations
 
+from helpers.loghelpers import LOG
 from helpers.ipfshelpers import add_json, get_json
 from validators.validators import valid_address, valid_bech32_address
 from taghash.taghash import TagHash
@@ -169,12 +170,12 @@ class HivemindOption(object):
             raise Exception('No hivemind question set on option yet! Must set the hivemind question first before setting the value!')
 
         if self.answer_type != self.hivemind_question.answer_type:
-            logging.getLogger('Spellbook').error('Option value is not the correct answer type, got %s but should be %s' % (self.answer_type, self.hivemind_question.answer_type))
+            LOG.error('Option value is not the correct answer type, got %s but should be %s' % (self.answer_type, self.hivemind_question.answer_type))
             return False
 
         if self.hivemind_question.constraints is not None and 'choices' in self.hivemind_question.constraints:
             if self.value not in self.hivemind_question.constraints['choices']:
-                logging.getLogger('Spellbook').error('Option %s is not valid because this it is not in the allowed choices of this hiveminds constraints!' % self.value)
+                LOG.error('Option %s is not valid because this it is not in the allowed choices of this hiveminds constraints!' % self.value)
                 raise Exception('Option %s is not valid because this it is not in the allowed choices of this hiveminds constraints!' % self.value)
 
         if self.answer_type == 'String' and self.is_valid_string_option():
@@ -214,40 +215,40 @@ class HivemindOption(object):
 
     def is_valid_float_option(self):
         if not isinstance(self.value, float):
-            logging.getLogger('Spellbook').error('Option value %s is not a floating number value but instead is a %s' % (self.value, type(self.value)))
+            LOG.error('Option value %s is not a floating number value but instead is a %s' % (self.value, type(self.value)))
             return False
 
         if self.hivemind_question.constraints is not None:
             if 'min_value' in self.hivemind_question.constraints and self.value < self.hivemind_question.constraints['min_value']:
-                logging.getLogger('Spellbook').error('Option value is below minimum value: %s < %s' % (self.value, self.hivemind_question.constraints['min_value']))
+                LOG.error('Option value is below minimum value: %s < %s' % (self.value, self.hivemind_question.constraints['min_value']))
                 return False
             elif 'max_value' in self.hivemind_question.constraints and self.value > self.hivemind_question.constraints['max_value']:
-                logging.getLogger('Spellbook').error('Option value is above maximum value: %s > %s' % (self.value, self.hivemind_question.constraints['max_value']))
+                LOG.error('Option value is above maximum value: %s > %s' % (self.value, self.hivemind_question.constraints['max_value']))
                 return False
             elif 'decimals' in self.hivemind_question.constraints and 0 < self.hivemind_question.constraints['decimals'] != len(str(self.value)) - 1 - str(self.value).find('.'):
-                logging.getLogger('Spellbook').error('Option value does not have the correct number of decimals (%s): %s' % (self.hivemind_question.constraints['decimals'], self.value))
+                LOG.error('Option value does not have the correct number of decimals (%s): %s' % (self.hivemind_question.constraints['decimals'], self.value))
                 return False
 
         return True
 
     def is_valid_integer_option(self):
         if not isinstance(self.value, (int, long)):
-            logging.getLogger('Spellbook').error('Option value %s is not a integer value but instead is a %s' % (self.value, type(self.value)))
+            LOG.error('Option value %s is not a integer value but instead is a %s' % (self.value, type(self.value)))
             return False
 
         if self.hivemind_question.constraints is not None:
             if 'min_value' in self.hivemind_question.constraints and self.value < self.hivemind_question.constraints['min_value']:
-                logging.getLogger('Spellbook').error('Option value is below minimum value: %s < %s' % (self.value, self.hivemind_question.constraints['min_value']))
+                LOG.error('Option value is below minimum value: %s < %s' % (self.value, self.hivemind_question.constraints['min_value']))
                 return False
             elif 'max_value' in self.hivemind_question.constraints and self.value > self.hivemind_question.constraints['max_value']:
-                logging.getLogger('Spellbook').error('Option value is above maximum value: %s > %s' % (self.value, self.hivemind_question.constraints['max_value']))
+                LOG.error('Option value is above maximum value: %s > %s' % (self.value, self.hivemind_question.constraints['max_value']))
                 return False
 
         return True
 
     def is_valid_bool_option(self):
         if not isinstance(self.value, bool):
-            logging.getLogger('Spellbook').error('Option value %s is not a boolean value but instead is a %s' % (self.value, type(self.value)))
+            LOG.error('Option value %s is not a boolean value but instead is a %s' % (self.value, type(self.value)))
             return False
 
         return True
@@ -256,7 +257,7 @@ class HivemindOption(object):
         try:
             isinstance(HivemindQuestion(question_hash=self.value), HivemindQuestion)
         except Exception as ex:
-            logging.getLogger('Spellbook').error('IPFS hash %s is not a valid hivemind: %s' % (self.value, ex))
+            LOG.error('IPFS hash %s is not a valid hivemind: %s' % (self.value, ex))
             return False
 
         return True
@@ -308,7 +309,7 @@ class HivemindOption(object):
     def load(self, option_hash):
         option = get_json(option_hash)
         if not all(key in option for key in ['hivemind_question_hash', 'value', 'answer_type']):
-            logging.getLogger('Spellbook').error('hivemind option json does not contain all necessary keys')
+            LOG.error('hivemind option json does not contain all necessary keys')
             raise Exception('Invalid hivemind option json data: %s' % option)
 
         self.hivemind_question_hash = option['hivemind_question_hash']
@@ -633,7 +634,7 @@ class HivemindState(object):
         """
         Calculate the results of the hivemind
         """
-        logging.getLogger('Spellbook').info('Calculating results for question %s...' % question_index)
+        LOG.info('Calculating results for question %s...' % question_index)
         self.clear_results(question_index=question_index)
         for a, b in combinations(self.options, 2):
             for opinionator in self.opinions[question_index]:
@@ -653,7 +654,7 @@ class HivemindState(object):
         self.calculate_contributions(question_index=question_index)
         results_info = self.results_info(question_index=question_index)
         for line in results_info.split('\n'):
-            logging.getLogger('Spellbook').info(line)
+            LOG.info(line)
 
     def calculate_scores(self, question_index=0):
         """

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import logging
 import simplejson
 
+from helpers.loghelpers import LOG
 from abc import abstractmethod, ABCMeta
 from validators.validators import valid_address
 from helpers.ipfshelpers import get_json
@@ -53,7 +53,7 @@ class SpellbookScript(object):
     def process_message(self):
         if self.message[:5] == 'IPFS=':
             ipfs_hash = self.message[5:]
-            logging.getLogger('Spellbook').info('Message contains a IPFS hash: %s' % ipfs_hash)
+            LOG.info('Message contains a IPFS hash: %s' % ipfs_hash)
             return self.process_ipfs_hash(ipfs_hash=ipfs_hash)
         else:
             try:
@@ -62,15 +62,15 @@ class SpellbookScript(object):
                 json_data = None
 
             if json_data is not None:
-                logging.getLogger('Spellbook').info('Message contains json data: %s' % self.message)
+                LOG.info('Message contains json data: %s' % self.message)
                 return self.process_json_data(json_data=json_data)
 
             else:
-                logging.getLogger('Spellbook').info('Message contains simple text: %s' % self.message)
+                LOG.info('Message contains simple text: %s' % self.message)
                 return self.process_text(self.message)
 
     def process_ipfs_hash(self, ipfs_hash):
-        logging.getLogger('Spellbook').info('Retrieving IPFS object')
+        LOG.info('Retrieving IPFS object')
         try:
             data = get_json(multihash=ipfs_hash)
             if isinstance(data, dict):
@@ -79,15 +79,15 @@ class SpellbookScript(object):
                 self.json = simplejson.loads(data)
             else:
                 raise Exception('IPFS hash does not contain a dict or a json string: %s -> %s' % (ipfs_hash, data))
-            logging.getLogger('Spellbook').info('Message contains json data: %s' % self.json)
+            LOG.info('Message contains json data: %s' % self.json)
         except Exception as ex:
-            logging.getLogger('Spellbook').error('IPFS hash does not contain valid json data: %s' % ex)
+            LOG.error('IPFS hash does not contain valid json data: %s' % ex)
             return
 
     def process_json_data(self, json_data):
-        logging.getLogger('Spellbook').info('Processing JSON data')
+        LOG.info('Processing JSON data')
         self.json = json_data
 
     def process_text(self, text):
-        logging.getLogger('Spellbook').info('Processing text data')
+        LOG.info('Processing text data')
         self.text = text

@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import logging
 from subprocess import Popen, PIPE
 
+from helpers.loghelpers import LOG
 from action import Action
 from actiontype import ActionType
 
@@ -23,15 +23,15 @@ class CommandAction(Action):
         if self.run_command is None or self.run_command == '':
             return False
 
-        logging.getLogger('Spellbook').info('Running command: %s' % self.run_command)
+        LOG.info('Running command: %s' % self.run_command)
         command_process = Popen(self.run_command, stdout=PIPE, stderr=PIPE, shell=True)
         output, error = command_process.communicate()
         stripped_output = output.strip()
-        logging.getLogger('Spellbook').info('Command output: %s' % stripped_output)
+        LOG.info('Command output: %s' % stripped_output)
 
         stripped_error = error.strip()
         if len(stripped_error):
-            logging.getLogger('Spellbook').error('Command error: %s' % stripped_error)
+            LOG.error('Command error: %s' % stripped_error)
 
         return True if command_process.returncode == 0 else False
 

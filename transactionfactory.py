@@ -5,6 +5,8 @@ import logging
 import pybitcointools
 from pybitcointools.transaction import *
 
+from helpers.loghelpers import LOG
+
 
 def make_custom_tx(private_keys, tx_inputs, tx_outputs, tx_fee=0, op_return_data=None):
     """
@@ -20,7 +22,7 @@ def make_custom_tx(private_keys, tx_inputs, tx_outputs, tx_fee=0, op_return_data
     """
     # Check if the transaction fee is valid
     if not isinstance(tx_fee, int) or tx_fee < 0:
-        logging.getLogger('Spellbook').error('Invalid transaction fee: %d satoshis' % tx_fee)
+        LOG.error('Invalid transaction fee: %d satoshis' % tx_fee)
         return
 
     # Check if the supplied fee is equal to the difference between the total input value and total output value
@@ -28,25 +30,25 @@ def make_custom_tx(private_keys, tx_inputs, tx_outputs, tx_fee=0, op_return_data
     total_output_value = sum([tx_output['value'] for tx_output in tx_outputs])
 
     if tx_fee != total_input_value - total_output_value:
-        logging.getLogger('Spellbook').error('Transaction fee does not match the difference between the total input value and the total output value!')
-        logging.getLogger('Spellbook').error('Total input: %s, Total output: %s, Transaction fee: %s' % (total_input_value, total_output_value, tx_fee))
+        LOG.error('Transaction fee does not match the difference between the total input value and the total output value!')
+        LOG.error('Total input: %s, Total output: %s, Transaction fee: %s' % (total_input_value, total_output_value, tx_fee))
         return
 
     # Check if all required private keys have been supplied
     all_keys_present = all([tx_input['address'] in private_keys for tx_input in tx_inputs])
     if not all_keys_present:
-        logging.getLogger('Spellbook').error("At least 1 private key is missing.")
+        LOG.error("At least 1 private key is missing.")
         return
 
     # Check if all inputs have at least 1 confirmation
     all_inputs_confirmed = all([tx_input['confirmations'] > 0 for tx_input in tx_inputs])
     if not all_inputs_confirmed:
-        logging.getLogger('Spellbook').error("At least 1 input is unconfirmed.")
+        LOG.error("At least 1 input is unconfirmed.")
         return
 
     # Check if an OP_RETURN message needs to be added and if it is valid
     if isinstance(op_return_data, (str, unicode)) and len(op_return_data) > 80:
-        logging.getLogger('Spellbook').error('OP_RETURN data is longer than 80 characters')
+        LOG.error('OP_RETURN data is longer than 80 characters')
         return
 
     # All is good, make the transaction

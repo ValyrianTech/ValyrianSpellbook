@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import logging
-
+from helpers.loghelpers import LOG
 from action import Action
 from actiontype import ActionType
 
@@ -21,7 +20,7 @@ class RevealSecretAction(Action):
 
         :return: True upon success, False upon failure
         """
-        logging.getLogger('Spellbook').info('Allowing reveal of RevealSecret action %s' % self.id)
+        LOG.info('Allowing reveal of RevealSecret action %s' % self.id)
         self.allow_reveal = True
         self.save()
         return True
