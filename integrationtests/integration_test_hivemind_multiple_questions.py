@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
-import sys
-import logging
 import random
 
 # Set a specific seed for the random numbers so results can be easily replicated, comment out next line for random results
@@ -10,11 +8,6 @@ import random
 
 # Change working dir up one level
 os.chdir("..")
-
-logger = logging.getLogger('Spellbook')
-stream_handler = logging.StreamHandler(sys.stdout)
-stream_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(message)s'))
-logger.addHandler(stream_handler)
 
 from hivemind.hivemind import HivemindQuestion, HivemindOption, HivemindOpinion, HivemindState
 from helpers.ipfshelpers import IPFS_API
