@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import requests
-import logging
 from time import sleep
 
+from helpers.loghelpers import LOG
 from data.transaction import TX
 from data.explorer_api import ExplorerAPI
 
@@ -19,11 +19,11 @@ class BlockchainInfoAPI(ExplorerAPI):
         latest_block = {}
         url = '{api_url}/latestblock'.format(api_url=self.url)
         try:
-            logging.getLogger('Spellbook').info('GET %s' % url)
+            LOG.info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
-            logging.getLogger('Spellbook').error('Unable to get latest block from Blockchain.info: %s' % ex)
+            LOG.error('Unable to get latest block from Blockchain.info: %s' % ex)
             return {'error': 'Unable to get latest block from Blockchain.info'}
 
         if all(key in data for key in ('height', 'hash', 'time')):
@@ -33,15 +33,15 @@ class BlockchainInfoAPI(ExplorerAPI):
 
             url = '{api_url}/rawblock/{hash}'.format(api_url=self.url, hash=latest_block['hash'])
             try:
-                logging.getLogger('Spellbook').info('GET %s' % url)
+                LOG.info('GET %s' % url)
                 r = requests.get(url)
                 data = r.json()
             except ValueError:
-                logging.getLogger('Spellbook').error('Blockchain.info returned invalid json data: %s', r.text)
+                LOG.error('Blockchain.info returned invalid json data: %s', r.text)
                 return {'error': 'Unable to get block %s from Blockchain.info' % latest_block['height']}
 
             except Exception as ex:
-                logging.getLogger('Spellbook').error('Unable to get block %s from Blockchain.info: %s' % (latest_block['height'], ex))
+                LOG.error('Unable to get block %s from Blockchain.info: %s' % (latest_block['height'], ex))
                 return {'error': 'Unable to get block %s from Blockchain.info' % latest_block['height']}
 
             if all(key in data for key in ('mrkl_root', 'size')):
@@ -55,11 +55,11 @@ class BlockchainInfoAPI(ExplorerAPI):
     def get_block_by_hash(self, block_hash):
         url = '{api_url}/rawblock/{hash}'.format(api_url=self.url, hash=block_hash)
         try:
-            logging.getLogger('Spellbook').info('GET %s' % url)
+            LOG.info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
-            logging.getLogger('Spellbook').error('Unable to get block %s from Blockchain.info: %s' % (block_hash, ex))
+            LOG.error('Unable to get block %s from Blockchain.info: %s' % (block_hash, ex))
             return {'error': 'Unable to get block %s from Blockchain.info' % block_hash}
 
         if all(key in data for key in ('height', 'hash', 'time', 'mrkl_root', 'size')):
@@ -75,11 +75,11 @@ class BlockchainInfoAPI(ExplorerAPI):
     def get_block_by_height(self, height):
         url = '{api_url}/block-height/{height}?format=json'.format(api_url=self.url, height=height)
         try:
-            logging.getLogger('Spellbook').info('GET %s' % url)
+            LOG.info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
-            logging.getLogger('Spellbook').error('Unable to get block %s from Blockchain.info: %s' % (height, ex))
+            LOG.error('Unable to get block %s from Blockchain.info: %s' % (height, ex))
             return {'error': 'Unable to get block %s from Blockchain.info' % height}
 
         if 'blocks' in data:
@@ -107,11 +107,11 @@ class BlockchainInfoAPI(ExplorerAPI):
         while n_tx is None or len(transactions) < n_tx:
             url = '{api_url}/address/{address}?format=json&limit={limit}&offset={offset}'.format(api_url=self.url, address=address, limit=limit, offset=limit * i)
             try:
-                logging.getLogger('Spellbook').info('GET %s' % url)
+                LOG.info('GET %s' % url)
                 r = requests.get(url)
                 data = r.json()
             except Exception as ex:
-                logging.getLogger('Spellbook').error('Unable to get transactions of address %s from %s: %s' % (address, url, ex))
+                LOG.error('Unable to get transactions of address %s from %s: %s' % (address, url, ex))
                 return {'error': 'Unable to get transactions of address %s from %s' % (address, url)}
 
             if all(key in data for key in ('n_tx', 'txs')):
@@ -161,29 +161,29 @@ class BlockchainInfoAPI(ExplorerAPI):
     def get_balance(self, address):
         url = '{api_url}/q/addressbalance/{address}?confirmations=1'.format(api_url=self.url, address=address)
         try:
-            logging.getLogger('Spellbook').info('GET %s' % url)
+            LOG.info('GET %s' % url)
             r = requests.get(url)
             final_balance = int(r.text)
         except Exception as ex:
-            logging.getLogger('Spellbook').error('Unable to get balance of address %s from Blockchain.info: %s' % (address, ex))
+            LOG.error('Unable to get balance of address %s from Blockchain.info: %s' % (address, ex))
             return {'error': 'Unable to get balance of address %s from Blockchain.info' % address}
 
         url = '{api_url}/q/getreceivedbyaddress/{address}?confirmations=1'.format(api_url=self.url, address=address)
         try:
-            logging.getLogger('Spellbook').info('GET %s' % url)
+            LOG.info('GET %s' % url)
             r = requests.get(url)
             received_balance = int(r.text)
         except Exception as ex:
-            logging.getLogger('Spellbook').error('Unable to get balance of address %s from Blockchain.info: %s' % (address, ex))
+            LOG.error('Unable to get balance of address %s from Blockchain.info: %s' % (address, ex))
             return {'error': 'Unable to get balance of address %s from Blockchain.info' % address}
 
         url = '{api_url}/q/getsentbyaddress/{address}?confirmations=1'.format(api_url=self.url, address=address)
         try:
-            logging.getLogger('Spellbook').info('GET %s' % url)
+            LOG.info('GET %s' % url)
             r = requests.get(url)
             sent_balance = int(r.text)
         except Exception as ex:
-            logging.getLogger('Spellbook').error('Unable to get balance of address %s from Blockchain.info: %s' % (address, ex))
+            LOG.error('Unable to get balance of address %s from Blockchain.info: %s' % (address, ex))
             return {'error': 'Unable to get balance of address %s from Blockchain.info' % address}
 
         balance = {'final': final_balance,
@@ -194,11 +194,11 @@ class BlockchainInfoAPI(ExplorerAPI):
     def get_prime_input_address(self, txid):
         url = '{api_url}/rawtx/{txid}'.format(api_url=self.url, txid=txid)
         try:
-            logging.getLogger('Spellbook').info('GET %s' % url)
+            LOG.info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
-            logging.getLogger('Spellbook').error('Unable to get prime input address of tx %s from Blockchain.info: %s' % (txid, ex))
+            LOG.error('Unable to get prime input address of tx %s from Blockchain.info: %s' % (txid, ex))
             return {'error': 'Unable to get prime input address of tx %s from Blockchain.info' % txid}
 
         if 'inputs' in data:
@@ -221,11 +221,11 @@ class BlockchainInfoAPI(ExplorerAPI):
         limit = 1000  # max number of utxo given by blockchain.info is 1000, there is no 'offset' parameter available
         url = '{api_url}/unspent?active={address}&limit={limit}&confirmations={confirmations}'.format(api_url=self.url, address=address, limit=limit, confirmations=confirmations)
         try:
-            logging.getLogger('Spellbook').info('GET %s' % url)
+            LOG.info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
-            logging.getLogger('Spellbook').error('Unable to get utxos of address %s from %s: %s' % (address, url, ex))
+            LOG.error('Unable to get utxos of address %s from %s: %s' % (address, url, ex))
             return {'error': 'Unable to get utxos of address %s from %s' % (address, url)}
 
         if 'unspent_outputs' in data:
@@ -247,16 +247,16 @@ class BlockchainInfoAPI(ExplorerAPI):
 
     def push_tx(self, tx):
         url = '{api_url}/pushtx'.format(api_url=self.url)
-        logging.getLogger('Spellbook').info('POST %s' % url)
+        LOG.info('POST %s' % url)
         try:
             r = requests.post(url, data=dict(tx=tx))
         except Exception as ex:
-            logging.getLogger('Spellbook').error('Unable to push tx via Blockchain.info: %s' % ex)
+            LOG.error('Unable to push tx via Blockchain.info: %s' % ex)
             return {'error': 'Unable to push tx Blockchain.info: %s' % ex}
 
         data = r.text.strip()
         if r.status_code == 200 and data == 'Transaction Submitted':
             return {'success': True}
         else:
-            logging.getLogger('Spellbook').error('Unable to push tx via Blockchain.info: %s' % data)
+            LOG.error('Unable to push tx via Blockchain.info: %s' % data)
             return {'error': 'Unable to push tx Blockchain.info: %s' % data}

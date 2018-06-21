@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import logging
 import os
 
+from helpers.loghelpers import LOG
 from blockexplorers.blockchain_info import BlockchainInfoAPI
 from blockexplorers.blocktrail_com import BlocktrailComAPI
 from blockexplorers.insight import InsightAPI
@@ -167,7 +167,7 @@ def query(query_type, param=None):
                 if param != '':
                     message += ' param: ' + str(param)
                 message += ' error: %s' % data['error']
-                logging.getLogger('Spellbook').error(message)
+                LOG.error(message)
             else:
                 response = data
                 EXPLORER = explorers[i]

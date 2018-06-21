@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import logging
 import os
 import time
 from abc import abstractmethod, ABCMeta
 from datetime import datetime
 import importlib
 
+from helpers.loghelpers import LOG
 from action.actionhelpers import get_actions, get_action
 from helpers.jsonhelpers import save_to_json_file
 from validators.validators import valid_actions, valid_trigger_type, valid_amount, valid_script
@@ -77,7 +77,7 @@ class Trigger(object):
             configured_actions = get_actions()
             for action_id in self.actions:
                 if action_id not in configured_actions:
-                    logging.getLogger('Spellbook').warning('Trigger %s contains unknown action: %s' % (self.id, action_id))
+                    LOG.warning('Trigger %s contains unknown action: %s' % (self.id, action_id))
 
     @abstractmethod
     def conditions_fulfilled(self):
@@ -97,7 +97,7 @@ class Trigger(object):
 
         :return:
         """
-        logging.getLogger('Spellbook').info('Activating trigger %s' % self.id)
+        LOG.info('Activating trigger %s' % self.id)
         script = self.load_script()
 
         if script is not None:
@@ -108,11 +108,11 @@ class Trigger(object):
         configured_actions = get_actions()
         for action_id in self.actions:
             if action_id not in configured_actions:
-                logging.getLogger('Spellbook').error('Unknown action id: %s' % action_id)
+                LOG.error('Unknown action id: %s' % action_id)
                 return
 
         for i, action_id in enumerate(self.actions):
-            logging.getLogger('Spellbook').info('Running action %s: %s' % (i+1, action_id))
+            LOG.info('Running action %s: %s' % (i+1, action_id))
 
             action = get_action(action_id)
             success = action.run()
@@ -157,14 +157,14 @@ class Trigger(object):
     def load_script(self):
         if self.script is not None:
             if not os.path.isfile('spellbookscripts\%s.py' % self.script):
-                logging.getLogger('Spellbook').error('Can not find Spellbook Script %s' % self.script)
+                LOG.error('Can not find Spellbook Script %s' % self.script)
                 return
             else:
-                logging.getLogger('Spellbook').info('Loading Spellbook Script spellbookscripts\%s.py' % self.script)
+                LOG.info('Loading Spellbook Script spellbookscripts\%s.py' % self.script)
                 try:
                     script_module = importlib.import_module('spellbookscripts.%s' % self.script)
                 except Exception as ex:
-                    logging.getLogger('Spellbook').error('Failed to load Spellbook Script %s: %s' % (self.script, ex))
+                    LOG.error('Failed to load Spellbook Script %s: %s' % (self.script, ex))
                     return
 
                 spellbook_script = getattr(script_module, self.script)
@@ -172,7 +172,7 @@ class Trigger(object):
                 script = spellbook_script(**kwargs)
 
                 if not isinstance(script, SpellbookScript):
-                    logging.getLogger('Spellbook').error(
+                    LOG.error(
                         'Script %s is not a valid Spellbook Script, instead it is a %s' % (self.script, type(script)))
                     return
 

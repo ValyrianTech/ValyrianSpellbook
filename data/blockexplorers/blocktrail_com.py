@@ -4,9 +4,9 @@
 import requests
 from datetime import datetime
 import calendar
-import logging
 from time import sleep
 
+from helpers.loghelpers import LOG
 from data.transaction import TX
 from data.explorer_api import ExplorerAPI
 
@@ -21,11 +21,11 @@ class BlocktrailComAPI(ExplorerAPI):
     def get_latest_block(self):
         url = '{api_url}/block/latest?api_key={api_key}'.format(api_url=self.url, api_key=self.key)
         try:
-            logging.getLogger('Spellbook').info('GET %s' % url)
+            LOG.info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
-            logging.getLogger('Spellbook').error('Unable to get latest block from Blocktrail.com: %s' % ex)
+            LOG.error('Unable to get latest block from Blocktrail.com: %s' % ex)
             return {'error': 'Unable to get latest block from Blocktrail.com'}
 
         if all(key in data for key in ('height', 'hash')):
@@ -36,11 +36,11 @@ class BlocktrailComAPI(ExplorerAPI):
     def get_block_by_height(self, height):
         url = '{api_url}/block/{height}?api_key={api_key}'.format(api_url=self.url, height=height, api_key=self.key)
         try:
-            logging.getLogger('Spellbook').info('GET %s' % url)
+            LOG.info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
-            logging.getLogger('Spellbook').error('Unable to get block %s from Blocktrail.com: %s' % (height, ex))
+            LOG.error('Unable to get block %s from Blocktrail.com: %s' % (height, ex))
             return {'error': 'Unable to get block %s from Blocktrail.com' % height}
 
         if all(key in data for key in ('height', 'hash', 'block_time', 'merkleroot', 'byte_size')):
@@ -57,11 +57,11 @@ class BlocktrailComAPI(ExplorerAPI):
     def get_block_by_hash(self, block_hash):
         url = '{api_url}/block/{hash}?api_key={api_key}'.format(api_url=self.url, hash=block_hash, api_key=self.key)
         try:
-            logging.getLogger('Spellbook').info('GET %s' % url)
+            LOG.info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
-            logging.getLogger('Spellbook').error('Unable to get block %s from Blocktrail.com: %s' % (block_hash, ex))
+            LOG.error('Unable to get block %s from Blocktrail.com: %s' % (block_hash, ex))
             return {'error': 'Unable to get block %s from Blocktrail.com' % block_hash}
 
         if all(key in data for key in ('height', 'hash', 'block_time', 'merkleroot', 'byte_size')):
@@ -84,11 +84,11 @@ class BlocktrailComAPI(ExplorerAPI):
         while n_tx is None or len(transactions) < n_tx:
             url = '{api_url}/address/{address}/transactions?api_key={api_key}&limit={limit}&page={page}&sort_dir=asc'.format(api_url=self.url, address=address, api_key=self.key, limit=limit, page=page)
             try:
-                logging.getLogger('Spellbook').info('GET %s' % url)
+                LOG.info('GET %s' % url)
                 r = requests.get(url)
                 data = r.json()
             except Exception as ex:
-                logging.getLogger('Spellbook').error('Unable to get transactions of address %s from Blocktrail.com: %s' % (address, ex))
+                LOG.error('Unable to get transactions of address %s from Blocktrail.com: %s' % (address, ex))
                 return {'error': 'Unable to get transactions of address %s block from Blocktrail.com' % address}
 
             if all(key in data for key in ('total', 'data')):
@@ -139,11 +139,11 @@ class BlocktrailComAPI(ExplorerAPI):
     def get_balance(self, address):
         url = '{api_url}/address/{address}?api_key={api_key}'.format(api_url=self.url, address=address, api_key=self.key)
         try:
-            logging.getLogger('Spellbook').info('GET %s' % url)
+            LOG.info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
-            logging.getLogger('Spellbook').error('Unable to get balance of address %s from Blocktrail.com: %s' % (address, ex))
+            LOG.error('Unable to get balance of address %s from Blocktrail.com: %s' % (address, ex))
             return {'error': 'Unable to get balance of address %s from Blocktrail.com' % address}
 
         if all(key in data for key in ('balance', 'received', 'sent')):
@@ -157,11 +157,11 @@ class BlocktrailComAPI(ExplorerAPI):
     def get_transaction(self, txid):
         url = '{api_url}/transaction/{txid}?api_key={api_key}'.format(api_url=self.url, txid=txid, api_key=self.key)
         try:
-            logging.getLogger('Spellbook').info('GET %s' % url)
+            LOG.info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
-            logging.getLogger('Spellbook').error('Unable to get transaction %s from Blocktrail.com: %s' % (txid, ex))
+            LOG.error('Unable to get transaction %s from Blocktrail.com: %s' % (txid, ex))
             return {'error': 'Unable to get transaction %s from Blocktrail.com' % txid}
 
         return data
@@ -181,11 +181,11 @@ class BlocktrailComAPI(ExplorerAPI):
     def get_prime_input_address(self, txid):
         url = '{api_url}/transaction/{txid}?api_key={api_key}'.format(api_url=self.url, txid=txid, api_key=self.key)
         try:
-            logging.getLogger('Spellbook').info('GET %s' % url)
+            LOG.info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
-            logging.getLogger('Spellbook').error('Unable to get prime input address from transaction %s from Blocktrail.com: %s' % (txid, ex))
+            LOG.error('Unable to get prime input address from transaction %s from Blocktrail.com: %s' % (txid, ex))
             return {'error': 'Unable to get prime input address from transaction %s from Blocktrail.com' % txid}
 
         if 'inputs' in data:
@@ -210,11 +210,11 @@ class BlocktrailComAPI(ExplorerAPI):
         while n_outputs is None or len(unspent_outputs) < n_outputs:
             url = '{api_url}/address/{address}/unspent-outputs?api_key={api_key}&limit={limit}&page={page}&sort_dir=asc'.format(api_url=self.url, address=address, api_key=self.key, limit=limit, page=page)
             try:
-                logging.getLogger('Spellbook').info('GET %s' % url)
+                LOG.info('GET %s' % url)
                 r = requests.get(url)
                 data = r.json()
             except Exception as ex:
-                logging.getLogger('Spellbook').error('Unable to get utxos of address %s from Blocktrail.com: %s' % (address, ex))
+                LOG.error('Unable to get utxos of address %s from Blocktrail.com: %s' % (address, ex))
                 return {'error': 'Unable to get utxos of address %s block from Blocktrail.com' % address}
 
             if all(key in data for key in ('total', 'data')):
@@ -253,11 +253,11 @@ class BlocktrailComAPI(ExplorerAPI):
         """
         url = '{api_url}/fee-per-kb?api_key={api_key}'.format(api_url=self.url, api_key=self.key)
         try:
-            logging.getLogger('Spellbook').info('GET %s' % url)
+            LOG.info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
-            logging.getLogger('Spellbook').error('Unable to get optimal fee per kb from Blocktrail.com: %s' % ex)
+            LOG.error('Unable to get optimal fee per kb from Blocktrail.com: %s' % ex)
             return {'error': 'Unable to get optimal fee per kb from Blocktrail.com'}
 
         return data
@@ -267,6 +267,6 @@ class BlocktrailComAPI(ExplorerAPI):
         # Must do import here to avoid circular import
         from data.data import get_explorer_api
 
-        logging.getLogger('Spellbook').warning('Blocktrail.com api does not support broadcasting transactions, using Blockchain.info instead!')
+        LOG.warning('Blocktrail.com api does not support broadcasting transactions, using Blockchain.info instead!')
         blockchain_info_api = get_explorer_api('blockchain.info')
         return blockchain_info_api.push_tx(tx)

@@ -12,6 +12,7 @@ from logging.handlers import RotatingFileHandler
 
 from bottle import Bottle, request, response
 
+from helpers.loghelpers import LOG
 from action.actionhelpers import get_actions, get_action_config, save_action, delete_action, run_action, get_reveal
 from authentication import initialize_api_keys_file
 from data.data import get_explorers, get_explorer_config, save_explorer, delete_explorer
@@ -135,7 +136,7 @@ class SpellbookRESTAPI(Bottle):
     @staticmethod
     def initialize_log(logs_dir):
         # Create a log file for the Core daemon
-        logger = logging.getLogger('Spellbook')
+        logger = LOG
 
         stream_handler = logging.StreamHandler(sys.stdout)
         stream_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(message)s'))

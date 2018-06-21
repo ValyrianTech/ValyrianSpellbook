@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import logging
 import requests
 
+from helpers.loghelpers import LOG
 from data.transaction import TX
 from data.explorer_api import ExplorerAPI
 
@@ -13,11 +13,11 @@ class InsightAPI(ExplorerAPI):
     def get_latest_block(self):
         url = self.url + '/status?q=getLastBlockHash'
         try:
-            logging.getLogger('Spellbook').info('GET %s' % url)
+            LOG.info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
-            logging.getLogger('Spellbook').error('Unable to get latest blockhash from %s: %s' % (self.url, ex))
+            LOG.error('Unable to get latest blockhash from %s: %s' % (self.url, ex))
             return {'error': 'Unable to get latest blockhash from %s' % self.url}
 
         if 'lastblockhash' in data:
@@ -28,11 +28,11 @@ class InsightAPI(ExplorerAPI):
     def get_block_by_hash(self, block_hash):
         url = self.url + '/block/' + block_hash
         try:
-            logging.getLogger('Spellbook').info('GET %s' % url)
+            LOG.info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
-            logging.getLogger('Spellbook').error('Unable to get block %s from %s: %s' % (block_hash, self.url, ex))
+            LOG.error('Unable to get block %s from %s: %s' % (block_hash, self.url, ex))
             return {'error': 'Unable to get block %s from %s' % (block_hash, self.url)}
 
         block = {}
@@ -49,11 +49,11 @@ class InsightAPI(ExplorerAPI):
     def get_block_by_height(self, height):
         url = self.url + '/block-index/' + str(height)
         try:
-            logging.getLogger('Spellbook').info('GET %s' % url)
+            LOG.info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
-            logging.getLogger('Spellbook').error('Unable to get hash of block at height %s from %s: %s' % (height, self.url, ex))
+            LOG.error('Unable to get hash of block at height %s from %s: %s' % (height, self.url, ex))
             return {'error': 'Unable to get hash of block at height %s from %s' % (height, self.url)}
 
         if 'blockHash' in data:
@@ -74,11 +74,11 @@ class InsightAPI(ExplorerAPI):
         while n_tx is None or len(transactions) < n_tx:
             url = self.url + '/addrs/' + address + '/txs?from=' + str(limit*i) + '&to=' + str(limit*(i+1))
             try:
-                logging.getLogger('Spellbook').info('GET %s' % url)
+                LOG.info('GET %s' % url)
                 r = requests.get(url)
                 data = r.json()
             except Exception as ex:
-                logging.getLogger('Spellbook').error('Unable to get transactions of address %s from %s: %s' % (address, url, ex))
+                LOG.error('Unable to get transactions of address %s from %s: %s' % (address, url, ex))
                 return {'error': 'Unable to get transactions of address %s from %s' % (address, url)}
 
             if all(key in data for key in ('totalItems', 'items')):
@@ -152,11 +152,11 @@ class InsightAPI(ExplorerAPI):
     def get_prime_input_address(self, txid):
         url = self.url + '/tx/' + str(txid)
         try:
-            logging.getLogger('Spellbook').info('GET %s' % url)
+            LOG.info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
-            logging.getLogger('Spellbook').error('Unable to get prime input address of transaction %s from %s: %s' % (txid, self.url, ex))
+            LOG.error('Unable to get prime input address of transaction %s from %s: %s' % (txid, self.url, ex))
             return {'error': 'Unable to get prime input address of transaction %s from %s' % (txid, self.url)}
 
         if 'vin' in data:
@@ -175,11 +175,11 @@ class InsightAPI(ExplorerAPI):
     def get_utxos(self, address, confirmations=3):
         url = self.url + '/addrs/' + address + '/utxo?noCache=1'
         try:
-            logging.getLogger('Spellbook').info('GET %s' % url)
+            LOG.info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
-            logging.getLogger('Spellbook').error('Unable to get utxos of address %s from %s: %s' % (address, url, ex))
+            LOG.error('Unable to get utxos of address %s from %s: %s' % (address, url, ex))
             return {'error': 'Unable to get utxos of address %s from %s' % (address, url)}
 
         utxos = []
@@ -198,11 +198,11 @@ class InsightAPI(ExplorerAPI):
 
     def push_tx(self, tx):
         url = '{api_url}/tx/send'.format(api_url=self.url)
-        logging.getLogger('Spellbook').info('POST %s' % url)
+        LOG.info('POST %s' % url)
         try:
             r = requests.post(url, data=dict(rawtx=tx))
         except Exception as ex:
-            logging.getLogger('Spellbook').error('Unable to push tx via %s: %s' % (self.url, ex))
+            LOG.error('Unable to push tx via %s: %s' % (self.url, ex))
             return {'error': 'Unable to push tx via %s: %s' % (self.url, ex)}
 
         try:
@@ -213,5 +213,5 @@ class InsightAPI(ExplorerAPI):
         if r.status_code == 200 and isinstance(data, dict) and 'txid' in data:
             return {'success': True}
         else:
-            logging.getLogger('Spellbook').error('Unable to push tx via %s: %s' % (self.url, data))
+            LOG.error('Unable to push tx via %s: %s' % (self.url, data))
             return {'error': 'Unable to push tx via %s: %s' % (self.url, data)}

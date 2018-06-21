@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import ipfsapi
-import logging
 import time
 
+from helpers.loghelpers import LOG
 from helpers.configurationhelpers import get_ipfs_host, get_ipfs_port
 
 IPFS_API = None
@@ -13,7 +13,7 @@ IPFS_CACHE = {}
 try:
     IPFS_API = ipfsapi.connect(get_ipfs_host(), get_ipfs_port())
 except Exception as ex:
-    logging.getLogger('Spellbook').error('IPFS node is not running: %s' % ex)
+    LOG.error('IPFS node is not running: %s' % ex)
 
 
 def add_json(data):
@@ -22,8 +22,8 @@ def add_json(data):
     try:
         multihash = IPFS_API.add_json(data)
     except Exception as e:
-        logging.getLogger('Spellbook').error('Failed to store json data on IPFS: %s' % e)
-        logging.getLogger('Spellbook').error('Sleeping 1 second before trying again...')
+        LOG.error('Failed to store json data on IPFS: %s' % e)
+        LOG.error('Sleeping 1 second before trying again...')
         time.sleep(1)
         multihash = IPFS_API.add_json(data)
 
@@ -39,8 +39,8 @@ def get_json(multihash):
     try:
         json = IPFS_API.get_json(multihash)
     except Exception as e:
-        logging.getLogger('Spellbook').error('Failed to retrieve json data from IPFS hash %s: %s' % (multihash, e))
-        logging.getLogger('Spellbook').error('Sleeping 1 second before trying again...')
+        LOG.error('Failed to retrieve json data from IPFS hash %s: %s' % (multihash, e))
+        LOG.error('Sleeping 1 second before trying again...')
         time.sleep(1)
         json = IPFS_API.get_json(multihash)
 

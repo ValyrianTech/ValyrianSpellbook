@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import os
-import logging
 import simplejson
+
+from helpers.loghelpers import LOG
 
 
 def save_to_json_file(filename, data):
@@ -16,7 +17,7 @@ def save_to_json_file(filename, data):
         with open(filename, 'w') as output_file:
             simplejson.dump(data, output_file, indent=4, sort_keys=True)
     except Exception as ex:
-        logging.getLogger('Spellbook').error('Failed to save data to json file %s: %s' % (filename, ex))
+        LOG.error('Failed to save data to json file %s: %s' % (filename, ex))
 
 
 def load_from_json_file(filename):
@@ -31,6 +32,6 @@ def load_from_json_file(filename):
         try:
             data = simplejson.load(input_file)
         except Exception as ex:
-            logging.getLogger('Spellbook').error('Failed to load %s: %s' % (filename, ex))
+            LOG.error('Failed to load %s: %s' % (filename, ex))
 
     return data

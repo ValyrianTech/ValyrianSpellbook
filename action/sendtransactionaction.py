@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import logging
 import operator
 
+from helpers.loghelpers import LOG
 from action import Action
 from actiontype import ActionType
 from data.data import utxos, prime_input_address, push_tx
@@ -162,10 +162,10 @@ class SendTransactionAction(Action):
         :return: True upon success, False upon failure
         """
         if self.sending_address is None:
-            logging.getLogger('Spellbook').error('Can not activate SendTransaction action: sending address is None!')
+            LOG.error('Can not activate SendTransaction action: sending address is None!')
             return False
 
-        logging.getLogger('Spellbook').info('Activating SendTransaction action %s' % self.id)
+        LOG.info('Activating SendTransaction action %s' % self.id)
 
         # Retrieve the available utxos of the sending address and construct a list of TransactionInput objects containing the necessary information for the inputs of a transaction
         # All available utxos will be used even if a subset would be enough, this is to avoid a scenario where the transaction fee would cause another utxo to be needed
@@ -182,7 +182,7 @@ class SendTransactionAction(Action):
                                                      confirmations=utxo['confirmations']) for utxo in data['utxos']]
         else:
             error_msg = data['error'] if 'error' in data else ''
-            logging.getLogger('Spellbook').error('Error while retrieving utxos: %s' % error_msg)
+            LOG.error('Error while retrieving utxos: %s' % error_msg)
             return False
 
         tx_inputs = self.construct_transaction_inputs()
@@ -190,26 +190,26 @@ class SendTransactionAction(Action):
             return False
 
         total_value_in_inputs = int(sum([utxo['value'] for utxo in tx_inputs]))
-        logging.getLogger('Spellbook').info('Total available value in utxos: %d' % total_value_in_inputs)
+        LOG.info('Total available value in utxos: %d' % total_value_in_inputs)
 
         if total_value_in_inputs < self.minimum_amount:
-            logging.getLogger('Spellbook').error('SendTransaction action aborted: Total value is less than minimum amount: %s' % self.minimum_amount)
+            LOG.error('SendTransaction action aborted: Total value is less than minimum amount: %s' % self.minimum_amount)
             return False
 
         spellbook_fee = self.calculate_spellbook_fee(total_value_in_inputs)
 
         if self.amount == 0 and total_value_in_inputs < spellbook_fee:
-            logging.getLogger('Spellbook').error('SendTransaction action aborted: Total input value is less than the spellbook fee: %s < %s' % (total_value_in_inputs, spellbook_fee))
+            LOG.error('SendTransaction action aborted: Total input value is less than the spellbook fee: %s < %s' % (total_value_in_inputs, spellbook_fee))
             return False
         elif total_value_in_inputs < spellbook_fee + self.amount:
-            logging.getLogger('Spellbook').error('SendTransaction action aborted: Total input value is not enough: %s < %s + %s' % (total_value_in_inputs, self.amount, spellbook_fee))
+            LOG.error('SendTransaction action aborted: Total input value is not enough: %s < %s + %s' % (total_value_in_inputs, self.amount, spellbook_fee))
             return False
 
         sending_amount = total_value_in_inputs - spellbook_fee if self.amount == 0 else self.amount
         receiving_outputs = self.get_receiving_outputs(sending_amount)
 
         if len(receiving_outputs) == 0:
-            logging.getLogger('Spellbook').error('SendTransaction action aborted: There are no receiving outputs!')
+            LOG.error('SendTransaction action aborted: There are no receiving outputs!')
             return False
 
         change_output = None
@@ -242,24 +242,24 @@ class SendTransactionAction(Action):
 
         # Get the current optimal transaction fee
         optimal_fee = get_optimal_fee()
-        logging.getLogger('Spellbook').info('Optimal transaction fee is %s sat/b' % optimal_fee)
+        LOG.info('Optimal transaction fee is %s sat/b' % optimal_fee)
 
         # Because the transaction is in hexadecimal, to calculate the size in bytes all we need to do is divide the number of characters by 2
         transaction_size = len(transaction) / 2
         transaction_fee = transaction_size * optimal_fee
-        logging.getLogger('Spellbook').info('Transaction size is %s bytes, total transaction fee = %s (%s sat/b)' % (transaction_size, transaction_fee, optimal_fee))
+        LOG.info('Transaction size is %s bytes, total transaction fee = %s (%s sat/b)' % (transaction_size, transaction_fee, optimal_fee))
 
         # if the total available amount needs to be sent, then transaction fee should be equally subtracted from all receiving_outputs
         if self.amount == 0:
             total_sending_value = sum([output.value for output in receiving_outputs])
             if total_sending_value < transaction_fee:
-                logging.getLogger('Spellbook').error('Aborting SendTransaction: The total value of the receiving outputs is less than the transaction fee: %s < %s' % (total_sending_value, transaction_fee))
+                LOG.error('Aborting SendTransaction: The total value of the receiving outputs is less than the transaction fee: %s < %s' % (total_sending_value, transaction_fee))
                 return False
 
             fee_share = transaction_fee/len(receiving_outputs)
             for receiving_output in receiving_outputs:
                 if receiving_output.value < fee_share:
-                    logging.getLogger('Spellbook').error('Aborting SendTransaction: The value of at least one receiving output is not enough to subtract its share of the transaction fee: %s < %s' % (receiving_output.value, fee_share))
+                    LOG.error('Aborting SendTransaction: The value of at least one receiving output is not enough to subtract its share of the transaction fee: %s < %s' % (receiving_output.value, fee_share))
                     return False
                 else:
                     receiving_output.value -= fee_share
@@ -270,7 +270,7 @@ class SendTransactionAction(Action):
         # if a specific amount needs to be sent, then the transaction fee should be subtracted from the change output
         elif self.amount > 0 and change_output is not None:
             if change_output.value < transaction_fee:
-                logging.getLogger('Spellbook').error('Aborting SendTransaction: The value of the change output is less than the transaction fee: %s < %s' % (change_output.value, transaction_fee))
+                LOG.error('Aborting SendTransaction: The value of the change output is less than the transaction fee: %s < %s' % (change_output.value, transaction_fee))
                 return False
             else:
                 change_output.value -= transaction_fee
@@ -295,14 +295,14 @@ class SendTransactionAction(Action):
         if transaction is None:
             return False
 
-        logging.getLogger('Spellbook').info('Raw transaction: %s' % transaction)
+        LOG.info('Raw transaction: %s' % transaction)
 
         # Broadcast the transaction to the network
         response = push_tx(tx=transaction)
         if 'success' in response and response['success'] is True:
             return True
         else:
-            logging.getLogger('Spellbook').error('Broadcasting tx failed: %s' % response['error'])
+            LOG.error('Broadcasting tx failed: %s' % response['error'])
             return False
 
     def get_private_key(self):
@@ -318,7 +318,7 @@ class SendTransactionAction(Action):
             if self.sending_address in hot_wallet:
                 private_keys[self.sending_address] = hot_wallet[self.sending_address]
             else:
-                logging.getLogger('Spellbook').error('Private key for address %s not found in hot wallet!' % self.sending_address)
+                LOG.error('Private key for address %s not found in hot wallet!' % self.sending_address)
 
             # explicitly delete local variable hot_wallet for security reasons as soon as possible
             del hot_wallet
@@ -355,7 +355,7 @@ class SendTransactionAction(Action):
             if spellbook_fee < self.fee_minimum_amount:
                 spellbook_fee = self.fee_minimum_amount
 
-            logging.getLogger('Spellbook').info('Spellbook fee: %s' % spellbook_fee)
+            LOG.info('Spellbook fee: %s' % spellbook_fee)
 
         return spellbook_fee
 
@@ -367,9 +367,9 @@ class SendTransactionAction(Action):
         """
 
         if self.unspent_outputs is not None and len(self.unspent_outputs) > 0:
-            logging.getLogger('Spellbook').info('Found %s utxos for address %s' % (len(self.unspent_outputs), self.sending_address))
+            LOG.info('Found %s utxos for address %s' % (len(self.unspent_outputs), self.sending_address))
         else:
-            logging.getLogger('Spellbook').error('No utxos found for address %s' % self.sending_address)
+            LOG.error('No utxos found for address %s' % self.sending_address)
 
         # Construct the transaction inputs
         tx_inputs = [{'address': utxo.address,
@@ -412,122 +412,122 @@ class SendTransactionAction(Action):
 
     def get_distribution(self, transaction_type, sending_amount):
         if not valid_amount(sending_amount) or sending_amount == 0:
-            logging.getLogger('Spellbook').error('Unable to get distribution: invalid sending_amount: %s' % sending_amount)
+            LOG.error('Unable to get distribution: invalid sending_amount: %s' % sending_amount)
             raise Exception('Unable to get distribution: invalid sending_amount: %s' % sending_amount)
 
         if transaction_type == 'Send2Single':
             if not valid_address(self.receiving_address):
-                logging.getLogger('Spellbook').error('Unable to get distribution: invalid receiving_address: %s' % self.receiving_address)
+                LOG.error('Unable to get distribution: invalid receiving_address: %s' % self.receiving_address)
                 raise Exception('Unable to get distribution: invalid receiving_address: %s' % self.receiving_address)
             distribution = {self.receiving_address: sending_amount}
 
         elif transaction_type == 'Send2Many':
             if not valid_distribution(self.distribution):
-                logging.getLogger('Spellbook').error('Unable to get distribution: invalid distribution: %s' % self.distribution)
+                LOG.error('Unable to get distribution: invalid distribution: %s' % self.distribution)
                 raise Exception('Unable to get distribution: invalid distribution: %s' % self.distribution)
             distribution = self.distribution
 
         elif transaction_type == 'Send2SIL':
             if not valid_address(self.registration_address):
-                logging.getLogger('Spellbook').error('Unable to get distribution: invalid registration_address: %s' % self.registration_address)
+                LOG.error('Unable to get distribution: invalid registration_address: %s' % self.registration_address)
                 raise Exception('Unable to get distribution: invalid registration_address: %s' % self.registration_address)
             if not valid_block_height(self.registration_block_height):
-                logging.getLogger('Spellbook').error('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
+                LOG.error('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
                 raise Exception('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
 
             data = get_sil(address=self.registration_address, block_height=self.registration_block_height)
             if 'SIL' not in data:
-                logging.getLogger('Spellbook').error('Unable to get distribution: invalid SIL data: %s' % data)
+                LOG.error('Unable to get distribution: invalid SIL data: %s' % data)
                 raise Exception('Unable to get distribution: invalid SIL: %s' % data)
             distribution = {recipient[0]: recipient[1] for recipient in data['SIL']}
 
         elif transaction_type == 'Send2LBL':
             if not valid_address(self.registration_address):
-                logging.getLogger('Spellbook').error('Unable to get distribution: invalid registration_address: %s' % self.registration_address)
+                LOG.error('Unable to get distribution: invalid registration_address: %s' % self.registration_address)
                 raise Exception('Unable to get distribution: invalid registration_address: %s' % self.registration_address)
             if not valid_xpub(self.registration_xpub):
-                logging.getLogger('Spellbook').error('Unable to get distribution: invalid registration_xpub: %s' % self.registration_xpub)
+                LOG.error('Unable to get distribution: invalid registration_xpub: %s' % self.registration_xpub)
                 raise Exception('Unable to get distribution: invalid registration_xpub: %s' % self.registration_xpub)
             if not valid_block_height(self.registration_block_height):
-                logging.getLogger('Spellbook').error('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
+                LOG.error('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
                 raise Exception('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
 
             data = get_lbl(address=self.registration_address, xpub=self.registration_xpub, block_height=self.registration_block_height)
             if 'LBL' not in data:
-                logging.getLogger('Spellbook').error('Unable to get distribution: invalid LBL data: %s' % data)
+                LOG.error('Unable to get distribution: invalid LBL data: %s' % data)
                 raise Exception('Unable to get distribution: invalid LBL: %s' % data)
             distribution = {recipient[0]: recipient[1] for recipient in data['LBL']}
 
         elif transaction_type == 'Send2LRL':
             if not valid_address(self.registration_address):
-                logging.getLogger('Spellbook').error('Unable to get distribution: invalid registration_address: %s' % self.registration_address)
+                LOG.error('Unable to get distribution: invalid registration_address: %s' % self.registration_address)
                 raise Exception('Unable to get distribution: invalid registration_address: %s' % self.registration_address)
             if not valid_xpub(self.registration_xpub):
-                logging.getLogger('Spellbook').error('Unable to get distribution: invalid registration_xpub: %s' % self.registration_xpub)
+                LOG.error('Unable to get distribution: invalid registration_xpub: %s' % self.registration_xpub)
                 raise Exception('Unable to get distribution: invalid registration_xpub: %s' % self.registration_xpub)
             if not valid_block_height(self.registration_block_height):
-                logging.getLogger('Spellbook').error('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
+                LOG.error('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
                 raise Exception('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
 
             data = get_lrl(address=self.registration_address, xpub=self.registration_xpub, block_height=self.registration_block_height)
             if 'LRL' not in data:
-                logging.getLogger('Spellbook').error('Unable to get distribution: invalid LRL data: %s' % data)
+                LOG.error('Unable to get distribution: invalid LRL data: %s' % data)
                 raise Exception('Unable to get distribution: invalid LRL: %s' % data)
             distribution = {recipient[0]: recipient[1] for recipient in data['LRL']}
 
         elif transaction_type == 'Send2LSL':
             if not valid_address(self.registration_address):
-                logging.getLogger('Spellbook').error('Unable to get distribution: invalid registration_address: %s' % self.registration_address)
+                LOG.error('Unable to get distribution: invalid registration_address: %s' % self.registration_address)
                 raise Exception('Unable to get distribution: invalid registration_address: %s' % self.registration_address)
             if not valid_xpub(self.registration_xpub):
-                logging.getLogger('Spellbook').error('Unable to get distribution: invalid registration_xpub: %s' % self.registration_xpub)
+                LOG.error('Unable to get distribution: invalid registration_xpub: %s' % self.registration_xpub)
                 raise Exception('Unable to get distribution: invalid registration_xpub: %s' % self.registration_xpub)
             if not valid_block_height(self.registration_block_height):
-                logging.getLogger('Spellbook').error('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
+                LOG.error('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
                 raise Exception('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
 
             data = get_lsl(address=self.registration_address, xpub=self.registration_xpub, block_height=self.registration_block_height)
             if 'LSL' not in data:
-                logging.getLogger('Spellbook').error('Unable to get distribution: invalid LSL data: %s' % data)
+                LOG.error('Unable to get distribution: invalid LSL data: %s' % data)
                 raise Exception('Unable to get distribution: invalid LSL: %s' % data)
             distribution = {recipient[0]: recipient[1] for recipient in data['LSL']}
 
         elif transaction_type == 'Send2LAL':
             if not valid_address(self.sending_address):
-                logging.getLogger('Spellbook').error('Unable to get distribution: invalid sending_address: %s' % self.sending_address)
+                LOG.error('Unable to get distribution: invalid sending_address: %s' % self.sending_address)
                 raise Exception('Unable to get distribution: invalid sending_address: %s' % self.sending_address)
             if not valid_xpub(self.registration_xpub):
-                logging.getLogger('Spellbook').error('Unable to get distribution: invalid registration_xpub: %s' % self.registration_xpub)
+                LOG.error('Unable to get distribution: invalid registration_xpub: %s' % self.registration_xpub)
                 raise Exception('Unable to get distribution: invalid registration_xpub: %s' % self.registration_xpub)
             if not valid_block_height(self.registration_block_height):
-                logging.getLogger('Spellbook').error('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
+                LOG.error('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
                 raise Exception('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
 
             # The registration address of a LAL must always be the sending address
             data = get_lal(address=self.sending_address, xpub=self.registration_xpub, block_height=self.registration_block_height)
             if 'LAL' not in data:
-                logging.getLogger('Spellbook').error('Unable to get distribution: invalid LAL data: %s' % data)
+                LOG.error('Unable to get distribution: invalid LAL data: %s' % data)
                 raise Exception('Unable to get distribution: invalid LAL: %s' % data)
 
-            logging.getLogger('Spellbook').info('LAL: %s' % data['LAL'])
+            LOG.info('LAL: %s' % data['LAL'])
             distribution = {}
             for utxo in self.unspent_outputs:
                 prime_input_address_data = prime_input_address(utxo.output_hash)
                 prime_input_address_of_utxo = prime_input_address_data['prime_input_address'] if 'prime_input_address' in prime_input_address_data else None
-                logging.getLogger('Spellbook').info('Prime input address of %s is %s' % (utxo.output_hash, prime_input_address_of_utxo))
+                LOG.info('Prime input address of %s is %s' % (utxo.output_hash, prime_input_address_of_utxo))
 
                 linked_address = [linked_address for input_address, linked_address in data['LAL'] if input_address == prime_input_address_of_utxo]
                 # There should be exactly 1 linked address
                 if len(linked_address) == 1:
                     distribution[linked_address[0]] = utxo.value
                 else:
-                    logging.getLogger('Spellbook').error('Something went wrong with the LAL: found %s linked addresses, should be exactly 1!' % len(linked_address))
+                    LOG.error('Something went wrong with the LAL: found %s linked addresses, should be exactly 1!' % len(linked_address))
                     raise Exception('Something went wrong with the LAL: found %s linked addresses, should be exactly 1!' % len(linked_address))
 
         else:
             raise NotImplementedError('Unknown transaction type %s' % transaction_type)
 
-        logging.getLogger('Spellbook').info('distribution: %s' % distribution)
+        LOG.info('distribution: %s' % distribution)
         return distribution
 
     def get_receiving_outputs(self, sending_amount):
@@ -561,16 +561,16 @@ class SendTransactionAction(Action):
 
             receiving_value = int(share * sending_amount)
             if receiving_value < self.minimum_output_value:
-                logging.getLogger('Spellbook').info('Excluding %s from distribution because output value is less than minimum output value: %s < %s' % (address, receiving_value, self.minimum_output_value))
+                LOG.info('Excluding %s from distribution because output value is less than minimum output value: %s < %s' % (address, receiving_value, self.minimum_output_value))
                 del sorted_distribution[i]
             else:
                 remaining_amount -= receiving_value
                 receiving_outputs.append(TransactionOutput(address, receiving_value))
-                logging.getLogger('Spellbook').info('receiving output: %s -> %s' % (receiving_value, address))
+                LOG.info('receiving output: %s -> %s' % (receiving_value, address))
 
         # If rounding errors are causing a few satoshis remaining, the first output gets them
         if remaining_amount > 0 and len(receiving_outputs) > 0:
-            logging.getLogger('Spellbook').info('Remaining %s Satoshi(s) go to address %s' % (remaining_amount, receiving_outputs[0].address))
+            LOG.info('Remaining %s Satoshi(s) go to address %s' % (remaining_amount, receiving_outputs[0].address))
             receiving_outputs[0].value += remaining_amount
 
         return receiving_outputs
@@ -583,18 +583,18 @@ class SendTransactionAction(Action):
         :param tx_outputs: The transaction outputs
         """
         if self.amount == 0:
-            logging.getLogger('Spellbook').info('New %s transaction: sending ALL available funds' % self.transaction_type)
+            LOG.info('New %s transaction: sending ALL available funds' % self.transaction_type)
         else:
-            logging.getLogger('Spellbook').info('New %s transaction: sending %s satoshis' % (self.transaction_type, self.amount))
+            LOG.info('New %s transaction: sending %s satoshis' % (self.transaction_type, self.amount))
 
         for tx_input in tx_inputs:
-            logging.getLogger('Spellbook').info('INPUT: %s -> %s (%s)' % (tx_input['address'], tx_input['value'], tx_input['output']))
+            LOG.info('INPUT: %s -> %s (%s)' % (tx_input['address'], tx_input['value'], tx_input['output']))
 
         for tx_output in tx_outputs:
-            logging.getLogger('Spellbook').info('OUTPUT: %s -> %s' % (tx_output['address'], tx_output['value']))
+            LOG.info('OUTPUT: %s -> %s' % (tx_output['address'], tx_output['value']))
 
         if self.op_return_data is not None:
-            logging.getLogger('Spellbook').info('OUTPUT: OP_RETURN -> %s' % self.op_return_data)
+            LOG.info('OUTPUT: OP_RETURN -> %s' % self.op_return_data)
 
     @staticmethod
     def is_fee_acceptable(transaction_fee, total_value_in_inputs):
@@ -609,10 +609,10 @@ class SendTransactionAction(Action):
         tx_fee_percentage = transaction_fee/float(total_value_in_inputs)*100
 
         if 0 < get_max_tx_fee_percentage() < tx_fee_percentage:
-            logging.getLogger('Spellbook').error('Aborting SendTransaction: The transaction fee is too damn high: %s (%s percent of total input value)' % (transaction_fee, tx_fee_percentage))
+            LOG.error('Aborting SendTransaction: The transaction fee is too damn high: %s (%s percent of total input value)' % (transaction_fee, tx_fee_percentage))
             return False
         else:
-            logging.getLogger('Spellbook').info('TRANSACTION FEE: %s (%s percent of total input value)' % (transaction_fee, tx_fee_percentage))
+            LOG.info('TRANSACTION FEE: %s (%s percent of total input value)' % (transaction_fee, tx_fee_percentage))
             return True
 
 
