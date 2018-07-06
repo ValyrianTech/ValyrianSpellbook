@@ -20,7 +20,7 @@ from transactiontype import TransactionType
 from validators.validators import valid_address, valid_xpub, valid_amount, valid_op_return, valid_block_height
 from validators.validators import valid_transaction_type, valid_distribution, valid_percentage
 
-
+# Todo add option only_once so the action can not be run multiple times as a safety measure
 class SendTransactionAction(Action):
     def __init__(self, action_id):
         super(SendTransactionAction, self).__init__(action_id=action_id)
