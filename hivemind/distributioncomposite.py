@@ -13,10 +13,10 @@ class DistributionComposite(CompositeHivemind):
             LOG.error('Distribution Composite hivemind does not contain all necessary components!')
             return
 
-        priority_state_hash = get_hivemind_state_hash(self.components['priority'])
-        number_of_recipients_state_hash = get_hivemind_state_hash(self.components['number_of_recipients'])
-        budget_state_hash = get_hivemind_state_hash(self.components['budget'])
-        budget_slope_state_hash = get_hivemind_state_hash(self.components['budget_slope'])
+        priority_state_hash = get_hivemind_state_hash(self.components['priority'][0])
+        number_of_recipients_state_hash = get_hivemind_state_hash(self.components['number_of_recipients'][0])
+        budget_state_hash = get_hivemind_state_hash(self.components['budget'][0])
+        budget_slope_state_hash = get_hivemind_state_hash(self.components['budget_slope'][0])
 
         priority_state = HivemindState(state_hash=priority_state_hash)
         number_of_recipients_state = HivemindState(state_hash=number_of_recipients_state_hash)
@@ -24,10 +24,10 @@ class DistributionComposite(CompositeHivemind):
         budget_slope_state = HivemindState(state_hash=budget_slope_state_hash)
 
         # todo check if there is a consensus on each value
-        priority = priority_state.get_consensus()
-        number_of_recipients = number_of_recipients_state.get_consensus()
-        budget = budget_state.get_consensus()
-        budget_slope = budget_slope_state.get_consensus()
+        priority = priority_state.get_consensus(question_index=self.components['priority'][1])
+        number_of_recipients = number_of_recipients_state.get_consensus(question_index=self.components['number_of_recipients'][1])
+        budget = budget_state.get_consensus(question_index=self.components['budget'][1])
+        budget_slope = budget_slope_state.get_consensus(question_index=self.components['budget_slope'][1])
 
         LOG.info('Distribution composite hivemind %s:' % self.composite_id)
         LOG.info('Recipients ordered by priority: %s' % priority)
@@ -35,7 +35,7 @@ class DistributionComposite(CompositeHivemind):
         LOG.info('Recipients ordered by budget: %s' % budget)
         LOG.info('Budget slope: %s' % budget_slope)
 
-        recipients = priority[:number_of_recipients]
+        recipients = priority[:number_of_recipients] if number_of_recipients is not None else []
 
         distribution = {}
         units = 1
