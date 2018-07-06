@@ -22,6 +22,7 @@ class RecurringTrigger(Trigger):
         if self.interval is None or self.begin_time is None or self.end_time is None:
             return False
 
+        # Todo allow for recurring triggers without an end_time
         if self.end_time <= int(time.time()):
             LOG.info('Recurring trigger %s has reached its end time' % self.id)
             self.status = 'Succeeded'
