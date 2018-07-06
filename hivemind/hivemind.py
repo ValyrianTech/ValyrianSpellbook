@@ -7,6 +7,8 @@ from helpers.loghelpers import LOG
 from helpers.ipfshelpers import add_json, get_json
 from validators.validators import valid_address, valid_bech32_address
 from taghash.taghash import TagHash
+from inputs.inputs import get_sil
+from linker.linker import get_lal
 
 
 class HivemindQuestion(object):
@@ -76,7 +78,18 @@ class HivemindQuestion(object):
             if constraint_type in constraints and not isinstance(constraints[constraint_type], list):
                 raise Exception('Value of constraint %s must be a list' % constraint_type)
 
-        if all([key in ['min_length', 'max_length', 'min_value', 'max_value', 'decimals', 'regex', 'specs', 'choices'] for key in constraints.keys()]):
+        for constraint_type in ['SIL', 'LAL']:
+            if constraint_type in constraints and not (valid_address(constraints[constraint_type]) or valid_bech32_address(constraints[constraint_type])):
+                raise Exception('Value of constraint %s must be a valid address' % constraint_type)
+
+        if 'LAL' in constraints and 'xpub' not in constraints:
+            raise Exception('Constraints that include a LAL must also have a xpub specified!')
+
+        for constraint_type in ['block_height']:
+            if constraint_type in constraints and not isinstance(constraints[constraint_type], (int, long)):
+                raise Exception('Value of constraint %s must be a integer' % constraint_type)
+
+        if all([key in ['min_length', 'max_length', 'min_value', 'max_value', 'decimals', 'regex', 'specs', 'choices', 'SIL', 'LAL', 'xpub', 'block_height'] for key in constraints.keys()]):
             self.constraints = constraints
         else:
             raise Exception('constraints contain an invalid key: %s' % constraints)
@@ -286,6 +299,35 @@ class HivemindOption(object):
         return True
 
     def is_valid_address_option(self):
+        if 'SIL' in self.hivemind_question.constraints or 'LAL' in self.hivemind_question.constraints:
+            address = self.hivemind_question.constraints['SIL']
+            block_height = self.hivemind_question.constraints['block_height'] if 'block_height' in self.hivemind_question.constraints else 0
+
+            if 'SIL' in self.hivemind_question.constraints:
+                data = get_sil(address=address, block_height=block_height)
+                if 'SIL' not in data:
+                    LOG.error('Unable to retrieve SIL of %s to verify constraints op hivemind option' % address)
+                    return False
+
+                for item in data['SIL']:
+                    if item[0] == self.value:  # assume data in SIL is valid
+                        return True
+
+                return False
+
+            elif 'LAL' in self.hivemind_question.constraints:
+                xpub = self.hivemind_question.constraints['xpub']
+                data = get_lal(address=address, xpub=xpub, block_height=block_height)
+                if 'LAL' not in data:
+                    LOG.error('Unable to retrieve LAL of %s to verify constraints of hivemind option' % address)
+                    return False
+
+                for item in data['LAL']:
+                    if item[1] == self.value:  # assume data in LAL is valid
+                        return True
+
+                return False
+
         return valid_address(self.value) or valid_bech32_address(self.value)
 
     def info(self):
@@ -337,6 +379,8 @@ class HivemindOpinion(object):
 
         self.ranked_choice = []
         self.auto_complete = None
+
+        self.question_index = 0
 
         if opinion_hash is not None:
             self.load(opinion_hash=opinion_hash)
@@ -394,6 +438,9 @@ class HivemindOpinion(object):
     def set_hivemind_state(self, hivemind_state_hash):
         self.hivemind_state_hash = hivemind_state_hash
         self.hivemind_state = HivemindState(state_hash=self.hivemind_state_hash)
+
+    def set_question_index(self, question_index):
+        self.question_index = question_index
 
     def get_unranked_option_ids(self):
         """
@@ -459,7 +506,8 @@ class HivemindOpinion(object):
         opinion_data = {'hivemind_state_hash': self.hivemind_state_hash,
                         'opinionator': self.opinionator,
                         'ranked_choice': self.ranked_choice,
-                        'auto_complete': self.auto_complete}
+                        'auto_complete': self.auto_complete,
+                        'question_index': self.question_index}
 
         self.opinion_hash = add_json(opinion_data)
         return self.opinion_hash
@@ -471,6 +519,7 @@ class HivemindOpinion(object):
         self.opinionator = opinion_data['opinionator']
         self.ranked_choice = opinion_data['ranked_choice']
         self.auto_complete = opinion_data['auto_complete']
+        self.question_index = opinion_data['question_index']
 
 
 class HivemindState(object):
