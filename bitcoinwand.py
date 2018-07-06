@@ -32,7 +32,7 @@ if not valid_address(args.address):
 data = {'address': args.address}
 
 # Find the private key of the address in the hot wallet
-account, index = find_address_in_wallet(address=data['address'], accounts=5)
+account, index = find_address_in_wallet(address=data['address'], accounts=100)  # Todo find better way to specify number of accounts to search
 if account is None or index is None:
     print >> sys.stderr, 'Can not find address in wallet!'
     sys.exit(1)
