@@ -48,3 +48,42 @@ def get_json(multihash):
         IPFS_CACHE[multihash] = json
 
     return json
+
+
+class IPFSDict(object):
+    def __init__(self, multihash=None):
+        self.multihash = multihash
+
+        if self.multihash is not None:
+            self.load(multihash=multihash)
+
+    def save(self):
+        data = {key: value for key, value in self.__dict__.items() if key != 'multihash'}
+
+        return add_json(data=data)
+
+    def load(self, multihash):
+        self.multihash = multihash
+
+        if not isinstance(multihash, (str, unicode)):
+            LOG.error('Can not retrieve IPFS data: multihash must be a string or unicode, got %s instead' % type(multihash))
+            return
+
+        try:
+            data = get_json(multihash=multihash)
+        except Exception as e:
+            LOG.error('Can not retrieve IPFS data of %s: %s' % (multihash, e))
+            return
+
+        if not isinstance(data, dict):
+            LOG.error('IPFS multihash %s does not contain a dict!' % multihash)
+            return
+
+        if self.is_valid(data=data):
+            for key, value in data.items():
+                if key != 'multihash':
+                    self.__setattr__(key, value)
+
+    def is_valid(self, data):
+        # Override this method to add validation for the data such as required keys and the contents of the values
+        return True
