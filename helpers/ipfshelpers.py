@@ -51,18 +51,41 @@ def get_json(multihash):
 
 
 class IPFSDict(object):
+    """
+    This class is meant to be a base class for saving and loading dictionaries on IPFS
+
+    child classes must only initialize the member variables (names must be identical to the keys in the dict)
+    before calling the __init__() of the base class
+
+    optionally override the is_valid() method to add validation for the dict
+    """
     def __init__(self, multihash=None):
+        """
+        Constructor of the IPFSDict class
+
+        :param multihash: An IPFS multihash
+        """
         self.multihash = multihash
 
         if self.multihash is not None:
             self.load(multihash=multihash)
 
     def save(self):
+        """
+        Save the dictionary on IPFS
+
+        :return: The IPFS multihash of the dictionary
+        """
         data = {key: value for key, value in self.__dict__.items() if key != 'multihash'}
 
         return add_json(data=data)
 
     def load(self, multihash):
+        """
+        Load a dictionary from IPFS
+
+        :param multihash: An IPFS multihash
+        """
         self.multihash = multihash
 
         if not isinstance(multihash, (str, unicode)):
@@ -85,5 +108,12 @@ class IPFSDict(object):
                     self.__setattr__(key, value)
 
     def is_valid(self, data):
-        # Override this method to add validation for the data such as required keys and the contents of the values
+        """
+        Validate the contents of the dictionary
+
+        Override this method to add validation for the data such as required keys and the contents of the values
+
+        :param data: A Dictionary object
+        :return: True or False
+        """
         return True
