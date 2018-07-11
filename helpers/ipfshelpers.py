@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 import ipfsapi
 import time
+import os
+import shutil
+import zipfile
 
 from helpers.loghelpers import LOG
 from helpers.configurationhelpers import get_ipfs_host, get_ipfs_port
@@ -78,6 +81,53 @@ def get_str(multihash):
         IPFS_CACHE[multihash] = string
 
     return string
+
+
+def add_zipped_dir(directory_path, name):
+    """
+    Zip a directory and add the zip file to IPFS
+
+    :param directory_path: The path to the directory
+    :param name: The name of the zip file
+    :return: A dict containing the ipfs info of the zip file (Hash, Name and Size)
+    """
+    if not os.path.isdir(directory_path):
+        LOG.error('Can not add directory to IPFS: %s not found!' % directory_path)
+        return
+
+    shutil.make_archive(name, format='zip', root_dir=directory_path)
+    zip_file_name = '%s.zip' % name
+    ipfs_info = IPFS_API.add(zip_file_name)
+    LOG.info('Compressed directory into zip file and added to IPFS: %s' % ipfs_info)
+
+    # Clean up the temporary zip file
+    if os.path.isfile(zip_file_name):
+        os.remove(zip_file_name)
+
+    return ipfs_info
+
+
+def get_zipped_dir(multihash, target_dir):
+    """
+    Get a zipped directory from IPFS and extract it into the target directory
+
+    :param multihash: The IPFS multihash of the directory in zipped format
+    :param target_dir: The target directory where the contents of the zipfile will be extracted
+    """
+    IPFS_API.get(multihash)
+
+    if not os.path.isdir(target_dir):
+        os.makedirs(target_dir)
+
+    try:
+        with zipfile.ZipFile(multihash, "r") as z:
+            z.extractall(target_dir)
+    except Exception as e:
+        LOG.error('Can not extract zipped dir %s: %s' % (multihash, e))
+    finally:
+        # Clean up the temporary zip file
+        if os.path.isfile(multihash):
+            os.remove(multihash)
 
 
 class IPFSDict(object):
