@@ -50,6 +50,36 @@ def get_json(multihash):
     return json
 
 
+def add_str(string):
+    global IPFS_API
+
+    try:
+        multihash = IPFS_API.add_str(string=string)
+    except Exception as e:
+        LOG.error('Unable to store string on IPFS: %s' % e)
+        raise Exception('IPFS failure')
+
+    return multihash
+
+
+def get_str(multihash):
+    global IPFS_API, IPFS_CACHE
+
+    if multihash in IPFS_CACHE:
+        return IPFS_CACHE[multihash]
+
+    try:
+        string = IPFS_API.cat(multihash=multihash)
+    except Exception as e:
+        LOG.error('Unable to retrieve string from IPFS with multihash %s: %s' % (multihash, e))
+        raise Exception('IPFS failure')
+
+    if multihash not in IPFS_CACHE:
+        IPFS_CACHE[multihash] = string
+
+    return string
+
+
 class IPFSDict(object):
     """
     This class is meant to be a base class for saving and loading dictionaries on IPFS
@@ -69,6 +99,14 @@ class IPFSDict(object):
 
         if self.multihash is not None:
             self.load(multihash=multihash)
+
+    def get(self):
+        """
+        Get the contents of the dictionary
+
+        :return: A dict
+        """
+        return {key: value for key, value in self.__dict__.items() if key != 'multihash'}
 
     def save(self):
         """
