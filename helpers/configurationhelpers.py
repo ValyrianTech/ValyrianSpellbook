@@ -93,3 +93,8 @@ def get_ipfs_host():
 @verify_config('IPFS', 'port')
 def get_ipfs_port():
     return spellbook_config().get('IPFS', 'port')
+
+
+@verify_config('APPS', 'app_data_dir')
+def get_app_data_dir():
+    return spellbook_config().get('APPS', 'app_data_dir')
