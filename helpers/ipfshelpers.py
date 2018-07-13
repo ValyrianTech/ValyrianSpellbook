@@ -75,7 +75,7 @@ def get_str(multihash):
         string = IPFS_API.cat(multihash=multihash)
     except Exception as e:
         LOG.error('Unable to retrieve string from IPFS with multihash %s: %s' % (multihash, e))
-        raise Exception('IPFS failure')
+        raise Exception('IPFS failure: %s' % e)
 
     if multihash not in IPFS_CACHE:
         IPFS_CACHE[multihash] = string
@@ -204,4 +204,10 @@ class IPFSDict(object):
         :param data: A Dictionary object
         :return: True or False
         """
+        required_keys = [key for key in self.__dict__.keys() if key != 'multihash']
+        for required_key in required_keys:
+            if required_key not in data:
+                LOG.error('%s is not a valid IPFSDict hash: it does not contain the key "%s"' % (self.multihash, required_key))
+                return False
+
         return True
