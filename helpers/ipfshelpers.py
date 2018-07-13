@@ -164,9 +164,7 @@ class IPFSDict(object):
 
         :return: The IPFS multihash of the dictionary
         """
-        data = {key: value for key, value in self.__dict__.items() if key != 'multihash'}
-
-        return add_json(data=data)
+        return add_json(data=self.get())
 
     def load(self, multihash):
         """
@@ -211,3 +209,73 @@ class IPFSDict(object):
                 return False
 
         return True
+
+
+class IPFSDictChain(IPFSDict):
+    """
+    An IPFSDict object that also keeps track of changes made to the contents
+    """
+    def __init__(self, multihash=None):
+        """
+        Constructor of the IPFSDictChain class
+
+        :param multihash: An IPFS multihash (optional)
+        """
+        self.previous_multihash = None
+
+        super(IPFSDictChain, self).__init__(multihash=multihash)
+
+    def save(self):
+        """
+        Save the dictionary on IPFS with a reference to the previous state
+
+        :return: An IPFS multihash of the dict
+        """
+        if self.multihash is not None:
+            old_data = IPFSDictChain(multihash=self.multihash).get()
+            if old_data != self.get():
+                self.previous_multihash = self.multihash
+
+        return add_json(data=self.get())
+
+    def changes(self):
+        """
+        Get the changes between this state and the previous state
+
+        :return: A dict containing the changed values
+        """
+        changes = {}
+        if self.previous_multihash is not None:
+            old_data = IPFSDictChain(multihash=self.previous_multihash).get()
+
+            for key in old_data:
+                if old_data[key] != self.__getattribute__(key):
+                    changes[key] = {'old': old_data[key], 'new': self.__getattribute__(key)}
+        else:
+            for key in self.get():
+                changes[key] = {'new': self.__getattribute__(key)}
+
+        return changes
+
+    def change_log(self, max_depth=None):
+        """
+        Get the change log of the IPFSDictChain
+
+        :param max_depth: An integer indicating how deep to follow the chain (optional)
+        :return: A list containing the changes between each item on the chain
+        """
+        depth = 0
+        change_log = [self.changes()]
+
+        previous_multihash = self.previous_multihash
+        while previous_multihash is not None:
+            if max_depth is not None and depth >= max_depth:
+                break
+
+            previous_state = IPFSDictChain(multihash=previous_multihash)
+            change_log.append(previous_state.changes())
+            previous_multihash = previous_state.previous_multihash
+
+            depth += 1
+
+        return change_log
