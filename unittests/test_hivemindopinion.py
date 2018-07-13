@@ -4,18 +4,18 @@ import os
 # Change working dir up one level
 os.chdir("..")
 
-from hivemind.hivemind import HivemindQuestion, HivemindOption, HivemindState, HivemindOpinion
+from hivemind.hivemind import HivemindIssue, HivemindOption, HivemindState, HivemindOpinion
 
-hivemind_question = HivemindQuestion()
-hivemind_question.add_question(question='What is the Answer to the Ultimate Question of Life, the Universe, and Everything?')
-hivemind_question.set_description(description='What is the meaning of life?')
-hivemind_question.set_tags(tags="Don't panic!")
-hivemind_question.answer_type = 'String'
-hivemind_question.set_constraints({'min_length': 2, 'max_length': 10, 'regex': '^[a-zA-Z0-9]+'})
-STRING_QUESTION_HASH = hivemind_question.save()
+hivemind_issue = HivemindIssue()
+hivemind_issue.add_question(question='What is the Answer to the Ultimate Question of Life, the Universe, and Everything?')
+hivemind_issue.set_description(description='What is the meaning of life?')
+hivemind_issue.set_tags(tags="Don't panic!")
+hivemind_issue.answer_type = 'String'
+hivemind_issue.set_constraints({'min_length': 2, 'max_length': 10, 'regex': '^[a-zA-Z0-9]+'})
+STRING_ISSUE_HASH = hivemind_issue.save()
 
 hivemind_option = HivemindOption()
-hivemind_option.set_hivemind_question(STRING_QUESTION_HASH)
+hivemind_option.set_hivemind_issue(STRING_ISSUE_HASH)
 hivemind_option.set('42')
 
 STRING_OPTION1_HASH = hivemind_option.save()
@@ -24,21 +24,21 @@ hivemind_option.set('fortytwo')
 STRING_OPTION2_HASH = hivemind_option.save()
 
 hivemind_state = HivemindState()
-hivemind_state.set_hivemind_question(question_hash=STRING_QUESTION_HASH)
+hivemind_state.set_hivemind_issue(issue_hash=STRING_ISSUE_HASH)
 hivemind_state.add_option(STRING_OPTION1_HASH)
 hivemind_state.add_option(STRING_OPTION2_HASH)
 
 STRING_STATE_HASH = hivemind_state.save()
 
-hivemind_question = HivemindQuestion()
-hivemind_question.add_question(question='Choose a number')
-hivemind_question.set_description(description='Choose a number')
-hivemind_question.answer_type = 'Integer'
-hivemind_question.set_constraints({'min_value': 0, 'max_value': 10})
-INTEGER_QUESTION_HASH = hivemind_question.save()
+hivemind_issue = HivemindIssue()
+hivemind_issue.add_question(question='Choose a number')
+hivemind_issue.set_description(description='Choose a number')
+hivemind_issue.answer_type = 'Integer'
+hivemind_issue.set_constraints({'min_value': 0, 'max_value': 10})
+INTEGER_QUESTION_HASH = hivemind_issue.save()
 
 hivemind_option = HivemindOption()
-hivemind_option.set_hivemind_question(INTEGER_QUESTION_HASH)
+hivemind_option.set_hivemind_issue(INTEGER_QUESTION_HASH)
 hivemind_option.set(8)
 
 INTEGER_OPTION1_HASH = hivemind_option.save()
@@ -56,7 +56,7 @@ hivemind_option.set(4)
 INTEGER_OPTION5_HASH = hivemind_option.save()
 
 hivemind_state = HivemindState()
-hivemind_state.set_hivemind_question(question_hash=INTEGER_QUESTION_HASH)
+hivemind_state.set_hivemind_issue(issue_hash=INTEGER_QUESTION_HASH)
 hivemind_state.add_option(INTEGER_OPTION1_HASH)
 hivemind_state.add_option(INTEGER_OPTION2_HASH)
 hivemind_state.add_option(INTEGER_OPTION3_HASH)

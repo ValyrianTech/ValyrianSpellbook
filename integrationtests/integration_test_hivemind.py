@@ -9,7 +9,7 @@ import random
 # Change working dir up one level
 os.chdir("..")
 
-from hivemind.hivemind import HivemindQuestion, HivemindOption, HivemindOpinion, HivemindState
+from hivemind_issue.hivemind import HivemindIssue, HivemindOption, HivemindOpinion, HivemindState
 from helpers.ipfshelpers import IPFS_API
 from helpers.BIP44 import set_testnet
 from helpers.configurationhelpers import get_use_testnet
@@ -31,33 +31,33 @@ print 'question:', question
 print 'description:', description
 print 'option_type:', option_type
 
-hivemind = HivemindQuestion()
-assert isinstance(hivemind, HivemindQuestion)
+hivemind_issue = HivemindIssue()
+assert isinstance(hivemind_issue, HivemindIssue)
 
-hivemind.add_question(question=question)
-assert hivemind.questions[0] == question
+hivemind_issue.add_question(question=question)
+assert hivemind_issue.questions[0] == question
 
-hivemind.set_description(description=description)
-assert hivemind.description == description
+hivemind_issue.set_description(description=description)
+assert hivemind_issue.description == description
 
-hivemind.set_answer_type(answer_type=option_type)
-assert hivemind.answer_type == option_type
+hivemind_issue.set_answer_type(answer_type=option_type)
+assert hivemind_issue.answer_type == option_type
 
-hivemind.set_tags(tags='mycompanyhash')
-assert hivemind.tags == 'mycompanyhash'
+hivemind_issue.set_tags(tags='mycompanyhash')
+assert hivemind_issue.tags == 'mycompanyhash'
 
-hivemind_id = hivemind.id()
+hivemind_id = hivemind_issue.id()
 print 'hivemind_id:', hivemind_id
 hivemind_id_hash = IPFS_API.add_str(hivemind_id)
 print 'hivemind_id_hash:', hivemind_id_hash
 print ''
 
 print ''
-hivemind_hash = hivemind.save()
+hivemind_hash = hivemind_issue.save()
 print 'Hivemind hash:', hivemind_hash
 
 hivemind_state = HivemindState()
-hivemind_state.set_hivemind_question(question_hash=hivemind_hash)
+hivemind_state.set_hivemind_issue(issue_hash=hivemind_hash)
 
 assert hivemind_state.options == []
 
@@ -66,7 +66,7 @@ option_values = ['One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight',
 for option_value in option_values:
     print 'adding option %s' % option_value
     option = HivemindOption()
-    option.set_hivemind_question(hivemind_question_hash=hivemind_hash)
+    option.set_hivemind_issue(hivemind_issue_hash=hivemind_hash)
     option.answer_type = option_type
     option.set(value=option_value)
     option_hashes[option_value] = option.save()

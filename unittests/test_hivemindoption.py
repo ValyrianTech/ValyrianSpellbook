@@ -7,31 +7,31 @@ import os
 # Change working dir up one level
 os.chdir("..")
 
-from hivemind.hivemind import HivemindQuestion, HivemindOption
+from hivemind.hivemind import HivemindIssue, HivemindOption
 
-hivemind_question = HivemindQuestion()
-hivemind_question.add_question(question='What is the Answer to the Ultimate Question of Life, the Universe, and Everything?')
-hivemind_question.set_description(description='What is the meaning of life?')
-hivemind_question.set_tags(tags="Don't panic!")
-hivemind_question.answer_type = 'String'
-hivemind_question.set_constraints({'min_length': 2, 'max_length': 10, 'regex': '^[a-zA-Z0-9]+'})
-STRING_QUESTION_HASH = hivemind_question.save()
+hivemind_issue = HivemindIssue()
+hivemind_issue.add_question(question='What is the Answer to the Ultimate Question of Life, the Universe, and Everything?')
+hivemind_issue.set_description(description='What is the meaning of life?')
+hivemind_issue.set_tags(tags="Don't panic!")
+hivemind_issue.answer_type = 'String'
+hivemind_issue.set_constraints({'min_length': 2, 'max_length': 10, 'regex': '^[a-zA-Z0-9]+'})
+STRING_QUESTION_HASH = hivemind_issue.save()
 
-hivemind_question.answer_type = 'Float'
-hivemind_question.set_constraints({'min_value': 2, 'max_value': 50, 'decimals': 2})
-FLOAT_QUESTION_HASH = hivemind_question.save()
+hivemind_issue.answer_type = 'Float'
+hivemind_issue.set_constraints({'min_value': 2, 'max_value': 50, 'decimals': 2})
+FLOAT_QUESTION_HASH = hivemind_issue.save()
 
-hivemind_question.answer_type = 'Integer'
-hivemind_question.set_constraints({'min_value': 2, 'max_value': 50})
-INTEGER_QUESTION_HASH = hivemind_question.save()
+hivemind_issue.answer_type = 'Integer'
+hivemind_issue.set_constraints({'min_value': 2, 'max_value': 50})
+INTEGER_QUESTION_HASH = hivemind_issue.save()
 
-hivemind_question.answer_type = 'Bool'
-hivemind_question.set_constraints({})
-BOOL_QUESTION_HASH = hivemind_question.save()
+hivemind_issue.answer_type = 'Bool'
+hivemind_issue.set_constraints({})
+BOOL_QUESTION_HASH = hivemind_issue.save()
 
-hivemind_question.answer_type = 'Complex'
-hivemind_question.set_constraints({'specs': {'a_string': 'String', 'a_float': 'Float'}})
-COMPLEX_QUESTION_HASH = hivemind_question.save()
+hivemind_issue.answer_type = 'Complex'
+hivemind_issue.set_constraints({'specs': {'a_string': 'String', 'a_float': 'Float'}})
+COMPLEX_QUESTION_HASH = hivemind_issue.save()
 
 
 class TestHivemindOption(object):
@@ -41,25 +41,25 @@ class TestHivemindOption(object):
 
     def test_initializing_with_option_hash(self):
         option = HivemindOption()
-        option.set_hivemind_question(hivemind_question_hash=STRING_QUESTION_HASH)
+        option.set_hivemind_issue(hivemind_issue_hash=STRING_QUESTION_HASH)
         option.set('42')
 
         option_hash = option.save()
 
         option2 = HivemindOption(option_hash=option_hash)
-        assert option2.hivemind_question_hash == option.hivemind_question_hash
+        assert option2.hivemind_issue_hash == option.hivemind_issue_hash
         assert option2.value == option.value
         assert option2.answer_type == option.answer_type
 
     def test_setting_value_that_conflicts_with_constraints(self):
         option = HivemindOption()
-        option.set_hivemind_question(hivemind_question_hash=STRING_QUESTION_HASH)
+        option.set_hivemind_issue(hivemind_issue_hash=STRING_QUESTION_HASH)
         with pytest.raises(Exception):
             option.set('a')  # constraint min_length: 2
 
     def test_setting_value_that_conflicts_with_answer_type(self):
         option = HivemindOption()
-        option.set_hivemind_question(hivemind_question_hash=STRING_QUESTION_HASH)
+        option.set_hivemind_issue(hivemind_issue_hash=STRING_QUESTION_HASH)
         with pytest.raises(Exception):
             option.set(42)  # must be string instead of number
 
@@ -72,7 +72,7 @@ class TestHivemindOption(object):
     ])
     def test_is_valid_string_option(self, value, expected):
         option = HivemindOption()
-        option.set_hivemind_question(hivemind_question_hash=STRING_QUESTION_HASH)
+        option.set_hivemind_issue(hivemind_issue_hash=STRING_QUESTION_HASH)
         option.value = value
         assert option.is_valid_string_option() is expected
 
@@ -89,7 +89,7 @@ class TestHivemindOption(object):
     ])
     def test_is_valid_float_option(self, value, expected):
         option = HivemindOption()
-        option.set_hivemind_question(hivemind_question_hash=FLOAT_QUESTION_HASH)
+        option.set_hivemind_issue(hivemind_issue_hash=FLOAT_QUESTION_HASH)
         option.value = value
         assert option.is_valid_float_option() is expected
 
@@ -106,7 +106,7 @@ class TestHivemindOption(object):
     ])
     def test_is_valid_integer_option(self, value, expected):
         option = HivemindOption()
-        option.set_hivemind_question(hivemind_question_hash=INTEGER_QUESTION_HASH)
+        option.set_hivemind_issue(hivemind_issue_hash=INTEGER_QUESTION_HASH)
         option.value = value
         assert option.is_valid_integer_option() is expected
 
@@ -123,7 +123,7 @@ class TestHivemindOption(object):
     ])
     def test_is_valid_bool_option(self, value, expected):
         option = HivemindOption()
-        option.set_hivemind_question(hivemind_question_hash=BOOL_QUESTION_HASH)
+        option.set_hivemind_issue(hivemind_issue_hash=BOOL_QUESTION_HASH)
         option.value = value
         assert option.is_valid_bool_option() is expected
 
@@ -138,7 +138,7 @@ class TestHivemindOption(object):
     ])
     def test_is_valid_complex_option(self, value, expected):
         option = HivemindOption()
-        option.set_hivemind_question(hivemind_question_hash=COMPLEX_QUESTION_HASH)
+        option.set_hivemind_issue(hivemind_issue_hash=COMPLEX_QUESTION_HASH)
         option.value = value
         assert option.is_valid_complex_option() is expected
 

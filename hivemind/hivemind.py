@@ -11,7 +11,7 @@ from inputs.inputs import get_sil
 from linker.linker import get_lal
 
 
-class HivemindQuestion(object):
+class HivemindIssue(object):
     def __init__(self, question_hash=None):
         """
         Constructor of Hivemind class
@@ -155,8 +155,8 @@ class HivemindOption(object):
         """
         self.option_hash = option_hash
 
-        self.hivemind_question_hash = None
-        self.hivemind_question = None
+        self.hivemind_issue_hash = None
+        self.hivemind_issue = None
 
         self.value = None
         self.answer_type = None  # can be 'String', 'Bool', 'Integer', 'Float', 'Hivemind', 'Image', 'Video', 'Complex', 'Address'
@@ -164,10 +164,10 @@ class HivemindOption(object):
         if self.option_hash is not None:
             self.load(option_hash=option_hash)
 
-    def set_hivemind_question(self, hivemind_question_hash):
-        self.hivemind_question_hash = hivemind_question_hash
-        self.hivemind_question = HivemindQuestion(question_hash=self.hivemind_question_hash)
-        self.answer_type = self.hivemind_question.answer_type
+    def set_hivemind_issue(self, hivemind_issue_hash):
+        self.hivemind_issue_hash = hivemind_issue_hash
+        self.hivemind_issue = HivemindIssue(question_hash=self.hivemind_issue_hash)
+        self.answer_type = self.hivemind_issue.answer_type
 
     def get(self):
         return self.value
@@ -179,15 +179,15 @@ class HivemindOption(object):
             raise Exception('Invalid value for answer type %s: %s' % (self.answer_type, value))
 
     def is_valid(self):
-        if not isinstance(self.hivemind_question, HivemindQuestion):
+        if not isinstance(self.hivemind_issue, HivemindIssue):
             raise Exception('No hivemind question set on option yet! Must set the hivemind question first before setting the value!')
 
-        if self.answer_type != self.hivemind_question.answer_type:
-            LOG.error('Option value is not the correct answer type, got %s but should be %s' % (self.answer_type, self.hivemind_question.answer_type))
+        if self.answer_type != self.hivemind_issue.answer_type:
+            LOG.error('Option value is not the correct answer type, got %s but should be %s' % (self.answer_type, self.hivemind_issue.answer_type))
             return False
 
-        if self.hivemind_question.constraints is not None and 'choices' in self.hivemind_question.constraints:
-            if self.value not in self.hivemind_question.constraints['choices']:
+        if self.hivemind_issue.constraints is not None and 'choices' in self.hivemind_issue.constraints:
+            if self.value not in self.hivemind_issue.constraints['choices']:
                 LOG.error('Option %s is not valid because this it is not in the allowed choices of this hiveminds constraints!' % self.value)
                 raise Exception('Option %s is not valid because this it is not in the allowed choices of this hiveminds constraints!' % self.value)
 
@@ -216,12 +216,12 @@ class HivemindOption(object):
         if not isinstance(self.value, (str, unicode)):
             return False
 
-        if self.hivemind_question.constraints is not None:
-            if 'min_length' in self.hivemind_question.constraints and len(self.value) < self.hivemind_question.constraints['min_length']:
+        if self.hivemind_issue.constraints is not None:
+            if 'min_length' in self.hivemind_issue.constraints and len(self.value) < self.hivemind_issue.constraints['min_length']:
                 return False
-            elif 'max_length' in self.hivemind_question.constraints and len(self.value) > self.hivemind_question.constraints['max_length']:
+            elif 'max_length' in self.hivemind_issue.constraints and len(self.value) > self.hivemind_issue.constraints['max_length']:
                 return False
-            elif 'regex' in self.hivemind_question.constraints and re.match(pattern=self.hivemind_question.constraints['regex'], string=self.value) is None:
+            elif 'regex' in self.hivemind_issue.constraints and re.match(pattern=self.hivemind_issue.constraints['regex'], string=self.value) is None:
                 return False
 
         return True
@@ -231,15 +231,15 @@ class HivemindOption(object):
             LOG.error('Option value %s is not a floating number value but instead is a %s' % (self.value, type(self.value)))
             return False
 
-        if self.hivemind_question.constraints is not None:
-            if 'min_value' in self.hivemind_question.constraints and self.value < self.hivemind_question.constraints['min_value']:
-                LOG.error('Option value is below minimum value: %s < %s' % (self.value, self.hivemind_question.constraints['min_value']))
+        if self.hivemind_issue.constraints is not None:
+            if 'min_value' in self.hivemind_issue.constraints and self.value < self.hivemind_issue.constraints['min_value']:
+                LOG.error('Option value is below minimum value: %s < %s' % (self.value, self.hivemind_issue.constraints['min_value']))
                 return False
-            elif 'max_value' in self.hivemind_question.constraints and self.value > self.hivemind_question.constraints['max_value']:
-                LOG.error('Option value is above maximum value: %s > %s' % (self.value, self.hivemind_question.constraints['max_value']))
+            elif 'max_value' in self.hivemind_issue.constraints and self.value > self.hivemind_issue.constraints['max_value']:
+                LOG.error('Option value is above maximum value: %s > %s' % (self.value, self.hivemind_issue.constraints['max_value']))
                 return False
-            elif 'decimals' in self.hivemind_question.constraints and 0 < self.hivemind_question.constraints['decimals'] != len(str(self.value)) - 1 - str(self.value).find('.'):
-                LOG.error('Option value does not have the correct number of decimals (%s): %s' % (self.hivemind_question.constraints['decimals'], self.value))
+            elif 'decimals' in self.hivemind_issue.constraints and 0 < self.hivemind_issue.constraints['decimals'] != len(str(self.value)) - 1 - str(self.value).find('.'):
+                LOG.error('Option value does not have the correct number of decimals (%s): %s' % (self.hivemind_issue.constraints['decimals'], self.value))
                 return False
 
         return True
@@ -249,12 +249,12 @@ class HivemindOption(object):
             LOG.error('Option value %s is not a integer value but instead is a %s' % (self.value, type(self.value)))
             return False
 
-        if self.hivemind_question.constraints is not None:
-            if 'min_value' in self.hivemind_question.constraints and self.value < self.hivemind_question.constraints['min_value']:
-                LOG.error('Option value is below minimum value: %s < %s' % (self.value, self.hivemind_question.constraints['min_value']))
+        if self.hivemind_issue.constraints is not None:
+            if 'min_value' in self.hivemind_issue.constraints and self.value < self.hivemind_issue.constraints['min_value']:
+                LOG.error('Option value is below minimum value: %s < %s' % (self.value, self.hivemind_issue.constraints['min_value']))
                 return False
-            elif 'max_value' in self.hivemind_question.constraints and self.value > self.hivemind_question.constraints['max_value']:
-                LOG.error('Option value is above maximum value: %s > %s' % (self.value, self.hivemind_question.constraints['max_value']))
+            elif 'max_value' in self.hivemind_issue.constraints and self.value > self.hivemind_issue.constraints['max_value']:
+                LOG.error('Option value is above maximum value: %s > %s' % (self.value, self.hivemind_issue.constraints['max_value']))
                 return False
 
         return True
@@ -268,7 +268,7 @@ class HivemindOption(object):
 
     def is_valid_hivemind_option(self):
         try:
-            isinstance(HivemindQuestion(question_hash=self.value), HivemindQuestion)
+            isinstance(HivemindIssue(question_hash=self.value), HivemindIssue)
         except Exception as ex:
             LOG.error('IPFS hash %s is not a valid hivemind: %s' % (self.value, ex))
             return False
@@ -279,31 +279,31 @@ class HivemindOption(object):
         if not isinstance(self.value, dict):
             return False
 
-        if 'specs' in self.hivemind_question.constraints:
-            for spec_key in self.hivemind_question.constraints['specs']:
+        if 'specs' in self.hivemind_issue.constraints:
+            for spec_key in self.hivemind_issue.constraints['specs']:
                 if spec_key not in self.value:
                     return False
 
             for spec_key in self.value.keys():
-                if spec_key not in self.hivemind_question.constraints['specs']:
+                if spec_key not in self.hivemind_issue.constraints['specs']:
                     return False
 
             for spec_key, spec_value in self.value.items():
-                if self.hivemind_question.constraints['specs'][spec_key] == 'String' and not isinstance(spec_value, (str, unicode)):
+                if self.hivemind_issue.constraints['specs'][spec_key] == 'String' and not isinstance(spec_value, (str, unicode)):
                     return False
-                elif self.hivemind_question.constraints['specs'][spec_key] == 'Integer' and not isinstance(spec_value, (int, long)):
+                elif self.hivemind_issue.constraints['specs'][spec_key] == 'Integer' and not isinstance(spec_value, (int, long)):
                     return False
-                elif self.hivemind_question.constraints['specs'][spec_key] == 'Float' and not isinstance(spec_value, float):
+                elif self.hivemind_issue.constraints['specs'][spec_key] == 'Float' and not isinstance(spec_value, float):
                     return False
 
         return True
 
     def is_valid_address_option(self):
-        if 'SIL' in self.hivemind_question.constraints or 'LAL' in self.hivemind_question.constraints:
-            address = self.hivemind_question.constraints['SIL']
-            block_height = self.hivemind_question.constraints['block_height'] if 'block_height' in self.hivemind_question.constraints else 0
+        if 'SIL' in self.hivemind_issue.constraints or 'LAL' in self.hivemind_issue.constraints:
+            address = self.hivemind_issue.constraints['SIL']
+            block_height = self.hivemind_issue.constraints['block_height'] if 'block_height' in self.hivemind_issue.constraints else 0
 
-            if 'SIL' in self.hivemind_question.constraints:
+            if 'SIL' in self.hivemind_issue.constraints:
                 data = get_sil(address=address, block_height=block_height)
                 if 'SIL' not in data:
                     LOG.error('Unable to retrieve SIL of %s to verify constraints op hivemind option' % address)
@@ -315,8 +315,8 @@ class HivemindOption(object):
 
                 return False
 
-            elif 'LAL' in self.hivemind_question.constraints:
-                xpub = self.hivemind_question.constraints['xpub']
+            elif 'LAL' in self.hivemind_issue.constraints:
+                xpub = self.hivemind_issue.constraints['xpub']
                 data = get_lal(address=address, xpub=xpub, block_height=block_height)
                 if 'LAL' not in data:
                     LOG.error('Unable to retrieve LAL of %s to verify constraints of hivemind option' % address)
@@ -341,7 +341,7 @@ class HivemindOption(object):
         return ret
 
     def save(self):
-        option_data = {'hivemind_question_hash': self.hivemind_question_hash,
+        option_data = {'hivemind_question_hash': self.hivemind_issue_hash,
                        'answer_type': self.answer_type,
                        'value': self.value}
 
@@ -354,8 +354,8 @@ class HivemindOption(object):
             LOG.error('hivemind option json does not contain all necessary keys')
             raise Exception('Invalid hivemind option json data: %s' % option)
 
-        self.hivemind_question_hash = option['hivemind_question_hash']
-        self.hivemind_question = HivemindQuestion(self.hivemind_question_hash)
+        self.hivemind_issue_hash = option['hivemind_question_hash']
+        self.hivemind_issue = HivemindIssue(self.hivemind_issue_hash)
 
         self.value = option['value']
         self.answer_type = option['answer_type']
@@ -524,8 +524,8 @@ class HivemindOpinion(object):
 
 class HivemindState(object):
     def __init__(self, state_hash=None):
-        self.hivemind_question_hash = None
-        self.hivemind_question = None
+        self.hivemind_issue_hash = None
+        self.hivemind_issue = None
         self.options = []
         self.opinions = [{}]  # opinions are recorded for each question separately
         self.weights = {}
@@ -536,17 +536,17 @@ class HivemindState(object):
         if state_hash is not None:
             self.load(state_hash)
 
-    def set_hivemind_question(self, question_hash):
-        self.hivemind_question_hash = question_hash
-        self.hivemind_question = HivemindQuestion(question_hash=self.hivemind_question_hash)
-        self.opinions = [{} for _ in range(len(self.hivemind_question.questions))]
-        self.results = [{} for _ in range(len(self.hivemind_question.questions))]
-        self.contributions = [{} for _ in range(len(self.hivemind_question.questions))]
+    def set_hivemind_issue(self, issue_hash):
+        self.hivemind_issue_hash = issue_hash
+        self.hivemind_issue = HivemindIssue(question_hash=self.hivemind_issue_hash)
+        self.opinions = [{} for _ in range(len(self.hivemind_issue.questions))]
+        self.results = [{} for _ in range(len(self.hivemind_issue.questions))]
+        self.contributions = [{} for _ in range(len(self.hivemind_issue.questions))]
 
     def load(self, hivemind_state_hash):
         hivemind_state_data = get_json(hivemind_state_hash)
 
-        self.hivemind_question_hash = hivemind_state_data['hivemind_question_hash']
+        self.hivemind_issue_hash = hivemind_state_data['hivemind_question_hash']
         self.options = hivemind_state_data['options']
         self.opinions = hivemind_state_data['opinions']
         self.weights = hivemind_state_data['weights']
@@ -554,10 +554,10 @@ class HivemindState(object):
         self.contributions = hivemind_state_data['contributions']
         self.previous_state_hash = hivemind_state_data['previous_state']
 
-        self.hivemind_question = HivemindQuestion(question_hash=self.hivemind_question_hash)
+        self.hivemind_issue = HivemindIssue(question_hash=self.hivemind_issue_hash)
 
     def save(self):
-        hivemind_state_data = {'hivemind_question_hash': self.hivemind_question_hash,
+        hivemind_state_data = {'hivemind_question_hash': self.hivemind_issue_hash,
                                'options': self.options,
                                'opinions': self.opinions,
                                'weights': self.weights,
@@ -577,14 +577,14 @@ class HivemindState(object):
             self.results[question_index][opinionator] = {'win': 0, 'loss': 0, 'unknown': 0, 'score': 0}
 
     def add_option(self, option_hash):
-        if not isinstance(self.hivemind_question, HivemindQuestion):
+        if not isinstance(self.hivemind_issue, HivemindIssue):
             return
 
         option = HivemindOption(option_hash)
         if isinstance(option, HivemindOption) and option.is_valid():
             if option_hash not in self.options:
                 self.options.append(option_hash)
-                for i in range(len(self.hivemind_question.questions)):
+                for i in range(len(self.hivemind_issue.questions)):
                     self.results[i][option_hash] = {'win': 0, 'loss': 0, 'unknown': 0, 'score': 0}
 
     def add_opinion(self, opinion_hash, signature, weight=1.0, question_index=0):
@@ -630,19 +630,19 @@ class HivemindState(object):
         Print the details of the hivemind
         """
         ret = "================================================================================="
-        ret += '\nHivemind id: ' + self.hivemind_question.hivemind_id
-        ret += '\nHivemind main question: ' + self.hivemind_question.questions[0]
-        ret += '\nHivemind description: ' + self.hivemind_question.description
-        if self.hivemind_question.tags is not None:
-            ret += '\nHivemind tags: ' + self.hivemind_question.tags
-        ret += '\nAnswer type: ' + self.hivemind_question.answer_type
-        if self.hivemind_question.constraints is not None:
-            ret += '\nOption constraints: ' + str(self.hivemind_question.constraints)
+        ret += '\nHivemind id: ' + self.hivemind_issue.hivemind_id
+        ret += '\nHivemind main question: ' + self.hivemind_issue.questions[0]
+        ret += '\nHivemind description: ' + self.hivemind_issue.description
+        if self.hivemind_issue.tags is not None:
+            ret += '\nHivemind tags: ' + self.hivemind_issue.tags
+        ret += '\nAnswer type: ' + self.hivemind_issue.answer_type
+        if self.hivemind_issue.constraints is not None:
+            ret += '\nOption constraints: ' + str(self.hivemind_issue.constraints)
         ret += '\n' + "================================================================================="
         ret += '\n' + self.options_info()
 
-        for i, question in enumerate(self.hivemind_question.questions):
-            ret += '\nHivemind question %s: %s' % (i, self.hivemind_question.questions[i])
+        for i, question in enumerate(self.hivemind_issue.questions):
+            ret += '\nHivemind question %s: %s' % (i, self.hivemind_issue.questions[i])
             ret += '\n' + self.opinions_info(question_index=i)
             ret += '\n' + self.results_info(question_index=i)
 
@@ -741,16 +741,16 @@ class HivemindState(object):
         return [option.value for option in self.get_options(question_index=question_index)]
 
     def get_consensus(self, question_index=0):
-        if self.hivemind_question.consensus_type == 'Single':
+        if self.hivemind_issue.consensus_type == 'Single':
             return self.consensus(question_index=question_index)
-        elif self.hivemind_question.consensus_type == 'Ranked':
+        elif self.hivemind_issue.consensus_type == 'Ranked':
             return self.ranked_consensus(question_index=question_index)
 
     def results_info(self, question_index=0):
         """
         Print out the results of the hivemind
         """
-        ret = self.hivemind_question.questions[question_index]
+        ret = self.hivemind_issue.questions[question_index]
         ret += '\nResults:\n========'
         i = 0
         for option_hash, option_result in sorted(self.results[question_index].items(), key=lambda x: x[1]['score'], reverse=True):
