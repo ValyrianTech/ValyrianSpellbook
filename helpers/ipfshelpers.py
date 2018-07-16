@@ -8,6 +8,7 @@ import zipfile
 
 from helpers.loghelpers import LOG
 from helpers.configurationhelpers import get_ipfs_host, get_ipfs_port
+from helpers.jsonhelpers import save_to_json_file
 
 IPFS_API = None
 IPFS_CACHE = {}
@@ -145,10 +146,10 @@ class IPFSDict(object):
 
         :param multihash: An IPFS multihash
         """
-        self.multihash = multihash
+        self._multihash = multihash
 
-        if self.multihash is not None:
-            self.load(multihash=multihash)
+        if self._multihash is not None:
+            self.load(multihash=self._multihash)
 
     def get(self):
         """
@@ -156,7 +157,7 @@ class IPFSDict(object):
 
         :return: A dict
         """
-        return {key: value for key, value in self.__dict__.items() if key != 'multihash'}
+        return {key: value for key, value in self.__dict__.items() if key[0] != '_'}
 
     def save(self):
         """
@@ -164,7 +165,21 @@ class IPFSDict(object):
 
         :return: The IPFS multihash of the dictionary
         """
-        return add_json(data=self.get())
+        self._multihash = add_json(data=self.get())
+        print 'new multihash: %s' % self._multihash
+        return self._multihash
+
+    def save_as_json(self, filename):
+        """
+        Save the dictionary as a json file and also include the multihash of the data itself in the json file
+
+        :param filename: The filename of the json file (without the .json extension)
+        """
+        self.save()
+        data = self.get()
+        data['multihash'] = self._multihash
+
+        save_to_json_file(filename='%s.json' % filename, data=data)
 
     def load(self, multihash):
         """
@@ -172,8 +187,6 @@ class IPFSDict(object):
 
         :param multihash: An IPFS multihash
         """
-        self.multihash = multihash
-
         if not isinstance(multihash, (str, unicode)):
             LOG.error('Can not retrieve IPFS data: multihash must be a string or unicode, got %s instead' % type(multihash))
             return
@@ -188,9 +201,11 @@ class IPFSDict(object):
             LOG.error('IPFS multihash %s does not contain a dict!' % multihash)
             return
 
+        self._multihash = multihash
+
         if self.is_valid(data=data):
             for key, value in data.items():
-                if key != 'multihash':
+                if key != '_multihash':
                     self.__setattr__(key, value)
 
     def is_valid(self, data):
@@ -202,10 +217,10 @@ class IPFSDict(object):
         :param data: A Dictionary object
         :return: True or False
         """
-        required_keys = [key for key in self.__dict__.keys() if key != 'multihash']
+        required_keys = [key for key in self.__dict__.keys() if key[0] != '_']
         for required_key in required_keys:
             if required_key not in data:
-                LOG.error('%s is not a valid IPFSDict hash: it does not contain the key "%s"' % (self.multihash, required_key))
+                LOG.error('%s is not a valid IPFSDict hash: it does not contain the key "%s"' % (self._multihash, required_key))
                 return False
 
         return True
@@ -231,12 +246,13 @@ class IPFSDictChain(IPFSDict):
 
         :return: An IPFS multihash of the dict
         """
-        if self.multihash is not None:
-            old_data = IPFSDictChain(multihash=self.multihash).get()
+        if self._multihash is not None:
+            old_data = IPFSDictChain(multihash=self._multihash).get()
             if old_data != self.get():
-                self.previous_multihash = self.multihash
+                self.previous_multihash = self._multihash
 
-        return add_json(data=self.get())
+        self._multihash = add_json(data=self.get())
+        return self._multihash
 
     def changes(self):
         """
