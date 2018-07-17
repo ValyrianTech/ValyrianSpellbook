@@ -27,9 +27,13 @@ def add_json(data):
         multihash = IPFS_API.add_json(data)
     except Exception as e:
         LOG.error('Failed to store json data on IPFS: %s' % e)
+        LOG.error('Data: %s' % data)
         LOG.error('Sleeping 1 second before trying again...')
         time.sleep(1)
-        multihash = IPFS_API.add_json(data)
+        try:
+            multihash = IPFS_API.add_json(data)
+        except Exception as e:
+            raise Exception('Failed to store json data on IPFS: %s' % e)
 
     return multihash
 
@@ -173,13 +177,13 @@ class IPFSDict(object):
         """
         Save the dictionary as a json file and also include the multihash of the data itself in the json file
 
-        :param filename: The filename of the json file (without the .json extension)
+        :param filename: The filename of the json file
         """
         self.save()
         data = self.get()
         data['multihash'] = self._multihash
 
-        save_to_json_file(filename='%s.json' % filename, data=data)
+        save_to_json_file(filename=filename, data=data)
 
     def load(self, multihash):
         """
