@@ -1,10 +1,28 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from helpers.configurationhelpers import get_use_testnet
 from pybitcointools import bip32_ckd, bip32_master_key, bip32_privtopub
 
 
 HARDENED = 2**31
+
+MAINNET_PRIVATE = b'\x04\x88\xAD\xE4'
+MAINNET_PUBLIC = b'\x04\x88\xB2\x1E'
+TESTNET_PRIVATE = b'\x04\x35\x83\x94'
+TESTNET_PUBLIC = b'\x04\x35\x87\xCF'
+
+VERSION_BYTES = TESTNET_PRIVATE if get_use_testnet() is True else MAINNET_PRIVATE
+
+
+def set_chain_mode(mainnet=True):
+    """
+    Override the configuration to switch between mainnet and testnet mode
+
+    :param mainnet: True or False
+    """
+    global VERSION_BYTES
+    VERSION_BYTES = MAINNET_PRIVATE if mainnet is True else TESTNET_PRIVATE
 
 
 def parse_derivation_path(derivation_path):
@@ -41,7 +59,7 @@ def get_xpriv(seed, derivation_path):
     :return: A xpriv key
     """
     # First derive the master key
-    child_key = bip32_master_key(seed, vbytes=b'\x04\x88\xAD\xE4')
+    child_key = bip32_master_key(seed, vbytes=VERSION_BYTES)
 
     # For each depth in the derivation path, derive the child key recursively
     for child_index in parse_derivation_path(derivation_path=derivation_path):

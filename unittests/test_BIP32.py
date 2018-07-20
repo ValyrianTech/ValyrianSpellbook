@@ -8,7 +8,7 @@ import binascii
 from BIP32_test_vectors import bip32_test_vectors
 from BIP39_test_vectors import BIP39_test_vectors, BIP39_test_vectors_japanese
 
-from bips.BIP32 import parse_derivation_path, get_xpriv, get_xpub, get_xpub_child
+from bips.BIP32 import parse_derivation_path, get_xpriv, get_xpub, get_xpub_child, set_chain_mode
 
 from pybitcointools import bip32_master_key
 
@@ -17,6 +17,9 @@ testvectors_japanese = [[testvector['seed'], testvector['bip32_xprv']] for testv
 
 xpriv_testvectors = [[vector['seed'], vector['derivation_path'], vector['xpriv']] for vector in bip32_test_vectors]
 xpub_testvectors = [[vector['seed'], vector['derivation_path'], vector['xpub']] for vector in bip32_test_vectors]
+
+# Set chain mode to mainnet (just in case the current configuration is set to use testnet)
+set_chain_mode(mainnet=True)
 
 
 class TestBIP32(object):
