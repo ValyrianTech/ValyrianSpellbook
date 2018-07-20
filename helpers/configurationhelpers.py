@@ -1,11 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import os
 from ConfigParser import ConfigParser
 from decorators import verify_config
 
-
-CONFIGURATION_FILE = 'configuration/Spellbook.conf'
+CONFIGURATION_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "configuration", "Spellbook.conf"))
 
 
 def spellbook_config():
