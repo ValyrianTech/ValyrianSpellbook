@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import re
 
 from helpers.configurationhelpers import get_use_testnet
 from pybitcointools import bip32_ckd, bip32_master_key, bip32_privtopub
 
-
+BIP32_DERIVATION_PATH_REGEX = "^m(\/\d+'?)*"
 HARDENED = 2**31
 
 MAINNET_PRIVATE = b'\x04\x88\xAD\xE4'
@@ -37,10 +38,10 @@ def parse_derivation_path(derivation_path):
     :param derivation_path: A string
     :return: a list containing the child index for each depth in the derivation path
     """
-    parts = derivation_path.split('/')
+    if re.match(BIP32_DERIVATION_PATH_REGEX, derivation_path) is None:
+        raise Exception('Derivation path is invalid: %s' % derivation_path)
 
-    if parts[0] != 'm':
-        raise Exception('Derivation path should start with "m", got %s' % derivation_path)
+    parts = derivation_path.split('/')
 
     child_indexes = []
     if len(parts) > 1:
