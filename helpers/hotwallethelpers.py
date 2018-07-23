@@ -8,6 +8,7 @@ import simplejson
 from AESCipher import AESCipher
 from helpers.BIP44 import get_xpub_key, get_address_from_xpub, get_private_key, get_xpriv_key, get_addresses_from_xpub
 from helpers.configurationhelpers import get_wallet_dir, get_default_wallet
+from bips.BIP39 import get_seed
 
 HOT_WALLET_PASSWORD = None
 
@@ -93,6 +94,10 @@ def find_address_in_wallet(address, accounts=1, indexes=20):
 
     return None, None
 
+
+def hot_wallet_seed():
+    hot_wallet = get_hot_wallet()
+    return get_seed(mnemonic=' '.join(hot_wallet['mnemonic']), passphrase=hot_wallet['passphrase'])
 
 
 
