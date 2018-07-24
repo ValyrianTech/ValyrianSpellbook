@@ -34,7 +34,7 @@ class SpellbookScript(object):
         self.actions = kwargs['actions'] if 'actions' in kwargs else None
 
         self.json = kwargs['json'] if 'json' in kwargs else None
-        self.ipfs = None
+        self.ipfs_hash = None
         self.text = None
 
         self.http_response = None
@@ -52,9 +52,9 @@ class SpellbookScript(object):
 
     def process_message(self):
         if self.message[:5] == 'IPFS=':
-            ipfs_hash = self.message[5:]
-            LOG.info('Message contains a IPFS hash: %s' % ipfs_hash)
-            return self.process_ipfs_hash(ipfs_hash=ipfs_hash)
+            self.ipfs_hash = self.message[5:]
+            LOG.info('Message contains a IPFS hash: %s' % self.ipfs_hash)
+            return self.process_ipfs_hash(ipfs_hash=self.ipfs_hash)
         else:
             try:
                 json_data = simplejson.loads(self.message)
