@@ -100,5 +100,12 @@ def hot_wallet_seed():
     return get_seed(mnemonic=' '.join(hot_wallet['mnemonic']), passphrase=hot_wallet['passphrase'])
 
 
+def find_account_by_xpub(xpub, n=20):
+    hot_wallet = get_hot_wallet()
 
-
+    for i in range(n):
+        account_xpub = get_xpub_key(mnemonic=' '.join(hot_wallet['mnemonic']),
+                                    passphrase=hot_wallet['passphrase'],
+                                    account=i)
+        if xpub == account_xpub:
+            return i
