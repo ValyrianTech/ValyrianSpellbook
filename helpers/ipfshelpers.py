@@ -184,6 +184,7 @@ class IPFSDict(object):
         data['multihash'] = self._multihash
 
         save_to_json_file(filename=filename, data=data)
+        return self._multihash
 
     def load(self, multihash):
         """
