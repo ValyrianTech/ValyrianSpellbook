@@ -546,7 +546,7 @@ class HivemindState(object):
     def load(self, hivemind_state_hash):
         hivemind_state_data = get_json(hivemind_state_hash)
 
-        self.hivemind_issue_hash = hivemind_state_data['hivemind_question_hash']
+        self.hivemind_issue_hash = hivemind_state_data['hivemind_issue_hash']
         self.options = hivemind_state_data['options']
         self.opinions = hivemind_state_data['opinions']
         self.weights = hivemind_state_data['weights']
@@ -557,7 +557,7 @@ class HivemindState(object):
         self.hivemind_issue = HivemindIssue(question_hash=self.hivemind_issue_hash)
 
     def save(self):
-        hivemind_state_data = {'hivemind_question_hash': self.hivemind_issue_hash,
+        hivemind_state_data = {'hivemind_issue_hash': self.hivemind_issue_hash,
                                'options': self.options,
                                'opinions': self.opinions,
                                'weights': self.weights,
