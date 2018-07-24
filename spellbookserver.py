@@ -10,7 +10,7 @@ from datetime import datetime
 from functools import wraps
 from logging.handlers import RotatingFileHandler
 
-from bottle import Bottle, request, response
+from bottle import Bottle, request, response, static_file
 
 from helpers.loghelpers import LOG, REQUESTS_LOG
 from action.actionhelpers import get_actions, get_action_config, save_action, delete_action, run_action, get_reveal
@@ -56,6 +56,8 @@ class SpellbookRESTAPI(Bottle):
             sys.exit(1)
 
         # Initialize the routes for the REST API
+        self.route('/favicon.ico', method='GET', callback=self.get_favicon)
+
         # Routes for managing blockexplorers
         self.route('/spellbook/explorers', method='GET', callback=self.get_explorers)
         self.route('/spellbook/explorers/<explorer_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.save_explorer)
@@ -122,22 +124,9 @@ class SpellbookRESTAPI(Bottle):
         # start the webserver for the REST API
         self.run(host=self.host, port=self.port)
 
-    # @staticmethod
-    # def initialize_log(logs_dir):
-    #     # Create a log file for the Core daemon
-    #     logger = LOG
-    #
-    #     stream_handler = logging.StreamHandler(sys.stdout)
-    #     stream_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(message)s'))
-    #     logger.addHandler(stream_handler)
-    #
-    #     file_handler = RotatingFileHandler(os.path.join(logs_dir, 'spellbook.txt'), maxBytes=10000000, backupCount=5)
-    #     file_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(message)s'))
-    #     logger.addHandler(file_handler)
-    #
-    #     logger.setLevel(logging.DEBUG)
-    #
-    #     return logger
+    @staticmethod
+    def get_favicon():
+        return static_file('favicon.ico', root='.')
 
     @staticmethod
     def initialize_requests_log(logs_dir):
