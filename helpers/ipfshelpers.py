@@ -272,6 +272,11 @@ class IPFSDictChain(IPFSDict):
             for key in old_data:
                 if old_data[key] != self.__getattribute__(key):
                     changes[key] = {'old': old_data[key], 'new': self.__getattribute__(key)}
+
+            for key in self.get():
+                if key not in old_data:
+                    changes[key] = {'new': self.__getattribute__(key)}
+
         else:
             for key in self.get():
                 changes[key] = {'new': self.__getattribute__(key)}
