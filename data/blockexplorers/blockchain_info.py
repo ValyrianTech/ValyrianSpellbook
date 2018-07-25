@@ -223,6 +223,9 @@ class BlockchainInfoAPI(ExplorerAPI):
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
+            if r.text == 'No free outputs to spend':
+                return {'utxos': []}
+
             data = r.json()
         except Exception as ex:
             LOG.error('Unable to get utxos of address %s from %s: %s' % (address, url, ex))
