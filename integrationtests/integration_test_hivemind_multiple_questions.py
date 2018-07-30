@@ -9,7 +9,7 @@ import random
 # Change working dir up one level
 os.chdir("..")
 
-from hivemind_issue.hivemind import HivemindIssue, HivemindOption, HivemindOpinion, HivemindState
+from hivemind.hivemind import HivemindIssue, HivemindOption, HivemindOpinion, HivemindState
 from helpers.ipfshelpers import IPFS_API
 from helpers.BIP44 import set_testnet
 from helpers.configurationhelpers import get_use_testnet
@@ -75,9 +75,9 @@ for option_value in option_values:
     option.answer_type = option_type
     option.set(value=option_value)
     option_hashes[option_value] = option.save()
-    print 'saved with ipfs hash %s' % option.option_hash
+    print 'saved with ipfs hash %s' % option.multihash()
 
-    hivemind_state.add_option(option_hash=option.option_hash)
+    hivemind_state.add_option(option_hash=option.multihash())
     print ''
 
 print 'All options:'
@@ -87,7 +87,7 @@ assert len(hivemind_state.options) == len(option_values)
 print ''
 hivemind_state_hash = hivemind_state.save()
 print 'Hivemind state hash:', hivemind_state_hash
-print hivemind_state.hivemind_question_hash
+print hivemind_state.hivemind_issue_hash
 
 i = 0
 opinionator = get_address_from_wallet(account=3, index=i)
@@ -97,9 +97,9 @@ ranked_choice = hivemind_state.options
 opinion.set(opinionator=opinionator, ranked_choice=ranked_choice)
 opinion.save()
 print '%s = %s' % (opinionator, opinion.ranked_choice)
-print 'saved as %s' % opinion.opinion_hash
-signature = sign_message(private_key=get_private_key_from_wallet(account=3, index=i)[opinionator], message='IPFS=%s' % opinion.opinion_hash, address=opinionator)
-hivemind_state.add_opinion(opinion_hash=opinion.opinion_hash, signature=signature, weight=1.0, question_index=0)
+print 'saved as %s' % opinion.multihash()
+signature = sign_message(private_key=get_private_key_from_wallet(account=3, index=i)[opinionator], message='IPFS=%s' % opinion.multihash(), address=opinionator)
+hivemind_state.add_opinion(opinion_hash=opinion.multihash(), signature=signature, weight=1.0, question_index=0)
 print ''
 
 opinionator = get_address_from_wallet(account=3, index=i)
@@ -109,9 +109,9 @@ ranked_choice = list(reversed(hivemind_state.options))
 opinion.set(opinionator=opinionator, ranked_choice=ranked_choice)
 opinion.save()
 print '%s = %s' % (opinionator, opinion.ranked_choice)
-print 'saved as %s' % opinion.opinion_hash
-signature = sign_message(private_key=get_private_key_from_wallet(account=3, index=i)[opinionator], message='IPFS=%s' % opinion.opinion_hash, address=opinionator)
-hivemind_state.add_opinion(opinion_hash=opinion.opinion_hash, signature=signature, weight=1.0, question_index=1)
+print 'saved as %s' % opinion.multihash()
+signature = sign_message(private_key=get_private_key_from_wallet(account=3, index=i)[opinionator], message='IPFS=%s' % opinion.multihash(), address=opinionator)
+hivemind_state.add_opinion(opinion_hash=opinion.multihash(), signature=signature, weight=1.0, question_index=1)
 print ''
 
 hivemind_state.calculate_results(question_index=0)
@@ -138,9 +138,9 @@ for question_index, question in enumerate(questions):
         opinion.set(opinionator=opinionator, ranked_choice=ranked_choice)
         opinion.save()
         print '%s = %s' % (opinionator, opinion.ranked_choice)
-        print 'saved as %s' % opinion.opinion_hash
-        signature = sign_message(private_key=get_private_key_from_wallet(account=3, index=i+3)[opinionator], message='IPFS=%s' % opinion.opinion_hash, address=opinionator)
-        hivemind_state.add_opinion(opinion_hash=opinion.opinion_hash, signature=signature, weight=1.0, question_index=question_index)
+        print 'saved as %s' % opinion.multihash()
+        signature = sign_message(private_key=get_private_key_from_wallet(account=3, index=i+3)[opinionator], message='IPFS=%s' % opinion.multihash(), address=opinionator)
+        hivemind_state.add_opinion(opinion_hash=opinion.multihash(), signature=signature, weight=1.0, question_index=question_index)
         print ''
 
     print 'All opinions:'

@@ -9,7 +9,7 @@ import random
 # Change working dir up one level
 os.chdir("..")
 
-from hivemind_issue.hivemind import HivemindIssue, HivemindOption, HivemindOpinion, HivemindState
+from hivemind.hivemind import HivemindIssue, HivemindOption, HivemindOpinion, HivemindState
 from helpers.ipfshelpers import IPFS_API
 from helpers.BIP44 import set_testnet
 from helpers.configurationhelpers import get_use_testnet
@@ -70,9 +70,9 @@ for option_value in option_values:
     option.answer_type = option_type
     option.set(value=option_value)
     option_hashes[option_value] = option.save()
-    print 'saved with ipfs hash %s' % option.option_hash
+    print 'saved with ipfs hash %s' % option.multihash()
 
-    hivemind_state.add_option(option_hash=option.option_hash)
+    hivemind_state.add_option(option_hash=option.multihash())
     print ''
 
 print 'All options:'
@@ -82,7 +82,7 @@ assert len(hivemind_state.options) == len(option_values)
 print ''
 hivemind_state_hash = hivemind_state.save()
 print 'Hivemind state hash:', hivemind_state_hash
-print hivemind_state.hivemind_question_hash
+print hivemind_state.hivemind_issue_hash
 
 n_opinions = 10
 for i in range(n_opinions):
@@ -94,9 +94,9 @@ for i in range(n_opinions):
     opinion.set(opinionator=opinionator, ranked_choice=ranked_choice)
     opinion.save()
     print '%s = %s' % (opinionator, opinion.ranked_choice)
-    print 'saved as %s' % opinion.opinion_hash
-    signature = sign_message(private_key=get_private_key_from_wallet(account=3, index=i+1)[opinionator], message='IPFS=%s' % opinion.opinion_hash, address=opinionator)
-    hivemind_state.add_opinion(opinion_hash=opinion.opinion_hash, signature=signature, weight=1.0)
+    print 'saved as %s' % opinion.multihash()
+    signature = sign_message(private_key=get_private_key_from_wallet(account=3, index=i+1)[opinionator], message='IPFS=%s' % opinion.multihash(), address=opinionator)
+    hivemind_state.add_opinion(opinion_hash=opinion.multihash(), signature=signature, weight=1.0)
     print ''
 
 print 'All opinions:'
@@ -135,9 +135,9 @@ for n_options in range(len(option_values)):
     opinion.set(opinionator=opinionator, ranked_choice=ranked_choice)
     opinion.save()
     print '%s = %s' % (opinionator, opinion.ranked_choice)
-    print 'saved as %s' % opinion.opinion_hash
-    signature = sign_message(private_key=get_private_key_from_wallet(account=3, index=0)[opinionator], message='IPFS=%s' % opinion.opinion_hash, address=opinionator)
-    hivemind_state.add_opinion(opinion_hash=opinion.opinion_hash, signature=signature, weight=1.0, question_index=0)
+    print 'saved as %s' % opinion.multihash()
+    signature = sign_message(private_key=get_private_key_from_wallet(account=3, index=0)[opinionator], message='IPFS=%s' % opinion.multihash(), address=opinionator)
+    hivemind_state.add_opinion(opinion_hash=opinion.multihash(), signature=signature, weight=1.0, question_index=0)
     print ''
 
     hivemind_state_hash = hivemind_state.save()

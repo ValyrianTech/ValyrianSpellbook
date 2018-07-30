@@ -3,7 +3,7 @@ import re
 import time
 from itertools import combinations
 
-from helpers.ipfshelpers import IPFSDict
+from helpers.ipfshelpers import IPFSDict, IPFSDictChain
 from helpers.loghelpers import LOG
 from helpers.ipfshelpers import add_json, get_json
 from validators.validators import valid_address, valid_bech32_address
@@ -318,11 +318,11 @@ class HivemindOption(IPFSDict):
 
 
 class HivemindOpinion(IPFSDict):
-    def __init__(self, opinion_hash=None):
+    def __init__(self, multihash=None):
         """
         Constructor of the Opinion object
 
-        :param opinion_hash: The ipfs hash of the Opinion object (optional)
+        :param multihash: The ipfs hash of the Opinion object (optional)
         """
         self.opinionator = None
 
@@ -337,7 +337,7 @@ class HivemindOpinion(IPFSDict):
 
         self.question_index = 0
 
-        super(HivemindOpinion, self).__init__(multihash=opinion_hash)
+        super(HivemindOpinion, self).__init__(multihash=multihash)
 
     def set(self, opinionator, ranked_choice):
         """
@@ -361,7 +361,7 @@ class HivemindOpinion(IPFSDict):
 
         :return: The list of sorted option ids
         """
-        if self._hivemind_state.hivemind_issue.answer_type not in ['Integer', 'Float']:
+        if self._hivemind_state.hivemind_issue().answer_type not in ['Integer', 'Float']:
             return self.ranked_choice
         elif self.auto_complete is None or len(self.ranked_choice) > 1:  # if more than one ranked choice is given, then auto_complete is overruled
             return self.ranked_choice
@@ -396,7 +396,7 @@ class HivemindOpinion(IPFSDict):
 
     def set_hivemind_state(self, hivemind_state_hash):
         self.hivemind_state_hash = hivemind_state_hash
-        self._hivemind_state = HivemindState(state_hash=self.hivemind_state_hash)
+        self._hivemind_state = HivemindState(multihash=self.hivemind_state_hash)
 
     def set_question_index(self, question_index):
         self.question_index = question_index
@@ -461,56 +461,37 @@ class HivemindOpinion(IPFSDict):
         """
         return len([x for x in self.ranked_choice if self.ranked_choice.count(x) >= 2]) > 0
 
-    def load(self, opinion_hash):
-        super(HivemindOpinion, self).load(multihash=opinion_hash)
+    def load(self, multihash):
+        super(HivemindOpinion, self).load(multihash=multihash)
         self.set_hivemind_state(hivemind_state_hash=self.hivemind_state_hash)
 
-class HivemindState(object):
-    def __init__(self, state_hash=None):
+
+class HivemindState(IPFSDictChain):
+    def __init__(self, multihash=None):
         self.hivemind_issue_hash = None
-        self.hivemind_issue = None
+        self._hivemind_issue = None
         self.options = []
         self.opinions = [{}]  # opinions are recorded for each question separately
         self.weights = {}
         self.results = [{}]  # results are recorded for each question separately
         self.contributions = [{}]  # contributions are recorded for each question separately
-        self.previous_state_hash = None
+        # self.previous_state_hash = None
 
-        if state_hash is not None:
-            self.load(state_hash)
+        super(HivemindState, self).__init__(multihash=multihash)
+
+    def hivemind_issue(self):
+        return self._hivemind_issue
 
     def set_hivemind_issue(self, issue_hash):
         self.hivemind_issue_hash = issue_hash
-        self.hivemind_issue = HivemindIssue(multihash=self.hivemind_issue_hash)
-        self.opinions = [{} for _ in range(len(self.hivemind_issue.questions))]
-        self.results = [{} for _ in range(len(self.hivemind_issue.questions))]
-        self.contributions = [{} for _ in range(len(self.hivemind_issue.questions))]
+        self._hivemind_issue = HivemindIssue(multihash=self.hivemind_issue_hash)
+        self.opinions = [{} for _ in range(len(self._hivemind_issue.questions))]
+        self.results = [{} for _ in range(len(self._hivemind_issue.questions))]
+        self.contributions = [{} for _ in range(len(self._hivemind_issue.questions))]
 
-    def load(self, hivemind_state_hash):
-        hivemind_state_data = get_json(hivemind_state_hash)
-
-        self.hivemind_issue_hash = hivemind_state_data['hivemind_issue_hash']
-        self.options = hivemind_state_data['options']
-        self.opinions = hivemind_state_data['opinions']
-        self.weights = hivemind_state_data['weights']
-        self.results = hivemind_state_data['results']
-        self.contributions = hivemind_state_data['contributions']
-        self.previous_state_hash = hivemind_state_data['previous_state']
-
-        self.hivemind_issue = HivemindIssue(multihash=self.hivemind_issue_hash)
-
-    def save(self):
-        hivemind_state_data = {'hivemind_issue_hash': self.hivemind_issue_hash,
-                               'options': self.options,
-                               'opinions': self.opinions,
-                               'weights': self.weights,
-                               'results': self.results,
-                               'contributions': self.contributions,
-                               'previous_state': self.previous_state_hash}
-
-        state_hash = add_json(hivemind_state_data)
-        self.previous_state_hash = state_hash
-        return state_hash
+    def load(self, multihash):
+        super(HivemindState, self).load(multihash=multihash)
+        self._hivemind_issue = HivemindIssue(multihash=self.hivemind_issue_hash)
 
     def clear_results(self, question_index=0):
         """
@@ -520,18 +501,18 @@ class HivemindState(object):
             self.results[question_index][opinionator] = {'win': 0, 'loss': 0, 'unknown': 0, 'score': 0}
 
     def add_option(self, option_hash):
-        if not isinstance(self.hivemind_issue, HivemindIssue):
+        if not isinstance(self._hivemind_issue, HivemindIssue):
             return
 
         option = HivemindOption(multihash=option_hash)
         if isinstance(option, HivemindOption) and option.valid():
             if option_hash not in self.options:
                 self.options.append(option_hash)
-                for i in range(len(self.hivemind_issue.questions)):
+                for i in range(len(self._hivemind_issue.questions)):
                     self.results[i][option_hash] = {'win': 0, 'loss': 0, 'unknown': 0, 'score': 0}
 
     def add_opinion(self, opinion_hash, signature, weight=1.0, question_index=0):
-        opinion = HivemindOpinion(opinion_hash=opinion_hash)
+        opinion = HivemindOpinion(multihash=opinion_hash)
         if isinstance(opinion, HivemindOpinion) and opinion.valid():
             self.opinions[question_index][opinion.opinionator] = [opinion_hash, signature, int(time.time())]
             self.set_weight(opinionator=opinion.opinionator, weight=weight)
@@ -546,7 +527,7 @@ class HivemindState(object):
         """
         opinion = None
         if opinionator in self.opinions[question_index]:
-            opinion = HivemindOpinion(opinion_hash=self.opinions[question_index][opinionator])
+            opinion = HivemindOpinion(multihash=self.opinions[question_index][opinionator])
 
         return opinion
 
@@ -573,19 +554,19 @@ class HivemindState(object):
         Print the details of the hivemind
         """
         ret = "================================================================================="
-        ret += '\nHivemind id: ' + self.hivemind_issue.hivemind_id
-        ret += '\nHivemind main question: ' + self.hivemind_issue.questions[0]
-        ret += '\nHivemind description: ' + self.hivemind_issue.description
-        if self.hivemind_issue.tags is not None:
-            ret += '\nHivemind tags: ' + self.hivemind_issue.tags
-        ret += '\nAnswer type: ' + self.hivemind_issue.answer_type
-        if self.hivemind_issue.constraints is not None:
-            ret += '\nOption constraints: ' + str(self.hivemind_issue.constraints)
+        ret += '\nHivemind id: ' + self._hivemind_issue.hivemind_id
+        ret += '\nHivemind main question: ' + self._hivemind_issue.questions[0]
+        ret += '\nHivemind description: ' + self._hivemind_issue.description
+        if self._hivemind_issue.tags is not None:
+            ret += '\nHivemind tags: ' + self._hivemind_issue.tags
+        ret += '\nAnswer type: ' + self._hivemind_issue.answer_type
+        if self._hivemind_issue.constraints is not None:
+            ret += '\nOption constraints: ' + str(self._hivemind_issue.constraints)
         ret += '\n' + "================================================================================="
         ret += '\n' + self.options_info()
 
-        for i, question in enumerate(self.hivemind_issue.questions):
-            ret += '\nHivemind question %s: %s' % (i, self.hivemind_issue.questions[i])
+        for i, question in enumerate(self._hivemind_issue.questions):
+            ret += '\nHivemind question %s: %s' % (i, self._hivemind_issue.questions[i])
             ret += '\n' + self.opinions_info(question_index=i)
             ret += '\n' + self.results_info(question_index=i)
 
@@ -616,7 +597,7 @@ class HivemindState(object):
         # opinion_data is a list containing [opinion_hash, signature of 'IPFS=opinion_hash', timestamp]
         for opinionator, opinion_data in self.opinions[question_index].items():
             ret += '\nTimestamp: %s, Signature: %s' % (opinion_data[2], opinion_data[1])
-            opinion = HivemindOpinion(opinion_hash=opinion_data[0])
+            opinion = HivemindOpinion(multihash=opinion_data[0])
             ret += '\n' + opinion.info()
             ret += '\n'
 
@@ -684,16 +665,16 @@ class HivemindState(object):
         return [option.value for option in self.get_options(question_index=question_index)]
 
     def get_consensus(self, question_index=0):
-        if self.hivemind_issue.consensus_type == 'Single':
+        if self._hivemind_issue.consensus_type == 'Single':
             return self.consensus(question_index=question_index)
-        elif self.hivemind_issue.consensus_type == 'Ranked':
+        elif self._hivemind_issue.consensus_type == 'Ranked':
             return self.ranked_consensus(question_index=question_index)
 
     def results_info(self, question_index=0):
         """
         Print out the results of the hivemind
         """
-        ret = self.hivemind_issue.questions[question_index]
+        ret = self._hivemind_issue.questions[question_index]
         ret += '\nResults:\n========'
         i = 0
         for option_hash, option_result in sorted(self.results[question_index].items(), key=lambda x: x[1]['score'], reverse=True):
@@ -729,7 +710,7 @@ class HivemindState(object):
 
         for i, opinionator in enumerate(opinionators_by_timestamp):
             deviance = 0
-            opinion = HivemindOpinion(opinion_hash=self.opinions[question_index][opinionator][0])
+            opinion = HivemindOpinion(multihash=self.opinions[question_index][opinionator][0])
 
             # Calculate the 'early bird' multiplier (whoever gives their opinion first gets the highest multiplier, value is between 0 and 1), if opinion is an empty list, then multiplier is 0
             multipliers[opinionator] = 1 - (i/float(len(opinionators_by_timestamp))) if len(opinion.ranked_choice) > 0 else 0
@@ -761,7 +742,7 @@ def compare(a, b, opinion_hash):
     If one of the Options is not given in the Opinion object, the other option wins by default
     If both Options are not in the Opinion object, None is returned
     """
-    opinion = HivemindOpinion(opinion_hash=opinion_hash)
+    opinion = HivemindOpinion(multihash=opinion_hash)
     ranked_choice = opinion.ranked_choice
     if a in ranked_choice and b in ranked_choice:
         if ranked_choice.index(a) < ranked_choice.index(b):
