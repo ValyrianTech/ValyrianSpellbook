@@ -407,7 +407,7 @@ class HivemindOpinion(object):
 
         :return: The list of sorted option ids
         """
-        if self.hivemind_state.hivemind_question.answer_type not in ['Integer', 'Float']:
+        if self.hivemind_state.hivemind_issue.answer_type not in ['Integer', 'Float']:
             return self.ranked_choice
         elif self.auto_complete is None or len(self.ranked_choice) > 1:  # if more than one ranked choice is given, then auto_complete is overruled
             return self.ranked_choice
