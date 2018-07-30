@@ -18,10 +18,10 @@ class DistributionComposite(CompositeHivemind):
         budget_state_hash = get_hivemind_state_hash(self.components['budget'][0])
         budget_slope_state_hash = get_hivemind_state_hash(self.components['budget_slope'][0])
 
-        priority_state = HivemindState(state_hash=priority_state_hash)
-        number_of_recipients_state = HivemindState(state_hash=number_of_recipients_state_hash)
-        budget_state = HivemindState(state_hash=budget_state_hash)
-        budget_slope_state = HivemindState(state_hash=budget_slope_state_hash)
+        priority_state = HivemindState(multihash=priority_state_hash)
+        number_of_recipients_state = HivemindState(multihash=number_of_recipients_state_hash)
+        budget_state = HivemindState(multihash=budget_state_hash)
+        budget_slope_state = HivemindState(multihash=budget_slope_state_hash)
 
         # todo check if there is a consensus on each value
         priority = priority_state.get_consensus(question_index=self.components['priority'][1])

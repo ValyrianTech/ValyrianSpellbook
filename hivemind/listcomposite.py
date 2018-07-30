@@ -16,10 +16,10 @@ class ListComposite(CompositeHivemind):
         # Get the items for the list
         hivemind_id, question_index = self.components['items']
         items_hivemind_state_hash = get_hivemind_state_hash(hivemind_id=hivemind_id)
-        items_hivemind_state = HivemindState(state_hash=items_hivemind_state_hash)
+        items_hivemind_state = HivemindState(multihash=items_hivemind_state_hash)
 
         # consensus type should be 'Ranked'
-        if items_hivemind_state.hivemind_issue.consensus_type != 'Ranked':
+        if items_hivemind_state._hivemind_issue.consensus_type != 'Ranked':
             raise Exception('items hivemind does not have a Ranked consensus type')
 
         items = items_hivemind_state.get_consensus(question_index=question_index)
@@ -31,13 +31,13 @@ class ListComposite(CompositeHivemind):
         # Get the maximum length of the list
         hivemind_id, question_index = self.components['max_length']
         max_length_hivemind_state_hash = get_hivemind_state_hash(hivemind_id=hivemind_id)
-        max_length_hivemind_state = HivemindState(state_hash=max_length_hivemind_state_hash)
+        max_length_hivemind_state = HivemindState(multihash=max_length_hivemind_state_hash)
 
         # consensus type should be 'Single' and answer type must be integer
-        if max_length_hivemind_state.hivemind_issue.consensus_type != 'Single':
+        if max_length_hivemind_state._hivemind_issue.consensus_type != 'Single':
             raise Exception('max length hivemind does not have a Single consensus type')
 
-        if max_length_hivemind_state.hivemind_issue.answer_type != 'Integer':
+        if max_length_hivemind_state._hivemind_issue.answer_type != 'Integer':
             raise Exception('max length hivemind does not have a Integer answer type')
 
         max_length = max_length_hivemind_state.get_consensus(question_index=question_index)
