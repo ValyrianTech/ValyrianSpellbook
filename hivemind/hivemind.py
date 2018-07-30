@@ -3,6 +3,7 @@ import re
 import time
 from itertools import combinations
 
+from helpers.ipfshelpers import IPFSDict
 from helpers.loghelpers import LOG
 from helpers.ipfshelpers import add_json, get_json
 from validators.validators import valid_address, valid_bech32_address
@@ -11,12 +12,12 @@ from inputs.inputs import get_sil
 from linker.linker import get_lal
 
 
-class HivemindIssue(object):
-    def __init__(self, question_hash=None):
+class HivemindIssue(IPFSDict):
+    def __init__(self, multihash=None):
         """
-        Constructor of Hivemind class
+        Constructor of Hivemind issue class
 
-        :param question_hash: The ipfs hash of the hivemind question
+        :param multihash: The ipfs multihash of the hivemind issue
         """
         self.hivemind_id = None
         self.questions = []
@@ -26,8 +27,7 @@ class HivemindIssue(object):
         self.consensus_type = 'Single'  # Single or Ranked: Is the expected result of this question a single answer or a ranked list?
         self.constraints = None
 
-        if question_hash is not None:
-            self.load(hivemind_hash=question_hash)
+        super(HivemindIssue, self).__init__(multihash=multihash)
 
     def add_question(self, question):
         if isinstance(question, (str, unicode)) and question not in self.questions:
@@ -123,28 +123,6 @@ class HivemindIssue(object):
 
         return info
 
-    def save(self):
-        hivemind_data = {'hivemind_id': self.id(),
-                         'questions': self.questions,
-                         'description': self.description,
-                         'tags': self.tags,
-                         'answer_type': self.answer_type,
-                         'consensus_type': self.consensus_type,
-                         'constraints': self.constraints}
-
-        return add_json(hivemind_data)
-
-    def load(self, hivemind_hash):
-        hivemind_data = get_json(hivemind_hash)
-
-        self.questions = hivemind_data['questions']
-        self.description = hivemind_data['description']
-        self.tags = hivemind_data['tags']
-        self.answer_type = hivemind_data['answer_type']
-        self.consensus_type = hivemind_data['consensus_type']
-        self.constraints = hivemind_data['constraints']
-        self.hivemind_id = self.id()
-
 
 class HivemindOption(object):
     def __init__(self, option_hash=None):
@@ -166,7 +144,7 @@ class HivemindOption(object):
 
     def set_hivemind_issue(self, hivemind_issue_hash):
         self.hivemind_issue_hash = hivemind_issue_hash
-        self.hivemind_issue = HivemindIssue(question_hash=self.hivemind_issue_hash)
+        self.hivemind_issue = HivemindIssue(multihash=self.hivemind_issue_hash)
         self.answer_type = self.hivemind_issue.answer_type
 
     def get(self):
@@ -268,7 +246,7 @@ class HivemindOption(object):
 
     def is_valid_hivemind_option(self):
         try:
-            isinstance(HivemindIssue(question_hash=self.value), HivemindIssue)
+            isinstance(HivemindIssue(multihash=self.value), HivemindIssue)
         except Exception as ex:
             LOG.error('IPFS hash %s is not a valid hivemind: %s' % (self.value, ex))
             return False
@@ -538,7 +516,7 @@ class HivemindState(object):
 
     def set_hivemind_issue(self, issue_hash):
         self.hivemind_issue_hash = issue_hash
-        self.hivemind_issue = HivemindIssue(question_hash=self.hivemind_issue_hash)
+        self.hivemind_issue = HivemindIssue(multihash=self.hivemind_issue_hash)
         self.opinions = [{} for _ in range(len(self.hivemind_issue.questions))]
         self.results = [{} for _ in range(len(self.hivemind_issue.questions))]
         self.contributions = [{} for _ in range(len(self.hivemind_issue.questions))]
@@ -554,7 +532,7 @@ class HivemindState(object):
         self.contributions = hivemind_state_data['contributions']
         self.previous_state_hash = hivemind_state_data['previous_state']
 
-        self.hivemind_issue = HivemindIssue(question_hash=self.hivemind_issue_hash)
+        self.hivemind_issue = HivemindIssue(multihash=self.hivemind_issue_hash)
 
     def save(self):
         hivemind_state_data = {'hivemind_issue_hash': self.hivemind_issue_hash,
