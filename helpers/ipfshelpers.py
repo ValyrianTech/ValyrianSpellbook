@@ -163,6 +163,9 @@ class IPFSDict(object):
         """
         return {key: value for key, value in self.__dict__.items() if key[0] != '_'}
 
+    def multihash(self):
+        return self._multihash
+
     def save(self):
         """
         Save the dictionary on IPFS
@@ -170,7 +173,6 @@ class IPFSDict(object):
         :return: The IPFS multihash of the dictionary
         """
         self._multihash = add_json(data=self.get())
-        print 'new multihash: %s' % self._multihash
         return self._multihash
 
     def save_as_json(self, filename):
