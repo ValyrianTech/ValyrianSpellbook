@@ -317,29 +317,27 @@ class HivemindOption(IPFSDict):
         return ret
 
 
-class HivemindOpinion(object):
+class HivemindOpinion(IPFSDict):
     def __init__(self, opinion_hash=None):
         """
         Constructor of the Opinion object
 
         :param opinion_hash: The ipfs hash of the Opinion object (optional)
         """
-        self.opinion_hash = opinion_hash
         self.opinionator = None
 
-        self.hivemind_hash = None
-        self.hivemind = None
+        self.hivemind_issue_hash = None
+        self._hivemind_issue = None  # must be private member so it doesn't get saved in the IPFSDict
 
         self.hivemind_state_hash = None
-        self.hivemind_state = None
+        self._hivemind_state = None # must be private member so it doesn't get saved in the IPFSDict
 
         self.ranked_choice = []
         self.auto_complete = None
 
         self.question_index = 0
 
-        if opinion_hash is not None:
-            self.load(opinion_hash=opinion_hash)
+        super(HivemindOpinion, self).__init__(multihash=opinion_hash)
 
     def set(self, opinionator, ranked_choice):
         """
@@ -348,28 +346,28 @@ class HivemindOpinion(object):
         :param opinionator: The id of the person expressing the opinion
         :param ranked_choice: A list of sorted option hashes
         """
-        if not isinstance(self.hivemind_state, HivemindState):
+        if not isinstance(self._hivemind_state, HivemindState):
             raise Exception('Hivemind state has not been set yet')
 
         self.opinionator = opinionator
         self.ranked_choice = ranked_choice
 
-        if not self.is_valid():
+        if not self.valid():
             raise Exception('invalid ranked choice')
 
-    def get(self):
+    def ranking(self):
         """
         Get the sorted list of option hashes
 
         :return: The list of sorted option ids
         """
-        if self.hivemind_state.hivemind_issue.answer_type not in ['Integer', 'Float']:
+        if self._hivemind_state.hivemind_issue.answer_type not in ['Integer', 'Float']:
             return self.ranked_choice
         elif self.auto_complete is None or len(self.ranked_choice) > 1:  # if more than one ranked choice is given, then auto_complete is overruled
             return self.ranked_choice
         elif self.auto_complete in ['MAX', 'MIN', 'CLOSEST', 'CLOSEST_HIGH', 'CLOSEST_LOW']:
             my_opinion_value = HivemindOption(multihash=self.ranked_choice[0]).value
-            sorted_option_hashes = sorted(self.hivemind_state.options, key=lambda x: HivemindOption(multihash=x).value)
+            sorted_option_hashes = sorted(self._hivemind_state.options, key=lambda x: HivemindOption(multihash=x).value)
 
             if self.auto_complete == 'MAX':
                 completed_ranking = [option_hash for option_hash in sorted_option_hashes if HivemindOption(
@@ -380,15 +378,15 @@ class HivemindOpinion(object):
                     multihash=option_hash).value >= my_opinion_value]
 
             elif self.auto_complete == 'CLOSEST':
-                completed_ranking = sorted(self.hivemind_state.options, key=lambda x: abs(HivemindOption(
+                completed_ranking = sorted(self._hivemind_state.options, key=lambda x: abs(HivemindOption(
                     multihash=x).value - my_opinion_value))
 
             elif self.auto_complete == 'CLOSEST_HIGH':
-                completed_ranking = sorted(self.hivemind_state.options, key=lambda x: (abs(HivemindOption(
+                completed_ranking = sorted(self._hivemind_state.options, key=lambda x: (abs(HivemindOption(
                     multihash=x).value - my_opinion_value), -HivemindOption(multihash=x).value))
 
             elif self.auto_complete == 'CLOSEST_LOW':
-                completed_ranking = sorted(self.hivemind_state.options, key=lambda x: (abs(HivemindOption(
+                completed_ranking = sorted(self._hivemind_state.options, key=lambda x: (abs(HivemindOption(
                     multihash=x).value - my_opinion_value), HivemindOption(multihash=x).value))
 
             else:
@@ -398,7 +396,7 @@ class HivemindOpinion(object):
 
     def set_hivemind_state(self, hivemind_state_hash):
         self.hivemind_state_hash = hivemind_state_hash
-        self.hivemind_state = HivemindState(state_hash=self.hivemind_state_hash)
+        self._hivemind_state = HivemindState(state_hash=self.hivemind_state_hash)
 
     def set_question_index(self, question_index):
         self.question_index = question_index
@@ -410,7 +408,7 @@ class HivemindOpinion(object):
         :return: A list of option ids that have not been ranked yet
         """
         unranked = []
-        for option_id in self.hivemind.options:
+        for option_id in self._hivemind_issue.options:
             if option_id not in self.ranked_choice:
                 unranked.append(option_id)
 
@@ -439,21 +437,21 @@ class HivemindOpinion(object):
         if ranked_choice is None:
             ranked_choice = self.ranked_choice
 
-        return all(option_id in ranked_choice for option_id in self.hivemind.options)
+        return all(option_id in ranked_choice for option_id in self._hivemind_issue.options)
 
-    def is_valid(self):
+    def valid(self):
         """
         Is the Opinion object a valid opinion? Meaning are all option hashes in the ranked_choice valid?
 
         :return: True or False
         """
-        if not isinstance(self.hivemind_state, HivemindState):
+        if not isinstance(self._hivemind_state, HivemindState):
             return False
 
         if self.contains_duplicates() is True:
             return False
 
-        return not any(option_hash not in self.hivemind_state.options for option_hash in self.ranked_choice)
+        return not any(option_hash not in self._hivemind_state.options for option_hash in self.ranked_choice)
 
     def contains_duplicates(self):
         """
@@ -463,25 +461,9 @@ class HivemindOpinion(object):
         """
         return len([x for x in self.ranked_choice if self.ranked_choice.count(x) >= 2]) > 0
 
-    def save(self):
-        opinion_data = {'hivemind_state_hash': self.hivemind_state_hash,
-                        'opinionator': self.opinionator,
-                        'ranked_choice': self.ranked_choice,
-                        'auto_complete': self.auto_complete,
-                        'question_index': self.question_index}
-
-        self.opinion_hash = add_json(opinion_data)
-        return self.opinion_hash
-
     def load(self, opinion_hash):
-        opinion_data = get_json(opinion_hash)
-
-        self.set_hivemind_state(hivemind_state_hash=opinion_data['hivemind_state_hash'])
-        self.opinionator = opinion_data['opinionator']
-        self.ranked_choice = opinion_data['ranked_choice']
-        self.auto_complete = opinion_data['auto_complete']
-        self.question_index = opinion_data['question_index']
-
+        super(HivemindOpinion, self).load(multihash=opinion_hash)
+        self.set_hivemind_state(hivemind_state_hash=self.hivemind_state_hash)
 
 class HivemindState(object):
     def __init__(self, state_hash=None):
@@ -550,7 +532,7 @@ class HivemindState(object):
 
     def add_opinion(self, opinion_hash, signature, weight=1.0, question_index=0):
         opinion = HivemindOpinion(opinion_hash=opinion_hash)
-        if isinstance(opinion, HivemindOpinion) and opinion.is_valid():
+        if isinstance(opinion, HivemindOpinion) and opinion.valid():
             self.opinions[question_index][opinion.opinionator] = [opinion_hash, signature, int(time.time())]
             self.set_weight(opinionator=opinion.opinionator, weight=weight)
 

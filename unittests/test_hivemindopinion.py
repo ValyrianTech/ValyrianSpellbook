@@ -100,35 +100,35 @@ class TestHivemindOpinion(object):
         opinion = HivemindOpinion()
         opinion.set_hivemind_state(hivemind_state_hash=INTEGER_STATE_HASH)
         opinion.set(opinionator='me', ranked_choice=[INTEGER_OPTION3_HASH])
-        assert opinion.get() == [INTEGER_OPTION3_HASH]
+        assert opinion.ranking() == [INTEGER_OPTION3_HASH]
 
         print '\nAuto_completing using opinion as MAX value'
         opinion.auto_complete = 'MAX'
-        for option_hash in opinion.get():
+        for option_hash in opinion.ranking():
             print HivemindOption(multihash=option_hash).value, option_hash
-        assert opinion.get() == [INTEGER_OPTION5_HASH, INTEGER_OPTION2_HASH, INTEGER_OPTION3_HASH]
+        assert opinion.ranking() == [INTEGER_OPTION5_HASH, INTEGER_OPTION2_HASH, INTEGER_OPTION3_HASH]
 
         print '\nAuto_completing using opinion as MIN value'
         opinion.auto_complete = 'MIN'
-        for option_hash in opinion.get():
+        for option_hash in opinion.ranking():
             print HivemindOption(multihash=option_hash).value, option_hash
-        assert opinion.get() == [INTEGER_OPTION3_HASH, INTEGER_OPTION4_HASH, INTEGER_OPTION1_HASH]
+        assert opinion.ranking() == [INTEGER_OPTION3_HASH, INTEGER_OPTION4_HASH, INTEGER_OPTION1_HASH]
 
         print '\nAuto_completing using opinion as CLOSEST value if 2 other options are equally close, the order of adding them to the hivemind is used'
         opinion.auto_complete = 'CLOSEST'
-        for option_hash in opinion.get():
+        for option_hash in opinion.ranking():
             print HivemindOption(multihash=option_hash).value, option_hash
-        assert opinion.get() == [INTEGER_OPTION3_HASH, INTEGER_OPTION2_HASH, INTEGER_OPTION4_HASH, INTEGER_OPTION1_HASH, INTEGER_OPTION5_HASH]
+        assert opinion.ranking() == [INTEGER_OPTION3_HASH, INTEGER_OPTION2_HASH, INTEGER_OPTION4_HASH, INTEGER_OPTION1_HASH, INTEGER_OPTION5_HASH]
 
         print '\nAuto_completing using opinion as CLOSEST value with preference for higher values if equally close'
         opinion.auto_complete = 'CLOSEST_HIGH'
-        for option_hash in opinion.get():
+        for option_hash in opinion.ranking():
             print HivemindOption(multihash=option_hash).value, option_hash
-        assert opinion.get() == [INTEGER_OPTION3_HASH, INTEGER_OPTION4_HASH, INTEGER_OPTION2_HASH, INTEGER_OPTION1_HASH, INTEGER_OPTION5_HASH]
+        assert opinion.ranking() == [INTEGER_OPTION3_HASH, INTEGER_OPTION4_HASH, INTEGER_OPTION2_HASH, INTEGER_OPTION1_HASH, INTEGER_OPTION5_HASH]
 
         print '\nAuto_completing using opinion as CLOSEST value with preference for lower values if equally close'
         opinion.auto_complete = 'CLOSEST_LOW'
-        for option_hash in opinion.get():
+        for option_hash in opinion.ranking():
             print HivemindOption(multihash=option_hash).value, option_hash
-        assert opinion.get() == [INTEGER_OPTION3_HASH, INTEGER_OPTION2_HASH, INTEGER_OPTION4_HASH, INTEGER_OPTION5_HASH, INTEGER_OPTION1_HASH]
+        assert opinion.ranking() == [INTEGER_OPTION3_HASH, INTEGER_OPTION2_HASH, INTEGER_OPTION4_HASH, INTEGER_OPTION5_HASH, INTEGER_OPTION1_HASH]
 
