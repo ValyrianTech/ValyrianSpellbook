@@ -503,7 +503,7 @@ class HivemindState(IPFSDictChain):
         self.weights = {}
         self.results = [{}]  # results are recorded for each question separately
         self.contributions = [{}]  # contributions are recorded for each question separately
-        # self.previous_state_hash = None
+        self.supporters = []
 
         super(HivemindState, self).__init__(multihash=multihash)
 
@@ -528,9 +528,29 @@ class HivemindState(IPFSDictChain):
         for opinionator in self.results[question_index]:
             self.results[question_index][opinionator] = {'win': 0, 'loss': 0, 'unknown': 0, 'score': 0}
 
-    def add_option(self, option_hash):
+    def add_option(self, option_hash, address=None, signature=None):
+        """
+        Add an option to the hivemind state
+
+        If the hivemind issue has restrictions on addresses, then the address and signature are required
+        If an address and signature is given, then it is also added to the list of supporters
+
+        :param option_hash: The IPFS multihash of the option
+        :param address: The address that supports the option (optional)
+        :param signature: The signature of the message: 'IPFS=<option_hash>' by the address (optional)
+        """
         if not isinstance(self._hivemind_issue, HivemindIssue):
             return
+
+        if address is not None and signature is not None:
+            if not verify_message(message='IPFS=%s' % option_hash, address=address, signature=signature):
+                raise Exception('Can not add option: Signature is not valid')
+
+        if self._hivemind_issue.restrictions is not None and 'addresses' in self._hivemind_issue.restrictions:
+            if address not in self._hivemind_issue.restrictions['addresses']:
+                raise Exception('Can not add option: there are address restrictions on this hivemind issue and address %s is not allowed to add options' % address)
+            elif address is None or signature is None:
+                    raise Exception('Can not add option: no address or signature given')
 
         option = HivemindOption(multihash=option_hash)
         if isinstance(option, HivemindOption) and option.valid():
@@ -538,6 +558,31 @@ class HivemindState(IPFSDictChain):
                 self.options.append(option_hash)
                 for i in range(len(self._hivemind_issue.questions)):
                     self.results[i][option_hash] = {'win': 0, 'loss': 0, 'unknown': 0, 'score': 0}
+
+                # If restrictions apply, then the address that adds the option is automatically also a supporter
+                if address is not None and signature is not None:
+                    self.support_option(option_hash=option_hash, address=address, signature=signature)
+
+    def support_option(self, option_hash, address, signature):
+        """
+        Add support for an option
+
+        :param option_hash: The IPFS multihash of the option
+        :param address: The address that supports the option
+        :param signature: the signature of the message 'IPFS=<option_hash>' by the address
+        """
+        if not verify_message(message='IPFS=%s' % option_hash, address=address, signature=signature):
+            raise Exception('Can not support option: Signature is not valid')
+
+        if option_hash not in self.options:
+            raise Exception('Can not support option: %s not found' % option_hash)
+
+        for supported_option_hash, supporter, _ in self.supporters:
+            if supported_option_hash == option_hash and supporter == address:
+                # address already supports this option
+                return
+
+        self.supporters.append((option_hash, address, signature))
 
     def add_opinion(self, opinion_hash, signature, weight=1.0, question_index=0):
         opinion = HivemindOpinion(multihash=opinion_hash)
