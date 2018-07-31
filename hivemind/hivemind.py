@@ -10,6 +10,7 @@ from validators.validators import valid_address, valid_bech32_address
 from taghash.taghash import TagHash
 from inputs.inputs import get_sil
 from linker.linker import get_lal
+from sign_message import verify_message
 
 
 class HivemindIssue(IPFSDict):
@@ -540,6 +541,9 @@ class HivemindState(IPFSDictChain):
 
     def add_opinion(self, opinion_hash, signature, weight=1.0, question_index=0):
         opinion = HivemindOpinion(multihash=opinion_hash)
+        if not verify_message(address=opinion.opinionator, message='IPFS=%s' % opinion_hash, signature=signature):
+            raise Exception('Can not add opinion: signature is invalid')
+
         if isinstance(opinion, HivemindOpinion) and opinion.valid():
             self.opinions[question_index][opinion.opinionator] = [opinion_hash, signature, int(time.time())]
             self.set_weight(opinionator=opinion.opinionator, weight=weight)
