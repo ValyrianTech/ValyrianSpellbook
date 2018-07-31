@@ -7,7 +7,7 @@ os.chdir("..")
 from hivemind.hivemind import HivemindIssue
 
 
-class TestHivemindQuestion(object):
+class TestHivemindIssue(object):
     def test_initialization(self):
         assert isinstance(HivemindIssue(), HivemindIssue)
 
