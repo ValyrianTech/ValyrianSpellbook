@@ -30,7 +30,7 @@ def update_hivemind_state_hash(hivemind_id, last_state_hash):
     if ':' in hivemind_id:
         hivemind_id = hivemind_id.split(':')[0]
 
-    hiveminds = load_from_json_file(HIVEMINDS_FILE)
+    hiveminds = load_from_json_file(HIVEMINDS_FILE) if os.path.isfile(HIVEMINDS_FILE) else {}
 
     hiveminds[hivemind_id] = last_state_hash
 
