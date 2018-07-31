@@ -46,7 +46,8 @@ assert hivemind_issue.answer_type == option_type
 hivemind_issue.set_tags(tags='mycompanyhash')
 assert hivemind_issue.tags == 'mycompanyhash'
 
-restrictions = {'addresses': [get_address_from_wallet(account=0, index=0), get_address_from_wallet(account=0, index=1)]}
+restrictions = {'addresses': [get_address_from_wallet(account=0, index=0), get_address_from_wallet(account=0, index=1)],
+                'options_per_address': 10}
 hivemind_issue.set_restrictions(restrictions=restrictions)
 
 

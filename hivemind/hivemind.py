@@ -558,8 +558,8 @@ class HivemindState(IPFSDictChain):
                 if supporter == address:
                     n_options += 1
 
-                if n_options >= self._hivemind_issue.restrictions['options_per_address']:
-                    raise Exception('Can not add option: address %s already added too many options: %s' % (address, n_options))
+            if n_options >= self._hivemind_issue.restrictions['options_per_address']:
+                raise Exception('Can not add option: address %s already added too many options: %s' % (address, n_options))
 
         option = HivemindOption(multihash=option_hash)
         if isinstance(option, HivemindOption) and option.valid():
