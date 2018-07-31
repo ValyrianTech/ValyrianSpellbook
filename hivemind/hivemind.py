@@ -123,6 +123,10 @@ class HivemindIssue(IPFSDict):
 
         return info
 
+    def save(self):
+        self.hivemind_id = self.id()
+        return super(HivemindIssue, self).save()
+
 
 class HivemindOption(IPFSDict):
     def __init__(self, multihash=None):
