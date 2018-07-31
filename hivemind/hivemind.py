@@ -552,6 +552,15 @@ class HivemindState(IPFSDictChain):
             elif address is None or signature is None:
                     raise Exception('Can not add option: no address or signature given')
 
+        if self._hivemind_issue.restrictions is not None and 'options_per_address' in self._hivemind_issue.restrictions:
+            n_options = 0
+            for supported_option_hash, supporter, _ in self.supporters:
+                if supporter == address:
+                    n_options += 1
+
+                if n_options >= self._hivemind_issue.restrictions['options_per_address']:
+                    raise Exception('Can not add option: address already added too many options')
+
         option = HivemindOption(multihash=option_hash)
         if isinstance(option, HivemindOption) and option.valid():
             if option_hash not in self.options:
