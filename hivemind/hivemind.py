@@ -26,6 +26,7 @@ class HivemindIssue(IPFSDict):
         self.answer_type = 'String'
         self.consensus_type = 'Single'  # Single or Ranked: Is the expected result of this question a single answer or a ranked list?
         self.constraints = None
+        self.restrictions = None
 
         super(HivemindIssue, self).__init__(multihash=multihash)
 
@@ -93,6 +94,28 @@ class HivemindIssue(IPFSDict):
             self.constraints = constraints
         else:
             raise Exception('constraints contain an invalid key: %s' % constraints)
+
+    def set_restrictions(self, restrictions):
+        if not isinstance(restrictions, dict):
+            raise Exception('Restrictions is not a dict , got %s instead' % type(restrictions))
+
+        for key in restrictions.keys():
+            if key not in ['addresses', 'options_per_address']:
+                raise Exception('Invalid key in restrictions: %s' % key)
+
+        if 'addresses' in restrictions:
+            if not isinstance(restrictions['addresses'], list):
+                raise Exception('addresses in restrictions must be a list, got %s instead' % type(restrictions['addresses']))
+
+            for address in restrictions['addresses']:
+                if not (valid_address(address=address) or valid_bech32_address(address=address)):
+                    raise Exception('Address %s in restrictions is not valid!' % address)
+
+        if 'options_per_address' in restrictions:
+            if not isinstance(restrictions['options_per_address'], int) or restrictions['options_per_address'] < 1:
+                raise Exception('options per address in restrictions is invalid: %s' % restrictions['options_per_address'])
+
+        self.restrictions = restrictions
 
     def id(self):
         taghash = TagHash(tags=self.questions[0])
