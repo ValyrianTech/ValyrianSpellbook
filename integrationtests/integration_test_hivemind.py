@@ -23,28 +23,96 @@ print 'Starting Spellbook integration test: hivemind'
 print '----------------------------------------------\n'
 
 
-question = 'Which number is bigger?'
+question0 = 'Which number is bigger?'
+question1 = 'Which number is smaller?'
 description = 'Rank the numbers from high to low'
-option_type = 'String'
+answer_type = 'String'
 
-print 'question:', question
+print 'question0:', question0
+print 'question1:', question1
 print 'description:', description
-print 'option_type:', option_type
+print 'answer_type:', answer_type
 
+print 'Test initialization'
 hivemind_issue = HivemindIssue()
 assert isinstance(hivemind_issue, HivemindIssue)
 
-hivemind_issue.add_question(question=question)
-assert hivemind_issue.questions[0] == question
+print 'Test adding main question'
+hivemind_issue.add_question(question=question0)
+assert hivemind_issue.questions[0] == question0
 
+print 'Test adding second question'
+hivemind_issue.add_question(question=question1)
+assert hivemind_issue.questions[1] == question1
+
+print 'Test if an existing question can not be added twice'
+hivemind_issue.add_question(question=question0)
+assert len(hivemind_issue.questions) == 2
+
+print 'Test only a string or unicode can be added as a question'
+hivemind_issue.add_question(question=1)
+assert len(hivemind_issue.questions) == 2
+
+print 'Test setting a description'
 hivemind_issue.set_description(description=description)
 assert hivemind_issue.description == description
 
-hivemind_issue.set_answer_type(answer_type=option_type)
-assert hivemind_issue.answer_type == option_type
+print 'Test only a string or unicode can be added as a description'
+hivemind_issue.set_description(description=1)
+assert hivemind_issue.description == description
 
+print '\nTest all types of answers'
+for answer_type in ['String', 'Bool', 'Integer', 'Float', 'Hivemind', 'Image', 'Video', 'Complex', 'Address']:
+    print 'Testing answer type:', answer_type
+    hivemind_issue.set_answer_type(answer_type=answer_type)
+    assert hivemind_issue.answer_type == answer_type
+
+print '\nTest setting tags'
 hivemind_issue.set_tags(tags='mycompanyhash')
 assert hivemind_issue.tags == 'mycompanyhash'
+
+print 'Test default consensus type is Single'
+assert hivemind_issue.consensus_type == 'Single'
+
+print 'Test setting consensus_types'
+for consensus_type in [u'Single', u'Ranked']:
+    print 'Testing consensus type:', consensus_type
+    hivemind_issue.set_consensus_type(consensus_type=consensus_type)
+    assert hivemind_issue.consensus_type == consensus_type
+
+print 'Test setting restrictions'
+restrictions = {'addresses': [get_address_from_wallet(account=0, index=0), get_address_from_wallet(account=0, index=1)],
+                'options_per_address': 10}
+hivemind_issue.set_restrictions(restrictions=restrictions)
+assert hivemind_issue.restrictions == restrictions
+
+
+print '\nSet answer type back to String for the rest of the integration test'
+answer_type = u'String'
+hivemind_issue.set_answer_type(answer_type=answer_type)
+assert hivemind_issue.answer_type == answer_type
+
+
+print '\nTest setting string constraints'
+constraints = {'min_length': 2,
+               'max_length': 10,
+               'regex': '^[a-zA-Z]+'}
+hivemind_issue.set_constraints(constraints=constraints)
+assert hivemind_issue.constraints == constraints
+
+
+print 'Test saving hivemind issue'
+hivemind_issue_hash = hivemind_issue.save()
+print 'Hivemind issue hash:', hivemind_issue_hash
+
+print '\nTest if initializing with a hivemind issue hash results in the correct hivemind issue'
+second_hivemind_issue = HivemindIssue(multihash=hivemind_issue_hash)
+# note small differences with unicode vs string text are possible but are ok
+print hivemind_issue.get()
+print second_hivemind_issue.get()
+assert hivemind_issue.get() == second_hivemind_issue.get()
+
+
 
 hivemind_id = hivemind_issue.id()
 print 'hivemind_id:', hivemind_id
@@ -67,12 +135,18 @@ for option_value in option_values:
     print 'adding option %s' % option_value
     option = HivemindOption()
     option.set_hivemind_issue(hivemind_issue_hash=hivemind_hash)
-    option.answer_type = option_type
+    option.answer_type = answer_type
     option.set(value=option_value)
     option_hashes[option_value] = option.save()
     print 'saved with ipfs hash %s' % option.multihash()
 
-    hivemind_state.add_option(option_hash=option.multihash())
+    address = get_address_from_wallet(account=0, index=0)
+    message = 'IPFS=%s' % option.multihash()
+    private_key = get_private_key_from_wallet(account=0, index=0)[address]
+
+    signature = sign_message(address=address, message=message, private_key=private_key)
+
+    hivemind_state.add_option(option_hash=option.multihash(), address=address, signature=signature)
     print ''
 
 print 'All options:'
