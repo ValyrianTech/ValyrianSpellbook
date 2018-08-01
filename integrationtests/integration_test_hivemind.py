@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import random
+from pprint import pprint
 
 # Set a specific seed for the random numbers so results can be easily replicated, comment out next line for random results
 # random.seed('qsmldkfslskdjf')
@@ -117,10 +118,24 @@ print '\n\n###############################'
 print '#Hivemind state               #'
 print '###############################'
 
-
+print 'Test initializing hivemind state'
 hivemind_state = HivemindState()
-hivemind_state.set_hivemind_issue(issue_hash=hivemind_issue_hash)
+assert isinstance(hivemind_state, HivemindState)
 
+print '\nstate hash', hivemind_state.save()
+print 'Change log:'
+pprint(hivemind_state.change_log())
+
+print '\nTest setting hivemind issue'
+hivemind_state.set_hivemind_issue(issue_hash=hivemind_issue_hash)
+assert hivemind_state.hivemind_issue_hash == hivemind_issue_hash
+assert hivemind_state.hivemind_issue().get() == hivemind_issue.get()
+
+print '\nstate hash', hivemind_state.save()
+print 'Change log:'
+pprint(hivemind_state.change_log(max_depth=0))
+
+print 'Test initial options is an empty list'
 assert hivemind_state.options == []
 
 
@@ -129,9 +144,9 @@ print '#Hivemind option              #'
 print '###############################'
 
 option_hashes = {}
-option_values = ['One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten']
-for option_value in option_values:
-    print 'adding option %s' % option_value
+option_values = ['One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven']
+for i, option_value in enumerate(option_values):
+    print '\nadding option %s: %s' % (i+1, option_value)
     option = HivemindOption()
     option.set_hivemind_issue(hivemind_issue_hash=hivemind_issue_hash)
     option.answer_type = answer_type
@@ -145,17 +160,26 @@ for option_value in option_values:
 
     signature = sign_message(address=address, message=message, private_key=private_key)
 
-    hivemind_state.add_option(option_hash=option.multihash(), address=address, signature=signature)
-    print ''
+    try:
+        # note there is a restriction on the maximum number of options per address: 10
+        hivemind_state.add_option(option_hash=option.multihash(), address=address, signature=signature)
+        assert hivemind_state.options[i] == option.multihash()
+    except Exception as e:
+        if i == 10:
+            print 'Correctly thrown exception because there is a restriction of maximum 10 options per address'
+        else:
+            print 'only the eleventh option should have thrown an exception'
+            exit(1)
 
+print '\nstate hash', hivemind_state.save()
+print 'Change log:'
+pprint(hivemind_state.change_log(max_depth=0))
+
+exit(0)
 print 'All options:'
 print hivemind_state.options
 assert len(hivemind_state.options) == len(option_values)
 
-print ''
-hivemind_state_hash = hivemind_state.save()
-print 'Hivemind state hash:', hivemind_state_hash
-print hivemind_state.hivemind_issue_hash
 
 
 print '\n\n###############################'
