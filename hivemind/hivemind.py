@@ -516,6 +516,8 @@ class HivemindState(IPFSDictChain):
         self.results = [{}]  # results are recorded for each question separately
         self.contributions = [{}]  # contributions are recorded for each question separately
         self.supporters = []
+        self.selected = []  # A list of options that have been selected by the hivemind
+        self.final = False  # if set to True, no more options or opinions can be added
 
         super(HivemindState, self).__init__(multihash=multihash)
 
@@ -551,6 +553,9 @@ class HivemindState(IPFSDictChain):
         :param address: The address that supports the option (optional)
         :param signature: The signature of the message: 'IPFS=<option_hash>' by the address (optional)
         """
+        if self.final is True:
+            return
+
         if not isinstance(self._hivemind_issue, HivemindIssue):
             return
 
@@ -592,6 +597,9 @@ class HivemindState(IPFSDictChain):
         :param address: The address that supports the option
         :param signature: the signature of the message 'IPFS=<option_hash>' by the address
         """
+        if self.final is True:
+            return
+
         if not verify_message(message='IPFS=%s' % option_hash, address=address, signature=signature):
             raise Exception('Can not support option: Signature is not valid')
 
@@ -606,6 +614,9 @@ class HivemindState(IPFSDictChain):
         self.supporters.append((option_hash, address, signature))
 
     def add_opinion(self, opinion_hash, signature, weight=1.0, question_index=0):
+        if self.final is True:
+            return
+
         opinion = HivemindOpinion(multihash=opinion_hash)
         if not verify_message(address=opinion.opinionator, message='IPFS=%s' % opinion_hash, signature=signature):
             raise Exception('Can not add opinion: signature is invalid')
@@ -706,7 +717,15 @@ class HivemindState(IPFSDictChain):
         """
         LOG.info('Calculating results for question %s...' % question_index)
         self.clear_results(question_index=question_index)
-        for a, b in combinations(self.options, 2):
+
+        # if selection mode is 'Exclude', we must exclude previously selected options from the results
+        if self._hivemind_issue.on_selection == 'Exclude':
+            selected_options = [selection[question_index] for selection in self.selected]
+            available_options = [option_hash for option_hash in self.options if option_hash not in selected_options]
+        else:
+            available_options = self.options
+
+        for a, b in combinations(available_options, 2):
             for opinionator in self.opinions[question_index]:
                 winner = compare(a, b, self.opinions[question_index][opinionator][0])
                 weight = self.weights[opinionator] if opinionator in self.weights else 0
@@ -826,6 +845,37 @@ class HivemindState(IPFSDictChain):
             self.contributions[question_index] = {opinionator: (1-(deviances[opinionator]/float(total_deviance)))*multipliers[opinionator] for opinionator in deviances}
         else:  # everyone has perfect opinion, but contributions should still be multiplied by the 'early bird' multiplier
             self.contributions[question_index] = {opinionator: 1*multipliers[opinionator] for opinionator in deviances}
+
+    def select_consensus(self):
+        # Selecting an option only makes sense if the consensus type is 'Single'
+        """
+        Mark the current consensus as being 'selected'
+
+        :return: a list containing the option with highest consensus for each question
+        """
+        if self._hivemind_issue.consensus_type != 'Single':
+            return
+
+        # Get the option with highest consensus for each question
+        selection = [self.get_consensus(question_index=question_index) for question_index in range(len(self._hivemind_issue.questions))]
+        self.selected.append(selection)
+
+        if self._hivemind_issue.on_selection is None:
+            return
+        elif self._hivemind_issue.on_selection == 'Finalize':
+            # The hivemind is final, no more options or opinions can be added
+            self.final = True
+        elif self._hivemind_issue.on_selection == 'Exclude':
+            # The selected option is excluded from future results
+            pass
+        elif self._hivemind_issue.on_selection == 'Reset':
+            # All opinions are reset
+            self.opinions = [{}]
+        else:
+            raise NotImplementedError('Unknown selection mode: %s' % self._hivemind_issue.on_selection)
+
+        self.save()
+        return selection
 
 
 def compare(a, b, opinion_hash):
