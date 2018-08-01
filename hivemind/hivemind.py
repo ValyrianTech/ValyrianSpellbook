@@ -5,7 +5,6 @@ from itertools import combinations
 
 from helpers.ipfshelpers import IPFSDict, IPFSDictChain
 from helpers.loghelpers import LOG
-from helpers.ipfshelpers import add_json, get_json
 from validators.validators import valid_address, valid_bech32_address
 from taghash.taghash import TagHash
 from inputs.inputs import get_sil
@@ -28,6 +27,13 @@ class HivemindIssue(IPFSDict):
         self.consensus_type = 'Single'  # Single or Ranked: Is the expected result of this question a single answer or a ranked list?
         self.constraints = None
         self.restrictions = None
+
+        # What happens when an option is selected: valid values are None, Finalize, Exclude, Reset
+        # None : nothing happens
+        # Finalize : Hivemind is finalized, no new options or opinions can be added anymore
+        # Exclude : The selected option is excluded from the results
+        # Reset : All opinions are reset
+        self.on_selection = None
 
         super(HivemindIssue, self).__init__(multihash=multihash)
 
@@ -117,6 +123,12 @@ class HivemindIssue(IPFSDict):
                 raise Exception('options per address in restrictions is invalid: %s' % restrictions['options_per_address'])
 
         self.restrictions = restrictions
+
+    def set_on_selection(self, on_selection):
+        if on_selection not in [None, 'Finalize', 'Exclude', 'Reset']:
+            raise Exception('Invalid value for on_selection: %s' % on_selection)
+
+        self.on_selection = on_selection
 
     def id(self):
         taghash = TagHash(tags=self.questions[0])
