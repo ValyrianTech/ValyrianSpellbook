@@ -23,8 +23,8 @@ class HivemindIssue(IPFSDict):
         self.questions = []
         self.description = ''
         self.tags = None
-        self.answer_type = 'String'
-        self.consensus_type = 'Single'  # Single or Ranked: Is the expected result of this question a single answer or a ranked list?
+        self.answer_type = u'String'
+        self.consensus_type = u'Single'  # Single or Ranked: Is the expected result of this question a single answer or a ranked list?
         self.constraints = None
         self.restrictions = None
 
@@ -39,25 +39,25 @@ class HivemindIssue(IPFSDict):
 
     def add_question(self, question):
         if isinstance(question, (str, unicode)) and question not in self.questions:
-            self.questions.append(question)
+            self.questions.append(unicode(question))
 
     def set_description(self, description):
         if isinstance(description, (str, unicode)):
-            self.description = description
+            self.description = unicode(description)
 
     def set_tags(self, tags):
         if isinstance(tags, (str, unicode)):
-            self.tags = tags
+            self.tags = unicode(tags)
 
     def set_answer_type(self, answer_type):
         if answer_type in ['String', 'Bool', 'Integer', 'Float', 'Hivemind', 'Image', 'Video', 'Complex', 'Address']:
-            self.answer_type = answer_type
+            self.answer_type = unicode(answer_type)
         else:
             raise Exception('Invalid answer_type: %s (must be one of the following: "String", "Bool", "Integer", "Float", "Hivemind", "Image", "Video", "Complex", "Address")' % answer_type)
 
     def set_consensus_type(self, consensus_type):
         if consensus_type in ['Single', 'Ranked']:
-            self.consensus_type = consensus_type
+            self.consensus_type = unicode(consensus_type)
         else:
             raise Exception('Consensus_type must be either Single or Ranked, got %s' % consensus_type)
 
@@ -128,7 +128,7 @@ class HivemindIssue(IPFSDict):
         if on_selection not in [None, 'Finalize', 'Exclude', 'Reset']:
             raise Exception('Invalid value for on_selection: %s' % on_selection)
 
-        self.on_selection = on_selection
+        self.on_selection = unicode(on_selection)
 
     def id(self):
         taghash = TagHash(tags=self.questions[0])
@@ -136,7 +136,7 @@ class HivemindIssue(IPFSDict):
         if self.tags is not None:
             taghash.add_tag(tag=self.tags)
 
-        self.hivemind_id = taghash.get()
+        self.hivemind_id = unicode(taghash.get())
         return self.hivemind_id
 
     def info(self):
