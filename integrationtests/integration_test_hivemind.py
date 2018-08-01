@@ -1,13 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import os
 import random
 
 # Set a specific seed for the random numbers so results can be easily replicated, comment out next line for random results
 # random.seed('qsmldkfslskdjf')
-
-# Change working dir up one level
-os.chdir("..")
 
 from hivemind.hivemind import HivemindIssue, HivemindOption, HivemindOpinion, HivemindState
 from helpers.ipfshelpers import IPFS_API
@@ -22,6 +18,10 @@ set_testnet(get_use_testnet())
 print 'Starting Spellbook integration test: hivemind'
 print '----------------------------------------------\n'
 
+
+print '\n\n###############################'
+print '#Hivemind issue               #'
+print '###############################'
 
 question0 = 'Which number is bigger?'
 question1 = 'Which number is smaller?'
@@ -113,28 +113,27 @@ print second_hivemind_issue.get()
 assert hivemind_issue.get() == second_hivemind_issue.get()
 
 
+print '\n\n###############################'
+print '#Hivemind state               #'
+print '###############################'
 
-hivemind_id = hivemind_issue.id()
-print 'hivemind_id:', hivemind_id
-hivemind_id_hash = IPFS_API.add_str(hivemind_id)
-print 'hivemind_id_hash:', hivemind_id_hash
-print ''
-
-print ''
-hivemind_hash = hivemind_issue.save()
-print 'Hivemind hash:', hivemind_hash
 
 hivemind_state = HivemindState()
-hivemind_state.set_hivemind_issue(issue_hash=hivemind_hash)
+hivemind_state.set_hivemind_issue(issue_hash=hivemind_issue_hash)
 
 assert hivemind_state.options == []
+
+
+print '\n\n###############################'
+print '#Hivemind option              #'
+print '###############################'
 
 option_hashes = {}
 option_values = ['One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten']
 for option_value in option_values:
     print 'adding option %s' % option_value
     option = HivemindOption()
-    option.set_hivemind_issue(hivemind_issue_hash=hivemind_hash)
+    option.set_hivemind_issue(hivemind_issue_hash=hivemind_issue_hash)
     option.answer_type = answer_type
     option.set(value=option_value)
     option_hashes[option_value] = option.save()
@@ -157,6 +156,11 @@ print ''
 hivemind_state_hash = hivemind_state.save()
 print 'Hivemind state hash:', hivemind_state_hash
 print hivemind_state.hivemind_issue_hash
+
+
+print '\n\n###############################'
+print '#Hivemind opinion             #'
+print '###############################'
 
 n_opinions = 10
 for i in range(n_opinions):
