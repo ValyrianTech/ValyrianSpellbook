@@ -772,7 +772,7 @@ class HivemindState(IPFSDictChain):
         elif len(sorted_options) == 1:
             return sorted_options[0].value
         # Make sure the consensus is not tied between the first two options
-        elif len(sorted_options) >= 2 and self.get_score(option_hash=sorted_options[0].multihash()) > self.get_score(option_hash=sorted_options[1].multihash()):
+        elif len(sorted_options) >= 2 and self.get_score(option_hash=sorted_options[0].multihash(), question_index=question_index) > self.get_score(option_hash=sorted_options[1].multihash(), question_index=question_index):
             return sorted_options[0].value
         else:
             return None
