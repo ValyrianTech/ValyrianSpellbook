@@ -824,10 +824,10 @@ class HivemindState(IPFSDictChain):
         # sort the opinionators by the timestamp of their opinion
         opinionators_by_timestamp = [opinionator for opinionator, opinion_data in sorted(self.opinions[question_index].items(), key=lambda x: x[1][2])]
 
-        for i, opinionator in enumerate(opinionators_by_timestamp):
-            if self.weights[opinionator] == 0:
-                continue
+        # exclude the opinionators with weight 0
+        opinionators_by_timestamp = [opinionator for opinionator in opinionators_by_timestamp if self.weights[opinionator] > 0.0]
 
+        for i, opinionator in enumerate(opinionators_by_timestamp):
             deviance = 0
             opinion = HivemindOpinion(multihash=self.opinions[question_index][opinionator][0])
 
