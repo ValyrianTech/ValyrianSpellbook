@@ -793,7 +793,18 @@ class HivemindState(IPFSDictChain):
         ret = self._hivemind_issue.questions[question_index]
         ret += '\nResults:\n========'
         i = 0
+
+        # if selection mode is 'Exclude', we must exclude previously selected options from the results
+        if self._hivemind_issue.on_selection == 'Exclude':
+            selected_options = [selection[question_index] for selection in self.selected]
+            available_options = [option_hash for option_hash in self.options if option_hash not in selected_options]
+        else:
+            available_options = self.options
+
         for option_hash, option_result in sorted(self.results[question_index].items(), key=lambda x: x[1]['score'], reverse=True):
+            if option_hash not in available_options:
+                continue
+
             i += 1
             option = HivemindOption(multihash=option_hash)
             ret += '\n%s: (%g%%) : %s' % (i, round(option_result['score']*100, 2), option.value)
@@ -859,8 +870,8 @@ class HivemindState(IPFSDictChain):
         if self._hivemind_issue.consensus_type != 'Single':
             return
 
-        # Get the option with highest consensus for each question
-        selection = [self.get_consensus(question_index=question_index) for question_index in range(len(self._hivemind_issue.questions))]
+        # Get the option hash with highest consensus for each question
+        selection = [self.get_options(question_index=question_index)[0].multihash() for question_index in range(len(self._hivemind_issue.questions))]
         self.selected.append(selection)
 
         if self._hivemind_issue.on_selection is None:
