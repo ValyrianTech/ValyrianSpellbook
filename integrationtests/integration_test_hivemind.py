@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import random
 from pprint import pprint
+from copy import copy
 
 # Set a specific seed for the random numbers so results can be easily replicated, comment out next line for random results
 # random.seed('qsmldkfslskdjf')
@@ -82,11 +83,17 @@ for consensus_type in [u'Single', u'Ranked']:
     assert hivemind_issue.consensus_type == consensus_type
 
 print 'Test setting restrictions'
-restrictions = {'addresses': [get_address_from_wallet(account=0, index=0), get_address_from_wallet(account=0, index=1)],
+restrictions = {'addresses': [get_address_from_wallet(account=0, index=0),
+                              get_address_from_wallet(account=0, index=1),
+                              get_address_from_wallet(account=0, index=1)],
                 'options_per_address': 10}
 hivemind_issue.set_restrictions(restrictions=restrictions)
 assert hivemind_issue.restrictions == restrictions
 
+print 'Test setting on_selection'
+on_selection = 'Exclude'
+hivemind_issue.set_on_selection(on_selection=on_selection)
+assert hivemind_issue.on_selection == on_selection
 
 print '\nSet answer type back to String for the rest of the integration test'
 answer_type = u'String'
@@ -175,10 +182,10 @@ print '\nstate hash', hivemind_state.save()
 print 'Change log:'
 pprint(hivemind_state.change_log(max_depth=0))
 
-exit(0)
+
 print 'All options:'
 print hivemind_state.options
-assert len(hivemind_state.options) == len(option_values)
+assert len(hivemind_state.options) == 10
 
 
 
@@ -186,11 +193,183 @@ print '\n\n###############################'
 print '#Hivemind opinion             #'
 print '###############################'
 
+
+small_to_large = [option_hashes[option_value] for option_value in ['One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten']]
+large_to_small = [option_hashes[option_value] for option_value in ['Ten', 'Nine', 'Eight', 'Seven', 'Six', 'Five', 'Four', 'Three', 'Two', 'One']]
+random_values = ['Ten', 'Nine', 'Eight', 'Seven', 'Six', 'Five', 'Four', 'Three', 'Two', 'One']
+random.shuffle(random_values)
+random_opinion = [option_hashes[option_value] for option_value in random_values]
+
+
+correct_opinionator = get_address_from_wallet(account=0, index=0)
+reverse_opinionator = get_address_from_wallet(account=0, index=1)
+random_opinionator = get_address_from_wallet(account=0, index=2)
+
+print '\nTest adding the correct opinion on question 0'
+opinion = HivemindOpinion()
+opinion.set_hivemind_state(hivemind_state_hash=hivemind_state.multihash())
+opinion.set(opinionator=correct_opinionator, ranked_choice=large_to_small)
+opinion.save()
+
+private_key = get_private_key_from_wallet(account=0, index=0)[correct_opinionator]
+message = 'IPFS=%s' % opinion.multihash()
+signature = sign_message(address=correct_opinionator, message=message, private_key=private_key)
+
+hivemind_state.add_opinion(opinion_hash=opinion.multihash(), signature=signature, weight=1.0, question_index=0)
+hivemind_state.calculate_results(question_index=0)
+consensus = hivemind_state.get_consensus(question_index=0)
+print consensus
+assert consensus == ['Ten', 'Nine', 'Eight', 'Seven', 'Six', 'Five', 'Four', 'Three', 'Two', 'One']
+
+print '\nTest adding the correct opinion on question 1'
+opinion = HivemindOpinion()
+opinion.set_hivemind_state(hivemind_state_hash=hivemind_state.multihash())
+opinion.set(opinionator=correct_opinionator, ranked_choice=small_to_large)
+opinion.save()
+
+private_key = get_private_key_from_wallet(account=0, index=0)[correct_opinionator]
+message = 'IPFS=%s' % opinion.multihash()
+signature = sign_message(address=correct_opinionator, message=message, private_key=private_key)
+
+hivemind_state.add_opinion(opinion_hash=opinion.multihash(), signature=signature, weight=1.0, question_index=1)
+hivemind_state.calculate_results(question_index=1)
+consensus = hivemind_state.get_consensus(question_index=1)
+print consensus
+assert consensus == ['One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten']
+
+
+hivemind_state.set_weight(opinionator=correct_opinionator, weight=0.0)
+
+print '\nTest adding the reverse opinion on question 0'
+opinion = HivemindOpinion()
+opinion.set_hivemind_state(hivemind_state_hash=hivemind_state.multihash())
+opinion.set(opinionator=reverse_opinionator, ranked_choice=small_to_large)
+opinion.save()
+
+private_key = get_private_key_from_wallet(account=0, index=1)[reverse_opinionator]
+message = 'IPFS=%s' % opinion.multihash()
+signature = sign_message(address=reverse_opinionator, message=message, private_key=private_key)
+
+hivemind_state.add_opinion(opinion_hash=opinion.multihash(), signature=signature, weight=1.0, question_index=0)
+hivemind_state.calculate_results(question_index=0)
+consensus = hivemind_state.get_consensus(question_index=0)
+print consensus
+assert consensus == ['One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten']
+
+print '\nTest adding the reverse opinion on question 1'
+opinion = HivemindOpinion()
+opinion.set_hivemind_state(hivemind_state_hash=hivemind_state.multihash())
+opinion.set(opinionator=reverse_opinionator, ranked_choice=large_to_small)
+opinion.save()
+
+private_key = get_private_key_from_wallet(account=0, index=1)[reverse_opinionator]
+message = 'IPFS=%s' % opinion.multihash()
+signature = sign_message(address=reverse_opinionator, message=message, private_key=private_key)
+
+hivemind_state.add_opinion(opinion_hash=opinion.multihash(), signature=signature, weight=1.0, question_index=1)
+hivemind_state.calculate_results(question_index=1)
+consensus = hivemind_state.get_consensus(question_index=1)
+print consensus
+assert consensus == ['Ten', 'Nine', 'Eight', 'Seven', 'Six', 'Five', 'Four', 'Three', 'Two', 'One']
+
+hivemind_state.set_weight(opinionator=reverse_opinionator, weight=0.0)
+
+print '\nTest adding the random opinion on question 0'
+opinion = HivemindOpinion()
+opinion.set_hivemind_state(hivemind_state_hash=hivemind_state.multihash())
+opinion.set(opinionator=random_opinionator, ranked_choice=random_opinion)
+opinion.save()
+
+private_key = get_private_key_from_wallet(account=0, index=2)[random_opinionator]
+message = 'IPFS=%s' % opinion.multihash()
+signature = sign_message(address=random_opinionator, message=message, private_key=private_key)
+
+hivemind_state.add_opinion(opinion_hash=opinion.multihash(), signature=signature, weight=1.0, question_index=0)
+hivemind_state.calculate_results(question_index=0)
+consensus = hivemind_state.get_consensus(question_index=0)
+print consensus
+assert consensus == random_values
+
+print '\nTest adding the random opinion on question 1'
+opinion = HivemindOpinion()
+opinion.set_hivemind_state(hivemind_state_hash=hivemind_state.multihash())
+opinion.set(opinionator=random_opinionator, ranked_choice=random_opinion)
+opinion.save()
+
+private_key = get_private_key_from_wallet(account=0, index=2)[random_opinionator]
+message = 'IPFS=%s' % opinion.multihash()
+signature = sign_message(address=random_opinionator, message=message, private_key=private_key)
+
+hivemind_state.add_opinion(opinion_hash=opinion.multihash(), signature=signature, weight=1.0, question_index=1)
+hivemind_state.calculate_results(question_index=1)
+consensus = hivemind_state.get_consensus(question_index=1)
+print consensus
+assert consensus == random_values
+
+
+hivemind_state.set_weight(opinionator=correct_opinionator, weight=0.0)
+hivemind_state.set_weight(opinionator=reverse_opinionator, weight=0.0)
+hivemind_state.set_weight(opinionator=random_opinionator, weight=0.0)
+
+hivemind_state.calculate_results(question_index=0)
+hivemind_state.calculate_results(question_index=1)
+
+print '\nConsensus with all weights 0'
+print hivemind_state.get_consensus(question_index=0)
+print hivemind_state.get_consensus(question_index=1)
+
+# modify hivemind issue to a single consensus instead of ranked consensus
+hivemind_issue = hivemind_state.hivemind_issue()
+hivemind_issue.set_consensus_type(consensus_type='Single')
+hivemind_issue.save()
+
+hivemind_state.hivemind_issue_hash = hivemind_issue.multihash()
+hivemind_state.save()
+
+print '\nTest on selection works as intended'
+hivemind_state.set_weight(opinionator=correct_opinionator, weight=1.0)
+hivemind_state.set_weight(opinionator=reverse_opinionator, weight=0.0)
+hivemind_state.set_weight(opinionator=random_opinionator, weight=0.0)
+
+hivemind_state.calculate_results(question_index=0)
+hivemind_state.calculate_results(question_index=1)
+
+print '\nOriginal consensus'
+print hivemind_state.get_consensus(question_index=0)
+print hivemind_state.get_consensus(question_index=1)
+assert hivemind_state.get_consensus(question_index=0) == 'Ten'
+assert hivemind_state.get_consensus(question_index=1) == 'One'
+
+print '\nConsensus after 1 selection'
+hivemind_state.select_consensus()
+print hivemind_state.selected
+
+
+hivemind_state.calculate_results(question_index=0)
+hivemind_state.calculate_results(question_index=1)
+print hivemind_state.get_consensus(question_index=0)
+print hivemind_state.get_consensus(question_index=1)
+assert hivemind_state.get_consensus(question_index=0) == 'Nine'
+assert hivemind_state.get_consensus(question_index=1) == 'Two'
+
+print '\nConsensus after 2 selections'
+hivemind_state.select_consensus()
+print hivemind_state.selected
+
+
+hivemind_state.calculate_results(question_index=0)
+hivemind_state.calculate_results(question_index=1)
+print hivemind_state.get_consensus(question_index=0)
+print hivemind_state.get_consensus(question_index=1)
+assert hivemind_state.get_consensus(question_index=0) == 'Eight'
+assert hivemind_state.get_consensus(question_index=1) == 'Three'
+
+exit(0)
 n_opinions = 10
 for i in range(n_opinions):
     opinionator = get_address_from_wallet(account=3, index=i+1)
     opinion = HivemindOpinion()
-    opinion.set_hivemind_state(hivemind_state_hash=hivemind_state_hash)
+    opinion.set_hivemind_state(hivemind_state_hash=hivemind_state.multihash())
     ranked_choice = hivemind_state.options
     random.shuffle(ranked_choice)
     opinion.set(opinionator=opinionator, ranked_choice=ranked_choice)
