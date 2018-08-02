@@ -728,7 +728,7 @@ class HivemindState(IPFSDictChain):
         for a, b in combinations(available_options, 2):
             for opinionator in self.opinions[question_index]:
                 winner = compare(a, b, self.opinions[question_index][opinionator][0])
-                weight = self.weights[opinionator] if opinionator in self.weights else 0
+                weight = self.weights[opinionator] if opinionator in self.weights else 0.0
                 if winner == a:
                     self.results[question_index][a]['win'] += weight
                     self.results[question_index][b]['loss'] += weight
@@ -825,6 +825,9 @@ class HivemindState(IPFSDictChain):
         opinionators_by_timestamp = [opinionator for opinionator, opinion_data in sorted(self.opinions[question_index].items(), key=lambda x: x[1][2])]
 
         for i, opinionator in enumerate(opinionators_by_timestamp):
+            if self.weights[opinionator] == 0:
+                continue
+
             deviance = 0
             opinion = HivemindOpinion(multihash=self.opinions[question_index][opinionator][0])
 
