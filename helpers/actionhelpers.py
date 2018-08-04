@@ -4,14 +4,14 @@
 import glob
 import os
 
-from actiontype import ActionType
-from commandaction import CommandAction
-from spawnprocessaction import SpawnProcessAction
+from action.actiontype import ActionType
+from action.commandaction import CommandAction
+from action.spawnprocessaction import SpawnProcessAction
 from helpers.jsonhelpers import load_from_json_file
-from revealsecretaction import RevealSecretAction
-from sendmailaction import SendMailAction
-from sendtransactionaction import SendTransactionAction
-from webhookaction import WebhookAction
+from action.revealsecretaction import RevealSecretAction
+from action.sendmailaction import SendMailAction
+from action.sendtransactionaction import SendTransactionAction
+from action.webhookaction import WebhookAction
 
 ACTIONS_DIR = 'json/public/actions'
 
