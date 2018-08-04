@@ -14,7 +14,7 @@ class TriggerStatusTrigger(Trigger):
 
     def conditions_fulfilled(self):
         # Avoid circular import here
-        from triggerhelpers import get_trigger
+        from helpers.triggerhelpers import get_trigger
 
         if self.previous_trigger is None or self.previous_trigger_status is None:
             return False

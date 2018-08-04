@@ -5,22 +5,22 @@ import glob
 import os
 
 from helpers.loghelpers import LOG
-from balancetrigger import BalanceTrigger
-from blockheighttrigger import BlockHeightTrigger
-from deadmansswitchtrigger import DeadMansSwitchTrigger
+from trigger.balancetrigger import BalanceTrigger
+from trigger.blockheighttrigger import BlockHeightTrigger
+from trigger.deadmansswitchtrigger import DeadMansSwitchTrigger
 from helpers.jsonhelpers import load_from_json_file
-from manualtrigger import ManualTrigger
-from receivedtrigger import ReceivedTrigger
-from recurringtrigger import RecurringTrigger
-from senttrigger import SentTrigger
+from trigger.manualtrigger import ManualTrigger
+from trigger.receivedtrigger import ReceivedTrigger
+from trigger.recurringtrigger import RecurringTrigger
+from trigger.senttrigger import SentTrigger
 from sign_message import verify_message
-from signedmessagetrigger import SignedMessageTrigger
-from timestamptrigger import TimestampTrigger
-from triggerstatustrigger import TriggerStatusTrigger
-from httpgetrequesttrigger import HTTPGetRequestTrigger
-from httppostrequesttrigger import HTTPPostRequestTrigger
-from httpdeleterequesttrigger import HTTPDeleteRequestTrigger
-from triggertype import TriggerType
+from trigger.signedmessagetrigger import SignedMessageTrigger
+from trigger.timestamptrigger import TimestampTrigger
+from trigger.triggerstatustrigger import TriggerStatusTrigger
+from trigger.httpgetrequesttrigger import HTTPGetRequestTrigger
+from trigger.httppostrequesttrigger import HTTPPostRequestTrigger
+from trigger.httpdeleterequesttrigger import HTTPDeleteRequestTrigger
+from trigger.triggertype import TriggerType
 
 TRIGGERS_DIR = 'json/public/triggers'
 
