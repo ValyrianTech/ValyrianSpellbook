@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-
+import getpass
 import simplejson
 
 from AESCipher import AESCipher
@@ -15,11 +15,18 @@ HOT_WALLET_PASSWORD = None
 
 def get_hot_wallet():
     global HOT_WALLET_PASSWORD
+    wallet_dir, wallet_id = get_wallet_dir(), get_default_wallet()
 
     if HOT_WALLET_PASSWORD is None:
-        prompt_decryption_password()
+        # Try empty password first (Reminder: in production there should always be a decryption password for the hot wallet)
+        try:
+            cipher = AESCipher(key='')
+            with open(os.path.join(wallet_dir, '%s.enc' % wallet_id), 'r') as input_file:
+                encrypted_data = input_file.read()
+                return simplejson.loads(cipher.decrypt(encrypted_data))
 
-    wallet_dir, wallet_id = get_wallet_dir(), get_default_wallet()
+        except Exception as ex:
+            prompt_decryption_password()
 
     try:
         cipher = AESCipher(key=HOT_WALLET_PASSWORD)
@@ -34,8 +41,7 @@ def get_hot_wallet():
 def prompt_decryption_password():
     global HOT_WALLET_PASSWORD
     # if this is running in pycharm console, make sure 'Emulate terminal in output console' is checked in the configuration
-    # HOT_WALLET_PASSWORD = getpass.getpass('Enter the password to decrypt the hot wallet: ')
-    HOT_WALLET_PASSWORD = ''  # Todo enable password prompt again after development is done
+    HOT_WALLET_PASSWORD = getpass.getpass('Enter the password to decrypt the hot wallet: ')
 
 
 def get_address_from_wallet(account, index):
