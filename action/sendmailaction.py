@@ -3,7 +3,7 @@
 
 from action import Action
 from actiontype import ActionType
-from mailhelpers import sendmail
+from helpers.mailhelpers import sendmail
 
 
 class SendMailAction(Action):
