@@ -22,12 +22,12 @@ from helpers.configurationhelpers import get_host, get_port
 from helpers.hivemindhelpers import get_hivemind_state_hash
 from helpers.hotwallethelpers import get_hot_wallet
 from helpers.loghelpers import LOG, REQUESTS_LOG
+from helpers.triggerhelpers import get_triggers, get_trigger_config, save_trigger, delete_trigger, activate_trigger, \
+    check_triggers, verify_signed_message, http_get_request, http_post_request, http_delete_request
 from inputs.inputs import get_sil, get_profile, get_sul
 from linker.linker import get_lal, get_lbl, get_lrl, get_lsl
 from randomaddress.randomaddress import random_address_from_sil, random_address_from_lbl, random_address_from_lrl, \
     random_address_from_lsl
-from trigger.triggerhelpers import get_triggers, get_trigger_config, save_trigger, delete_trigger, activate_trigger, \
-    check_triggers, verify_signed_message, http_get_request, http_post_request, http_delete_request
 
 
 class SpellbookRESTAPI(Bottle):
