@@ -11,7 +11,9 @@ from explorer import Explorer, ExplorerType
 from helpers.jsonhelpers import save_to_json_file, load_from_json_file
 from validators.validators import valid_address
 
-EXPLORERS_JSON_FILE = 'json/private/explorers.json'
+PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+EXPLORERS_JSON_FILE = os.path.join(PROGRAM_DIR, 'json', 'private', 'explorers.json')
 EXPLORER = None
 
 
@@ -216,6 +218,7 @@ def latest_block():
     :return: A dict containing info about the latest block
     """
     return query('latest_block', None)
+
 
 def transaction(txid):
     """
