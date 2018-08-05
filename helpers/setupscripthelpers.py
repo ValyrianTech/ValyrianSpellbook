@@ -50,3 +50,25 @@ def bitcoinwand_call(address, message, url):
     if len(stripped_output):
         bitcoinwand_response = simplejson.loads(stripped_output)
         return bitcoinwand_response
+
+
+def clean_up_triggers(trigger_ids):
+    print 'Cleaning up triggers: %s' % trigger_ids
+    print 'Getting the list of configured triggers'
+    configured_trigger_ids = spellbook_call('get_triggers')
+
+    for trigger_id in trigger_ids:
+        if trigger_id in configured_trigger_ids:
+            response = spellbook_call('delete_trigger', trigger_id)
+            assert response is None
+
+
+def clean_up_actions(action_ids):
+    print 'Cleaning up actions: %s' % action_ids
+    print 'Getting the list of configured actions'
+    configured_action_ids = spellbook_call('get_actions')
+
+    for action_id in action_ids:
+        if action_id in configured_action_ids:
+            response = spellbook_call('delete_action', action_id)
+            assert response is None
