@@ -6,8 +6,10 @@ import sys
 import logging
 from logging.handlers import RotatingFileHandler
 
+PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
 # make the directory for logs if it doesn't exist
-logs_dir = os.path.join('logs')
+logs_dir = os.path.join(PROGRAM_DIR, 'logs')
 if not os.path.isdir(logs_dir):
     os.makedirs(logs_dir)
 
