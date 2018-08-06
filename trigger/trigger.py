@@ -12,8 +12,8 @@ from helpers.jsonhelpers import save_to_json_file
 from helpers.loghelpers import LOG
 from spellbookscripts.spellbookscript import SpellbookScript
 from validators.validators import valid_actions, valid_trigger_type, valid_amount, valid_script
-from validators.validators import valid_description, valid_creator, valid_email, valid_youtube_id, valid_status, \
-    valid_visibility
+from validators.validators import valid_description, valid_creator, valid_email, valid_youtube_id
+from validators.validators import valid_status, valid_visibility, valid_timestamp
 
 TRIGGERS_DIR = 'json/public/triggers'
 
@@ -35,6 +35,7 @@ class Trigger(object):
         self.visibility = None
         self.created = None
         self.actions = []
+        self.self_destruct = None
 
     def configure(self, **config):
         self.created = datetime.fromtimestamp(config['created']) if 'created' in config else datetime.now()
@@ -79,6 +80,9 @@ class Trigger(object):
             for action_id in self.actions:
                 if action_id not in configured_actions:
                     LOG.warning('Trigger %s contains unknown action: %s' % (self.id, action_id))
+
+        if 'self_destruct' in config and valid_timestamp(config['self_destruct']):
+            self.self_destruct = config['self_destruct']
 
     @abstractmethod
     def conditions_fulfilled(self):
@@ -155,7 +159,8 @@ class Trigger(object):
                 'status': self.status,
                 'visibility': self.visibility,
                 'created': int(time.mktime(self.created.timetuple())),
-                'actions': self.actions}
+                'actions': self.actions,
+                'self_destruct': self.self_destruct}
 
     def load_script(self):
         if self.script is not None:
