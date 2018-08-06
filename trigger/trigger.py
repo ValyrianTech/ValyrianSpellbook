@@ -157,24 +157,38 @@ class Trigger(object):
 
     def load_script(self):
         if self.script is not None:
-            if not os.path.isfile('spellbookscripts\%s.py' % self.script):
-                LOG.error('Can not find Spellbook Script %s' % self.script)
+            if not valid_script(self.script):
                 return
-            else:
-                LOG.info('Loading Spellbook Script spellbookscripts\%s.py' % self.script)
-                try:
-                    script_module = importlib.import_module('spellbookscripts.%s' % self.script)
-                except Exception as ex:
-                    LOG.error('Failed to load Spellbook Script %s: %s' % (self.script, ex))
-                    return
 
-                spellbook_script = getattr(script_module, self.script)
-                kwargs = self.get_script_variables()
-                script = spellbook_script(**kwargs)
+            script_name = self.script[:-3]  # script name without the .py extension
+            script_path = None
+            script_module_name = None
 
-                if not isinstance(script, SpellbookScript):
-                    LOG.error(
-                        'Script %s is not a valid Spellbook Script, instead it is a %s' % (self.script, type(script)))
-                    return
+            # Search for the script in the allowed root directories
+            for app_root_dir in ['spellbookscripts', 'apps']:
+                if os.path.isfile(os.path.join(app_root_dir, self.script)):
+                    script_path = os.path.join(app_root_dir, self.script)
+                    script_module_name = '%s.%s' % (app_root_dir, script_name.replace('\\', '.'))
 
-                return script
+            if script_path is None:
+                LOG.error('Can not find spellbook script' % self.script)
+                return
+
+            LOG.info('Loading Spellbook Script %s' % script_path)
+            try:
+                script_module = importlib.import_module(script_module_name)
+            except Exception as ex:
+                LOG.error('Failed to load Spellbook Script %s: %s' % (script_path, ex))
+                return
+
+            script_class_name = os.path.basename(script_path)[:-3]
+            spellbook_script = getattr(script_module, script_class_name)
+            kwargs = self.get_script_variables()
+            script = spellbook_script(**kwargs)
+
+            if not isinstance(script, SpellbookScript):
+                LOG.error(
+                    'Script %s is not a valid Spellbook Script, instead it is a %s' % (self.script, type(script)))
+                return
+
+            return script
