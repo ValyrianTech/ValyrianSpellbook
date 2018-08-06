@@ -38,6 +38,7 @@ class SpellbookScript(object):
         self.text = None
 
         self.http_response = None
+        self.new_actions = []
 
         if self.message is not None:
             self.process_message()
@@ -91,3 +92,11 @@ class SpellbookScript(object):
     def process_text(self, text):
         LOG.info('Processing text data')
         self.text = text
+
+    def add_action(self, action_id):
+        """
+        Add an action_id to the list of actions the trigger will execute
+
+        :param action_id: The id of the action
+        """
+        self.new_actions.append(action_id)
