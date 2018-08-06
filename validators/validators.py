@@ -4,6 +4,7 @@
 import re
 import os
 from helpers.bech32 import bech32_decode
+from helpers.loghelpers import LOG
 
 
 ALL_CHARACTERS_REGEX = "^[a-zA-Z0-9àáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$"
@@ -166,7 +167,17 @@ def valid_phase(phase):
 
 
 def valid_script(script):
-    return os.path.isfile('spellbookscripts\%s.py' % script)
+    if not script.endswith('.py'):
+        LOG.error('Script %s is invalid: does not end with .py extension' % script)
+        return False
+
+    if os.path.isfile(os.path.join('spellbookscripts', script)):
+        return True
+    elif os.path.isfile(os.path.join('apps', script)):
+        return True
+    else:
+        LOG.error('Script %s is invalid: file not found in spellbookscripts or apps directory' % script)
+        return False
 
 
 def valid_bech32_address(address):
