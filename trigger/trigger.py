@@ -141,7 +141,7 @@ class Trigger(object):
         save_to_json_file(os.path.join(TRIGGERS_DIR, '%s.json' % self.id), self.json_encodable())
 
     def json_encodable(self):
-        return {'id': self.id,
+        return {'trigger_id': self.id,
                 'trigger_type': self.trigger_type,
                 'script': self.script,
                 'triggered': self.triggered,

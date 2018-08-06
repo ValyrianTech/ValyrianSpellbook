@@ -19,7 +19,7 @@ class Template(SpellbookScript):
     def run(self):
         LOG.info('Running Spellbook Script: %s' % os.path.splitext(os.path.basename(__file__))[0])
 
-        LOG.info('id: %s' % self.id)
+        LOG.info('id: %s' % self.trigger_id)
         LOG.info('trigger_type: %s' % self.trigger_type)
         LOG.info('script: %s' % self.script)
         LOG.info('triggered: %s' % self.triggered)

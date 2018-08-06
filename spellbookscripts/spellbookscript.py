@@ -19,7 +19,7 @@ class SpellbookScript(object):
         self.message = kwargs['message'] if 'message' in kwargs else None
         self.signature = kwargs['signature'] if 'signature' in kwargs else None
 
-        self.id = kwargs['id'] if 'id' in kwargs else None
+        self.trigger_id = kwargs['trigger_id'] if 'trigger_id' in kwargs else None
         self.trigger_type = kwargs['trigger_type'] if 'trigger_type' in kwargs else None
         self.script = kwargs['script'] if 'script' in kwargs else None
         self.triggered = kwargs['triggered'] if 'triggered' in kwargs else None
