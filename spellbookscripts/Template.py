@@ -10,8 +10,7 @@ class Template(SpellbookScript):
     def __init__(self, *args, **kwargs):
         super(Template, self).__init__(*args, **kwargs)
 
-
-    def run_script(self):
+    def run(self):
         LOG.info('Running Spellbook Script: %s' % os.path.splitext(os.path.basename(__file__))[0])
 
         LOG.info('id: %s' % self.id)
