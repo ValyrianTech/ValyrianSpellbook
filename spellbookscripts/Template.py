@@ -7,6 +7,12 @@ from spellbookscript import SpellbookScript
 
 
 class Template(SpellbookScript):
+    """
+    Important:  the Class name must be exactly the same as the script name without the .py extension
+
+    spellbookscripts must either be stored in the 'spellbookscripts' directory or the 'apps' directory
+    subdirectories are allowed, just remember when saving a trigger with a script, you must include the subdirectories in the script name
+    """
     def __init__(self, *args, **kwargs):
         super(Template, self).__init__(*args, **kwargs)
 
