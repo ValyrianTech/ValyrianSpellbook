@@ -102,9 +102,9 @@ class Trigger(object):
         script = self.load_script()
 
         if script is not None:
-            new_actions = script.run()
-            if new_actions is not None:
-                self.actions.extend(new_actions)
+            script.run()
+            if len(script.new_actions) >= 1:
+                self.actions.extend(script.new_actions)
 
         configured_actions = get_actions()
         for action_id in self.actions:
