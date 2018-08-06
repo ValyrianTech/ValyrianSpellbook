@@ -3,6 +3,7 @@
 
 import glob
 import os
+import time
 
 from helpers.loghelpers import LOG
 from trigger.balancetrigger import BalanceTrigger
@@ -169,6 +170,12 @@ def check_triggers(trigger_id=None):
 
     for trigger_id in triggers:
         trigger = get_trigger(trigger_id=trigger_id)
+        if trigger.self_destruct is not None:
+            if trigger.self_destruct <= int(time.time()):
+                LOG.info('Trigger %s has reached its self-destruct time, deleting trigger' % trigger_id)
+                delete_trigger(trigger_id=trigger_id)
+                continue
+
         if trigger.status == 'Active':
             LOG.info('Checking conditions of trigger %s' % trigger_id)
             if trigger.conditions_fulfilled() is True:
