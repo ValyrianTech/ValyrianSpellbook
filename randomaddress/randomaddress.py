@@ -42,13 +42,11 @@ def random_address_from_sil(address, sil_block_height=0, rng_block_height=0):
                                                                 rng_block_height=rng_block_height)
 
 
-def random_address_from_sul(address, sil_block_height=0, rng_block_height=0):
+def random_address_from_sul(address, rng_block_height=0):
     if not valid_address(address):
         return {'error': 'Invalid address: %s' % address}
 
-    return RandomAddress(address=address,
-                         sil_block_height=sil_block_height).get(source='SUL',
-                                                                rng_block_height=rng_block_height)
+    return RandomAddress(address=address).get(source='SUL', rng_block_height=rng_block_height)
 
 
 def random_address_from_lbl(address, xpub, sil_block_height=0, rng_block_height=0):
