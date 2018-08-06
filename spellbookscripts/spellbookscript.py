@@ -43,7 +43,7 @@ class SpellbookScript(object):
             self.process_message()
 
     @abstractmethod
-    def run_script(self):
+    def run(self):
         pass
 
     @abstractmethod

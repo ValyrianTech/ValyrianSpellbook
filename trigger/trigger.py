@@ -102,7 +102,7 @@ class Trigger(object):
         script = self.load_script()
 
         if script is not None:
-            new_actions = script.run_script()
+            new_actions = script.run()
             if new_actions is not None:
                 self.actions.extend(new_actions)
 
