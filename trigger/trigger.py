@@ -165,10 +165,10 @@ class Trigger(object):
             script_module_name = None
 
             # Search for the script in the allowed root directories
-            for app_root_dir in ['spellbookscripts', 'apps']:
-                if os.path.isfile(os.path.join(app_root_dir, self.script)):
-                    script_path = os.path.join(app_root_dir, self.script)
-                    script_module_name = '%s.%s' % (app_root_dir, script_name.replace('\\', '.'))
+            for root_dir in ['spellbookscripts', 'apps']:
+                if os.path.isfile(os.path.join(root_dir, self.script)):
+                    script_path = os.path.join(root_dir, self.script)
+                    script_module_name = '%s.%s' % (root_dir, script_name.replace('\\', '.'))
 
             if script_path is None:
                 LOG.error('Can not find spellbook script' % self.script)
