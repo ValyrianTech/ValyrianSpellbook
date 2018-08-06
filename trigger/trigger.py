@@ -104,7 +104,9 @@ class Trigger(object):
         if script is not None:
             script.run()
             if len(script.new_actions) >= 1:
+                LOG.info('Adding actions %s to trigger %s' % (script.new_actions, self.id))
                 self.actions.extend(script.new_actions)
+                LOG.info('Trigger will run actions: %s' % self.actions)
 
         configured_actions = get_actions()
         for action_id in self.actions:
