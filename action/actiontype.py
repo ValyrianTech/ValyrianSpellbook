@@ -9,4 +9,5 @@ class ActionType(object):
     SENDMAIL = 'SendMail'
     WEBHOOK = 'Webhook'
     SENDTRANSACTION = 'SendTransaction'
+    DELETETRIGGER = 'DeleteTrigger'
     # Todo SendTweetAction

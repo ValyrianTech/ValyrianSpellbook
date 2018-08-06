@@ -12,6 +12,8 @@ from action.revealsecretaction import RevealSecretAction
 from action.sendmailaction import SendMailAction
 from action.sendtransactionaction import SendTransactionAction
 from action.webhookaction import WebhookAction
+from action.deletetriggeraction import DeleteTriggerAction
+
 
 ACTIONS_DIR = 'json/public/actions'
 
@@ -53,6 +55,7 @@ def get_action(action_id, action_type=None):
     - RevealSecretAction
     - SendMailAction
     - WebhookAction
+    - DeleteTriggerAction
 
     If no config is known for the given action id then a CommandAction is returned
 
@@ -78,6 +81,8 @@ def get_action(action_id, action_type=None):
         action = SendMailAction(action_id)
     elif action_config['action_type'] == ActionType.WEBHOOK:
         action = WebhookAction(action_id)
+    elif action_config['action_type'] == ActionType.DELETETRIGGER:
+        action = DeleteTriggerAction(action_id)
     else:
         raise NotImplementedError('Unknown action type: %s' % action_config['action_type'])
 
