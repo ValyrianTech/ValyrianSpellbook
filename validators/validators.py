@@ -167,6 +167,9 @@ def valid_phase(phase):
 
 
 def valid_script(script):
+    if not isinstance(script, (str, unicode)):
+        return False
+
     if not script.endswith('.py'):
         LOG.error('Script %s is invalid: does not end with .py extension' % script)
         return False
