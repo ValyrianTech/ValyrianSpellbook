@@ -22,6 +22,7 @@ from trigger.httpgetrequesttrigger import HTTPGetRequestTrigger
 from trigger.httppostrequesttrigger import HTTPPostRequestTrigger
 from trigger.httpdeleterequesttrigger import HTTPDeleteRequestTrigger
 from trigger.triggertype import TriggerType
+from helpers.actionhelpers import delete_action
 
 TRIGGERS_DIR = 'json/public/triggers'
 
@@ -172,7 +173,15 @@ def check_triggers(trigger_id=None):
         trigger = get_trigger(trigger_id=trigger_id)
         if trigger.self_destruct is not None:
             if trigger.self_destruct <= int(time.time()):
-                LOG.info('Trigger %s has reached its self-destruct time, deleting trigger' % trigger_id)
+                LOG.info('Trigger %s has reached its self-destruct time' % trigger_id)
+
+                # Also destruct any attached actions if needed
+                if trigger.destruct_actions is True:
+                    for action_id in trigger.actions:
+                        LOG.info('Deleting action %s' % action_id)
+                        delete_action(action_id=action_id)
+
+                LOG.info('Deleting trigger %s' % trigger_id)
                 delete_trigger(trigger_id=trigger_id)
                 continue
 

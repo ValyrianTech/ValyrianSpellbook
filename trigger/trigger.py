@@ -36,6 +36,7 @@ class Trigger(object):
         self.created = None
         self.actions = []
         self.self_destruct = None
+        self.destruct_actions = False  # When self-destructing, also destruct the attached actions?
 
     def configure(self, **config):
         self.created = datetime.fromtimestamp(config['created']) if 'created' in config else datetime.now()
@@ -83,6 +84,9 @@ class Trigger(object):
 
         if 'self_destruct' in config and valid_timestamp(config['self_destruct']):
             self.self_destruct = config['self_destruct']
+
+        if 'destruct_actions' in config and config['destruct_actions'] in [True, False]:
+            self.destruct_actions = config['destruct_actions']
 
     @abstractmethod
     def conditions_fulfilled(self):
@@ -160,7 +164,8 @@ class Trigger(object):
                 'visibility': self.visibility,
                 'created': int(time.mktime(self.created.timetuple())),
                 'actions': self.actions,
-                'self_destruct': self.self_destruct}
+                'self_destruct': self.self_destruct,
+                'destruct_actions': self.destruct_actions}
 
     def load_script(self):
         if self.script is not None:
