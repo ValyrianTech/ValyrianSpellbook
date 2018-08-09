@@ -181,3 +181,38 @@ def utxos_to_sul(utxos):
         row[2] = row[1]/total if total > 0 else 0
 
     return sul
+
+
+def get_sil_section(address, from_block_height, to_block_height):
+    """
+    Get a section of a SIL between 2 block heights
+
+    :param address: The address
+    :param from_block_height: The starting block height, values in this block will be included
+    :param to_block_height:  The ending block height, values in this block will be included
+    :return:
+    """
+    if from_block_height <= 0:
+        return {'error': 'from_block_height must be greater than 0'}
+
+    if to_block_height <= from_block_height-1:
+        return {'error': 'from_block_height must be before or equal to_block_height: %s -> %s' % (from_block_height, to_block_height)}
+
+    before_sil = get_sil(address=address, block_height=from_block_height-1)['SIL']  # must get the SIL of 1 block before the from_block_height
+    after_sil = get_sil(address=address, block_height=to_block_height)['SIL']
+
+    sil_section = []
+    for i, row in enumerate(after_sil):
+        input_address, value, share, block_height = row
+        if len(before_sil)-1 >= i:
+            difference = value - before_sil[i][1]
+            sil_section.append([input_address, difference, 0, block_height])  # Third value is placeholder for the share
+        else:
+            sil_section.append([input_address, value, 0, block_height])  # Third value is placeholder for the share
+
+    # Calculate the share of each prime input address
+    total = float(sum([tx_input[1] for tx_input in sil_section]))
+    for row in sil_section:
+        row[2] = row[1]/total if total > 0 else 0
+
+    return {'SIL_section': sil_section}
