@@ -5,7 +5,7 @@ import requests
 from time import sleep
 
 from helpers.loghelpers import LOG
-from data.transaction import TX
+from data.transaction import TX, TxInput, TxOutput
 from data.explorer_api import ExplorerAPI
 
 
@@ -190,6 +190,40 @@ class BlockchainInfoAPI(ExplorerAPI):
                    'received': received_balance,
                    'sent': sent_balance}
         return {'balance': balance}
+
+    def get_transaction(self, txid):
+        url = '{api_url}/rawtx/{txid}'.format(api_url=self.url, txid=txid)
+        try:
+            LOG.info('GET %s' % url)
+            r = requests.get(url)
+            data = r.json()
+        except Exception as ex:
+            LOG.error('Unable to get tx %s from Blockchain.info: %s' % (txid, ex))
+            return {'error': 'Unable to get tx %s from Blockchain.info' % txid}
+
+        tx = TX()
+        tx.txid = txid
+        tx.block_height = data['block_height'] if 'block_height' in data else None
+
+        for item in data['inputs']:
+            tx_input = TxInput()
+            tx_input.address = item['prev_out']['addr']
+            tx_input.value = item['prev_out']['value']
+            tx_input.n = item['prev_out']['n']
+            tx_input.script = item['prev_out']['script']
+            tx.inputs.append(tx_input)
+
+        for item in data['out']:
+            tx_output = TxOutput()
+            tx_output.address = item['addr']
+            tx_output.value = item['value']
+            tx_output.n = item['n']
+            tx_output.script = item['script']
+            tx.outputs.append(tx_output)
+
+        tx.confirmations = data['confirmations'] if 'confirmations' in data else None
+
+        return {'transaction': tx.json_encodable()}
 
     def get_prime_input_address(self, txid):
         url = '{api_url}/rawtx/{txid}'.format(api_url=self.url, txid=txid)
