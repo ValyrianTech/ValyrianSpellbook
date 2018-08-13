@@ -7,7 +7,7 @@ import calendar
 from time import sleep
 
 from helpers.loghelpers import LOG
-from data.transaction import TX
+from data.transaction import TX, TxInput, TxOutput
 from data.explorer_api import ExplorerAPI
 
 
@@ -164,19 +164,32 @@ class BlocktrailComAPI(ExplorerAPI):
             LOG.error('Unable to get transaction %s from Blocktrail.com: %s' % (txid, ex))
             return {'error': 'Unable to get transaction %s from Blocktrail.com' % txid}
 
-        return data
-        # if 'inputs' in data:
-        #     tx_inputs = data['inputs']
-        #
-        #     input_addresses = []
-        #     for i in range(0, len(tx_inputs)):
-        #         input_addresses.append(tx_inputs[i]['address'])
-        #
-        #     if len(input_addresses) > 0:
-        #         prime_input_address = sorted(input_addresses)[0]
-        #         return {'prime_input_address': prime_input_address}
-        #
-        # return {'error': 'Received invalid data: %s' % data}
+        tx = TX()
+        tx.txid = txid
+        tx.block_height = data['block_height'] if 'block_height' in data else None
+
+        for item in data['inputs']:
+            tx_input = TxInput()
+            tx_input.address = item['address']
+            tx_input.value = item['value']
+            tx_input.txid = item['output_hash']
+            tx_input.n = item['output_index']
+            tx_input.script = item['script_signature']
+
+            tx.inputs.append(tx_input)
+
+        for item in data['outputs']:
+            tx_output = TxOutput()
+            tx_output.address = item['address']
+            tx_output.value = item['value']
+            tx_output.n = item['index']
+            tx_output.script = item['script_hex']
+
+            tx.outputs.append(tx_output)
+
+        tx.confirmations = data['confirmations'] if 'confirmations' in data else None
+
+        return {'transaction': tx.json_encodable()}
 
     def get_prime_input_address(self, txid):
         url = '{api_url}/transaction/{txid}?api_key={api_key}'.format(api_url=self.url, txid=txid, api_key=self.key)
