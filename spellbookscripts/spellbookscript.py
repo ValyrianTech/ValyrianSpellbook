@@ -22,6 +22,7 @@ class SpellbookScript(object):
         self.trigger_id = kwargs['trigger_id'] if 'trigger_id' in kwargs else None
         self.trigger_type = kwargs['trigger_type'] if 'trigger_type' in kwargs else None
         self.script = kwargs['script'] if 'script' in kwargs else None
+        self.data = kwargs['data'] if 'data' in kwargs else None
         self.triggered = kwargs['triggered'] if 'triggered' in kwargs else None
         self.multi = kwargs['multi'] if 'multi' in kwargs else None
         self.description = kwargs['description'] if 'description' in kwargs else None
@@ -93,7 +94,7 @@ class SpellbookScript(object):
         LOG.info('Processing text data')
         self.text = text
 
-    def add_action(self, action_id):
+    def attach_action(self, action_id):
         """
         Add an action_id to the list of actions the trigger will execute
 
