@@ -103,8 +103,8 @@ class TX(object):
         """
         tx_dict = {"txid": self.txid,
                    "prime_input_address": self.prime_input_address(),
-                   "inputs": self.inputs,
-                   "outputs": self.outputs,
+                   "inputs": [tx_input.json_encodable() for tx_input in self.inputs],
+                   "outputs": [tx_output.json_encodable() for tx_output in self.outputs],
                    "block_height": self.block_height,
                    "confirmations": self.confirmations,
                    "receiving": self.is_receiving_tx(address)}
