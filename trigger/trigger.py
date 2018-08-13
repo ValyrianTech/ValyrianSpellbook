@@ -25,6 +25,7 @@ class Trigger(object):
         self.id = trigger_id
         self.trigger_type = None
         self.script = None
+        self.data = None
         self.triggered = 0
         self.multi = False
         self.description = None
@@ -46,6 +47,9 @@ class Trigger(object):
 
         if 'script' in config and valid_script(config['script']):
             self.script = config['script']
+
+        if 'data' in config and isinstance(config['data'], dict):
+            self.data = config['data']
 
         if 'multi' in config and config['multi'] in [True, False]:
             self.multi = config['multi']
@@ -154,6 +158,7 @@ class Trigger(object):
         return {'trigger_id': self.id,
                 'trigger_type': self.trigger_type,
                 'script': self.script,
+                'data': self.data,
                 'triggered': self.triggered,
                 'multi': self.multi,
                 'description': self.description,
