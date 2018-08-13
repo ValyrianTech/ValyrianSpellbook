@@ -4,7 +4,7 @@
 import requests
 
 from helpers.loghelpers import LOG
-from data.transaction import TX
+from data.transaction import TX, TxInput, TxOutput
 from data.explorer_api import ExplorerAPI
 
 
@@ -148,6 +148,42 @@ class InsightAPI(ExplorerAPI):
             return {'balance': balance}
         else:
             return {'error': 'Received invalid data: %s' % data}
+
+    def get_transaction(self, txid):
+        url = self.url + '/tx/' + str(txid)
+        try:
+            LOG.info('GET %s' % url)
+            r = requests.get(url)
+            data = r.json()
+        except Exception as ex:
+            LOG.error('Unable to get transaction %s from %s: %s' % (txid, self.url, ex))
+            return {'error': 'Unable to get transaction %s from %s' % (txid, self.url)}
+
+        tx = TX()
+        tx.txid = txid
+        tx.block_height = data['blockheight'] if 'blockheight' in data else None
+        for item in data['vin']:
+            tx_input = TxInput()
+            tx_input.address = item['addr']
+            tx_input.value = item['valueSat']
+            tx_input.txid = item['txid']
+            tx_input.n = item['n']
+            tx_input.script = item['scriptSig']['hex']
+
+            tx.inputs.append(tx_input)
+
+        for item in data['vout']:
+            tx_output = TxOutput()
+            tx_output.address = item['scriptPubKey']['addresses'][0]
+            tx_output.value = int(float(item['value']) * 1e8)
+            tx_output.n = item['n']
+            tx_output.script = item['scriptPubKey']['hex']
+
+            tx.outputs.append(tx_output)
+
+        tx.confirmations = data['confirmations'] if 'confirmations' in data else None
+
+        return {'transaction': tx.json_encodable()}
 
     def get_prime_input_address(self, txid):
         url = self.url + '/tx/' + str(txid)
