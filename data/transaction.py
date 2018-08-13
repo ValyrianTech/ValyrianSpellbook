@@ -34,7 +34,7 @@ class TX(object):
         """
         addresses = []
         for tx_input in self.inputs:
-            addresses.append(tx_input['address'])
+            addresses.append(tx_input.address)
 
         return sorted(addresses)[0]
 
@@ -45,7 +45,7 @@ class TX(object):
         :param address: The address receiving the funds
         :return: The total amount received by the address
         """
-        return sum([output['value'] for output in self.outputs if output['address'] == address])
+        return sum([output.value for output in self.outputs if output.address == address])
 
     def is_receiving_tx(self, address):
         """
@@ -56,7 +56,7 @@ class TX(object):
         """
         received = True
         for tx_input in self.inputs:
-            if tx_input['address'] == address:
+            if tx_input.address == address:
                 received = False
 
         return received
@@ -70,13 +70,13 @@ class TX(object):
         """
         value = 0
         for tx_input in self.inputs:
-            if tx_input['address'] == address:
-                value += tx_input['value']
+            if tx_input.address == address:
+                value += tx_input.value
 
         change = 0
         for tx_output in self.outputs:
-            if tx_output['address'] == address:
-                change += tx_output['value']
+            if tx_output.address == address:
+                change += tx_output.value
 
         return value-change
 
@@ -89,7 +89,7 @@ class TX(object):
         """
         sending = False
         for tx_input in self.inputs:
-            if tx_input['address'] == address:
+            if tx_input.address == address:
                 sending = True
 
         return sending
@@ -149,3 +149,41 @@ class TX(object):
                 unhex_data = None
 
         return unhex_data
+
+    def json_encodable(self):
+        return {'txid': self.txid,
+                'prime_input_address': self.prime_input_address(),
+                'inputs': [tx_input.json_encodable() for tx_input in self.inputs],
+                'outputs': [tx_output.json_encodable() for tx_output in self.outputs],
+                'block_height': self.block_height,
+                'confirmations': self.confirmations}
+
+
+class TxInput(object):
+    def __init__(self):
+        self.address = None
+        self.value = None
+        self.txid = None
+        self.n = None
+        self.script = None
+
+    def json_encodable(self):
+        return {'address': self.address,
+                'value': self.value,
+                'txid': self.txid,
+                'n': self.n,
+                'script': self.script}
+
+
+class TxOutput(object):
+    def __init__(self):
+        self.address = None
+        self.value = None
+        self.n = None
+        self.script = None
+
+    def json_encodable(self):
+        return {'address': self.address,
+                'value': self.value,
+                'n': self.n,
+                'script': self.script}
