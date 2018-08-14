@@ -95,21 +95,27 @@ class InsightAPI(ExplorerAPI):
             tx.confirmations = transaction['confirmations']
             tx.block_height = latest_block_height - tx.confirmations + 1 if transaction['confirmations'] >= 1 else None
 
-            for tx_input in transaction['vin']:
-                tx_in = {'address': tx_input['addr'],
-                         'value': tx_input['valueSat']}
-                tx.inputs.append(tx_in)
+            for item in transaction['vin']:
+                tx_input = TxInput()
+                tx_input.address = item['addr']
+                tx_input.value = item['valueSat']
+                tx_input.txid = item['txid']
+                tx_input.n = item['n']
+                tx_input.script = item['scriptSig']['hex']
 
-            for out in transaction['vout']:
-                tx_out = {
-                    'address': out['scriptPubKey']['addresses'][0] if 'addresses' in out['scriptPubKey'] else None,
-                    'value': int(int(out['value'][:-9]) * 1e8 + int(out['value'][-8:])),
-                    'spent': True if 'spentTxId' in out and out['spentTxId'] is not None else False}
+                tx.inputs.append(tx_input)
 
-                if out['scriptPubKey']['hex'][:2] == '6a':
-                    tx_out['op_return'] = tx.decode_op_return(out['scriptPubKey']['hex'])
+            for item in transaction['vout']:
+                tx_output = TxOutput()
+                tx_output.address = item['scriptPubKey']['addresses'][0] if 'addresses' in item['scriptPubKey'] else None
+                tx_output.value = int(int(item['value'][:-9]) * 1e8 + int(item['value'][-8:]))
+                tx_output.n = item['n']
+                tx_output.spent = True if 'spentTxId' in item and item['spentTxId'] is not None else False
+                tx_output.script = item['scriptPubKey']['hex']
+                if item['scriptPubKey']['hex'][:2] == '6a':
+                    tx_output.op_return = tx.decode_op_return(item['scriptPubKey']['hex'])
 
-                tx.outputs.append(tx_out)
+                tx.outputs.append(tx_output)
 
             # Only add confirmed txs
             if tx.block_height is not None:
@@ -174,10 +180,13 @@ class InsightAPI(ExplorerAPI):
 
         for item in data['vout']:
             tx_output = TxOutput()
-            tx_output.address = item['scriptPubKey']['addresses'][0]
+            tx_output.address = item['scriptPubKey']['addresses'][0] if 'addresses' in item['scriptPubKey'] else None
             tx_output.value = int(float(item['value']) * 1e8)
             tx_output.n = item['n']
+            tx_output.spent = True if 'spentTxId' in item and item['spentTxId'] is not None else False
             tx_output.script = item['scriptPubKey']['hex']
+            if item['scriptPubKey']['hex'][:2] == '6a':
+                tx_output.op_return = tx.decode_op_return(item['scriptPubKey']['hex'])
 
             tx.outputs.append(tx_output)
 
