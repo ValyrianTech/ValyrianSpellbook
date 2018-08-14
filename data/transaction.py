@@ -166,13 +166,15 @@ class TxInput(object):
         self.txid = None
         self.n = None
         self.script = None
+        self.sequence = None
 
     def json_encodable(self):
         return {'address': self.address,
                 'value': self.value,
                 'txid': self.txid,
                 'n': self.n,
-                'script': self.script}
+                'script': self.script,
+                'sequence': self.sequence}
 
 
 class TxOutput(object):

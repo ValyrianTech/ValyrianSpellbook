@@ -115,6 +115,7 @@ class BlocktrailComAPI(ExplorerAPI):
                 tx_input.txid = item['output_hash']
                 tx_input.n = item['output_index']
                 tx_input.script = item['script_signature']
+                tx_input.sequence = item['sequence']
 
                 tx.inputs.append(tx_input)
 
@@ -183,6 +184,7 @@ class BlocktrailComAPI(ExplorerAPI):
             tx_input.txid = item['output_hash']
             tx_input.n = item['output_index']
             tx_input.script = item['script_signature']
+            tx_input.sequence = item['sequence']
 
             tx.inputs.append(tx_input)
 
