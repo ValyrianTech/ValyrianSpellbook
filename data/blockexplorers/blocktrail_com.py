@@ -115,7 +115,7 @@ class BlocktrailComAPI(ExplorerAPI):
                 tx_input.txid = item['output_hash']
                 tx_input.n = item['output_index']
                 tx_input.script = item['script_signature']
-                tx_input.sequence = item['sequence']
+                tx_input.sequence = None  # Blocktrail does not provide the sequence of a transaction input when requesting all transactions of an address
 
                 tx.inputs.append(tx_input)
 
@@ -140,8 +140,9 @@ class BlocktrailComAPI(ExplorerAPI):
                 n_tx -= 1
 
         if n_tx != len(txs):
-            return {'error': 'Not all transactions are retrieved! expected {expected} but only got {received}'.format(
-                    expected=n_tx, received=len(txs))}
+            # Blocktrail seems to have some issues not returning the correct total number of transactions, yet all transactions are present???
+            LOG.warning('Blocktrail.com: Not all transactions are retrieved! expected {expected} but only got {received}'.format(expected=n_tx, received=len(txs)))
+            return {'transactions': txs}
         else:
             return {'transactions': txs}
 

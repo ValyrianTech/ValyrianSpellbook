@@ -1,5 +1,8 @@
 Some notes about blockexplorers:
 
+Due to the response data each explorer gives or doesn't give, there can be minor differences in the results!!!
+
+
 - 0-confirmation transactions are not included in results!!
 - Bech32 only supported by Blockchain.info currently!
 
@@ -8,6 +11,8 @@ Blocktrail.com:
 - block timestamp is in UTC format which requires converting back to unix timestamp, possible timezone issues!
 - no pushtx, uses blockchain.info instead
 - no bech32
+- when requesting all transactions of an address, the inputs of each transaction does not contain the sequence
+- i have noticed some issues on testnet where the total number of transactions of an address is not equal to the actual number of transactions given
 
 Insight:
 - Total received balance and total sent balance are calculated wrong when the change address is the same as the sending address, as a result, when calculating
