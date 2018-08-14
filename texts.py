@@ -99,6 +99,19 @@ examples:
 '''
 
 ########################################################################################################
+# get_transaction                                                                                      #
+########################################################################################################
+GET_TRANSACTION_DESCRIPTION = 'Get a transaction.'
+GET_TRANSACTION_EPILOG = '''
+examples:
+  - spellbook.py get_transaction 39bb5f5d50882227f93b980df15ea676414f0363770a0174a13c8f55c877b598
+    -> Get tx 39bb5f5d50882227f93b980df15ea676414f0363770a0174a13c8f55c877b598 using the default explorer
+
+  - spellbook.py get_transaction 39bb5f5d50882227f93b980df15ea676414f0363770a0174a13c8f55c877b598 --explorer=blockchain.info
+    -> Get tx 39bb5f5d50882227f93b980df15ea676414f0363770a0174a13c8f55c877b598 using the blockchain.info explorer to retrieve the data
+'''
+
+########################################################################################################
 # get_transactions                                                                                     #
 ########################################################################################################
 GET_TRANSACTIONS_DESCRIPTION = 'Get all transactions that a specific address has received or sent.'
