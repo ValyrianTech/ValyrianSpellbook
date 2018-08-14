@@ -145,6 +145,7 @@ class BlockchainInfoAPI(ExplorerAPI):
                 tx_output.address = item['addr']
                 tx_output.value = item['value']
                 tx_output.n = item['n']
+                tx_output.spent = item['spent']
                 tx_output.script = item['script']
                 if item['script'][:2] == '6a':
                     tx_output.op_return = tx.decode_op_return(item['script'])
@@ -225,6 +226,7 @@ class BlockchainInfoAPI(ExplorerAPI):
             tx_output.address = item['addr']
             tx_output.value = item['value']
             tx_output.n = item['n']
+            tx_output.spent = item['spent']
             tx_output.script = item['script']
             if item['script'][:2] == '6a':
                 tx_output.op_return = tx.decode_op_return(item['script'])
