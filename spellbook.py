@@ -108,6 +108,17 @@ get_prime_input_address_parser.add_argument('txid', help='The txid of the transa
 get_prime_input_address_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
 
 
+# Create parser for the get_transaction subcommand
+get_transaction_parser = subparsers.add_parser(name='get_transaction',
+                                               help='Get a transaction',
+                                               formatter_class=argparse.RawDescriptionHelpFormatter,
+                                               description=texts.GET_TRANSACTION_DESCRIPTION,
+                                               epilog=texts.GET_TRANSACTION_EPILOG)
+
+get_transaction_parser.add_argument('txid', help='The txid of the transaction')
+get_transaction_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
+
+
 # Create parser for the get_transactions subcommand
 get_transactions_parser = subparsers.add_parser(name='get_transactions',
                                                 help='Get all transactions that a specific address has received or sent',
@@ -543,6 +554,11 @@ def get_prime_input_address():
     do_get_request(url=url)
 
 
+def get_transaction():
+    url = 'http://{host}:{port}/spellbook/transactions/{txid}'.format(host=host, port=port, txid=args.txid)
+    do_get_request(url=url)
+
+
 def get_transactions():
     url = 'http://{host}:{port}/spellbook/addresses/{address}/transactions'.format(host=host, port=port, address=args.address)
     do_get_request(url=url)
@@ -940,6 +956,8 @@ elif args.command == 'get_block':
     get_block()
 elif args.command == 'get_prime_input_address':
     get_prime_input_address()
+elif args.command == 'get_transaction':
+    get_transaction()
 elif args.command == 'get_transactions':
     get_transactions()
 elif args.command == 'get_balance':
