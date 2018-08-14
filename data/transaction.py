@@ -181,6 +181,7 @@ class TxOutput(object):
         self.value = None
         self.n = None
         self.script = None
+        self.op_return = None
 
     def json_encodable(self):
         return {'address': self.address,
