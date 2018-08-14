@@ -108,20 +108,28 @@ class BlocktrailComAPI(ExplorerAPI):
             tx.block_height = transaction['block_height']
             tx.confirmations = transaction['confirmations']
 
-            for tx_input in transaction['inputs']:
-                tx_in = {'address': tx_input['address'],
-                         'value': tx_input['value']}
-                tx.inputs.append(tx_in)
+            for item in transaction['inputs']:
+                tx_input = TxInput()
+                tx_input.address = item['address']
+                tx_input.value = item['value']
+                tx_input.txid = item['output_hash']
+                tx_input.n = item['output_index']
+                tx_input.script = item['script_signature']
 
-            for tx_output in transaction['outputs']:
-                tx_out = {'address': tx_output['address'],
-                          'value': tx_output['value'],
-                          'spent': False if tx_output['spent_hash'] is None else True}
+                tx.inputs.append(tx_input)
 
-                if tx_output['script_hex'][:2] == '6a':
-                    tx_out['op_return'] = tx.decode_op_return(tx_output['script_hex'])
+            for item in transaction['outputs']:
+                tx_output = TxOutput()
+                tx_output.address = item['address']
+                tx_output.value = item['value']
+                tx_output.n = item['index']
+                tx_output.spent = False if item['spent_hash'] is None else True
+                tx_output.script = item['script_hex']
 
-                tx.outputs.append(tx_out)
+                if item['script_hex'][:2] == '6a':
+                    tx_output.op_return = tx.decode_op_return(item['script_hex'])
+
+                tx.outputs.append(tx_output)
 
             # Only append confirmed transactions
             if tx.block_height is not None:
@@ -183,6 +191,7 @@ class BlocktrailComAPI(ExplorerAPI):
             tx_output.address = item['address']
             tx_output.value = item['value']
             tx_output.n = item['index']
+            tx_output.spent = False if item['spent_hash'] is None else True
             tx_output.script = item['script_hex']
 
             tx.outputs.append(tx_output)
