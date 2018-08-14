@@ -100,8 +100,9 @@ class InsightAPI(ExplorerAPI):
                 tx_input.address = item['addr']
                 tx_input.value = item['valueSat']
                 tx_input.txid = item['txid']
-                tx_input.n = item['n']
+                tx_input.n = item['vout']
                 tx_input.script = item['scriptSig']['hex']
+                tx_input.sequence = item['sequence']
 
                 tx.inputs.append(tx_input)
 
@@ -173,8 +174,9 @@ class InsightAPI(ExplorerAPI):
             tx_input.address = item['addr']
             tx_input.value = item['valueSat']
             tx_input.txid = item['txid']
-            tx_input.n = item['n']
+            tx_input.n = item['vout']
             tx_input.script = item['scriptSig']['hex']
+            tx_input.sequence = item['sequence']
 
             tx.inputs.append(tx_input)
 

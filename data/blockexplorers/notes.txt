@@ -17,3 +17,4 @@ the balance, all transactions need to be retrieved.
 
 Blockchain.info:
 - Block size is different than Blocktrail.com and Insight explorers
+- The inputs of a transaction do not contain the corresponding txid for some fucked up reason, they only return their internal tx_index, resolving this would take too many requests!
