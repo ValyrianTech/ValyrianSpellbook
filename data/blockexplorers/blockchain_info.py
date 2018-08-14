@@ -217,6 +217,7 @@ class BlockchainInfoAPI(ExplorerAPI):
             tx_input.value = item['prev_out']['value']
             tx_input.n = item['prev_out']['n']
             tx_input.script = item['prev_out']['script']
+
             tx.inputs.append(tx_input)
 
         for item in data['out']:
@@ -225,6 +226,9 @@ class BlockchainInfoAPI(ExplorerAPI):
             tx_output.value = item['value']
             tx_output.n = item['n']
             tx_output.script = item['script']
+            if item['script'][:2] == '6a':
+                tx_output.op_return = tx.decode_op_return(item['script'])
+
             tx.outputs.append(tx_output)
 
         return {'transaction': tx.json_encodable()}
