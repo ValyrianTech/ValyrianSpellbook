@@ -131,20 +131,25 @@ class BlockchainInfoAPI(ExplorerAPI):
             tx.block_height = transaction['block_height'] if 'block_height' in transaction else None
             tx.confirmations = (latest_block_height - tx.block_height) + 1 if 'block_height' in transaction else 0
 
-            for tx_input in transaction['inputs']:
-                tx_in = {'address': tx_input['prev_out']['addr'],
-                         'value': tx_input['prev_out']['value']}
-                tx.inputs.append(tx_in)
+            for item in transaction['inputs']:
+                tx_input = TxInput()
+                tx_input.address = item['prev_out']['addr']
+                tx_input.value = item['prev_out']['value']
+                tx_input.n = item['prev_out']['n']
+                tx_input.script = item['prev_out']['script']
 
-            for out in transaction['out']:
-                tx_out = {'address': out['addr'] if 'addr' in out else None,
-                          'value': out['value'],
-                          'spent': out['spent']}
+                tx.inputs.append(tx_input)
 
-                if out['script'][:2] == '6a':
-                    tx_out['op_return'] = tx.decode_op_return(out['script'])
+            for item in transaction['out']:
+                tx_output = TxOutput()
+                tx_output.address = item['addr']
+                tx_output.value = item['value']
+                tx_output.n = item['n']
+                tx_output.script = item['script']
+                if item['script'][:2] == '6a':
+                    tx_output.op_return = tx.decode_op_return(item['script'])
 
-                tx.outputs.append(tx_out)
+                tx.outputs.append(tx_output)
 
             # Only append confirmed transactions
             if tx.block_height is not None:
@@ -204,6 +209,7 @@ class BlockchainInfoAPI(ExplorerAPI):
         tx = TX()
         tx.txid = txid
         tx.block_height = data['block_height'] if 'block_height' in data else None
+        tx.confirmations = self.get_latest_block_height() - tx.block_height if tx.block_height is not None else 0
 
         for item in data['inputs']:
             tx_input = TxInput()
@@ -220,8 +226,6 @@ class BlockchainInfoAPI(ExplorerAPI):
             tx_output.n = item['n']
             tx_output.script = item['script']
             tx.outputs.append(tx_output)
-
-        tx.confirmations = data['confirmations'] if 'confirmations' in data else None
 
         return {'transaction': tx.json_encodable()}
 
