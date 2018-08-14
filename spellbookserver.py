@@ -14,7 +14,7 @@ from bottle import Bottle, request, response, static_file
 
 from authentication import initialize_api_keys_file
 from data.data import get_explorers, get_explorer_config, save_explorer, delete_explorer
-from data.data import latest_block, block_by_height, block_by_hash, prime_input_address
+from data.data import latest_block, block_by_height, block_by_hash, prime_input_address, transaction
 from data.data import transactions, balance, utxos
 from decorators import authentication_required, use_explorer, output_json
 from helpers.actionhelpers import get_actions, get_action_config, save_action, delete_action, run_action, get_reveal
@@ -70,6 +70,7 @@ class SpellbookRESTAPI(Bottle):
         self.route('/spellbook/blocks/<block_hash:re:[a-f0-9]+>', method='GET', callback=self.get_block_by_hash)
 
         self.route('/spellbook/transactions/<txid:re:[a-f0-9]+>/prime_input', method='GET', callback=self.get_prime_input_address)
+        self.route('/spellbook/transactions/<txid:re:[a-f0-9]+>', method='GET', callback=self.get_transaction)
         self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/transactions', method='GET', callback=self.get_transactions)
         self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/balance', method='GET', callback=self.get_balance)
         self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/utxos', method='GET', callback=self.get_utxos)
@@ -224,6 +225,13 @@ class SpellbookRESTAPI(Bottle):
     def get_prime_input_address(txid):
         response.content_type = 'application/json'
         return prime_input_address(txid)
+
+    @staticmethod
+    @output_json
+    @use_explorer
+    def get_transaction(txid):
+        response.content_type = 'application/json'
+        return transaction(txid)
 
     @staticmethod
     @output_json
