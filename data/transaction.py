@@ -188,4 +188,6 @@ class TxOutput(object):
         return {'address': self.address,
                 'value': self.value,
                 'n': self.n,
-                'script': self.script}
+                'script': self.script,
+                'spent': self.spent,
+                'op_return': self.op_return}
