@@ -17,17 +17,17 @@ if not os.path.isdir(logs_dir):
 
 # Todo check why log messages happen multiple times if multiple processes are spawned, maybe store the logs in the app data dir
 
-LOG = logging.getLogger('process_log')
+PROCESS_LOG = logging.getLogger('process_log')
 
 stream_handler = logging.StreamHandler(sys.stdout)
 stream_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(message)s'))
-LOG.addHandler(stream_handler)
+PROCESS_LOG.addHandler(stream_handler)
 
 file_handler = RotatingFileHandler(os.path.join(PROGRAM_DIR, 'logs', 'process_log.txt'), maxBytes=10000000, backupCount=5)
 file_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(message)s'))
-LOG.addHandler(file_handler)
+PROCESS_LOG.addHandler(file_handler)
 
-LOG.setLevel(logging.DEBUG)
+PROCESS_LOG.setLevel(logging.DEBUG)
 
 
 class RunCommandProcess(multiprocessing.Process):
@@ -38,13 +38,13 @@ class RunCommandProcess(multiprocessing.Process):
 
     def run(self):
         process_id = multiprocessing.current_process().name
-        LOG.info('%s | Spawned new process to run command: %s' % (process_id, self.command))
-        LOG.info('%s | Process starting...' % process_id)
+        PROCESS_LOG.info('%s | Spawned new process to run command: %s' % (process_id, self.command))
+        PROCESS_LOG.info('%s | Process starting...' % process_id)
 
         command_process = Popen(self.command, stdout=PIPE, stderr=PIPE, shell=True, universal_newlines=True)
 
         for stdout_line in iter(command_process.stdout.readline, ""):
-            LOG.info('%s | %s' % (process_id, stdout_line.strip()))
+            PROCESS_LOG.info('%s | %s' % (process_id, stdout_line.strip()))
 
-        LOG.info('%s | Process finished' % process_id)
+        PROCESS_LOG.info('%s | Process finished' % process_id)
 
