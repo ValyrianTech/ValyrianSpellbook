@@ -108,8 +108,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    print args.command
-
     if args.verbose is True:
         LOG.setLevel(logging.INFO)
 
