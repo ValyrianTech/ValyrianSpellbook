@@ -400,7 +400,7 @@ save_action_parser = subparsers.add_parser(name='save_action',
                                            epilog=texts.SAVE_ACTION_EPILOG)
 
 save_action_parser.add_argument('action_id', help='The id of the action')
-save_action_parser.add_argument('-t', '--type', help='The type of the action', choices=['Command', 'SendTransaction', 'RevealSecret', 'SendMail', 'Webhook'])
+save_action_parser.add_argument('-t', '--type', help='The type of the action', choices=['Command', 'SpawnProcess', 'SendTransaction', 'RevealSecret', 'SendMail', 'Webhook'])
 
 save_action_parser.add_argument('-c', '--run_command', help='The command to run, only applicable to Command Actions')
 
