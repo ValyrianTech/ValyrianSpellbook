@@ -39,3 +39,13 @@ assert response['run_command'] == run_command
 print 'Running the action we just created'
 response = spellbook_call('run_action', action_name)
 assert response is True
+
+# --------------------------------------------------------------------------------------------------------
+print 'Running the action we just created a second time'
+response = spellbook_call('run_action', action_name)
+assert response is True
+
+# --------------------------------------------------------------------------------------------------------
+print 'Running the action we just created a third time'
+response = spellbook_call('run_action', action_name)
+assert response is True
