@@ -15,8 +15,6 @@ logs_dir = os.path.join(PROGRAM_DIR, 'logs')
 if not os.path.isdir(logs_dir):
     os.makedirs(logs_dir)
 
-# Todo check why log messages happen multiple times if multiple processes are spawned, maybe store the logs in the app data dir
-
 PROCESS_LOG = logging.getLogger('process_log')
 
 stream_handler = logging.StreamHandler(sys.stdout)
