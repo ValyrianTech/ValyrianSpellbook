@@ -8,18 +8,22 @@ from logging.handlers import RotatingFileHandler
 import multiprocessing
 from subprocess import Popen, PIPE
 
+PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
 # make the directory for logs if it doesn't exist
-logs_dir = os.path.join('logs')
+logs_dir = os.path.join(PROGRAM_DIR, 'logs')
 if not os.path.isdir(logs_dir):
     os.makedirs(logs_dir)
 
+# Todo check why log messages happen multiple times if multiple processes are spawned, maybe store the logs in the app data dir
+# Todo remove the redundant copy of this file in listeners
 LOG = logging.getLogger('process_log')
 
 stream_handler = logging.StreamHandler(sys.stdout)
 stream_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(message)s'))
 LOG.addHandler(stream_handler)
 
-file_handler = RotatingFileHandler(os.path.join('logs', 'process_log.txt'), maxBytes=10000000, backupCount=5)
+file_handler = RotatingFileHandler(os.path.join(PROGRAM_DIR, 'logs', 'process_log.txt'), maxBytes=10000000, backupCount=5)
 file_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(message)s'))
 LOG.addHandler(file_handler)
 
