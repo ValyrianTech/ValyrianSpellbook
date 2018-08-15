@@ -9,7 +9,7 @@ import os
 import time
 import logging
 from logging.handlers import RotatingFileHandler
-from runcommandprocess import RunCommandProcess
+from helpers.runcommandprocess import RunCommandProcess
 
 LOG = logging.getLogger('transaction_listener_log')
 

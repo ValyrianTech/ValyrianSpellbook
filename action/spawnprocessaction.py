@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from runcommandprocess import RunCommandProcess
-
-from helpers.loghelpers import LOG
 from action import Action
 from actiontype import ActionType
+from helpers.loghelpers import LOG
+from helpers.runcommandprocess import RunCommandProcess
 
 
 class SpawnProcessAction(Action):
