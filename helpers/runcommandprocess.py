@@ -16,7 +16,7 @@ if not os.path.isdir(logs_dir):
     os.makedirs(logs_dir)
 
 # Todo check why log messages happen multiple times if multiple processes are spawned, maybe store the logs in the app data dir
-# Todo remove the redundant copy of this file in listeners
+
 LOG = logging.getLogger('process_log')
 
 stream_handler = logging.StreamHandler(sys.stdout)
@@ -39,22 +39,12 @@ class RunCommandProcess(multiprocessing.Process):
     def run(self):
         process_id = multiprocessing.current_process().name
         LOG.info('%s | Spawned new process to run command: %s' % (process_id, self.command))
-        LOG.info('%s | Running command...' % process_id)
+        LOG.info('%s | Process starting...' % process_id)
 
-        command_process = Popen(self.command, stdout=PIPE, stderr=PIPE, shell=True)
-        output, error = command_process.communicate()
+        command_process = Popen(self.command, stdout=PIPE, stderr=PIPE, shell=True, universal_newlines=True)
 
-        LOG.info('%s | Command finished' % process_id)
-        stripped_output = output.strip()
-        LOG.info('%s | Command output:' % process_id)
-        for line in stripped_output.split('\n'):
-            LOG.info('%s | %s' % (process_id, line.strip()))
+        for stdout_line in iter(command_process.stdout.readline, ""):
+            LOG.info('%s | %s' % (process_id, stdout_line.strip()))
 
-        stripped_error = error.strip()
-        if len(stripped_error):
-            LOG.error('%s | Command error:' % process_id)
-            for line in stripped_error.split('\n'):
-                LOG.error('%s | %s' % (process_id, line.strip()))
-
-        LOG.info('%s | process finished' % process_id)
+        LOG.info('%s | Process finished' % process_id)
 
