@@ -41,9 +41,7 @@ class DeleteTriggerAction(Action):
         Configure the action with given config settings
 
         :param config: A dict containing the configuration settings
-                       - config['reveal_text']  : A secret text
-                       - config['reveal_link']  : A secret link
-                       - config['allow_reveal'] : Is the secret allowed to be revealed?
+                       - config['trigger_ids']  : A list of trigger_ids to delete
         """
         super(DeleteTriggerAction, self).configure(**config)
         if 'trigger_ids' in config:
