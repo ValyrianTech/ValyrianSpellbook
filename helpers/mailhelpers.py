@@ -14,7 +14,9 @@ PORT = 25
 USER = ''
 PASSWORD = ''
 
-TEMPLATE_DIR = 'email_templates'
+PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+TEMPLATE_DIR = os.path.join(PROGRAM_DIR, 'email_templates')
+APPS_DIR = os.path.join(PROGRAM_DIR, 'apps')
 
 
 def load_smtp_settings():
@@ -51,11 +53,20 @@ def sendmail(recipients, subject, body_template, variables=None):
         "Content-Type: text/plain"
     ]
 
+    # Search the 'email-templates' and 'apps' directory for the template
+    if os.path.isfile(os.path.join(TEMPLATE_DIR, body_template)):
+        template_filename = os.path.join(TEMPLATE_DIR, body_template)
+    elif os.path.isfile(os.path.join(APPS_DIR, body_template)):
+        template_filename = os.path.join(APPS_DIR, body_template)
+    else:
+        LOG.error('Template %s for email not found!' % body_template)
+        return False
+
     try:
-        with open(os.path.join(TEMPLATE_DIR, '%s.txt' % body_template), 'r') as input_file:
+        with open(template_filename, 'r')as input_file:
             body = input_file.read()
-    except IOError:
-        LOG.error('Template for email not found: %s' % body_template)
+    except Exception as ex:
+        LOG.error('Unable to read template %s: %s' % (template_filename, ex))
         return False
 
     # Replace all placeholder values in the body like $myvariable$ with the correct value
