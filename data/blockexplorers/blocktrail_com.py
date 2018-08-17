@@ -196,6 +196,8 @@ class BlocktrailComAPI(ExplorerAPI):
             tx_output.n = item['index']
             tx_output.spent = False if item['spent_hash'] is None else True
             tx_output.script = item['script_hex']
+            if item['script_hex'][:2] == '6a':
+                tx_output.op_return = tx.decode_op_return(item['script_hex'])
 
             tx.outputs.append(tx_output)
 
