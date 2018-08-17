@@ -11,7 +11,7 @@ from data.explorer_api import ExplorerAPI
 class InsightAPI(ExplorerAPI):
 
     def get_latest_block(self):
-        url = self.url + '/status?q=getLastBlockHash'
+        url = self.url + '/status?q=getBestBlockHash'
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
@@ -20,8 +20,8 @@ class InsightAPI(ExplorerAPI):
             LOG.error('Unable to get latest blockhash from %s: %s' % (self.url, ex))
             return {'error': 'Unable to get latest blockhash from %s' % self.url}
 
-        if 'lastblockhash' in data:
-            return self.get_block_by_hash(data['lastblockhash'])
+        if 'bestblockhash' in data:
+            return self.get_block_by_hash(data['bestblockhash'])
         else:
             return {'error': 'Received invalid data: %s' % data}
 
