@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+from __future__ import unicode_literals
 import binascii
 import logging
 
@@ -147,6 +147,15 @@ class TX(object):
                                                                                             str(int(check_length,
                                                                                                     16))))
                 unhex_data = None
+
+        # Sometimes the unhexed data is encoded in another coded than utf-8 which could cause problems when converting to json later
+        try:
+            unhex_data = unhex_data.decode('utf-8')
+        except UnicodeDecodeError:
+            try:
+                unhex_data = unhex_data.decode('cp1252')
+            except Exception:
+                raise Exception('Unable to decode OP_RETURN data in utf-8 or cp1252')
 
         return unhex_data
 
