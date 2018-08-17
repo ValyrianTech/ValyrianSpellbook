@@ -115,6 +115,7 @@ logs/
 # txt files
 *.txt
 !bips/wordlist/*.txt
+!apps/PaymentProcessor/templates/*.txt
 
 # setupscripts
 setupscripts/
