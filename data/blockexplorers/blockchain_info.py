@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import requests
 from time import sleep
 
@@ -227,7 +226,7 @@ class BlockchainInfoAPI(ExplorerAPI):
 
         for item in data['out']:
             tx_output = TxOutput()
-            tx_output.address = item['addr']
+            tx_output.address = item['addr'] if 'addr' in item else None
             tx_output.value = item['value']
             tx_output.n = item['n']
             tx_output.spent = item['spent']
