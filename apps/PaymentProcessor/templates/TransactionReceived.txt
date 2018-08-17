@@ -1,0 +1,12 @@
+
+Payment request $PAYMENT_REQUEST_ID$ of $AMOUNT_FIAT$ $CURRENCY$ has received a transaction!
+
+seller_id: $SELLER_ID$
+note: $NOTE$
+
+txid: https://www.blocktrail.com/BTC/tx/$TXID$
+address: $ADDRESS$
+
+BTC: $AMOUNT_BTC$ (1 BTC = $PRICE_BTC$ $CURRENCY$ @ $PRICE_TIMESTAMP$)
+
+
