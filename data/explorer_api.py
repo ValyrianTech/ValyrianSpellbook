@@ -74,6 +74,15 @@ class ExplorerAPI(object):
         pass
 
     @abstractmethod
+    def get_transaction(self, txid):
+        """
+        Get a transaction by its txid
+
+        :param txid: The transaction id
+        """
+        pass
+
+    @abstractmethod
     def get_prime_input_address(self, txid):
         """
         Get the prime input address of a transaction
