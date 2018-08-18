@@ -71,30 +71,30 @@ class SpellbookRESTAPI(Bottle):
 
         self.route('/spellbook/transactions/<txid:re:[a-f0-9]+>/prime_input', method='GET', callback=self.get_prime_input_address)
         self.route('/spellbook/transactions/<txid:re:[a-f0-9]+>', method='GET', callback=self.get_transaction)
-        self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/transactions', method='GET', callback=self.get_transactions)
-        self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/balance', method='GET', callback=self.get_balance)
-        self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/utxos', method='GET', callback=self.get_utxos)
+        self.route('/spellbook/addresses/<address:re:[a-zA-Z1-9]+>/transactions', method='GET', callback=self.get_transactions)
+        self.route('/spellbook/addresses/<address:re:[a-zA-Z1-9]+>/balance', method='GET', callback=self.get_balance)
+        self.route('/spellbook/addresses/<address:re:[a-zA-Z1-9]+>/utxos', method='GET', callback=self.get_utxos)
 
         # Routes for Simplified Inputs List (SIL)
-        self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/SIL', method='GET', callback=self.get_sil)
+        self.route('/spellbook/addresses/<address:re:[a-zA-Z1-9]+>/SIL', method='GET', callback=self.get_sil)
 
         # Routes for Profile
-        self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/profile', method='GET', callback=self.get_profile)
+        self.route('/spellbook/addresses/<address:re:[a-zA-Z1-9]+>/profile', method='GET', callback=self.get_profile)
 
         # Routes for Simplified UTXO List (SUL)
-        self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/SUL', method='GET', callback=self.get_sul)
+        self.route('/spellbook/addresses/<address:re:[a-zA-Z1-9]+>/SUL', method='GET', callback=self.get_sul)
 
         # Routes for Linked Lists
-        self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/LAL', method='GET', callback=self.get_lal)
-        self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/LBL', method='GET', callback=self.get_lbl)
-        self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/LRL', method='GET', callback=self.get_lrl)
-        self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/LSL', method='GET', callback=self.get_lsl)
+        self.route('/spellbook/addresses/<address:re:[a-zA-Z1-9]+>/LAL', method='GET', callback=self.get_lal)
+        self.route('/spellbook/addresses/<address:re:[a-zA-Z1-9]+>/LBL', method='GET', callback=self.get_lbl)
+        self.route('/spellbook/addresses/<address:re:[a-zA-Z1-9]+>/LRL', method='GET', callback=self.get_lrl)
+        self.route('/spellbook/addresses/<address:re:[a-zA-Z1-9]+>/LSL', method='GET', callback=self.get_lsl)
 
         # Routes for Random Address
-        self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/random/SIL', method='GET', callback=self.get_random_address_from_sil)
-        self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/random/LBL', method='GET', callback=self.get_random_address_from_lbl)
-        self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/random/LRL', method='GET', callback=self.get_random_address_from_lrl)
-        self.route('/spellbook/addresses/<address:re:[a-km-zA-HJ-NP-Z1-9]+>/random/LSL', method='GET', callback=self.get_random_address_from_lsl)
+        self.route('/spellbook/addresses/<address:re:[a-zA-Z1-9]+>/random/SIL', method='GET', callback=self.get_random_address_from_sil)
+        self.route('/spellbook/addresses/<address:re:[a-zA-Z1-9]+>/random/LBL', method='GET', callback=self.get_random_address_from_lbl)
+        self.route('/spellbook/addresses/<address:re:[a-zA-Z1-9]+>/random/LRL', method='GET', callback=self.get_random_address_from_lrl)
+        self.route('/spellbook/addresses/<address:re:[a-zA-Z1-9]+>/random/LSL', method='GET', callback=self.get_random_address_from_lsl)
 
         # Routes for Triggers
         self.route('/spellbook/triggers', method='GET', callback=self.get_triggers)
