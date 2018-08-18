@@ -44,7 +44,7 @@ save_explorer_parser = subparsers.add_parser(name='save_explorer',
                                              epilog=texts.SAVE_EXPLORER_EPILOG)
 
 save_explorer_parser.add_argument('name', help='name of the explorer')
-save_explorer_parser.add_argument('type', help='type of the explorer', choices=['Blockchain.info', 'Blocktrail.com', 'Insight'])
+save_explorer_parser.add_argument('type', help='type of the explorer', choices=['Blockchain.info', 'Blocktrail.com', 'Insight', 'Chain.so'])
 save_explorer_parser.add_argument('url', help='URL of the explorer')
 save_explorer_parser.add_argument('priority', help='priority of the explorer')
 save_explorer_parser.add_argument('--testnet', help='use TESTNET instead of mainnet', action='store_true')
