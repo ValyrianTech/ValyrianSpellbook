@@ -10,7 +10,8 @@ Due to the response data each explorer gives or doesn't give, there can be minor
 Blocktrail.com:
 - block timestamp is in UTC format which requires converting back to unix timestamp, possible timezone issues!
 - no pushtx, uses blockchain.info instead
-- no bech32
+- no bech32!!!
+- block size is wrong because no segwit
 - when requesting all transactions of an address, the inputs of each transaction does not contain the sequence
 - i have noticed some issues on testnet where the total number of transactions of an address is not equal to the actual number of transactions given
 
@@ -18,8 +19,20 @@ Insight:
 - Total received balance and total sent balance are calculated wrong when the change address is the same as the sending address, as a result, when calculating
 the balance, all transactions need to be retrieved.
 - When retrieving transactions, outputs that are currently a 0-conf transaction will be displayed as 'spent' unlike blocktrail and blockchain.info
-- no bech32
+- no bech32!!!
+- block size is wrong because no segwit
+- sometimes very slow!
 
 Blockchain.info:
-- Block size is different than Blocktrail.com and Insight explorers
 - The inputs of a transaction do not contain the corresponding txid for some fucked up reason, they only return their internal tx_index, resolving this would take too many requests!
+
+
+Chain.so
+- transaction outputs do not return if output has been spent or not
+- scripts are not hex format or are missing the first few characters
+- transaction inputs do not contain the sequence
+- might temporarily block access when too many requests
+- when requesting transactions of an address, the inputs don't include the value of each input individually, only the sum of the inputs (WTF???)
+- GET_TRANSACTIONS DOES NOT WORK BECAUSE CHAIN.SO DOESN'T GIVE THE INFO THAT I NEED (seriously wtf are these guys thinking, the only way to get some result is to request each tx individually
+wich will cause rate limits to be hit very soon)
+
