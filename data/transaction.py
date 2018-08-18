@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import binascii
-import logging
+from helpers.loghelpers import LOG
 
 
 class TX(object):
@@ -142,7 +142,7 @@ class TX(object):
             unhex_data = binascii.unhexlify(data)
 
             if len(unhex_data) != int(check_length, 16):
-                logging.error(
+                LOG.error(
                     'OP_RETURN data is not the correct length! {0} -> should be {1}'.format(str(len(unhex_data)),
                                                                                             str(int(check_length,
                                                                                                     16))))
@@ -154,8 +154,9 @@ class TX(object):
         except UnicodeDecodeError:
             try:
                 unhex_data = unhex_data.decode('cp1252')
-            except Exception:
-                raise Exception('Unable to decode OP_RETURN data in utf-8 or cp1252')
+            except Exception as ex:
+                LOG.error('Unable to decode OP_RETURN data %s in utf-8 or cp1252: %s' % (hex_data, ex))
+                unhex_data = 'Unable to decode hex data'
 
         return unhex_data
 
