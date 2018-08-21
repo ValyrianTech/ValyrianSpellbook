@@ -107,11 +107,12 @@ class BlocktrailComAPI(ExplorerAPI):
             tx.txid = transaction['hash']
             tx.block_height = transaction['block_height']
             tx.confirmations = transaction['confirmations']
+            tx.lock_time = 0  # Blocktrail does not provide the lock_time
 
             for item in transaction['inputs']:
                 tx_input = TxInput()
                 tx_input.address = item['address']
-                tx_input.value = item['value']
+                tx_input.value = item['value'] if item['type'] != 'coinbase' else 0
                 tx_input.txid = item['output_hash']
                 tx_input.n = item['output_index'] if item['type'] != 'coinbase' else None
                 tx_input.script = item['script_signature']
@@ -176,6 +177,7 @@ class BlocktrailComAPI(ExplorerAPI):
 
         tx = TX()
         tx.txid = txid
+        tx.lock_time = 0  # BlockTrail does not provide the lock_time
         tx.block_height = data['block_height'] if 'block_height' in data else None
 
         for item in data['inputs']:
