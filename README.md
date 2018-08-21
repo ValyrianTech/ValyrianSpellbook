@@ -28,14 +28,18 @@ Run **hot_wallet.py -h** for more information.
 
 3. Start the Bitcoin Spellbook server with **spellbookserver.py**
 
-4. Using the **spellbook.py** CLI , add the blockexplorers you want to use.  
+4. **(OPTIONAL)** The default configuration will use Blockchain.info and BTC.com as explorers. 
+It is recommended to keep the default explorers configuration, but if you want to change this:  
+Use the **spellbook.py** CLI  to add the blockexplorers you want to use.  
 You can add multiple blockexplorers and set a priority for each one, if the first one is offline, the next one will be used.  
-example: **spellbook.py save_explorer blockchain.info Blockchain.info https://blockchain.info 1**  
+example: **spellbook.py save_explorer blockchain.info Blockchain.info 1**  
 Run **spellbook.py save_explorer -h** for more information  
 Currently supported blockchain explorers are:  
 -Blockchain.info  
--Blocktrail.com  
--Any Insight blockexplorer (blockexplorer.com)   
+-BTC.com    
+-Any Insight blockexplorer (blockexplorer.com) 
+-Blocktrail.com (testnet seems to be broken, no longer maintained)  
+-chain.so (not recommended)
 
 
 5. Add triggers and actions with the **spellbook.py** CLI. See **spellbook.py save_trigger -h** and **spellbook.py save_action -h** for more information.  
