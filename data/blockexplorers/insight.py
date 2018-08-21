@@ -118,7 +118,7 @@ class InsightAPI(ExplorerAPI):
                 tx.outputs.append(tx_output)
 
             # Only add confirmed txs
-            if tx.block_height is not None:
+            if tx.block_height is not -1:
                 txs.insert(0, tx.to_dict(address))
             else:
                 # subtract 1 from total txs because it is unconfirmed
@@ -131,29 +131,65 @@ class InsightAPI(ExplorerAPI):
             return {'transactions': txs}
 
     def get_balance(self, address):
-        # Insight calculates the total received and total sent wrong (doesn't exclude change to the same address),
-        # so we need to get the transactions and calculate the final balance ourselves
-        data = self.get_transactions(address)
-        if 'transactions' in data:
-            txs = data['transactions']
-            final_balance = 0
-            received = 0
+        url = '{api_url}/addr/{address}/balance'.format(api_url=self.url, address=address)
+        try:
+            LOG.info('GET %s' % url)
+            r = requests.get(url)
+            data = int(r.text)
+        except Exception as ex:
+            LOG.error('Unable to get balance of %s from %s: %s' % (address, self.url, ex))
+            return {'error': 'Unable to get balance %s from %s' % (address, self.url)}
 
-            for tx in txs:
-                for output in tx['outputs']:
-                    if output['address'] == address and output['spent'] is False:
-                        final_balance += output['value']
+        balance = {'final': data}
 
-                if tx['receiving'] is True and tx['confirmations'] > 0:
-                    received += tx['receivedValue']
+        url = '{api_url}/addr/{address}/totalReceived'.format(api_url=self.url, address=address)
+        try:
+            LOG.info('GET %s' % url)
+            r = requests.get(url)
+            data = int(r.text)
+        except Exception as ex:
+            LOG.error('Unable to get total received of %s from %s: %s' % (address, self.url, ex))
+            return {'error': 'Unable to get total received %s from %s' % (address, self.url)}
 
-            balance = {'final': final_balance,
-                       'received': received,
-                       'sent': received - final_balance}
+        balance['received'] = data
 
-            return {'balance': balance}
-        else:
-            return {'error': 'Received invalid data: %s' % data}
+        url = '{api_url}/addr/{address}/totalSent'.format(api_url=self.url, address=address)
+        try:
+            LOG.info('GET %s' % url)
+            r = requests.get(url)
+            data = int(r.text)
+        except Exception as ex:
+            LOG.error('Unable to get total sent of %s from %s: %s' % (address, self.url, ex))
+            return {'error': 'Unable to get total sent %s from %s' % (address, self.url)}
+
+        balance['sent'] = data
+
+        return {'balance': balance, 'note': 'Insight calculates the total received and total sent wrong!'}
+
+        # # Insight calculates the total received and total sent wrong (doesn't exclude change to the same address),
+        # # An alternative way is to get the transactions and calculate the final balance ourselves, uncomment this section if that is really needed
+        # # Warning: This might cause many api requests!
+        # data = self.get_transactions(address)
+        # if 'transactions' in data:
+        #     txs = data['transactions']
+        #     final_balance = 0
+        #     received = 0
+        #
+        #     for tx in txs:
+        #         for output in tx['outputs']:
+        #             if output['address'] == address and output['spent'] is False:
+        #                 final_balance += output['value']
+        #
+        #         if tx['receiving'] is True and tx['confirmations'] > 0:
+        #             received += tx['receivedValue']
+        #
+        #     balance = {'final': final_balance,
+        #                'received': received,
+        #                'sent': received - final_balance}
+        #
+        #     return {'balance': balance}
+        # else:
+        #     return {'error': 'Received invalid data: %s' % data}
 
     def get_transaction(self, txid):
         url = self.url + '/tx/' + str(txid)
