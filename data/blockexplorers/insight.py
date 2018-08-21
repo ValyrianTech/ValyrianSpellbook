@@ -66,10 +66,6 @@ class InsightAPI(ExplorerAPI):
         n_tx = None
         transactions = []
 
-        latest_block_height = self.get_latest_block_height()
-        if latest_block_height is None:
-            return {'error': 'Unable to get latest block height'}
-
         i = 0
         while n_tx is None or len(transactions) < n_tx:
             url = self.url + '/addrs/' + address + '/txs?from=' + str(limit*i) + '&to=' + str(limit*(i+1))
@@ -92,15 +88,16 @@ class InsightAPI(ExplorerAPI):
         for transaction in transactions:
             tx = TX()
             tx.txid = transaction['txid']
+            tx.lock_time = transaction['locktime']
             tx.confirmations = transaction['confirmations']
-            tx.block_height = latest_block_height - tx.confirmations + 1 if transaction['confirmations'] >= 1 else None
+            tx.block_height = transaction['blockheight']
 
             for item in transaction['vin']:
                 tx_input = TxInput()
                 tx_input.address = item['addr'] if 'addr' in item else None
                 tx_input.value = item['valueSat'] if 'value' in item else 0
                 tx_input.txid = item['txid'] if 'txid' in item else None
-                tx_input.n = item['n'] if 'coinbase' not in item else None
+                tx_input.n = item['vout'] if 'coinbase' not in item else None
                 tx_input.script = item['scriptSig']['hex'] if 'scriptSig' in item else None
                 if 'coinbase' in item:
                     tx_input.script = item['coinbase']
@@ -171,6 +168,8 @@ class InsightAPI(ExplorerAPI):
         tx = TX()
         tx.txid = txid
         tx.block_height = data['blockheight'] if 'blockheight' in data else None
+        tx.lock_time = data['locktime']
+
         for item in data['vin']:
             tx_input = TxInput()
             tx_input.address = item['addr'] if 'addr' in item else None
