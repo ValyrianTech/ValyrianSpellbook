@@ -104,6 +104,8 @@ class TX(object):
         :return: A dict containing info about the transaction from the pov of the address
         """
         tx_dict = {"txid": self.txid,
+                   "wtxid": self.wtxid,
+                   "lock_time": self.lock_time,
                    "prime_input_address": self.prime_input_address(),
                    "inputs": [tx_input.json_encodable() for tx_input in self.inputs],
                    "outputs": [tx_output.json_encodable() for tx_output in self.outputs],
