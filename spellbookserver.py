@@ -122,6 +122,10 @@ class SpellbookRESTAPI(Bottle):
         # Routes for Hiveminds
         self.route('/spellbook/hiveminds/<hivemind_id:re:[a-fA-F0-9]+>', method='GET', callback=self.get_hivemind)
 
+        # Check if there are explorers configured, this will also initialize the default explorers on first startup
+        if len(get_explorers()) == 0:
+            LOG.warning('No block explorers configured!')
+
         # start the webserver for the REST API
         self.run(host=self.host, port=self.port)
 

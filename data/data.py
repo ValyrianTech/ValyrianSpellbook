@@ -21,14 +21,19 @@ EXPLORER = None
 
 def initialize_explorers_file():
     """
-    Initialize the explorers.json file with the default explorer
+    Initialize the explorers.json file with the default explorers
     """
-    default_explorer = Explorer()
-    default_explorer.explorer_type = ExplorerType.BLOCKCHAIN_INFO
-    default_explorer.url = 'https://blockchain.info'
-    default_explorer.priority = 1
+    first_explorer = Explorer()
+    first_explorer.explorer_type = ExplorerType.BLOCKCHAIN_INFO
+    first_explorer.priority = 1
 
-    data = {'blockchain.info': default_explorer.json_encodable()}
+    second_explorer = Explorer()
+    second_explorer.explorer_type = ExplorerType.BTC_COM
+    second_explorer.priority = 2
+
+    data = {'blockchain.info': first_explorer.json_encodable(),
+            'btc.com': second_explorer.json_encodable()}
+
     save_to_json_file(EXPLORERS_JSON_FILE, data)
 
 
