@@ -11,30 +11,37 @@ from data.transaction import TX, TxInput, TxOutput
 from data.explorer_api import ExplorerAPI
 
 
-class BlocktrailComAPI(ExplorerAPI):
+class BTCComAPI(ExplorerAPI):
     def __init__(self, url='', key='', testnet=False):
-        super(BlocktrailComAPI, self).__init__(key=key, testnet=testnet)
+        super(BTCComAPI, self).__init__(key=key, testnet=testnet)
 
         # Set the url of the api depending on testnet or mainnet
-        self.url = 'https://api.blocktrail.com/v1/tBTC' if self.testnet is True else 'https://api.blocktrail.com/v1/BTC'
+        self.url = 'https://tchain.api.btc.com/v3' if self.testnet is True else 'https://chain.api.btc.com/v3'
 
     def get_latest_block(self):
-        url = '{api_url}/block/latest?api_key={api_key}'.format(api_url=self.url, api_key=self.key)
+        url = '{api_url}/block/latest'.format(api_url=self.url)
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
-            LOG.error('Unable to get latest block from Blocktrail.com: %s' % ex)
-            return {'error': 'Unable to get latest block from Blocktrail.com'}
+            LOG.error('Unable to get latest block from BTC.com: %s' % ex)
+            return {'error': 'Unable to get latest block from BTC.com'}
+        data = data['data']
 
-        if all(key in data for key in ('height', 'hash')):
-            return self.get_block_by_hash(data['hash'])
+        if all(key in data for key in ('height', 'hash', 'timestamp', 'mrkl_root', 'size')):
+            block = {'height': data['height'],
+                     'hash': data['hash'],
+                     'time': data['timestamp'],
+                     'merkleroot': data['mrkl_root'],
+                     'size': data['size']}
+
+            return {'block': block}
         else:
             return {'error': 'Received invalid data: %s' % data}
 
     def get_block_by_height(self, height):
-        url = '{api_url}/block/{height}?api_key={api_key}'.format(api_url=self.url, height=height, api_key=self.key)
+        url = '{api_url}/block/{height}'.format(api_url=self.url, height=height)
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
@@ -42,20 +49,21 @@ class BlocktrailComAPI(ExplorerAPI):
         except Exception as ex:
             LOG.error('Unable to get block %s from Blocktrail.com: %s' % (height, ex))
             return {'error': 'Unable to get block %s from Blocktrail.com' % height}
+        data = data['data']
 
-        if all(key in data for key in ('height', 'hash', 'block_time', 'merkleroot', 'byte_size')):
+        if all(key in data for key in ('height', 'hash', 'timestamp', 'mrkl_root', 'size')):
             block = {'height': data['height'],
                      'hash': data['hash'],
-                     'time': calendar.timegm(datetime.strptime(data['block_time'], "%Y-%m-%dT%H:%M:%S+0000").utctimetuple()),
-                     'merkleroot': data['merkleroot'],
-                     'size': data['byte_size']}
+                     'time': data['timestamp'],
+                     'merkleroot': data['mrkl_root'],
+                     'size': data['size']}
 
             return {'block': block}
         else:
             return {'error': 'Received invalid data: %s' % data}
 
     def get_block_by_hash(self, block_hash):
-        url = '{api_url}/block/{hash}?api_key={api_key}'.format(api_url=self.url, hash=block_hash, api_key=self.key)
+        url = '{api_url}/block/{hash}'.format(api_url=self.url, hash=block_hash)
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
@@ -63,37 +71,40 @@ class BlocktrailComAPI(ExplorerAPI):
         except Exception as ex:
             LOG.error('Unable to get block %s from Blocktrail.com: %s' % (block_hash, ex))
             return {'error': 'Unable to get block %s from Blocktrail.com' % block_hash}
+        data = data['data']
 
-        if all(key in data for key in ('height', 'hash', 'block_time', 'merkleroot', 'byte_size')):
+        if all(key in data for key in ('height', 'hash', 'timestamp', 'mrkl_root', 'size')):
             block = {'height': data['height'],
                      'hash': data['hash'],
-                     'time': calendar.timegm(datetime.strptime(data['block_time'], "%Y-%m-%dT%H:%M:%S+0000").utctimetuple()),
-                     'merkleroot': data['merkleroot'],
-                     'size': data['byte_size']}
+                     'time': data['timestamp'],
+                     'merkleroot': data['mrkl_root'],
+                     'size': data['size']}
 
             return {'block': block}
         else:
             return {'error': 'Received invalid data: %s' % data}
 
     def get_transactions(self, address):
-        limit = 200  # max 200 for Blocktrail.com
+        pagesize = 50  # max 50 for BTC.com
         n_tx = None
         transactions = []
         page = 1
 
         while n_tx is None or len(transactions) < n_tx:
-            url = '{api_url}/address/{address}/transactions?api_key={api_key}&limit={limit}&page={page}&sort_dir=asc'.format(api_url=self.url, address=address, api_key=self.key, limit=limit, page=page)
+            url = '{api_url}/address/{address}/tx?page={page}&pagesize={pagesize}&verbose=3'.format(api_url=self.url, address=address, page=page, pagesize=pagesize)
             try:
                 LOG.info('GET %s' % url)
                 r = requests.get(url)
                 data = r.json()
             except Exception as ex:
-                LOG.error('Unable to get transactions of address %s from Blocktrail.com: %s' % (address, ex))
-                return {'error': 'Unable to get transactions of address %s block from Blocktrail.com' % address}
+                LOG.error('Unable to get transactions of address %s from BTC.com: %s' % (address, ex))
+                return {'error': 'Unable to get transactions of address %s from BTC.com' % address}
 
-            if all(key in data for key in ('total', 'data')):
-                n_tx = data['total']
-                transactions += data['data']
+            data = data['data']
+
+            if all(key in data for key in ('total_count', 'list')):
+                n_tx = data['total_count']
+                transactions += data['list']
                 page += 1
             else:
                 return {'error': 'Received invalid data: %s' % data}
@@ -107,24 +118,26 @@ class BlocktrailComAPI(ExplorerAPI):
             tx.txid = transaction['hash']
             tx.block_height = transaction['block_height']
             tx.confirmations = transaction['confirmations']
+            tx.wtxid = transaction['witness_hash']
+            tx.lock_time = transaction['lock_time']
 
             for item in transaction['inputs']:
                 tx_input = TxInput()
-                tx_input.address = item['address']
-                tx_input.value = item['value']
-                tx_input.txid = item['output_hash']
-                tx_input.n = item['output_index'] if item['type'] != 'coinbase' else None
-                tx_input.script = item['script_signature']
-                tx_input.sequence = None  # Blocktrail does not provide the sequence of a transaction input when requesting all transactions of an address
+                tx_input.address = item['prev_addresses'][0] if len(item['prev_addresses']) > 0 else None
+                tx_input.value = item['prev_value']
+                tx_input.txid = item['prev_tx_hash']
+                tx_input.n = item['prev_position'] if item['prev_position'] is not -1 else None
+                tx_input.script = item['script_hex']
+                tx_input.sequence = item['sequence']
 
                 tx.inputs.append(tx_input)
 
-            for item in transaction['outputs']:
+            for i, item in enumerate(transaction['outputs']):
                 tx_output = TxOutput()
-                tx_output.address = item['address']
+                tx_output.address = item['addresses'][0] if len(item['addresses']) > 0 else None
                 tx_output.value = item['value']
-                tx_output.n = item['index']
-                tx_output.spent = False if item['spent_hash'] is None else True
+                tx_output.n = i
+                tx_output.spent = False if item['spent_by_tx'] is None else True
                 tx_output.script = item['script_hex']
 
                 if item['script_hex'][:2] == '6a':
@@ -140,14 +153,12 @@ class BlocktrailComAPI(ExplorerAPI):
                 n_tx -= 1
 
         if n_tx != len(txs):
-            # Blocktrail seems to have some issues not returning the correct total number of transactions, yet all transactions are present???
-            LOG.warning('Blocktrail.com: Not all transactions are retrieved! expected {expected} but only got {received}'.format(expected=n_tx, received=len(txs)))
-            return {'transactions': txs}
+            return {'error': 'BTC.com: Not all transactions are retrieved! expected {expected} but only got {received}'.format(expected=n_tx, received=len(txs))}
         else:
             return {'transactions': txs}
 
     def get_balance(self, address):
-        url = '{api_url}/address/{address}?api_key={api_key}'.format(api_url=self.url, address=address, api_key=self.key)
+        url = '{api_url}/address/{address}'.format(api_url=self.url, address=address)
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
@@ -155,6 +166,8 @@ class BlocktrailComAPI(ExplorerAPI):
         except Exception as ex:
             LOG.error('Unable to get balance of address %s from Blocktrail.com: %s' % (address, ex))
             return {'error': 'Unable to get balance of address %s from Blocktrail.com' % address}
+
+        data = data['data']
 
         if all(key in data for key in ('balance', 'received', 'sent')):
             balance = {'final': data['balance'],
@@ -165,58 +178,56 @@ class BlocktrailComAPI(ExplorerAPI):
             return {'error': 'Received invalid data: %s' % data}
 
     def get_transaction(self, txid):
-        url = '{api_url}/transaction/{txid}?api_key={api_key}'.format(api_url=self.url, txid=txid, api_key=self.key)
+        url = '{api_url}/tx/{txid}?verbose=3'.format(api_url=self.url, txid=txid)
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
-            LOG.error('Unable to get transaction %s from Blocktrail.com: %s' % (txid, ex))
-            return {'error': 'Unable to get transaction %s from Blocktrail.com' % txid}
+            LOG.error('Unable to get transaction %s from BTC.com: %s' % (txid, ex))
+            return {'error': 'Unable to get transaction %s from BTC.com' % txid}
+
+        data = data['data']
 
         tx = TX()
         tx.txid = txid
+        tx.wtxid = data['witness_hash']
+        tx.lock_time = data['lock_time']
         tx.block_height = data['block_height'] if 'block_height' in data else None
+        tx.confirmations = data['confirmations'] if 'confirmations' in data else None
 
         for item in data['inputs']:
             tx_input = TxInput()
-            tx_input.address = item['address']
-            tx_input.value = item['value'] if item['type'] != 'coinbase' else 0
-            tx_input.txid = item['output_hash']
-            tx_input.n = item['output_index'] if item['type'] != 'coinbase' else None
-            tx_input.script = item['script_signature']
+            tx_input.address = item['prev_addresses'][0] if len(item['prev_addresses']) > 0 else None
+            tx_input.value = item['prev_value']
+            tx_input.txid = item['prev_tx_hash']
+            tx_input.n = item['prev_position'] if item['prev_position'] is not -1 else None
+            tx_input.script = item['script_hex']
             tx_input.sequence = item['sequence']
 
             tx.inputs.append(tx_input)
 
-        for item in data['outputs']:
+        for i, item in enumerate(data['outputs']):
             tx_output = TxOutput()
-            tx_output.address = item['address']
+            tx_output.address = item['addresses'][0] if len(item['addresses']) > 0 else None
             tx_output.value = item['value']
-            tx_output.n = item['index']
-            tx_output.spent = False if item['spent_hash'] is None else True
+            tx_output.n = i
+            tx_output.spent = False if item['spent_by_tx'] is None else True
             tx_output.script = item['script_hex']
+
             if item['script_hex'][:2] == '6a':
                 tx_output.op_return = tx.decode_op_return(item['script_hex'])
 
             tx.outputs.append(tx_output)
 
-        tx.confirmations = data['confirmations'] if 'confirmations' in data else None
-
         return {'transaction': tx.json_encodable()}
 
     def get_prime_input_address(self, txid):
-        url = '{api_url}/transaction/{txid}?api_key={api_key}'.format(api_url=self.url, txid=txid, api_key=self.key)
-        try:
-            LOG.info('GET %s' % url)
-            r = requests.get(url)
-            data = r.json()
-        except Exception as ex:
-            LOG.error('Unable to get prime input address from transaction %s from Blocktrail.com: %s' % (txid, ex))
-            return {'error': 'Unable to get prime input address from transaction %s from Blocktrail.com' % txid}
 
-        if 'inputs' in data:
-            tx_inputs = data['inputs']
+        transaction_data = self.get_transaction(txid=txid)
+
+        if 'transaction' in transaction_data and 'inputs' in transaction_data['transaction']:
+            tx_inputs = transaction_data['transaction']['inputs']
 
             input_addresses = []
             for i in range(0, len(tx_inputs)):
@@ -226,27 +237,29 @@ class BlocktrailComAPI(ExplorerAPI):
                 prime_input_address = sorted(input_addresses)[0]
                 return {'prime_input_address': prime_input_address}
 
-        return {'error': 'Received invalid data: %s' % data}
+        return {'error': 'Received invalid data: %s' % transaction_data}
 
     def get_utxos(self, address, confirmations=3):
-        limit = 200  # max 200 for Blocktrail.com
+        pagesize = 50  # max 200 for BTC.com
         n_outputs = None
         unspent_outputs = []
         page = 1
 
         while n_outputs is None or len(unspent_outputs) < n_outputs:
-            url = '{api_url}/address/{address}/unspent-outputs?api_key={api_key}&limit={limit}&page={page}&sort_dir=asc'.format(api_url=self.url, address=address, api_key=self.key, limit=limit, page=page)
+            url = '{api_url}/address/{address}/unspent?page={page}&pagesize={pagesize}&verbose=3'.format(api_url=self.url, address=address, page=page, pagesize=pagesize)
             try:
                 LOG.info('GET %s' % url)
                 r = requests.get(url)
                 data = r.json()
             except Exception as ex:
-                LOG.error('Unable to get utxos of address %s from Blocktrail.com: %s' % (address, ex))
-                return {'error': 'Unable to get utxos of address %s block from Blocktrail.com' % address}
+                LOG.error('Unable to get utxos of address %s from BTC.com: %s' % (address, ex))
+                return {'error': 'Unable to get utxos of address %s block from BTC.com' % address}
 
-            if all(key in data for key in ('total', 'data')):
-                n_outputs = data['total']
-                unspent_outputs += data['data']
+            data = data['data']
+
+            if all(key in data for key in ('total_count', 'list')):
+                n_outputs = data['total_count']
+                unspent_outputs += data['list']
                 page += 1
             else:
                 return {'error': 'Received invalid data: %s' % data}
@@ -260,40 +273,23 @@ class BlocktrailComAPI(ExplorerAPI):
 
         utxos = []
         for output in unspent_outputs:
-            if all(key in output for key in ('confirmations', 'hash', 'index', 'value', 'script_hex')):
+            if all(key in output for key in ('confirmations', 'tx_hash', 'tx_output_n', 'value')):
                 utxo = {'confirmations': output['confirmations'],
-                        'output_hash': output['hash'],
-                        'output_n': output['index'],
+                        'output_hash': output['tx_hash'],
+                        'output_n': output['tx_output_n'],
                         'value': output['value'],
-                        'script': output['script_hex']}
+                        'script': None}
 
                 if utxo['confirmations'] >= confirmations:
                     utxos.append(utxo)
 
         return {'utxos': sorted(utxos, key=lambda k: (k['confirmations'], k['output_hash'], k['output_n']))}
 
-    def get_recommended_fee(self):
-        """
-        Get the recommended fee per KB
-
-        :return: a dict containing 'optimal', 'high_priority', 'low_priority' and 'min_relay_fee'
-        """
-        url = '{api_url}/fee-per-kb?api_key={api_key}'.format(api_url=self.url, api_key=self.key)
-        try:
-            LOG.info('GET %s' % url)
-            r = requests.get(url)
-            data = r.json()
-        except Exception as ex:
-            LOG.error('Unable to get optimal fee per kb from Blocktrail.com: %s' % ex)
-            return {'error': 'Unable to get optimal fee per kb from Blocktrail.com'}
-
-        return data
-
     @staticmethod
     def push_tx(tx):
         # Must do import here to avoid circular import
         from data.data import get_explorer_api
 
-        LOG.warning('Blocktrail.com api does not support broadcasting transactions, using Blockchain.info instead!')
+        LOG.warning('BTC.com api does not support broadcasting transactions, using Blockchain.info instead!')
         blockchain_info_api = get_explorer_api('blockchain.info')
         return blockchain_info_api.push_tx(tx)
