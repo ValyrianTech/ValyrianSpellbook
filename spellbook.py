@@ -44,10 +44,10 @@ save_explorer_parser = subparsers.add_parser(name='save_explorer',
                                              epilog=texts.SAVE_EXPLORER_EPILOG)
 
 save_explorer_parser.add_argument('name', help='name of the explorer')
-save_explorer_parser.add_argument('type', help='type of the explorer', choices=['Blockchain.info', 'Blocktrail.com', 'Insight', 'Chain.so'])
-save_explorer_parser.add_argument('url', help='URL of the explorer')
+save_explorer_parser.add_argument('type', help='type of the explorer', choices=['BTC.com', 'Blockchain.info', 'Insight', 'Blocktrail.com', 'Chain.so'])
 save_explorer_parser.add_argument('priority', help='priority of the explorer')
 save_explorer_parser.add_argument('--testnet', help='use TESTNET instead of mainnet', action='store_true')
+save_explorer_parser.add_argument('-u', '--url', help='URL of the explorer (only needed for Insight explorers)')
 save_explorer_parser.add_argument('-b', '--blocktrail_key', help='API key for the explorer (only needed for blocktrail.com)', default='')
 save_explorer_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
 save_explorer_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
