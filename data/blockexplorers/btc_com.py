@@ -27,7 +27,7 @@ class BTCComAPI(ExplorerAPI):
         except Exception as ex:
             LOG.error('Unable to get latest block from BTC.com: %s' % ex)
             return {'error': 'Unable to get latest block from BTC.com'}
-        data = data['data']
+        data = data['data'] if data['data'] is not None else {}
 
         if all(key in data for key in ('height', 'hash', 'timestamp', 'mrkl_root', 'size')):
             block = {'height': data['height'],
@@ -49,7 +49,7 @@ class BTCComAPI(ExplorerAPI):
         except Exception as ex:
             LOG.error('Unable to get block %s from Blocktrail.com: %s' % (height, ex))
             return {'error': 'Unable to get block %s from Blocktrail.com' % height}
-        data = data['data']
+        data = data['data'] if data['data'] is not None else {}
 
         if all(key in data for key in ('height', 'hash', 'timestamp', 'mrkl_root', 'size')):
             block = {'height': data['height'],
@@ -71,7 +71,7 @@ class BTCComAPI(ExplorerAPI):
         except Exception as ex:
             LOG.error('Unable to get block %s from Blocktrail.com: %s' % (block_hash, ex))
             return {'error': 'Unable to get block %s from Blocktrail.com' % block_hash}
-        data = data['data']
+        data = data['data'] if data['data'] is not None else {}
 
         if all(key in data for key in ('height', 'hash', 'timestamp', 'mrkl_root', 'size')):
             block = {'height': data['height'],
@@ -100,7 +100,7 @@ class BTCComAPI(ExplorerAPI):
                 LOG.error('Unable to get transactions of address %s from BTC.com: %s' % (address, ex))
                 return {'error': 'Unable to get transactions of address %s from BTC.com' % address}
 
-            data = data['data']
+            data = data['data'] if data['data'] is not None else {}
 
             if all(key in data for key in ('total_count', 'list')):
                 n_tx = data['total_count']
@@ -167,7 +167,7 @@ class BTCComAPI(ExplorerAPI):
             LOG.error('Unable to get balance of address %s from Blocktrail.com: %s' % (address, ex))
             return {'error': 'Unable to get balance of address %s from Blocktrail.com' % address}
 
-        data = data['data']
+        data = data['data'] if data['data'] is not None else {}
 
         if all(key in data for key in ('balance', 'received', 'sent')):
             balance = {'final': data['balance'],
@@ -187,7 +187,7 @@ class BTCComAPI(ExplorerAPI):
             LOG.error('Unable to get transaction %s from BTC.com: %s' % (txid, ex))
             return {'error': 'Unable to get transaction %s from BTC.com' % txid}
 
-        data = data['data']
+        data = data['data'] if data['data'] is not None else {}
 
         tx = TX()
         tx.txid = txid
@@ -255,7 +255,7 @@ class BTCComAPI(ExplorerAPI):
                 LOG.error('Unable to get utxos of address %s from BTC.com: %s' % (address, ex))
                 return {'error': 'Unable to get utxos of address %s block from BTC.com' % address}
 
-            data = data['data']
+            data = data['data'] if data['data'] is not None else {}
 
             if all(key in data for key in ('total_count', 'list')):
                 n_outputs = data['total_count']
