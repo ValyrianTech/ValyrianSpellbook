@@ -146,7 +146,7 @@ class BTCComAPI(ExplorerAPI):
                 tx.outputs.append(tx_output)
 
             # Only append confirmed transactions
-            if tx.block_height is not None:
+            if tx.block_height is not -1:
                 txs.append(tx.to_dict(address))
             else:
                 # subtract 1 from total txs because it is unconfirmed
@@ -170,9 +170,9 @@ class BTCComAPI(ExplorerAPI):
         data = data['data'] if data['data'] is not None else {}
 
         if all(key in data for key in ('balance', 'received', 'sent')):
-            balance = {'final': data['balance'],
-                       'received': data['received'],
-                       'sent': data['sent']}
+            balance = {'final': data['balance'] - data['unconfirmed_received'] + data['unconfirmed_sent'],
+                       'received': data['received'] - data['unconfirmed_received'],
+                       'sent': data['sent'] - data['unconfirmed_sent']}
             return {'balance': balance}
         else:
             return {'error': 'Received invalid data: %s' % data}
