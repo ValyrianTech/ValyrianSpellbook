@@ -11,6 +11,8 @@ class TX(object):
         Constructor of a TX object
         """
         self.txid = ''
+        self.wtxid = ''  # witness transaction hash
+        self.lock_time = 0
         self.inputs = []
         self.outputs = []
         self.block_height = 0
@@ -162,6 +164,8 @@ class TX(object):
 
     def json_encodable(self):
         return {'txid': self.txid,
+                'wtxid': self.wtxid,
+                'lock_time': self.lock_time,
                 'prime_input_address': self.prime_input_address(),
                 'inputs': [tx_input.json_encodable() for tx_input in self.inputs],
                 'outputs': [tx_output.json_encodable() for tx_output in self.outputs],
