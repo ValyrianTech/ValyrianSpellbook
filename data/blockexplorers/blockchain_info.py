@@ -127,15 +127,16 @@ class BlockchainInfoAPI(ExplorerAPI):
         for transaction in transactions:
             tx = TX()
             tx.txid = transaction['hash']
+            tx.lock_time = transaction['lock_time']
             tx.block_height = transaction['block_height'] if 'block_height' in transaction else None
             tx.confirmations = (latest_block_height - tx.block_height) + 1 if 'block_height' in transaction else 0
 
             for item in transaction['inputs']:
                 tx_input = TxInput()
-                tx_input.address = item['prev_out']['addr']
-                tx_input.value = item['prev_out']['value']
+                tx_input.address = item['prev_out']['addr'] if 'prev_out' in item else None
+                tx_input.value = item['prev_out']['value'] if 'prev_out' in item else 0
                 tx_input.txid = ''  # Blockchain.info does not provide the txid of a tx input only their own tx_index, can be resolved for example via https://testnet.blockchain.info/tx-index/197277768?format=json but this would require too many http requests!!!
-                tx_input.n = item['prev_out']['n']
+                tx_input.n = item['prev_out']['n'] if 'prev_out' in item else None
                 tx_input.script = item['script']
                 tx_input.sequence = item['sequence']
 
@@ -210,14 +211,15 @@ class BlockchainInfoAPI(ExplorerAPI):
 
         tx = TX()
         tx.txid = txid
+        tx.lock_time = data['lock_time']
         tx.block_height = data['block_height'] if 'block_height' in data else None
         tx.confirmations = self.get_latest_block_height() - tx.block_height + 1 if tx.block_height is not None else 0
 
         for item in data['inputs']:
             tx_input = TxInput()
-            tx_input.address = item['prev_out']['addr']
-            tx_input.value = item['prev_out']['value']
-            tx_input.n = item['prev_out']['n']
+            tx_input.address = item['prev_out']['addr'] if 'prev_out' in item else None
+            tx_input.value = item['prev_out']['value'] if 'prev_out' in item else 0
+            tx_input.n = item['prev_out']['n'] if 'prev_out' in item else None
             tx_input.txid = ''  # Blockchain.info does not provide the txid of a tx input only their own tx_index, can be resolved for example via https://testnet.blockchain.info/tx-index/197277768?format=json but this would require too many http requests!!!
             tx_input.script = item['script']
             tx_input.sequence = item['sequence']

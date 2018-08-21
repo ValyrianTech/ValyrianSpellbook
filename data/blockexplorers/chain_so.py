@@ -221,10 +221,10 @@ class ChainSoAPI(ExplorerAPI):
 
         for item in data['inputs']:
             tx_input = TxInput()
-            tx_input.address = item['address']
-            tx_input.value = btc2satoshis(btc=item['value'])
-            tx_input.n = item['from_output']['output_no']
-            tx_input.txid = item['from_output']['txid']
+            tx_input.address = item['address'] if item['address'] != 'coinbase' else None
+            tx_input.value = btc2satoshis(btc=item['value']) if item['address'] != 'coinbase' else 0
+            tx_input.n = item['from_output']['output_no'] if item['from_output'] is not None else None
+            tx_input.txid = item['from_output']['txid'] if item['from_output'] is not None else None
             tx_input.script = item['script']
             tx_input.sequence = None  # Chain.so does not provide the sequence
 

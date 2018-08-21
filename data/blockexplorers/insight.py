@@ -97,11 +97,13 @@ class InsightAPI(ExplorerAPI):
 
             for item in transaction['vin']:
                 tx_input = TxInput()
-                tx_input.address = item['addr']
-                tx_input.value = item['valueSat']
-                tx_input.txid = item['txid']
-                tx_input.n = item['vout']
-                tx_input.script = item['scriptSig']['hex']
+                tx_input.address = item['addr'] if 'addr' in item else None
+                tx_input.value = item['valueSat'] if 'value' in item else 0
+                tx_input.txid = item['txid'] if 'txid' in item else None
+                tx_input.n = item['n'] if 'coinbase' not in item else None
+                tx_input.script = item['scriptSig']['hex'] if 'scriptSig' in item else None
+                if 'coinbase' in item:
+                    tx_input.script = item['coinbase']
                 tx_input.sequence = item['sequence']
 
                 tx.inputs.append(tx_input)
@@ -171,11 +173,13 @@ class InsightAPI(ExplorerAPI):
         tx.block_height = data['blockheight'] if 'blockheight' in data else None
         for item in data['vin']:
             tx_input = TxInput()
-            tx_input.address = item['addr']
-            tx_input.value = item['valueSat']
-            tx_input.txid = item['txid']
-            tx_input.n = item['vout']
-            tx_input.script = item['scriptSig']['hex']
+            tx_input.address = item['addr'] if 'addr' in item else None
+            tx_input.value = item['valueSat'] if 'valueSat' in item else 0
+            tx_input.txid = item['txid'] if 'txid' in item else None
+            tx_input.n = item['n'] if 'coinbase' not in item else None
+            tx_input.script = item['scriptSig']['hex'] if 'scriptSig' in item else None
+            if 'coinbase' in item:
+                tx_input.script = item['coinbase']
             tx_input.sequence = item['sequence']
 
             tx.inputs.append(tx_input)
