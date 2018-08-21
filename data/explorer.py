@@ -7,6 +7,7 @@ class ExplorerType(object):
     BLOCKTRAIL_COM = 'Blocktrail.com'
     INSIGHT = 'Insight'
     CHAIN_SO = 'Chain.so'
+    BTC_COM = 'BTC.com'
 
 
 class Explorer(object):
