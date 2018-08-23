@@ -318,6 +318,56 @@ examples:
 ########################################################################################################
 SAVE_TRIGGER_DESCRIPTION = 'Save or update the configuration of a trigger.'
 SAVE_TRIGGER_EPILOG = '''
+Arguments that are available on all types of triggers:
+- description
+- actions
+- script
+- multi
+- creator_name
+- creator_email
+- youtube
+- status
+- visibility
+- reset
+
+
+Arguments that are specific to certain types of triggers:
+
+Balance, Received and Sent:
+---------------------------
+- address
+- amount
+
+Block_height:
+-------------
+- block_height
+- confirmations
+
+Timestamp:
+----------
+- timestamp
+
+Recurring:
+----------
+- begin_time
+- end_time
+- interval
+
+SignedMessage:
+--------------
+- address
+
+TriggerStatus:
+--------------
+- previous_trigger
+- previous_trigger_status
+
+DeadMansSwitch:
+---------------
+- timeout
+- warning_email
+
+
 examples:
   - spellbook.py save_trigger mytrigger --reset
    -> Reset the trigger with id mytrigger in case it has been triggered already
@@ -419,6 +469,48 @@ examples:
 ########################################################################################################
 SAVE_ACTION_DESCRIPTION = 'Save or update the configuration of an action.'
 SAVE_ACTION_EPILOG = '''
+
+Arguments that are specific to certain types of actions:
+
+Command and SpawnProcess:
+-------------------------
+- run_command
+
+SendTransaction:
+----------------
+- fee_address
+- fee_percentage
+- wallet_type
+- sending_address
+- bip44_account
+- bip44_index
+- receiving_address
+- amount
+- minimum_amount
+- change_address
+- op_return_data
+- distribution
+- transaction_type
+- registration_block_height
+- registration_address
+- registration_xpub
+
+SendMail:
+---------
+- mail_recipients
+- mail_subject
+- mail_body_template
+
+Webhook:
+--------
+- webhook
+
+RevealSecret:
+-------------
+- reveal_text
+- reveal_link
+
+
 examples:
   - spellbook.py save_trigger myaction
    -> Save an action with id 'myaction'
@@ -426,7 +518,7 @@ examples:
   - spellbook.py save_trigger myaction -t=Command -c='ping 127.0.0.1'
    -> Save an action with id 'myaction' that runs the ping command when run
 
-  - spellbook.py save_trigger myaction -t=SendMail -mr=info@valyrian.tech -ms='email subject' -mb=template1
+  - spellbook.py save_trigger myaction -t=SendMail -mr=info@valyrian.tech -ms='email subject' -mb=template1.txt
    -> Save an action with id 'myaction' that sends an email to info@valyrian.tech with subject 'email subject' and uses template1 for the body
 
   - spellbook.py save_trigger ... -k=<myapikey> -s=<myapisecret>
