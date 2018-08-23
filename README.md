@@ -119,6 +119,9 @@ A warning email will be sent when the timeout is at 50%, 75% and at 90%.
 To arm the trigger: use the **spellbook.py activate_trigger trigger_id** command  
 To reset the trigger: use the **spellbook.py save_trigger trigger_id --reset** command  
 
+Once the trigger is armed, the only way to fully deactivate it is to delete the trigger with the **spellbook.py delete_trigger trigger_id** command
+
+
 parameters:  
 * timeout: integer (in seconds)
 * warning_email: string (an email address)
