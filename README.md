@@ -319,7 +319,7 @@ Social Media:
 
 Visit [www.valyrian.tech](http://www.valyrian.tech "Valyrian Tech") to keep up with the latest developments!
 
-[Blog](https://medium.com/@wouterglorieux)
+[Blog](https://medium.com/@valyriantech)
 
 [Twitter: @WouterGlorieux](https://twitter.com/WouterGlorieux)
 
