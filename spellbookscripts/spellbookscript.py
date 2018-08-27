@@ -53,8 +53,8 @@ class SpellbookScript(object):
         pass
 
     def process_message(self):
-        if self.message[:5] == 'IPFS=':
-            self.ipfs_hash = self.message[5:]
+        if self.message[:6] == '/ipfs/':
+            self.ipfs_hash = self.message[6:]
             LOG.info('Message contains a IPFS hash: %s' % self.ipfs_hash)
             return self.process_ipfs_hash(ipfs_hash=self.ipfs_hash)
         else:

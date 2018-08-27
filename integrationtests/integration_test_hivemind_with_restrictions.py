@@ -72,7 +72,7 @@ for option_value in option_values:
     print 'saved with ipfs hash %s' % option.multihash()
 
     address = get_address_from_wallet(account=0, index=0)
-    message = 'IPFS=%s' % option.multihash()
+    message = '/ipfs/%s' % option.multihash()
     private_key = get_private_key_from_wallet(account=0, index=0)[address]
 
     signature = sign_message(address=address, message=message, private_key=private_key)
@@ -100,7 +100,7 @@ for i in range(n_opinions):
     opinion.save()
     print '%s = %s' % (opinionator, opinion.ranked_choice)
     print 'saved as %s' % opinion.multihash()
-    signature = sign_message(private_key=get_private_key_from_wallet(account=3, index=i+1)[opinionator], message='IPFS=%s' % opinion.multihash(), address=opinionator)
+    signature = sign_message(private_key=get_private_key_from_wallet(account=3, index=i+1)[opinionator], message='/ipfs/%s' % opinion.multihash(), address=opinionator)
     hivemind_state.add_opinion(opinion_hash=opinion.multihash(), signature=signature, weight=1.0)
     print ''
 

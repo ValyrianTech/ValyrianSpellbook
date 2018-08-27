@@ -57,7 +57,7 @@ if len(data['message']) >= 256:
         sys.exit(1)
 
     message_hash = ipfs.add_json(data['message'])
-    data['message'] = 'IPFS=%s' % message_hash
+    data['message'] = '/ipfs/%s' % message_hash
 
 
 # Calculate the signature

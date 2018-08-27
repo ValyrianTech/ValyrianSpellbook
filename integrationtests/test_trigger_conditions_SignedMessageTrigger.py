@@ -137,7 +137,7 @@ assert response['triggered'] == 2
 
 # --------------------------------------------------------------------------------------------------------
 print 'Sending IPFS hash as message'
-message = 'IPFS=QmYA2fn8cMbVWo4v95RwcwJVyQsNtnEwHerfWR8UNtEwoE'
+message = '/ipfs/QmYA2fn8cMbVWo4v95RwcwJVyQsNtnEwHerfWR8UNtEwoE'
 signature = sign_message(address=address, message=message, private_key=private_key)
 
 response = spellbook_call('send_signed_message', trigger_name, address, message, signature)
