@@ -114,6 +114,7 @@ logs/
 
 # txt files
 *.txt
+!requirements.txt
 !bips/wordlist/*.txt
 !apps/PaymentProcessor/templates/*.txt
 
