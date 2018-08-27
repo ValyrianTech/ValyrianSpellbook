@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
+import os
 import base64
 import hashlib
 import hmac
@@ -30,6 +30,10 @@ def initialize_api_keys_file():
     """
     Initialize the api_keys.json file with a new random api key and secret for the admin
     """
+    # Check to make sure the directory exists
+    if not os.path.isdir('json/private/'):
+        os.makedirs('json/private')
+
     # Create a random string of characters (uppercase letters and digits) for a api_key and api_secret pair
     api_key = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(16))
     api_secret = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(16))
