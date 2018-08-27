@@ -2,17 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import os
-
 import simplejson
 
+from helpers.ipfshelpers import IPFS_API
 from helpers.BIP44 import set_testnet
 from helpers.configurationhelpers import get_use_testnet
 from helpers.hotwallethelpers import get_address_from_wallet, get_private_key_from_wallet
-from integration_test_helpers import spellbook_call
+from helpers.setupscripthelpers import spellbook_call
 from sign_message import sign_message
-
-# Change working dir up one level
-os.chdir("..")
 
 set_testnet(get_use_testnet())
 
@@ -107,7 +104,7 @@ assert response['triggered'] > 0
 
 # --------------------------------------------------------------------------------------------------------
 print 'setting trigger and configuring it for any address and allow it to activate multiple times'
-script = 'Template'
+script = 'Template.py'
 response = spellbook_call('save_trigger', trigger_name, '-t=%s' % trigger_type, '--reset', '-a=%s' % '', '--multi', '-sc=%s' % script)
 assert response is None
 
@@ -120,7 +117,7 @@ assert response['script'] == script
 
 print 'Sending a signed message first time'
 response = spellbook_call('send_signed_message', trigger_name, address, message, signature)
-assert response is None
+assert response == {'status': 'success'}
 
 response = spellbook_call('get_trigger_config', trigger_name)
 assert response['trigger_type'] == trigger_type
@@ -128,7 +125,7 @@ assert response['triggered'] == 1
 
 print 'Sending a signed message second time'
 response = spellbook_call('send_signed_message', trigger_name, address, message, signature)
-assert response is None
+assert response == {'status': 'success'}
 
 response = spellbook_call('get_trigger_config', trigger_name)
 assert response['trigger_type'] == trigger_type
@@ -137,21 +134,26 @@ assert response['triggered'] == 2
 
 # --------------------------------------------------------------------------------------------------------
 print 'Sending IPFS hash as message'
-message = '/ipfs/QmYA2fn8cMbVWo4v95RwcwJVyQsNtnEwHerfWR8UNtEwoE'
+
+multihash = IPFS_API.add_json({'address': address})
+
+message = '/ipfs/%s' % multihash
 signature = sign_message(address=address, message=message, private_key=private_key)
 
 response = spellbook_call('send_signed_message', trigger_name, address, message, signature)
-assert response is None
+assert response == {'status': 'success'}
 
 # --------------------------------------------------------------------------------------------------------
 print 'Sending JSON data as message'
-data = {'sentiment': 'BULLISH', 'duration': 600}
+data = {'address': address}
 
-with open('sample_json_data.json', 'w') as output_file:
+filename = os.path.abspath('sample_json_data.json')
+
+with open(filename, 'w') as output_file:
     message = simplejson.dumps(data, sort_keys=True, indent=None)
     output_file.write(message)
 
 signature = sign_message(address=address, message=message, private_key=private_key)
 
-response = spellbook_call('send_signed_message', trigger_name, address, 'sample_json_data.json', signature)
-assert response is None
+response = spellbook_call('send_signed_message', trigger_name, address, filename, signature)
+assert response == {'status': 'success'}
