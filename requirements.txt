@@ -9,5 +9,4 @@ simplejson==3.11.1
 ipfsapi==0.4.2.post1
 pycrypto==2.6.1
 python_daemon==2.2.0
-psyco==1.6
 websocket_client==0.51.0
