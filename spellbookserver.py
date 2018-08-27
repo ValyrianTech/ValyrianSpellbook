@@ -56,6 +56,7 @@ class SpellbookRESTAPI(Bottle):
             sys.exit(1)
 
         # Initialize the routes for the REST API
+        self.route('/', method='GET', callback=self.index)  # on linux this gets requested every minute or so, but not on windows
         self.route('/favicon.ico', method='GET', callback=self.get_favicon)
 
         # Routes for managing blockexplorers
@@ -128,6 +129,9 @@ class SpellbookRESTAPI(Bottle):
 
         # start the webserver for the REST API
         self.run(host=self.host, port=self.port)
+
+    def index(self):
+        return
 
     @staticmethod
     def get_favicon():
