@@ -551,7 +551,7 @@ class HivemindState(IPFSDictChain):
 
         :param option_hash: The IPFS multihash of the option
         :param address: The address that supports the option (optional)
-        :param signature: The signature of the message: 'IPFS=<option_hash>' by the address (optional)
+        :param signature: The signature of the message: '/ipfs/<option_hash>' by the address (optional)
         """
         if self.final is True:
             return
@@ -560,7 +560,7 @@ class HivemindState(IPFSDictChain):
             return
 
         if address is not None and signature is not None:
-            if not verify_message(message='IPFS=%s' % option_hash, address=address, signature=signature):
+            if not verify_message(message='/ipfs/%s' % option_hash, address=address, signature=signature):
                 raise Exception('Can not add option: Signature is not valid')
 
         if self._hivemind_issue.restrictions is not None and 'addresses' in self._hivemind_issue.restrictions:
@@ -595,12 +595,12 @@ class HivemindState(IPFSDictChain):
 
         :param option_hash: The IPFS multihash of the option
         :param address: The address that supports the option
-        :param signature: the signature of the message 'IPFS=<option_hash>' by the address
+        :param signature: the signature of the message '/ipfs/<option_hash>' by the address
         """
         if self.final is True:
             return
 
-        if not verify_message(message='IPFS=%s' % option_hash, address=address, signature=signature):
+        if not verify_message(message='/ipfs/%s' % option_hash, address=address, signature=signature):
             raise Exception('Can not support option: Signature is not valid')
 
         if option_hash not in self.options:
@@ -618,7 +618,7 @@ class HivemindState(IPFSDictChain):
             return
 
         opinion = HivemindOpinion(multihash=opinion_hash)
-        if not verify_message(address=opinion.opinionator, message='IPFS=%s' % opinion_hash, signature=signature):
+        if not verify_message(address=opinion.opinionator, message='/ipfs/%s' % opinion_hash, signature=signature):
             raise Exception('Can not add opinion: signature is invalid')
 
         if isinstance(opinion, HivemindOpinion) and opinion.valid():
@@ -702,7 +702,7 @@ class HivemindState(IPFSDictChain):
         """
         ret = "Opinions"
         ret += "\n========"
-        # opinion_data is a list containing [opinion_hash, signature of 'IPFS=opinion_hash', timestamp]
+        # opinion_data is a list containing [opinion_hash, signature of '/ipfs/opinion_hash', timestamp]
         for opinionator, opinion_data in self.opinions[question_index].items():
             ret += '\nTimestamp: %s, Signature: %s' % (opinion_data[2], opinion_data[1])
             opinion = HivemindOpinion(multihash=opinion_data[0])
