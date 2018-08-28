@@ -87,7 +87,7 @@ class PaymentProcessorNewPayment(PaymentProcessorScript):
             trigger.address = payment_request.address
             trigger.amount = payment_request.amount_btc
 
-            trigger.script = 'PaymentProcessor\\PaymentProcessorPaymentStatus.py'
+            trigger.script = os.path.join('PaymentProcessor', 'PaymentProcessorPaymentStatus.py')
             trigger.data = {'payment_request_id': payment_request.payment_request_id}
             trigger.self_destruct = int(time.time()) + REQUEST_TIMEOUT
             trigger.status = 'Active'
@@ -96,11 +96,13 @@ class PaymentProcessorNewPayment(PaymentProcessorScript):
 
             # Spawn up a separate process to listen for the payment transaction
             url = 'http://%s:%s/spellbook/triggers/PaymentProcessorTransactionReceived/post' % (get_host(), get_port())
-            command = r'helpers\notify_transaction.py %s %s #txid#' % (url, payment_request.payment_request_id)
+            notify_program = os.path.join('helpers', 'notify_transaction.py')
+            command = r'%s %s %s #txid#' % (notify_program, url, payment_request.payment_request_id)
 
             # Construct the command for the listener so that it listens for any receiving transactions on the address and executes the notify_transaction program when
             # a transaction is detected and stop the listener if no tx happens within the timeout period.
-            run_command = r'listeners\transaction_listener.py --address=%s --timeout=%s --exit --receive --command="%s"' % (payment_request.address, LISTENER_TIMEOUT, command)
+            listener_program = os.path.join('listeners', 'transaction_listener.py')
+            run_command = r'%s --address=%s --timeout=%s --exit --receive --command="%s"' % (listener_program, payment_request.address, LISTENER_TIMEOUT, command)
 
             # If we are configured for testnet we must also add the --testnet flag to the listener
             if get_use_testnet():
