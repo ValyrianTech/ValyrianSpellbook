@@ -8,6 +8,8 @@ from logging.handlers import RotatingFileHandler
 import multiprocessing
 from subprocess import Popen, PIPE
 
+from helpers.platformhelpers import format_args
+
 PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 # make the directory for logs if it doesn't exist
@@ -39,7 +41,7 @@ class RunCommandProcess(multiprocessing.Process):
         PROCESS_LOG.info('%s | Spawned new process to run command: %s' % (process_id, self.command))
         PROCESS_LOG.info('%s | Process starting...' % process_id)
 
-        command_process = Popen(self.command, stdout=PIPE, stderr=PIPE, shell=True, universal_newlines=True)
+        command_process = Popen(format_args(self.command), stdout=PIPE, stderr=PIPE, shell=True, universal_newlines=True)
 
         for stdout_line in iter(command_process.stdout.readline, ""):
             PROCESS_LOG.info('%s | %s' % (process_id, stdout_line.strip()))
