@@ -60,7 +60,7 @@ class Template(SpellbookScript):
 
         # You can add or modify actions like this:
         my_action = get_action(action_id='my_action_id', action_type=ActionType.SPAWNPROCESS)
-        my_action.run_command = 'ping 127.0.0.1'
+        my_action.run_command = 'echo hello world!'
         my_action.save()
 
         # If you want the action to run when this script is finished, you must attach the action to the trigger
