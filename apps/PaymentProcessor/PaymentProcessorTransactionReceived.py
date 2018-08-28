@@ -76,7 +76,7 @@ class PaymentProcessorTransactionReceived(PaymentProcessorScript):
             action = get_action(action_id='tx_received_email', action_type=ActionType.SENDMAIL)
             action.mail_subject = 'Transaction received for payment %s' % payment_request.payment_request_id
             action.mail_recipients = NOTIFICATION_EMAIL
-            action.mail_body_template = 'PaymentProcessor\\templates\\TransactionReceived.txt'  # The spellbook will search for the template in the 'email_templates' and in the 'apps' directory, subdirectories are allowed, just need to specify the full path as shown here
+            action.mail_body_template = os.path.join('PaymentProcessor', 'templates', 'TransactionReceived.txt')  # The spellbook will search for the template in the 'email_templates' and in the 'apps' directory, subdirectories are allowed, just need to specify the full path as shown here
             action.mail_variables = {'PAYMENT_REQUEST_ID': payment_request.payment_request_id,
                                      'SELLER_ID': payment_request.seller_id,
                                      'AMOUNT_FIAT': payment_request.amount_fiat,
