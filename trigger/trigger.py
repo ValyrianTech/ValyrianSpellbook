@@ -3,6 +3,7 @@
 
 import importlib
 import os
+import platform
 import time
 from abc import abstractmethod, ABCMeta
 from datetime import datetime
@@ -185,7 +186,12 @@ class Trigger(object):
             for root_dir in ['spellbookscripts', 'apps']:
                 if os.path.isfile(os.path.join(root_dir, self.script)):
                     script_path = os.path.join(root_dir, self.script)
-                    script_module_name = '%s.%s' % (root_dir, script_name.replace('\\', '.'))
+                    if platform.system() == 'Windows':
+                        script_module_name = '%s.%s' % (root_dir, script_name.replace('\\', '.'))
+                    elif platform.system() == 'Linux':
+                        script_module_name = '%s.%s' % (root_dir, script_name.replace('/', '.'))
+                    else:
+                        raise NotImplementedError('Unsupported platform: only windows and linux are supported')
 
             if script_path is None:
                 LOG.error('Can not find spellbook script' % self.script)
