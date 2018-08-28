@@ -11,7 +11,7 @@ def format_args(args):
     :param args: A list of arguments
     :return: The arguments as required by the operating system
     """
-    if platform.system() == 'Linux':
+    if platform.system() == 'Linux' and isinstance(args, list):
         formatted_string = ''
         for arg in args:
             formatted_string += '%s ' % arg if ' ' not in arg else '"%s" ' % arg
