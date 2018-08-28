@@ -68,7 +68,7 @@ class Template(SpellbookScript):
 
         # You can add or modify triggers like this:
         my_trigger = get_trigger(trigger_id='my_trigger_id', trigger_type=TriggerType.MANUAL)  # if the trigger doesn't exist it will be created
-        my_trigger.script = 'path\\to\\script.py'
+        my_trigger.script = os.path.join('path', 'to', 'script.py')  # use os.path.join to make it platform independent
         my_trigger.multi = True
         my_trigger.status = 'Active'
         my_trigger.actions = ['my_action_id']
