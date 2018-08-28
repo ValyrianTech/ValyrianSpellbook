@@ -13,6 +13,11 @@ def save_to_json_file(filename, data):
     :param filename: The filename of the json file
     :param data: A dict containing the data to save (must be json-encodable)
     """
+
+    # Make sure the destination directory exists
+    if not os.path.isdir(os.path.dirname(filename)):
+        os.makedirs(os.path.dirname(filename))
+
     try:
         with open(filename, 'w') as output_file:
             simplejson.dump(data, output_file, indent=4, sort_keys=True)
