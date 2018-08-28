@@ -3,8 +3,9 @@
 import os
 from subprocess import Popen, PIPE
 import sys
-import platform
 import simplejson
+
+from helpers.platformhelpers import format_args
 
 PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -73,20 +74,3 @@ def clean_up_actions(action_ids):
         if action_id in configured_action_ids:
             response = spellbook_call('delete_action', action_id)
             assert response is None
-
-
-def format_args(args):
-    """
-    Format the args to pass to the subprocess
-    Linux requires a string with spaces (if an argument contains spaces it must be surrounded with quotes), whereas Windows requires a list
-
-    :param args: A list of arguments
-    :return: The arguments as required by the operating system
-    """
-    if platform.system() == 'Linux':
-        formatted_string = ''
-        for arg in args:
-            formatted_string += '%s ' % arg if ' ' not in arg else '"%s" ' % arg
-        return formatted_string
-    else:
-        return args
