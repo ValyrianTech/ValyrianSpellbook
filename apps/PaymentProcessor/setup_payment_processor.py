@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import os
 
 from helpers.configurationhelpers import get_host, get_port
 from helpers.setupscripthelpers import spellbook_call, clean_up_triggers
@@ -50,7 +51,7 @@ clean_up_triggers(trigger_ids=['PaymentProcessorNewPayment', 'PaymentProcessorPa
 print 'Creating Triggers...'
 trigger_id = 'PaymentProcessorNewPayment'
 trigger_type = 'HTTPPostRequest'
-script = 'PaymentProcessor\PaymentProcessorNewPayment.py'
+script = os.path.join('PaymentProcessor', 'PaymentProcessorNewPayment.py')
 
 response = spellbook_call('save_trigger', trigger_id,
                           '-t=%s' % trigger_type,
@@ -61,7 +62,7 @@ assert response is None
 
 trigger_id = 'PaymentProcessorPaymentStatus'
 trigger_type = 'HTTPGetRequest'
-script = 'PaymentProcessor\PaymentProcessorPaymentStatus.py'
+script = os.path.join('PaymentProcessor', 'PaymentProcessorPaymentStatus.py')
 
 response = spellbook_call('save_trigger', trigger_id,
                           '-t=%s' % trigger_type,
@@ -71,7 +72,7 @@ assert response is None
 
 trigger_id = 'PaymentProcessorTransactionReceived'
 trigger_type = 'HTTPPostRequest'
-script = 'PaymentProcessor\PaymentProcessorTransactionReceived.py'
+script = os.path.join('PaymentProcessor', 'PaymentProcessorTransactionReceived.py')
 
 response = spellbook_call('save_trigger', trigger_id,
                           '-t=%s' % trigger_type,
