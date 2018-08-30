@@ -1,15 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import os
 import time
 
 from helpers.BIP44 import set_testnet
 from helpers.configurationhelpers import get_use_testnet
 from helpers.hotwallethelpers import get_address_from_wallet
-from integration_test_helpers import spellbook_call
-
-# Change working dir up one level
-os.chdir("..")
+from helpers.setupscripthelpers import spellbook_call
 
 set_testnet(get_use_testnet())
 
@@ -46,7 +42,7 @@ for trigger_type in trigger_types:
     assert response is None
 
     response = spellbook_call('get_trigger_config', trigger_name)
-    assert response['id'] == trigger_name
+    assert response['trigger_id'] == trigger_name
     assert response['trigger_type'] == trigger_type
     print '--------------------------------------------------------------------------------------------------------'
 
@@ -65,7 +61,7 @@ for trigger_type in trigger_types:
     assert response is None
 
     response = spellbook_call('get_trigger_config', trigger_name)
-    assert response['id'] == trigger_name
+    assert response['trigger_id'] == trigger_name
     assert response['trigger_type'] == trigger_type
 
     if trigger_type in ['Balance', 'Received', 'Sent']:
@@ -125,20 +121,20 @@ for trigger_type in trigger_types:
     trigger_name = 'test_trigger_%s' % trigger_type
 
     response = spellbook_call('get_trigger_config', trigger_name)
-    assert response['triggered'] is False
+    assert response['triggered'] == 0
 
     response = spellbook_call('activate_trigger', trigger_name)
     if trigger_type == 'Manual':
         assert response is None
         response = spellbook_call('get_trigger_config', trigger_name)
-        assert response['triggered'] is True
+        assert response['triggered'] == 1
 
         # Reset trigger
         spellbook_call('save_trigger', trigger_name, '--reset')
         response = spellbook_call('get_trigger_config', trigger_name)
-        assert response['triggered'] is False
+        assert response['triggered'] == 0
 
     else:
         assert 'error' in response
         response = spellbook_call('get_trigger_config', trigger_name)
-        assert response['triggered'] is False
+        assert response['triggered'] == 0
