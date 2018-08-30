@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-from integration_test_helpers import spellbook_call
+from helpers.setupscripthelpers import spellbook_call
 
 print 'Starting Spellbook integration test: trigger with actions'
 print '----------------------------------------------\n'
@@ -35,7 +34,7 @@ response = spellbook_call('save_trigger', trigger_name, '-t=%s' % trigger_type)
 assert response is None
 
 response = spellbook_call('get_trigger_config', trigger_name)
-assert response['id'] == trigger_name
+assert response['trigger_id'] == trigger_name
 assert response['trigger_type'] == trigger_type
 assert response['actions'] == []
 
@@ -72,7 +71,7 @@ response = spellbook_call('activate_trigger', trigger_name)
 assert response is None
 
 response = spellbook_call('get_trigger_config', trigger_name)
-assert response['triggered'] is False
+assert response['triggered'] == 0
 
 
 # --------------------------------------------------------------------------------------------------------
@@ -89,7 +88,7 @@ response = spellbook_call('activate_trigger', trigger_name)
 assert response is None
 
 response = spellbook_call('get_trigger_config', trigger_name)
-assert response['triggered'] is True
+assert response['triggered'] == 1
 
 # --------------------------------------------------------------------------------------------------------
 
@@ -97,7 +96,7 @@ print 'Resetting trigger'
 response = spellbook_call('save_trigger', trigger_name, '--reset')
 assert response is None
 response = spellbook_call('get_trigger_config', trigger_name)
-assert response['triggered'] is False
+assert response['triggered'] == 0
 
 print 'Modifying test action: test_trigger_action2 with a bad webhook so it will fail when run'
 action_name = 'test_trigger_action2'
@@ -111,18 +110,4 @@ response = spellbook_call('activate_trigger', trigger_name)
 assert response is None
 
 response = spellbook_call('get_trigger_config', trigger_name)
-assert response['triggered'] is False
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+assert response['status'] == 'Failed'
