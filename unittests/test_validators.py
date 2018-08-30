@@ -1,14 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import os
 import pytest
 import mock
 from validators import validators
 import helpers.configurationhelpers
-
-
-# Change working dir up one level
-os.chdir("..")
 
 
 class TestValidators(object):

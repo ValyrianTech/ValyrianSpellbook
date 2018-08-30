@@ -1,8 +1,7 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import pytest
-import mock
+
 from helpers.privatekeyhelpers import PrivateKey
 
 private_key_decimal = 68578345631418883606849416554834375778771641053887312743419655680624313714076

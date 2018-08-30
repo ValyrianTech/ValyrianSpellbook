@@ -1,8 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import pytest
-import os
-
-# Change working dir up one level
-os.chdir("..")
 
 from hivemind.hivemind import HivemindIssue
 from helpers.BIP44 import set_testnet
@@ -88,7 +86,6 @@ class TestHivemindIssue(object):
         hivemind_issue.set_constraints({'min_length': 2})
 
         issue_hash = hivemind_issue.save()
-        print issue_hash
         assert issue_hash is not None
 
     def test_set_restrictions(self):

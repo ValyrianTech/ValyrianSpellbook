@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import pytest
 import random
+
 from helpers.conversionhelpers import btc2satoshis
 
 
@@ -32,4 +32,3 @@ class TestConversionHelpers(object):
             random_satoshis = random.randint(1, 1000000000000)
             btc = str(random_satoshis/1e8)
             assert btc2satoshis(btc=btc) == random_satoshis
-
