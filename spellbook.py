@@ -692,7 +692,7 @@ def save_trigger():
         data['warning_email'] = args.warning_email
 
     if args.reset is not None:
-        data['reset'] = True
+        data['reset'] = args.reset
 
     if args.multi is not None:
         data['multi'] = args.multi
