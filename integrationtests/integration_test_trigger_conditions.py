@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-from integration_test_helpers import spellbook_call
+from helpers.setupscripthelpers import spellbook_call
 
 print 'Starting Spellbook integration test: trigger conditions'
 print '----------------------------------------------\n'
@@ -13,7 +12,7 @@ assert response is None
 
 print 'Checking if trigger has not been triggered yet'
 response = spellbook_call('get_trigger_config', 'test_conditions_Manual')
-assert response['triggered'] is False
+assert response['triggered'] == 0
 
 print 'Activating Manual trigger'
 response = spellbook_call('activate_trigger', 'test_conditions_Manual')
@@ -21,7 +20,7 @@ assert response is None
 
 print 'Checking if trigger has been triggered'
 response = spellbook_call('get_trigger_config', 'test_conditions_Manual')
-assert response['triggered'] is True
+assert response['triggered'] == 1
 
 
 # -------------------------------------------------------------------------------------------------
@@ -37,13 +36,13 @@ assert response is None
 
 print 'Checking if trigger has not been triggered yet'
 response = spellbook_call('get_trigger_config', 'test_conditions_Block_height')
-assert response['triggered'] is False
+assert response['triggered'] == 0
 
 print 'Check the conditions of the trigger'
 response = spellbook_call('check_triggers', 'test_conditions_Block_height')
 assert response is None
 response = spellbook_call('get_trigger_config', 'test_conditions_Block_height')
-assert response['triggered'] is False
+assert response['triggered'] == 0
 
 print 'set block_height to current block_height and 0 confirmations, this should trigger'
 response = spellbook_call('save_trigger', 'test_conditions_Block_height', '-t=Block_height', '-b=%d' % latest_block_height, '-c=0', '--reset')
@@ -51,13 +50,13 @@ assert response is None
 
 print 'Checking if trigger has not been triggered yet'
 response = spellbook_call('get_trigger_config', 'test_conditions_Block_height')
-assert response['triggered'] is False
+assert response['triggered'] == 0
 
 print 'Check the conditions of the trigger'
 response = spellbook_call('check_triggers', 'test_conditions_Block_height')
 assert response is None
 response = spellbook_call('get_trigger_config', 'test_conditions_Block_height')
-assert response['triggered'] is True
+assert response['triggered'] == 1
 
 print 'set block_height to 3 blocks in the past and 6 confirmations, this should not trigger'
 response = spellbook_call('save_trigger', 'test_conditions_Block_height', '-t=Block_height', '-b=%d' % (latest_block_height - 3), '-c=6', '--reset')
@@ -65,13 +64,13 @@ assert response is None
 
 print 'Checking if trigger has not been triggered yet'
 response = spellbook_call('get_trigger_config', 'test_conditions_Block_height')
-assert response['triggered'] is False
+assert response['triggered'] == 0
 
 print 'Check the conditions of the trigger'
 response = spellbook_call('check_triggers', 'test_conditions_Block_height')
 assert response is None
 response = spellbook_call('get_trigger_config', 'test_conditions_Block_height')
-assert response['triggered'] is False
+assert response['triggered'] == 0
 
 print 'set block_height to 3 blocks in the past and 3 confirmations, this should trigger'
 response = spellbook_call('save_trigger', 'test_conditions_Block_height', '-t=Block_height', '-b=%d' % (latest_block_height - 3), '-c=3', '--reset')
@@ -79,31 +78,31 @@ assert response is None
 
 print 'Checking if trigger has not been triggered yet'
 response = spellbook_call('get_trigger_config', 'test_conditions_Block_height')
-assert response['triggered'] is False
+assert response['triggered'] == 0
 
 print 'Check the conditions of the trigger'
 response = spellbook_call('check_triggers', 'test_conditions_Block_height')
 assert response is None
 response = spellbook_call('get_trigger_config', 'test_conditions_Block_height')
-assert response['triggered'] is True
+assert response['triggered'] == 1
 
 # ----------------------------------------------------------------------------------------------------------------------
 
 print 'Creating Balance trigger'
 
 print 'Setting trigger amount higher than current balance'
-response = spellbook_call('save_trigger', '-t=Balance', 'test_conditions_Balance', '--reset', '-a=1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8', '-am=10000')
+response = spellbook_call('save_trigger', '-t=Balance', 'test_conditions_Balance', '--reset', '-a=1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8', '-am=10000')  # todo make this work on both mainnet and testnet
 assert response is None
 
 print 'Checking if trigger has not been triggered yet'
 response = spellbook_call('get_trigger_config', 'test_conditions_Balance')
-assert response['triggered'] is False
+assert response['triggered'] == 0
 
 print 'Check the conditions of the trigger'
 response = spellbook_call('check_triggers', 'test_conditions_Balance')
 assert response is None
 response = spellbook_call('get_trigger_config', 'test_conditions_Balance')
-assert response['triggered'] is False
+assert response['triggered'] == 0
 
 print 'Setting trigger amount equal to current balance'
 response = spellbook_call('save_trigger', 'test_conditions_Balance', '--reset', '-am=7315')
@@ -111,13 +110,13 @@ assert response is None
 
 print 'Checking if trigger has not been triggered yet'
 response = spellbook_call('get_trigger_config', 'test_conditions_Balance')
-assert response['triggered'] is False
+assert response['triggered'] == 0
 
 print 'Check the conditions of the trigger'
 response = spellbook_call('check_triggers', 'test_conditions_Balance')
 assert response is None
 response = spellbook_call('get_trigger_config', 'test_conditions_Balance')
-assert response['triggered'] is True
+assert response['triggered'] == 1
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -130,13 +129,13 @@ assert response is None
 
 print 'Checking if trigger has not been triggered yet'
 response = spellbook_call('get_trigger_config', 'test_conditions_Received')
-assert response['triggered'] is False
+assert response['triggered'] == 0
 
 print 'Check the conditions of the trigger'
 response = spellbook_call('check_triggers', 'test_conditions_Received')
 assert response is None
 response = spellbook_call('get_trigger_config', 'test_conditions_Received')
-assert response['triggered'] is False
+assert response['triggered'] == 0
 
 print 'Setting trigger amount equal to total received'
 response = spellbook_call('save_trigger', 'test_conditions_Received', '--reset', '-am=1000000')
@@ -144,15 +143,13 @@ assert response is None
 
 print 'Checking if trigger has not been triggered yet'
 response = spellbook_call('get_trigger_config', 'test_conditions_Received')
-assert response['triggered'] is False
+assert response['triggered'] == 0
 
 print 'Check the conditions of the trigger'
 response = spellbook_call('check_triggers', 'test_conditions_Received')
 assert response is None
 response = spellbook_call('get_trigger_config', 'test_conditions_Received')
-assert response['triggered'] is True
-
-
+assert response['triggered'] == 1
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -164,13 +161,13 @@ assert response is None
 
 print 'Checking if trigger has not been triggered yet'
 response = spellbook_call('get_trigger_config', 'test_conditions_Sent')
-assert response['triggered'] is False
+assert response['triggered'] == 0
 
 print 'Check the conditions of the trigger'
 response = spellbook_call('check_triggers', 'test_conditions_Sent')
 assert response is None
 response = spellbook_call('get_trigger_config', 'test_conditions_Sent')
-assert response['triggered'] is False
+assert response['triggered'] == 0
 
 print 'Setting trigger amount less than total sent'
 response = spellbook_call('save_trigger', 'test_conditions_Sent', '--reset', '-am=900000')
@@ -178,13 +175,13 @@ assert response is None
 
 print 'Checking if trigger has not been triggered yet'
 response = spellbook_call('get_trigger_config', 'test_conditions_Sent')
-assert response['triggered'] is False
+assert response['triggered'] == 0
 
 print 'Check the conditions of the trigger'
 response = spellbook_call('check_triggers', 'test_conditions_Sent')
 assert response is None
 response = spellbook_call('get_trigger_config', 'test_conditions_Sent')
-assert response['triggered'] is True
+assert response['triggered'] == 1
 
 # ----------------------------------------------------------------------------------------------------------------------
 
