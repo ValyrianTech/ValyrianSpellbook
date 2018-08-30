@@ -1,31 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import time
-from helpers.setupscripthelpers import spellbook_call
+
+from helpers.setupscripthelpers import spellbook_call, clean_up_triggers
 
 print 'Starting Spellbook integration test: DeadMansSwitch trigger conditions'
 print '----------------------------------------------\n'
 
+# Clean up triggers if necessary
+clean_up_triggers(trigger_ids=['test_trigger_conditions_DeadMansSwitchTrigger'])
+
 #########################################################################################################
 # DeadMansSwitch trigger
 #########################################################################################################
-
-print 'Getting the list of configured triggers'
-configured_triggers = spellbook_call('get_triggers')
-
 trigger_name = 'test_trigger_conditions_DeadMansSwitchTrigger'
-
-# Clean up old test action if necessary
-if trigger_name in configured_triggers:
-    response = spellbook_call('delete_trigger', trigger_name)
-    assert response is None
-
-# --------------------------------------------------------------------------------------------------------
 trigger_type = 'DeadMansSwitch'
 timeout = 60  # 60 seconds
-warning_email = 'skidzobolder@gmail.com'
+warning_email = 'someone@example.com'
 
-response = spellbook_call('save_trigger', trigger_name, '-t=%s' % trigger_type, '-ti=%s' % timeout, '-we=%s' % warning_email)
+response = spellbook_call('save_trigger', trigger_name, '-t=%s' % trigger_type, '-ti=%s' % timeout, '-we=%s' % warning_email, '-st=Active')
 assert response is None
 
 response = spellbook_call('get_trigger_config', trigger_name)

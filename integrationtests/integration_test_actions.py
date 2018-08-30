@@ -1,26 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from helpers.setupscripthelpers import spellbook_call
+from helpers.setupscripthelpers import spellbook_call, clean_up_actions
 
 
 print 'Starting Spellbook integration test: actions'
 print '----------------------------------------------\n'
 
+# Clean up old actions if necessary
+clean_up_actions(action_ids=['test_action_Command', 'test_action_SendMail', 'test_action_Webhook', 'test_action_RevealSecret'])
+
 #########################################################################################################
 # Command actions
 #########################################################################################################
-
-print 'Getting the list of configured actions'
-configured_triggers = spellbook_call('get_actions')
-
 action_name = 'test_action_Command'
 
-# Clean up old test action if necessary
-if action_name in configured_triggers:
-    response = spellbook_call('delete_action', action_name)
-    assert response is None
-
-# --------------------------------------------------------------------------------------------------------
 run_command = 'ping 127.0.0.1 > integrationtests/ping_output.txt'
 print 'Creating test action: CommandAction'
 response = spellbook_call('save_action', '-t=Command', action_name, '-c=%s' % run_command)
@@ -47,21 +40,10 @@ assert response is True
 #########################################################################################################
 # SendMail actions
 #########################################################################################################
-
-print 'Getting the list of configured actions'
-configured_triggers = spellbook_call('get_actions')
-
 action_name = 'test_action_SendMail'
-
-# Clean up old test action if necessary
-if action_name in configured_triggers:
-    response = spellbook_call('delete_action', action_name)
-    assert response is None
-
-# --------------------------------------------------------------------------------------------------------
-mail_recipients = 'skidzobolder@gmail.com;wouter.glorieux@gmail.com'
+mail_recipients = 'someone@example.com;someone.else@example.com'
 mail_subject = 'example email subject'
-mail_body_template = 'template1'
+mail_body_template = 'template1.txt'
 
 print 'Creating test action: SendMailAction'
 response = spellbook_call('save_action', '-t=SendMail', action_name, '-mr=%s' % mail_recipients, '-ms=%s' % mail_subject, "-mb=%s" % mail_body_template)
@@ -90,18 +72,7 @@ assert response['mail_body_template'] == mail_body_template
 #########################################################################################################
 # Webhook actions
 #########################################################################################################
-
-print 'Getting the list of configured actions'
-configured_triggers = spellbook_call('get_actions')
-
 action_name = 'test_action_Webhook'
-
-# Clean up old test action if necessary
-if action_name in configured_triggers:
-    response = spellbook_call('delete_action', action_name)
-    assert response is None
-
-# --------------------------------------------------------------------------------------------------------
 webhook = 'http://www.google.com'
 
 print 'Creating test action: Webhook'
@@ -129,18 +100,7 @@ assert response is True
 #########################################################################################################
 # RevealSecret actions
 #########################################################################################################
-
-print 'Getting the list of configured actions'
-configured_triggers = spellbook_call('get_actions')
-
 action_name = 'test_action_RevealSecret'
-
-# Clean up old test action if necessary
-if action_name in configured_triggers:
-    response = spellbook_call('delete_action', action_name)
-    assert response is None
-
-# --------------------------------------------------------------------------------------------------------
 reveal_text = 'A secret message'
 reveal_link = 'http://www.asecretlink.com'
 

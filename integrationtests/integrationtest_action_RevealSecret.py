@@ -1,28 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from helpers.setupscripthelpers import spellbook_call
+from helpers.setupscripthelpers import spellbook_call, clean_up_actions
 
 
 print 'Starting Spellbook integration test: RevealSecret actions'
 print '----------------------------------------------\n'
 
+# Clean up actions if necessary
+clean_up_actions(action_ids=['integrationtest_action_RevealSecret'])
+
 #########################################################################################################
 # RevealSecret actions
 #########################################################################################################
-
-print 'Getting the list of configured actions'
-configured_triggers = spellbook_call('get_actions')
-
 action_name = 'integrationtest_action_RevealSecret'
-
-# Clean up old test action if necessary
-if action_name in configured_triggers:
-    response = spellbook_call('delete_action', action_name)
-    assert response is None
-
-# --------------------------------------------------------------------------------------------------------
 reveal_text = 'A secret message'
 reveal_link = 'http://www.asecretlink.com'
+
+# --------------------------------------------------------------------------------------------------------
 
 print 'Creating test action: RevealSecret'
 response = spellbook_call('save_action', '-t=RevealSecret', action_name, '-rt=%s' % reveal_text, '-rl=%s' % reveal_link)

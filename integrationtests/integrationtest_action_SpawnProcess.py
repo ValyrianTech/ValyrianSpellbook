@@ -5,20 +5,18 @@ from helpers.setupscripthelpers import spellbook_call, clean_up_actions
 print 'Starting Spellbook integration test: SpawnProcess actions'
 print '----------------------------------------------\n'
 
+# Clean up actions if necessary
+clean_up_actions(action_ids=['integrationtest_action_SpawnProcess'])
+
 #########################################################################################################
 # SpawnProcess actions
 #########################################################################################################
-
-print 'Getting the list of configured actions'
-configured_triggers = spellbook_call('get_actions')
-
 action_name = 'integrationtest_action_SpawnProcess'
-
-clean_up_actions(action_ids=[action_name])
-
-# --------------------------------------------------------------------------------------------------------
 # run_command = 'ping 127.0.0.1 > integrationtests/ping_output.txt'  # pipe output to file
 run_command = 'ping 127.0.0.1'
+
+# --------------------------------------------------------------------------------------------------------
+
 print 'Creating test action: CommandAction'
 response = spellbook_call('save_action', '-t=SpawnProcess', action_name, '-c=%s' % run_command)
 assert response is None

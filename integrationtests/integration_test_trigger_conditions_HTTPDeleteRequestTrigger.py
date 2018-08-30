@@ -10,26 +10,20 @@ from helpers.configurationhelpers import get_host, get_port
 print 'Starting Spellbook integration test: HTTP DELETE request trigger conditions'
 print '----------------------------------------------\n'
 
+# Clean up triggers if necessary
+clean_up_triggers(trigger_ids=['test_trigger_conditions_HTTPDeleteRequest_Trigger'])
+
 #########################################################################################################
 # HTTP DELETE request trigger
 #########################################################################################################
-
-print 'Getting the list of configured triggers'
-configured_triggers = spellbook_call('get_triggers')
-
 trigger_id = 'test_trigger_conditions_HTTPDeleteRequest_Trigger'
-
-# Clean up old test action if necessary
-if trigger_id in configured_triggers:
-    response = spellbook_call('delete_trigger', trigger_id)
-    assert response is None
-
-# --------------------------------------------------------------------------------------------------------
 trigger_type = 'HTTPDeleteRequest'
 script = 'Echo.py'
+
 # -------------------------------------------------------------------------------------------------
+
 print 'Creating HTTP DELETE request trigger'
-response = spellbook_call('save_trigger', trigger_id, '-t=%s' % trigger_type, '-sc=%s' % script, '--reset', '--multi')
+response = spellbook_call('save_trigger', trigger_id, '-t=%s' % trigger_type, '-sc=%s' % script, '-st=Active', '--multi')
 assert response is None
 
 print 'Checking if trigger has not been triggered yet'

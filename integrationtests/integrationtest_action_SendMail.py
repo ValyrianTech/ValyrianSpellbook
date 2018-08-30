@@ -1,29 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from helpers.setupscripthelpers import spellbook_call
+from helpers.setupscripthelpers import spellbook_call, clean_up_actions
 
 
 print 'Starting Spellbook integration test: SendMail actions'
 print '----------------------------------------------\n'
 
+# Clean up actions if necessary
+clean_up_actions(action_ids=['integrationtest_action_SendMail'])
+
 #########################################################################################################
 # SendMail actions
 #########################################################################################################
-
-print 'Getting the list of configured actions'
-configured_triggers = spellbook_call('get_actions')
-
 action_name = 'integrationtest_action_SendMail'
-
-# Clean up old test action if necessary
-if action_name in configured_triggers:
-    response = spellbook_call('delete_action', action_name)
-    assert response is None
-
-# --------------------------------------------------------------------------------------------------------
 mail_recipients = 'someone@example.com'
 mail_subject = 'example email subject'
-mail_body_template = 'template1'
+mail_body_template = 'template1.txt'
+
+# --------------------------------------------------------------------------------------------------------
 
 print 'Creating test action: SendMailAction'
 response = spellbook_call('save_action', '-t=SendMail', action_name, '-mr=%s' % mail_recipients, '-ms=%s' % mail_subject, "-mb=%s" % mail_body_template)
@@ -44,7 +38,6 @@ assert response['mail_subject'] == mail_subject
 assert response['mail_body_template'] == mail_body_template
 
 # --------------------------------------------------------------------------------------------------------
-# uncomment following lines to actually send the email
-# print 'Running the action we just created'
-# response = spellbook_call('run_action', action_name)
-# assert response is True
+print 'Running the action we just created'
+response = spellbook_call('run_action', action_name)
+assert response is 'true' if mail_recipients != 'someone@example.com' else 'false'  # example.com is a reserved domain, so will always fail

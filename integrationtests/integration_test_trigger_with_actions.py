@@ -1,33 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from helpers.setupscripthelpers import spellbook_call
+from helpers.setupscripthelpers import spellbook_call, clean_up_triggers, clean_up_actions
 
 print 'Starting Spellbook integration test: trigger with actions'
 print '----------------------------------------------\n'
 
+# Clean up triggers if necessary
+clean_up_triggers(trigger_ids=['test_trigger_with_actions'])
 
-print 'Getting the list of configured triggers'
-configured_triggers = spellbook_call('get_triggers')
+# Clean up actions if necessary
+clean_up_actions(action_ids=['test_trigger_action1', 'test_trigger_action2', 'test_trigger_action3', 'test_trigger_action4'])
 
+#########################################################################################################
+# Trigger with actions
+#########################################################################################################
 trigger_name = 'test_trigger_with_actions'
-
-# Clean up old test trigger if necessary
-if trigger_name in configured_triggers:
-    response = spellbook_call('delete_trigger', trigger_name)
-    assert response is None
-
-
-print 'Getting the list of configured actions'
-configured_actions = spellbook_call('get_actions')
-
-for action_name in ['test_trigger_action1', 'test_trigger_action2', 'test_trigger_action3', 'test_trigger_action4']:
-    # Clean up old test action if necessary
-    if action_name in configured_actions:
-        response = spellbook_call('delete_action', action_name)
-        assert response is None
+trigger_type = 'Manual'
 
 # --------------------------------------------------------------------------------------------------------
-trigger_type = 'Manual'
+
 print 'Saving trigger of type: %s' % trigger_type
 
 response = spellbook_call('save_trigger', trigger_name, '-t=%s' % trigger_type)
@@ -39,6 +30,7 @@ assert response['trigger_type'] == trigger_type
 assert response['actions'] == []
 
 # --------------------------------------------------------------------------------------------------------
+
 print 'adding non-existing action to trigger'
 
 response = spellbook_call('save_trigger', trigger_name, '--actions', 'test_trigger_action1', 'test_trigger_action2')

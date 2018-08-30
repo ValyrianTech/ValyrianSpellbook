@@ -1,27 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from helpers.setupscripthelpers import spellbook_call
+from helpers.setupscripthelpers import spellbook_call, clean_up_actions
 
 
 print 'Starting Spellbook integration test: Command actions'
 print '----------------------------------------------\n'
 
+# Clean up actions if necessary
+clean_up_actions(action_ids=['integrationtest_action_Command'])
+
 #########################################################################################################
 # Command actions
 #########################################################################################################
-
-print 'Getting the list of configured actions'
-configured_triggers = spellbook_call('get_actions')
-
 action_name = 'integrationtest_action_Command'
-
-# Clean up old test action if necessary
-if action_name in configured_triggers:
-    response = spellbook_call('delete_action', action_name)
-    assert response is None
+run_command = 'ping 127.0.0.1 > integrationtests/ping_output.txt'
 
 # --------------------------------------------------------------------------------------------------------
-run_command = 'ping 127.0.0.1 > integrationtests/ping_output.txt'
+
 print 'Creating test action: CommandAction'
 response = spellbook_call('save_action', '-t=Command', action_name, '-c=%s' % run_command)
 assert response is None

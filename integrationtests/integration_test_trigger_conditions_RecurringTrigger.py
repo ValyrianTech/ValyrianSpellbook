@@ -1,33 +1,27 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import time
-from helpers.setupscripthelpers import spellbook_call
+from helpers.setupscripthelpers import spellbook_call, clean_up_triggers
 
 
 print 'Starting Spellbook integration test: Recurring trigger conditions'
 print '----------------------------------------------\n'
 
+# Clean up triggers if necessary
+clean_up_triggers(trigger_ids=['test_trigger_conditions_RecurringTrigger'])
+
 #########################################################################################################
 # Recurring trigger
 #########################################################################################################
-
-print 'Getting the list of configured triggers'
-configured_triggers = spellbook_call('get_triggers')
-
 trigger_name = 'test_trigger_conditions_RecurringTrigger'
-
-# Clean up old test action if necessary
-if trigger_name in configured_triggers:
-    response = spellbook_call('delete_trigger', trigger_name)
-    assert response is None
-
-# --------------------------------------------------------------------------------------------------------
 trigger_type = 'Recurring'
 begin_time = int(time.time()) + 10  # 10 seconds in the future
 end_time = int(time.time()) + 60  # 60 seconds in the future
 interval = 10
 
-response = spellbook_call('save_trigger', trigger_name, '-t=%s' % trigger_type, '-bt=%s' % begin_time, '-et=%s' % end_time, '-i=%s' % interval)
+# ----------------------------------------------------------------------------------------------------------------------
+
+response = spellbook_call('save_trigger', trigger_name, '-t=%s' % trigger_type, '-bt=%s' % begin_time, '-et=%s' % end_time, '-i=%s' % interval, '-st=Active')
 assert response is None
 
 response = spellbook_call('get_trigger_config', trigger_name)
