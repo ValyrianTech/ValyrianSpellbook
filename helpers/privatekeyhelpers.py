@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import re
-import base64
-from binascii import unhexlify, b2a_base64
-import hashlib
-
 from py2specials import *
 from py3specials import *
 
@@ -27,22 +22,6 @@ class PrivateKey(object):
         self.wif = encode_privkey(private_key=private_key, formt='wif', vbyte=vbyte)
         self.wifc = encode_privkey(private_key=private_key, formt='wif_compressed', vbyte=vbyte)
 
-        print ""
-        print self.decimal
-        print self.bin
-        print self.binc
-        print self.hex
-        print self.hexc
-        print self.wif
-        print self.wifc
-
-        self.base64 = None
-
-        # # count how many parameters were given, must be exactly 1
-        # n_args = sum([arg is not None for arg in [self.wifc, self.wif, self.hex, self.base64]])
-        # if n_args != 1:
-        #     raise Exception('You must provide a private key in one of the following formats: WIF compressed, WIF uncompressed, hexadecimal or base64')
-
         if self.wifc is not None:
             if re.match(wif_compressed_regex, self.wifc) is None:
                 raise Exception('Invalid WIF compressed key: %s' % self.wifc)
@@ -54,11 +33,6 @@ class PrivateKey(object):
         elif self.hex is not None:
             if re.match(hexadecimal_regex, self.hex) is None:
                 raise Exception('Invalid HEX key: %s' % self.hex)
-
-        # elif self.base64 is not None:
-        #     if re.match(base64_regex, self.base64) is None or len(self.base64) != 44:
-        #         raise Exception('Invalid base64 key: %s' % self.base64)
-        #
 
 
 def encode_privkey(private_key, formt, vbyte=0):
@@ -131,4 +105,3 @@ def b58check_to_bin(private_key):
     data = b'\x00' * leadingzbytes + changebase(private_key, 58, 256)
     assert bin_dbl_sha256(data[:-4])[:4] == data[-4:]
     return data[1:-4]
-

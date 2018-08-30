@@ -6,7 +6,6 @@ import mock
 from helpers.privatekeyhelpers import PrivateKey
 
 private_key_decimal = 68578345631418883606849416554834375778771641053887312743419655680624313714076
-private_key_base64 = 'l5331jNEv8AMOB8kBfsgLBzKntAFYpfcvalHvzVfRZw='
 
 private_key_hex_compressed = '979DF7D63344BFC00C381F2405FB202C1CCA9ED0056297DCBDA947BF355F459C01'
 private_key_wif_compressed = 'L2JSANyWZK6US9HPhW5eep3cGP5J36aBJaw9qqwmrWAnbh9hHBh6'
@@ -44,14 +43,9 @@ class TestPrivateKey(object):
         private_key = PrivateKey(private_key=private_key_hex_compressed)
         assert isinstance(private_key, PrivateKey)
 
-    def test_given_private_key_in_base64_format_when_initializing_private_key_then_private_key_object_is_created(self):
-        private_key = PrivateKey(private_key=private_key_base64)
-        assert isinstance(private_key, PrivateKey)
-
     def test_given_invalid_private_key_in_wif_compressed_format_when_initializing_private_key_then_exception_is_raised(self):
         with pytest.raises(Exception):
             PrivateKey(private_key='foobar')
-
 
     def test_given_private_key_in_decimal_format_when_initializing_private_key_then_other_formats_are_calculated_correctly(self):
         private_key = PrivateKey(private_key=private_key_decimal)
