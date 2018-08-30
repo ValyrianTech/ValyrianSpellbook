@@ -1,15 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-import os
-
 from helpers.BIP44 import set_testnet
 from helpers.configurationhelpers import get_use_testnet
 from helpers.hotwallethelpers import get_address_from_wallet, get_xpub_key_from_wallet
-from integration_test_helpers import spellbook_call
-
-# Change working dir up one level
-os.chdir("..")
+from helpers.setupscripthelpers import spellbook_call
 
 set_testnet(get_use_testnet())
 
@@ -137,6 +131,3 @@ for transaction_type in ['Send2Single', 'Send2Many', 'Send2SIL', 'Send2LBL', 'Se
     # assert response is True
 
 # --------------------------------------------------------------------------------------------------------
-
-
-

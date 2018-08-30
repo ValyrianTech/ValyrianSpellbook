@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import os
-from integration_test_helpers import spellbook_call
+from helpers.setupscripthelpers import spellbook_call
 
-# Change working dir up one level
-os.chdir("..")
 
 print 'Starting Spellbook integration test: Webhook actions'
 print '----------------------------------------------\n'
@@ -61,4 +58,3 @@ assert response['webhook'] == webhook
 print 'Running the action with a bad url'
 response = spellbook_call('run_action', action_name)
 assert response is False
-

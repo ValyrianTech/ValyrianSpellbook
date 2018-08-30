@@ -1,14 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import os
-
-from integration_test_helpers import spellbook_call
+from helpers.setupscripthelpers import spellbook_call
 from helpers.BIP44 import set_testnet
 from helpers.configurationhelpers import get_use_testnet
-from helpers.hotwallethelpers import get_address_from_wallet, get_xpub_key_from_wallet
-
-# Change working dir up one level
-os.chdir("..")
+from helpers.hotwallethelpers import get_address_from_wallet
 
 set_testnet(get_use_testnet())
 
@@ -62,7 +57,6 @@ blockexplorer_com = spellbook_call('get_block', block_hash, '-e=blockexplorer.co
 assert blockchain_info['block']['hash'] == blocktrail_com['block']['hash'] == blockexplorer_com['block']['hash']
 assert blockchain_info['block']['height'] == blocktrail_com['block']['height'] == blockexplorer_com['block']['height']
 assert blockchain_info['block']['time'] == blocktrail_com['block']['time'] == blockexplorer_com['block']['time']
-
 
 
 # --------------------------------------------------------------------------------------------------------

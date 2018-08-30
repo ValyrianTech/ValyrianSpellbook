@@ -5,7 +5,7 @@ from subprocess import Popen, PIPE
 import sys
 import simplejson
 
-
+# todo remove this , use helpers.setupscripthelpers
 def spellbook_call(*args):
     args = [str(arg) for arg in args]
     spellbook_args = ['spellbook.py']

@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import os
-from integration_test_helpers import spellbook_call
+from helpers.setupscripthelpers import spellbook_call
 
-# Change working dir up one level
-os.chdir("..")
 
 print 'Starting Spellbook integration test: SendMail actions'
 print '----------------------------------------------\n'
@@ -24,7 +21,7 @@ if action_name in configured_triggers:
     assert response is None
 
 # --------------------------------------------------------------------------------------------------------
-mail_recipients = 'info@valyrian.tech'
+mail_recipients = 'someone@example.com'
 mail_subject = 'example email subject'
 mail_body_template = 'template1'
 

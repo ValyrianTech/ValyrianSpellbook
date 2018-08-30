@@ -1,20 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import os
 import random
 
 # Set a specific seed for the random numbers so results can be easily replicated, comment out next line for random results
 # random.seed('qsmldkfslskdjf')
-
-# Change working dir up one level
-os.chdir("..")
 
 from hivemind.hivemind import HivemindIssue, HivemindOption, HivemindOpinion, HivemindState
 from helpers.ipfshelpers import IPFS_API
 from helpers.BIP44 import set_testnet
 from helpers.configurationhelpers import get_use_testnet
 from helpers.hotwallethelpers import get_address_from_wallet
-from helpers.hotwallethelpers import get_private_key_from_wallet, find_address_in_wallet
+from helpers.hotwallethelpers import get_private_key_from_wallet
 from sign_message import sign_message
 
 set_testnet(get_use_testnet())
@@ -139,7 +135,7 @@ for question_index, question in enumerate(questions):
         opinion.save()
         print '%s = %s' % (opinionator, opinion.ranked_choice)
         print 'saved as %s' % opinion.multihash()
-        signature = sign_message(private_key=get_private_key_from_wallet(account=3, index=i+3)[opinionator], message='I/ipfs/%s' % opinion.multihash(), address=opinionator)
+        signature = sign_message(private_key=get_private_key_from_wallet(account=3, index=i+3)[opinionator], message='/ipfs/%s' % opinion.multihash(), address=opinionator)
         hivemind_state.add_opinion(opinion_hash=opinion.multihash(), signature=signature, weight=1.0, question_index=question_index)
         print ''
 

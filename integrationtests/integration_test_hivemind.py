@@ -2,17 +2,15 @@
 # -*- coding: utf-8 -*-
 import random
 from pprint import pprint
-from copy import copy
 
 # Set a specific seed for the random numbers so results can be easily replicated, comment out next line for random results
 # random.seed('qsmldkfslskdjf')
 
 from hivemind.hivemind import HivemindIssue, HivemindOption, HivemindOpinion, HivemindState
-from helpers.ipfshelpers import IPFS_API
 from helpers.BIP44 import set_testnet
 from helpers.configurationhelpers import get_use_testnet
 from helpers.hotwallethelpers import get_address_from_wallet
-from helpers.hotwallethelpers import get_private_key_from_wallet, find_address_in_wallet
+from helpers.hotwallethelpers import get_private_key_from_wallet
 from sign_message import sign_message
 
 set_testnet(get_use_testnet())
@@ -451,4 +449,3 @@ for n_options in range(len(option_values)):
             raise Exception('Score has gone UP: %s' % new_score)
 
         scores[non_chosen_option] = new_score
-
