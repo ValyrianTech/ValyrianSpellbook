@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import os
 import simplejson
 
@@ -34,7 +33,7 @@ if trigger_name in configured_triggers:
 trigger_type = 'SignedMessage'
 
 
-response = spellbook_call('save_trigger', trigger_name, '-t=%s' % trigger_type)
+response = spellbook_call('save_trigger', trigger_name, '-t=%s' % trigger_type, '-st=Active')
 assert response is None
 
 response = spellbook_call('get_trigger_config', trigger_name)
