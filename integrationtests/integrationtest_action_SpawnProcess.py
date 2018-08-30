@@ -12,8 +12,8 @@ clean_up_actions(action_ids=['integrationtest_action_SpawnProcess'])
 # SpawnProcess actions
 #########################################################################################################
 action_name = 'integrationtest_action_SpawnProcess'
-# run_command = 'ping 127.0.0.1 > integrationtests/ping_output.txt'  # pipe output to file
-run_command = 'ping 127.0.0.1'
+# run_command = 'echo Hello world > integrationtests/echo_output.txt'  # pipe output to file
+run_command = 'echo Hello world!'
 
 # --------------------------------------------------------------------------------------------------------
 
