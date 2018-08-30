@@ -14,7 +14,7 @@ clean_up_actions(action_ids=['test_action_Command', 'test_action_SendMail', 'tes
 #########################################################################################################
 action_name = 'test_action_Command'
 
-run_command = 'ping 127.0.0.1 > integrationtests/ping_output.txt'
+run_command = 'echo Hello world!'
 print 'Creating test action: CommandAction'
 response = spellbook_call('save_action', '-t=Command', action_name, '-c=%s' % run_command)
 assert response is None

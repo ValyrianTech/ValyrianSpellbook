@@ -13,7 +13,7 @@ clean_up_actions(action_ids=['integrationtest_action_Command'])
 # Command actions
 #########################################################################################################
 action_name = 'integrationtest_action_Command'
-run_command = 'ping 127.0.0.1 > integrationtests/ping_output.txt'
+run_command = 'echo Hello world!'
 
 # --------------------------------------------------------------------------------------------------------
 

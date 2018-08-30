@@ -515,7 +515,7 @@ examples:
   - spellbook.py save_trigger myaction
    -> Save an action with id 'myaction'
 
-  - spellbook.py save_trigger myaction -t=Command -c='ping 127.0.0.1'
+  - spellbook.py save_trigger myaction -t=Command -c='echo Hello world!'
    -> Save an action with id 'myaction' that runs the ping command when run
 
   - spellbook.py save_trigger myaction -t=SendMail -mr=info@valyrian.tech -ms='email subject' -mb=template1.txt
