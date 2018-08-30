@@ -21,7 +21,7 @@ class TriggerStatusTrigger(Trigger):
 
         previous_trigger = get_trigger(self.previous_trigger)
 
-        return previous_trigger.triggered is True and previous_trigger.status == self.previous_trigger_status
+        return previous_trigger.triggered > 0 and previous_trigger.status == self.previous_trigger_status
 
     def configure(self, **config):
         super(TriggerStatusTrigger, self).configure(**config)
