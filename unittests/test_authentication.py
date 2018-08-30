@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import pytest
 import mock
+
 import authentication
 
 NONCE = 1
@@ -62,4 +62,3 @@ class TestAuthentication(object):
         with pytest.raises(Exception) as ex:
             authentication.signature(self.data, NONCE, 'a')
         assert 'The secret must be a string with a length of a multiple of 4!' in str(ex.value)
-

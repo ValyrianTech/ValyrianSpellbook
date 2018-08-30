@@ -1,8 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import pytest
-import os
-
-# Change working dir up one level
-os.chdir("..")
 
 from hivemind.hivemind import HivemindIssue, HivemindOption, HivemindState, HivemindOpinion
 
@@ -131,4 +129,3 @@ class TestHivemindOpinion(object):
         for option_hash in opinion.ranking():
             print HivemindOption(multihash=option_hash).value, option_hash
         assert opinion.ranking() == [INTEGER_OPTION3_HASH, INTEGER_OPTION2_HASH, INTEGER_OPTION4_HASH, INTEGER_OPTION5_HASH, INTEGER_OPTION1_HASH]
-

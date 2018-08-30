@@ -1,6 +1,5 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import pytest
 
 from helpers.BIP44 import set_testnet
@@ -139,4 +138,3 @@ class TestSignMessage(object):
         print 'Signature:', signature
 
         assert verify_message(address=address, message=message, signature=signature)
-

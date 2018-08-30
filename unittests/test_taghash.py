@@ -1,11 +1,6 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import pytest
-import os
-
-# Change working dir up one level
-os.chdir("..")
 
 from taghash.taghash import TagHash
 

@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import pytest
-import os
-
-# Change working dir up one level
-os.chdir("..")
 
 from hivemind.hivemind import HivemindIssue, HivemindOption
 
@@ -144,4 +139,3 @@ class TestHivemindOption(object):
         option.set_hivemind_issue(hivemind_issue_hash=COMPLEX_QUESTION_HASH)
         option.value = value
         assert option.is_valid_complex_option() is expected
-
