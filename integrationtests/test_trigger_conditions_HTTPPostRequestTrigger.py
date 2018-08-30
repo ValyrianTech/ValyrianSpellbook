@@ -1,17 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-import os
 import sys
 import requests
 import simplejson
 
-from integration_test_helpers import spellbook_call
+from helpers.setupscripthelpers import spellbook_call
 from helpers.configurationhelpers import get_host, get_port
 
-
-# Change working dir up one level
-os.chdir("..")
 
 print 'Starting Spellbook integration test: HTTP POST request trigger conditions'
 print '----------------------------------------------\n'
@@ -32,7 +27,7 @@ if trigger_id in configured_triggers:
 
 # --------------------------------------------------------------------------------------------------------
 trigger_type = 'HTTPPostRequest'
-script = 'Echo'
+script = 'Echo.py'
 # -------------------------------------------------------------------------------------------------
 print 'Creating HTTP POST request trigger'
 response = spellbook_call('save_trigger', trigger_id, '-t=%s' % trigger_type, '-sc=%s' % script, '--reset', '--multi')

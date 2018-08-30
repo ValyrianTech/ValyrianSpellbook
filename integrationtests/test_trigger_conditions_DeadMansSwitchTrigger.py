@@ -1,13 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-import os
 import time
-from integration_test_helpers import spellbook_call
-
-
-# Change working dir up one level
-os.chdir("..")
+from helpers.setupscripthelpers import spellbook_call
 
 print 'Starting Spellbook integration test: DeadMansSwitch trigger conditions'
 print '----------------------------------------------\n'
@@ -206,15 +200,3 @@ assert response['trigger_type'] == trigger_type
 assert response['timeout'] == timeout
 assert response['triggered'] > 0
 assert response['phase'] == 5
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1,19 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from helpers.setupscripthelpers import spellbook_call
 
-import os
-import time
-from integration_test_helpers import spellbook_call
-
-
-# Change working dir up one level
-os.chdir("..")
 
 print 'Starting Spellbook integration test: TriggerStatus trigger conditions'
 print '----------------------------------------------\n'
 
 #########################################################################################################
-# Timestamp trigger
+# TriggerStatus trigger
 #########################################################################################################
 
 print 'Getting the list of configured triggers'
@@ -42,7 +36,7 @@ previous_trigger_status = 'Succeeded'
 previous_trigger_type = 'Manual'
 
 
-response = spellbook_call('save_trigger', previous_trigger, '-t=%s' % previous_trigger_type)
+response = spellbook_call('save_trigger', previous_trigger, '-t=%s' % previous_trigger_type, '-st=Active')
 assert response is None
 
 action_name = 'test_triggerstatus_action'
@@ -59,21 +53,21 @@ print 'Creating the test TriggerStatus trigger'
 trigger_name = 'test_trigger_conditions_TriggerStatusTrigger'
 trigger_type = 'TriggerStatus'
 
-response = spellbook_call('save_trigger', trigger_name, '-t=%s' % trigger_type, '-pt=%s' % previous_trigger, '-pts=%s' % previous_trigger_status)
+response = spellbook_call('save_trigger', trigger_name, '-t=%s' % trigger_type, '-pt=%s' % previous_trigger, '-pts=%s' % previous_trigger_status, '-st=Active')
 assert response is None
 
 response = spellbook_call('get_trigger_config', trigger_name)
 assert response['trigger_type'] == trigger_type
 assert response['previous_trigger'] == previous_trigger
 assert response['previous_trigger_status'] == previous_trigger_status
-assert response['triggered'] is False
+assert response['triggered'] == 0
 
 print 'Checking TriggerStatus trigger, should not trigger because the previous trigger has not been activated yet'
 response = spellbook_call('check_triggers', trigger_name)
 assert response is None
 
 response = spellbook_call('get_trigger_config', trigger_name)
-assert response['triggered'] is False
+assert response['triggered'] == 0
 
 
 # --------------------------------------------------------------------------------------------------------
@@ -87,7 +81,7 @@ response = spellbook_call('check_triggers', trigger_name)
 assert response is None
 
 response = spellbook_call('get_trigger_config', trigger_name)
-assert response['triggered'] is True
+assert response['triggered'] == 1
 
 # --------------------------------------------------------------------------------------------------------
 
@@ -97,14 +91,14 @@ response = spellbook_call('save_trigger', previous_trigger, '--reset')
 assert response is None
 
 response = spellbook_call('get_trigger_config', previous_trigger)
-assert response['triggered'] is False
+assert response['triggered'] == 0
 assert response['status'] == 'Active'
 
 response = spellbook_call('save_trigger', trigger_name, '--reset')
 assert response is None
 
 response = spellbook_call('get_trigger_config', trigger_name)
-assert response['triggered'] is False
+assert response['triggered'] == 0
 assert response['status'] == 'Active'
 
 
@@ -125,7 +119,7 @@ response = spellbook_call('check_triggers', trigger_name)
 assert response is None
 
 response = spellbook_call('get_trigger_config', trigger_name)
-assert response['triggered'] is False
+assert response['triggered'] == 0
 
 # --------------------------------------------------------------------------------------------------------
 
@@ -139,4 +133,4 @@ response = spellbook_call('check_triggers', trigger_name)
 assert response is None
 
 response = spellbook_call('get_trigger_config', trigger_name)
-assert response['triggered'] is True
+assert response['triggered'] == 1

@@ -1,19 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from helpers.setupscripthelpers import spellbook_call
 
-import os
-import time
-from integration_test_helpers import spellbook_call
-
-
-# Change working dir up one level
-os.chdir("..")
 
 print 'Starting Spellbook integration test: Manual trigger conditions'
 print '----------------------------------------------\n'
 
 #########################################################################################################
-# Blockheight trigger
+# Manual trigger
 #########################################################################################################
 
 print 'Getting the list of configured triggers'
@@ -35,7 +29,7 @@ assert response is None
 
 print 'Checking if trigger has not been triggered yet'
 response = spellbook_call('get_trigger_config', trigger_name)
-assert response['triggered'] is False
+assert response['triggered'] == 0
 assert response['trigger_type'] == trigger_type
 
 print 'Activating Manual trigger'
@@ -44,4 +38,4 @@ assert response is None
 
 print 'Checking if trigger has been triggered'
 response = spellbook_call('get_trigger_config', trigger_name)
-assert response['triggered'] is True
+assert response['triggered'] == 1
