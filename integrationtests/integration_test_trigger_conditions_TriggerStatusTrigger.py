@@ -1,35 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from helpers.setupscripthelpers import spellbook_call
+from helpers.setupscripthelpers import spellbook_call, clean_up_triggers, clean_up_actions
 
 
 print 'Starting Spellbook integration test: TriggerStatus trigger conditions'
 print '----------------------------------------------\n'
 
+# Clean up triggers if necessary
+clean_up_triggers(trigger_ids=['test_trigger_conditions_TriggerStatusTrigger',
+                               'test_trigger_conditions_TriggerStatusTrigger_A',
+                               'test_trigger_conditions_TriggerStatusTrigger_B'])
+
+# Clean up actions if necessary
+clean_up_actions(action_ids=['test_triggerstatus_action'])
+
 #########################################################################################################
 # TriggerStatus trigger
 #########################################################################################################
-
-print 'Getting the list of configured triggers'
-configured_triggers = spellbook_call('get_triggers')
-
-for trigger_name in ['test_trigger_conditions_TriggerStatusTrigger', 'test_trigger_conditions_TriggerStatusTrigger_A', 'test_trigger_conditions_TriggerStatusTrigger_B']:
-    # Clean up old test triggers if necessary
-    if trigger_name in configured_triggers:
-        response = spellbook_call('delete_trigger', trigger_name)
-        assert response is None
-
-print 'Getting the list of configured actions'
-configured_actions = spellbook_call('get_actions')
-
-for action_name in ['test_triggerstatus_action']:
-    # Clean up old test action if necessary
-    if action_name in configured_actions:
-        response = spellbook_call('delete_action', action_name)
-        assert response is None
-
-# --------------------------------------------------------------------------------------------------------
-
 print 'Creating previous trigger with webhook action'
 previous_trigger = 'test_trigger_conditions_TriggerStatusTrigger_A'
 previous_trigger_status = 'Succeeded'
@@ -68,7 +55,6 @@ assert response is None
 
 response = spellbook_call('get_trigger_config', trigger_name)
 assert response['triggered'] == 0
-
 
 # --------------------------------------------------------------------------------------------------------
 

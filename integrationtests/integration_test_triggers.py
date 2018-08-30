@@ -5,32 +5,24 @@ import time
 from helpers.BIP44 import set_testnet
 from helpers.configurationhelpers import get_use_testnet
 from helpers.hotwallethelpers import get_address_from_wallet
-from helpers.setupscripthelpers import spellbook_call
+from helpers.setupscripthelpers import spellbook_call, clean_up_triggers
 
 set_testnet(get_use_testnet())
 
 print 'Starting Spellbook integration test: triggers'
 print '----------------------------------------------\n'
 
-trigger_types = ['Manual', 'Balance', 'Received', 'Sent', 'Block_height', 'Timestamp']
+# Clean up triggers if necessary
+clean_up_triggers(trigger_ids=['test_trigger_Manual',
+                               'test_trigger_Balance',
+                               'test_trigger_Received',
+                               'test_trigger_Sent',
+                               'test_trigger_Block_height',
+                               'test_trigger_Timestamp'])
 
 # --------------------------------------------------------------------------------------------------------
-print 'Getting the list of configured triggers'
-configured_triggers = spellbook_call('get_triggers')
 
-if configured_triggers:
-    print '--> Triggers found at beginning of test, deleting them before continuing'
-    for trigger_id in configured_triggers:
-        print '----> Get trigger config %s' % trigger_id
-        response = spellbook_call('get_trigger_config', trigger_id)
-        print '----> Deleting trigger %s' % trigger_id
-        response = spellbook_call('delete_trigger', trigger_id)
-
-    print '\nGetting the list of configured triggers, should be empty'
-    response = spellbook_call('get_triggers')
-    assert isinstance(response, list)
-    assert len(response) == 0
-
+trigger_types = ['Manual', 'Balance', 'Received', 'Sent', 'Block_height', 'Timestamp']
 
 for trigger_type in trigger_types:
 
@@ -90,7 +82,7 @@ assert response is None
 response = spellbook_call('get_trigger_config', trigger_name)
 assert response['creator_name'] == creator_name
 
-creator_email = 'info@valyrian.tech'
+creator_email = 'someone@example.com'
 response = spellbook_call('save_trigger', trigger_name, '-ce=%s' % creator_email)
 assert response is None
 response = spellbook_call('get_trigger_config', trigger_name)

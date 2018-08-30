@@ -3,40 +3,33 @@
 from helpers.BIP44 import set_testnet
 from helpers.configurationhelpers import get_use_testnet
 from helpers.hotwallethelpers import get_address_from_wallet, get_xpub_key_from_wallet
-from helpers.setupscripthelpers import spellbook_call
+from helpers.setupscripthelpers import spellbook_call, clean_up_actions
 
 set_testnet(get_use_testnet())
 
 print 'Starting Spellbook integration test: SendTransaction action'
 print '----------------------------------------------\n'
 
+# Clean up actions if necessary
+clean_up_actions(action_ids=['integrationtest_action_SendTransaction'])
+
 #########################################################################################################
 # SendTransaction actions
 #########################################################################################################
-
-print 'Getting the list of configured actions'
-configured_triggers = spellbook_call('get_actions')
-
 action_name = 'integrationtest_action_SendTransaction'
 
-# Clean up old test action if necessary
-if action_name in configured_triggers:
-    response = spellbook_call('delete_action', action_name)
-    assert response is None
-
-# --------------------------------------------------------------------------------------------------------
-fee_address = get_address_from_wallet(0, 3)
-fee_percentage = 1.0
-
 wallet_type = 'BIP44'
-bip44_account = 1
+bip44_account = 0
 bip44_index = 0
 
+fee_address = get_address_from_wallet(account=0, index=1)
+fee_percentage = 1.0
+
 minimum_amount = 10000000000  # 100 BTC
-receiving_address = get_address_from_wallet(0, 4)
-
-
+receiving_address = get_address_from_wallet(account=0, index=2)
 op_return_data = 'A test op return message'
+
+# --------------------------------------------------------------------------------------------------------
 
 print 'Creating test action: SendTransaction'
 response = spellbook_call('save_action', action_name, '-t=SendTransaction', '-fa=%s' % fee_address, '-fp=%s' % fee_percentage,
@@ -80,9 +73,9 @@ response = spellbook_call('save_action', action_name, '-bi=%s' % bip44_index)
 assert response is None
 
 
-registration_address = get_address_from_wallet(0, 3)
+registration_address = get_address_from_wallet(account=0, index=3)
 registration_block_height = 0
-registration_xpub = get_xpub_key_from_wallet(0)
+registration_xpub = get_xpub_key_from_wallet(account=0)
 distribution_file = 'sample_distribution.json'
 
 

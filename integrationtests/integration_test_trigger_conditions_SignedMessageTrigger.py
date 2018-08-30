@@ -7,7 +7,7 @@ from helpers.ipfshelpers import IPFS_API
 from helpers.BIP44 import set_testnet
 from helpers.configurationhelpers import get_use_testnet
 from helpers.hotwallethelpers import get_address_from_wallet, get_private_key_from_wallet
-from helpers.setupscripthelpers import spellbook_call
+from helpers.setupscripthelpers import spellbook_call, clean_up_triggers
 from sign_message import sign_message
 
 set_testnet(get_use_testnet())
@@ -15,23 +15,16 @@ set_testnet(get_use_testnet())
 print 'Starting Spellbook integration test: SignedMessage trigger conditions'
 print '----------------------------------------------\n'
 
+# Clean up triggers if necessary
+clean_up_triggers(trigger_ids=['test_trigger_conditions_SignedMessageTrigger'])
+
 #########################################################################################################
 # SignedMessage trigger
 #########################################################################################################
-
-print 'Getting the list of configured triggers'
-configured_triggers = spellbook_call('get_triggers')
-
 trigger_name = 'test_trigger_conditions_SignedMessageTrigger'
-
-# Clean up old test action if necessary
-if trigger_name in configured_triggers:
-    response = spellbook_call('delete_trigger', trigger_name)
-    assert response is None
-
-# --------------------------------------------------------------------------------------------------------
 trigger_type = 'SignedMessage'
 
+# ----------------------------------------------------------------------------------------------------------------------
 
 response = spellbook_call('save_trigger', trigger_name, '-t=%s' % trigger_type, '-st=Active')
 assert response is None

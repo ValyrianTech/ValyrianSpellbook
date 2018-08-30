@@ -1,28 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from helpers.setupscripthelpers import spellbook_call
+from helpers.setupscripthelpers import spellbook_call, clean_up_actions
 
 
 print 'Starting Spellbook integration test: Webhook actions'
 print '----------------------------------------------\n'
 
+# Clean up actions if necessary
+clean_up_actions(action_ids=['integrationtest_action_Webhook'])
 
 #########################################################################################################
 # Webhook actions
 #########################################################################################################
-
-print 'Getting the list of configured actions'
-configured_triggers = spellbook_call('get_actions')
-
 action_name = 'integrationtest_action_Webhook'
-
-# Clean up old test action if necessary
-if action_name in configured_triggers:
-    response = spellbook_call('delete_action', action_name)
-    assert response is None
+webhook = 'http://www.google.com'
 
 # --------------------------------------------------------------------------------------------------------
-webhook = 'http://www.google.com'
 
 print 'Creating test action: Webhook'
 response = spellbook_call('save_action', '-t=Webhook', action_name, '-w=%s' % webhook)
