@@ -1,0 +1,4 @@
+WARNING!!!
+Dead Man's Switch will activate on $activation_time$
+
+Reset the switch immediately!
