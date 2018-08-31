@@ -32,7 +32,7 @@ def sendmail(recipients, subject, body_template, variables=None):
     """
     Send an email using the smtp settings in the Spellbook.conf file
 
-    :param recipients: Email address(es) of the recipient(s) separated by semicolon
+    :param recipients: Email address(es) of the recipient(s) separated by comma
     :param subject: The subject for the email
     :param body_template: The filename of the body template for the email
     :param variables: A dict containing the variables that will be replaced in the email body template
@@ -86,7 +86,7 @@ def sendmail(recipients, subject, body_template, variables=None):
         session.sendmail(FROM_ADDRESS, recipients.split(','), "\r\n".join(headers) + "\r\n\r\n" + body)
         session.quit()
 
-        LOG.info('Email sent to %s : %s (template: %s)' % (recipients, subject, body_template))
+        LOG.info('Email sent to %s : %s (template: %s)' % (recipients.split(','), subject, body_template))
         return True
 
     except Exception as ex:
