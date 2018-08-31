@@ -48,7 +48,7 @@ def sendmail(recipients, subject, body_template, variables=None):
     # Set the message headers in a list.
     headers = [
         "From: %s" % FROM_ADDRESS,
-        "To: %s" % recipients,
+        "To: %s" % recipients.replace(',', ';'),
         "Subject: %s" % subject,
         "Content-Type: text/plain"
     ]
@@ -83,7 +83,7 @@ def sendmail(recipients, subject, body_template, variables=None):
         session.login(USER, PASSWORD)
 
         # Send the message and quit
-        session.sendmail(FROM_ADDRESS, recipients.split(';'), "\r\n".join(headers) + "\r\n\r\n" + body)
+        session.sendmail(FROM_ADDRESS, recipients.split(','), "\r\n".join(headers) + "\r\n\r\n" + body)
         session.quit()
 
         LOG.info('Email sent to %s : %s (template: %s)' % (recipients, subject, body_template))

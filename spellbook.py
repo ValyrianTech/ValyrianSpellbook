@@ -404,7 +404,7 @@ save_action_parser.add_argument('-t', '--type', help='The type of the action', c
 
 save_action_parser.add_argument('-c', '--run_command', help='The command to run, only applicable to Command Actions')
 
-save_action_parser.add_argument('-mr', '--mail_recipients', help='The recipients of the email in a SendEmail Action, separated with semicolon')
+save_action_parser.add_argument('-mr', '--mail_recipients', help='The recipients of the email in a SendEmail Action, separated with comma')
 save_action_parser.add_argument('-ms', '--mail_subject', help='The subject of the email in a SendEmail Action')
 save_action_parser.add_argument('-mb', '--mail_body_template', help='The name of the body template of the email in a SendEmail Action')
 
