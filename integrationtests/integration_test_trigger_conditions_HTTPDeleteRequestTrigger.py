@@ -4,7 +4,7 @@ import sys
 import requests
 import simplejson
 
-from helpers.setupscripthelpers import spellbook_call
+from helpers.setupscripthelpers import spellbook_call, clean_up_triggers
 from helpers.configurationhelpers import get_host, get_port
 
 print 'Starting Spellbook integration test: HTTP DELETE request trigger conditions'
