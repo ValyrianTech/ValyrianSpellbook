@@ -41,7 +41,7 @@ assert response is True
 # SendMail actions
 #########################################################################################################
 action_name = 'test_action_SendMail'
-mail_recipients = 'someone@example.com;someone.else@example.com'
+mail_recipients = 'someone@example.com,someone.else@example.com'
 mail_subject = 'example email subject'
 mail_body_template = 'template1.txt'
 
@@ -64,9 +64,9 @@ assert response['mail_subject'] == mail_subject
 assert response['mail_body_template'] == mail_body_template
 
 # --------------------------------------------------------------------------------------------------------
-# print 'Running the action we just created'
-# response = spellbook_call('run_action', action_name)
-# assert response is True
+print 'Running the action we just created'
+response = spellbook_call('run_action', action_name)
+assert response is True
 
 
 #########################################################################################################
