@@ -48,7 +48,7 @@ def sendmail(recipients, subject, body_template, variables=None):
     # Set the message headers in a list.
     headers = [
         "From: %s" % FROM_ADDRESS,
-        "To: %s" % recipients.replace(',', ';'),
+        "To: %s" % recipients.replace(',', ', '),  # there needs to be a space in between
         "Subject: %s" % subject,
         "Content-Type: text/plain"
     ]
