@@ -128,6 +128,7 @@ setupscripts/
 spellbookscripts/
 !spellbookscripts/spellbookscript.py
 !spellbookscripts/Template.py
+!spellbookscripts/Echo.py
 
 # spellbookconfiguration
 configuration/Spellbook.conf
