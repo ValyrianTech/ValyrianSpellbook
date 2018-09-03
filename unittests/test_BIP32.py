@@ -6,9 +6,7 @@ import binascii
 from BIP32_test_vectors import bip32_test_vectors
 from BIP39_test_vectors import BIP39_test_vectors, BIP39_test_vectors_japanese
 
-from bips.BIP32 import parse_derivation_path, get_xpriv, get_xpub, get_xpub_child, set_chain_mode
-
-from pybitcointools import bip32_master_key
+from bips.BIP32 import parse_derivation_path, get_xpriv, get_xpub, get_xpub_child, set_chain_mode, bip32_master_key
 
 testvectors = [[testvector[2], testvector[3]] for testvector in BIP39_test_vectors['english']]
 testvectors_japanese = [[testvector['seed'], testvector['bip32_xprv']] for testvector in BIP39_test_vectors_japanese]
