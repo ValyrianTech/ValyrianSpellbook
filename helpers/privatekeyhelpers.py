@@ -3,6 +3,9 @@
 from py2specials import *
 from py3specials import *
 
+from jacobianhelpers import fast_multiply, N, G
+from publickeyhelpers import encode_pubkey
+
 # Regular expressions for private key formats
 wif_compressed_regex = '^[LK][1-9A-Za-z][^OIl]{50}$'
 wif_uncompressed_regex = '^5[HJK][1-9A-Za-z][^OIl]{48}$'
@@ -105,3 +108,19 @@ def b58check_to_bin(private_key):
     data = b'\x00' * leadingzbytes + changebase(private_key, 58, 256)
     assert bin_dbl_sha256(data[:-4])[:4] == data[-4:]
     return data[1:-4]
+
+
+def privkey_to_pubkey(privkey):
+    f = get_privkey_format(privkey)
+    privkey = decode_privkey(privkey, f)
+    if privkey >= N:
+        raise Exception("Invalid privkey")
+    if f in ['bin', 'bin_compressed', 'hex', 'hex_compressed', 'decimal']:
+        return encode_pubkey(fast_multiply(G, privkey), f)
+    else:
+        return encode_pubkey(fast_multiply(G, privkey), f.replace('wif', 'hex'))
+
+
+def add_privkeys(p1, p2):
+    f1, f2 = get_privkey_format(p1), get_privkey_format(p2)
+    return encode_privkey((decode_privkey(p1, f1) + decode_privkey(p2, f2)) % N, f1)
