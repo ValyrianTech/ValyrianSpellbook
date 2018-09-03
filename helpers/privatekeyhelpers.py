@@ -4,7 +4,7 @@ from py2specials import *
 from py3specials import *
 
 from jacobianhelpers import fast_multiply, N, G
-from publickeyhelpers import encode_pubkey
+from publickeyhelpers import encode_pubkey, pubkey_to_address
 
 # Regular expressions for private key formats
 wif_compressed_regex = '^[LK][1-9A-Za-z][^OIl]{50}$'
@@ -124,3 +124,7 @@ def privkey_to_pubkey(privkey):
 def add_privkeys(p1, p2):
     f1, f2 = get_privkey_format(p1), get_privkey_format(p2)
     return encode_privkey((decode_privkey(p1, f1) + decode_privkey(p2, f2)) % N, f1)
+
+
+def privkey_to_address(priv, magicbyte=0):
+    return pubkey_to_address(privkey_to_pubkey(priv), magicbyte)

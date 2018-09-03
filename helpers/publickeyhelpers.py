@@ -84,3 +84,21 @@ def compress(pubkey):
         return encode_pubkey(decode_pubkey(pubkey, f), 'bin_compressed')
     elif f == 'hex' or f == 'decimal':
         return encode_pubkey(decode_pubkey(pubkey, f), 'hex_compressed')
+
+
+def pubkey_to_address(pubkey, magicbyte=0):
+    if isinstance(pubkey, (list, tuple)):
+        pubkey = encode_pubkey(pubkey, 'bin')
+    if len(pubkey) in [66, 130]:
+        return bin_to_b58check(
+            bin_hash160(binascii.unhexlify(pubkey)), magicbyte)
+    return bin_to_b58check(bin_hash160(pubkey), magicbyte)
+
+
+def bin_hash160(string):
+    intermed = hashlib.sha256(string).digest()
+    try:
+        digest = hashlib.new('ripemd160', intermed).digest()
+    except Exception as ex:
+        raise Exception('Unable to get ripemd160 digest: %s' % ex)
+    return digest
