@@ -9,7 +9,6 @@ from helpers.privatekeyhelpers import privkey_to_pubkey, add_privkeys
 from helpers.publickeyhelpers import add_pubkeys, compress
 
 from helpers.configurationhelpers import get_use_testnet
-from pybitcointools import bip32_privtopub
 
 BIP32_DERIVATION_PATH_REGEX = "^m(\/\d+'?)*"
 HARDENED = 2**31
@@ -182,3 +181,15 @@ def bip32_master_key(seed, vbytes=MAINNET_PRIVATE):
             hashlib.sha512
         ).digest()
     return bip32_serialize((vbytes, 0, b'\x00'*4, 0, I[32:], I[:32]+b'\x01'))
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+
+def raw_bip32_privtopub(rawtuple):
+    vbytes, depth, fingerprint, i, chaincode, key = rawtuple
+    newvbytes = MAINNET_PUBLIC if vbytes == MAINNET_PRIVATE else TESTNET_PUBLIC
+    return newvbytes, depth, fingerprint, i, chaincode, privkey_to_pubkey(key)
+
+
+def bip32_privtopub(data):
+    return bip32_serialize(raw_bip32_privtopub(bip32_deserialize(data)))
