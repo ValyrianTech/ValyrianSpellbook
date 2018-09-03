@@ -5,9 +5,9 @@ import os
 import sys
 import argparse
 import simplejson
-import pybitcointools
 import getpass
 
+from helpers.privatekeyhelpers import privkey_to_address
 from AESCipher import AESCipher
 from ConfigParser import ConfigParser
 from pprint import pprint
@@ -161,7 +161,7 @@ def add_key():
     wallet = load_wallet()
 
     try:
-        address = pybitcointools.privkey_to_address(args.private_key)
+        address = privkey_to_address(args.private_key)
     except AssertionError:
         print >> sys.stderr, 'Invalid private key: %s' % args.private_key
         sys.exit(1)

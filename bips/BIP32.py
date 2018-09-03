@@ -6,7 +6,7 @@ import hmac
 from helpers.py2specials import *
 from helpers.py3specials import *
 from helpers.privatekeyhelpers import privkey_to_pubkey, add_privkeys
-from helpers.publickeyhelpers import add_pubkeys, compress
+from helpers.publickeyhelpers import add_pubkeys, compress, bin_hash160
 
 from helpers.configurationhelpers import get_use_testnet
 
@@ -162,14 +162,6 @@ def hash_to_int(x):
         return decode(x, 16)
     return decode(x, 256)
 
-
-def bin_hash160(string):
-    intermed = hashlib.sha256(string).digest()
-    try:
-        digest = hashlib.new('ripemd160', intermed).digest()
-    except Exception as ex:
-        raise Exception('Unable to get ripemd160 digest: %s' % ex)
-    return digest
 
 # ----------------------------------------------------------------------------------------------------------------------
 
