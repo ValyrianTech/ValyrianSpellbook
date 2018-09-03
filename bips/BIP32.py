@@ -9,7 +9,7 @@ from helpers.privatekeyhelpers import privkey_to_pubkey, add_privkeys
 from helpers.publickeyhelpers import add_pubkeys, compress
 
 from helpers.configurationhelpers import get_use_testnet
-from pybitcointools import bip32_master_key, bip32_privtopub
+from pybitcointools import bip32_privtopub
 
 BIP32_DERIVATION_PATH_REGEX = "^m(\/\d+'?)*"
 HARDENED = 2**31
@@ -172,3 +172,13 @@ def bin_hash160(string):
         raise Exception('Unable to get ripemd160 digest: %s' % ex)
     return digest
 
+# ----------------------------------------------------------------------------------------------------------------------
+
+
+def bip32_master_key(seed, vbytes=MAINNET_PRIVATE):
+    I = hmac.new(
+            from_string_to_bytes("Bitcoin seed"),
+            from_string_to_bytes(seed),
+            hashlib.sha512
+        ).digest()
+    return bip32_serialize((vbytes, 0, b'\x00'*4, 0, I[32:], I[:32]+b'\x01'))
