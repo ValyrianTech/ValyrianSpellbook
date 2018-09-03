@@ -1,6 +1,7 @@
 # Code copied from Vitalik Buterin's pybitcointools (library is no longer maintained)
 
-import sys, re
+import sys
+import re
 import binascii
 import os
 import hashlib
@@ -20,6 +21,11 @@ if sys.version_info.major == 2:
         58: '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz',
         256: ''.join([chr(x) for x in range(256)])
     }
+
+    # used in publickeyhelpers
+    two = '\x02'
+    three = '\x03'
+    four = '\x04'
 
     def bin_dbl_sha256(s):
         bytes_to_hash = from_string_to_bytes(s)

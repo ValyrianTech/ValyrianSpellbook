@@ -1,9 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import re
+import hmac
+
+from helpers.py2specials import *
+from helpers.py3specials import *
+from helpers.privatekeyhelpers import privkey_to_pubkey, add_privkeys
+from helpers.publickeyhelpers import add_pubkeys, compress
 
 from helpers.configurationhelpers import get_use_testnet
-from pybitcointools import bip32_ckd, bip32_master_key, bip32_privtopub
+from pybitcointools import bip32_master_key, bip32_privtopub
 
 BIP32_DERIVATION_PATH_REGEX = "^m(\/\d+'?)*"
 HARDENED = 2**31
@@ -12,6 +18,8 @@ MAINNET_PRIVATE = b'\x04\x88\xAD\xE4'
 MAINNET_PUBLIC = b'\x04\x88\xB2\x1E'
 TESTNET_PRIVATE = b'\x04\x35\x83\x94'
 TESTNET_PUBLIC = b'\x04\x35\x87\xCF'
+PRIVATE = [MAINNET_PRIVATE, TESTNET_PRIVATE]
+PUBLIC = [MAINNET_PUBLIC, TESTNET_PUBLIC]
 
 VERSION_BYTES = TESTNET_PRIVATE if get_use_testnet() is True else MAINNET_PRIVATE
 
@@ -92,3 +100,75 @@ def get_xpub_child(xpub, child_index):
         raise Exception('Only non-hardened child xpubs keys can be derived from an xpub key')
 
     return bip32_ckd(data=xpub, i=child_index)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+
+def bip32_ckd(data, i):
+    return bip32_serialize(raw_bip32_ckd(bip32_deserialize(data), i))
+
+
+def bip32_serialize(rawtuple):
+    vbytes, depth, fingerprint, i, chaincode, key = rawtuple
+    i = encode(i, 256, 4)
+    chaincode = encode(hash_to_int(chaincode), 256, 32)
+    keydata = b'\x00'+key[:-1] if vbytes in PRIVATE else key
+    bindata = vbytes + from_int_to_byte(depth % 256) + fingerprint + i + chaincode + keydata
+    return changebase(bindata+bin_dbl_sha256(bindata)[:4], 256, 58)
+
+
+def bip32_deserialize(data):
+    dbin = changebase(data, 58, 256)
+    if bin_dbl_sha256(dbin[:-4])[:4] != dbin[-4:]:
+        raise Exception("Invalid checksum")
+    vbytes = dbin[0:4]
+    depth = from_byte_to_int(dbin[4])
+    fingerprint = dbin[5:9]
+    i = decode(dbin[9:13], 256)
+    chaincode = dbin[13:45]
+    key = dbin[46:78]+b'\x01' if vbytes in PRIVATE else dbin[45:78]
+    return vbytes, depth, fingerprint, i, chaincode, key
+
+
+def raw_bip32_ckd(rawtuple, i):
+    vbytes, depth, fingerprint, oldi, chaincode, key = rawtuple
+    i = int(i)
+
+    if vbytes in PRIVATE:
+        priv = key
+        pub = privkey_to_pubkey(key)
+    else:
+        pub = key
+
+    if i >= 2**31:
+        if vbytes in PUBLIC:
+            raise Exception("Can't do private derivation on public key!")
+        I = hmac.new(chaincode, b'\x00'+priv[:32]+encode(i, 256, 4), hashlib.sha512).digest()
+    else:
+        I = hmac.new(chaincode, pub+encode(i, 256, 4), hashlib.sha512).digest()
+
+    if vbytes in PRIVATE:
+        newkey = add_privkeys(I[:32]+B'\x01', priv)
+        fingerprint = bin_hash160(privkey_to_pubkey(key))[:4]
+    if vbytes in PUBLIC:
+        newkey = add_pubkeys(compress(privkey_to_pubkey(I[:32])), key)
+        fingerprint = bin_hash160(key)[:4]
+
+    return vbytes, depth + 1, fingerprint, i, I[32:], newkey
+
+
+def hash_to_int(x):
+    if len(x) in [40, 64]:
+        return decode(x, 16)
+    return decode(x, 256)
+
+
+def bin_hash160(string):
+    intermed = hashlib.sha256(string).digest()
+    try:
+        digest = hashlib.new('ripemd160', intermed).digest()
+    except Exception as ex:
+        raise Exception('Unable to get ripemd160 digest: %s' % ex)
+    return digest
+
