@@ -6,13 +6,10 @@ import sys
 import requests
 import ipfsapi
 
-from helpers.BIP44 import set_testnet
-from helpers.configurationhelpers import get_use_testnet, get_ipfs_host, get_ipfs_port
+from helpers.configurationhelpers import get_ipfs_host, get_ipfs_port
 from helpers.hotwallethelpers import get_private_key_from_wallet, find_address_in_wallet
 from sign_message import sign_message
 from validators.validators import valid_address
-
-set_testnet(get_use_testnet())
 
 
 # Create main parser

@@ -2,12 +2,9 @@
 # -*- coding: utf-8 -*-
 import time
 
-from helpers.BIP44 import set_testnet
-from helpers.configurationhelpers import get_use_testnet
 from helpers.hotwallethelpers import get_address_from_wallet
 from helpers.setupscripthelpers import spellbook_call, clean_up_triggers
 
-set_testnet(get_use_testnet())
 
 print 'Starting Spellbook integration test: triggers'
 print '----------------------------------------------\n'

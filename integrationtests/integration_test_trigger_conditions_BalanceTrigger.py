@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from helpers.BIP44 import set_testnet
-from helpers.configurationhelpers import get_use_testnet
 from helpers.hotwallethelpers import get_address_from_wallet
 from helpers.setupscripthelpers import spellbook_call, clean_up_triggers
 
@@ -19,8 +17,6 @@ trigger_name = 'test_trigger_conditions_BalanceTrigger'
 trigger_type = 'Balance'
 
 # ----------------------------------------------------------------------------------------------------------------------
-
-set_testnet(get_use_testnet())
 
 account = 0
 index = 0

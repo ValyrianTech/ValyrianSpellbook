@@ -8,8 +8,7 @@ from action import Action
 from actiontype import ActionType
 from data.data import utxos, prime_input_address, push_tx
 from bips.BIP44 import get_xpriv_key, get_private_key
-from helpers.BIP44 import set_testnet
-from helpers.configurationhelpers import get_max_tx_fee_percentage, get_use_testnet
+from helpers.configurationhelpers import get_max_tx_fee_percentage
 from helpers.configurationhelpers import get_minimum_output_value
 from helpers.feehelpers import get_optimal_fee
 from helpers.hotwallethelpers import get_address_from_wallet
@@ -124,9 +123,6 @@ class SendTransactionAction(Action):
 
         # fill in the address in case of a BIP44 hot wallet
         if self.wallet_type == 'BIP44':
-            # Set BIP44 module to use testnet if necessary, configured in the spellbook.conf file under [Wallet] -> use_testnet
-            set_testnet(get_use_testnet())
-
             self.sending_address = get_address_from_wallet(self.bip44_account, self.bip44_index)
 
     def json_encodable(self):
@@ -325,9 +321,6 @@ class SendTransactionAction(Action):
             del hot_wallet
 
         elif self.wallet_type == 'BIP44':
-            # Set BIP44 module to use testnet if necessary, configured in the spellbook.conf file under [Wallet] -> use_testnet
-            set_testnet(get_use_testnet())
-
             xpriv_key = get_xpriv_key(mnemonic=' '.join(hot_wallet['mnemonic']), passphrase=hot_wallet['passphrase'], account=self.bip44_account)
             # explicitly delete local variable hot_wallet for security reasons as soon as possible
             del hot_wallet

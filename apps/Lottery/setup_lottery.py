@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-
-from helpers.BIP44 import set_testnet
-from helpers.configurationhelpers import get_use_testnet
 from helpers.hotwallethelpers import get_address_from_wallet
 from helpers.setupscripthelpers import spellbook_call, clean_up_triggers, clean_up_actions
 from helpers.triggerhelpers import TriggerType
@@ -12,8 +8,6 @@ from helpers.actionhelpers import ActionType
 from action.transactiontype import TransactionType
 from data.data import latest_block, balance
 
-# Check configuration to see if the platform is configured to use testnet or mainnet
-set_testnet(get_use_testnet())
 
 ##########################################################################################################
 # Lottery parameters
