@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from helpers.BIP44 import set_testnet
-from helpers.configurationhelpers import get_use_testnet
+from bips.BIP32 import set_chain_mode
 from helpers.hotwallethelpers import get_address_from_wallet
 from helpers.setupscripthelpers import spellbook_call, clean_up_actions
 
-set_testnet(get_use_testnet())
 # make sure testnet is always on for this integrationtest
-set_testnet(True)
+set_chain_mode(mainnet=False)
 
 print 'Starting Spellbook integration test: SendTransaction action'
 print '----------------------------------------------\n'

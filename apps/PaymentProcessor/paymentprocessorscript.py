@@ -6,11 +6,8 @@ import time
 from helpers.loghelpers import LOG
 from spellbookscripts.spellbookscript import SpellbookScript
 from helpers.jsonhelpers import save_to_json_file, load_from_json_file
-from helpers.BIP44 import set_testnet
-from helpers.configurationhelpers import get_use_testnet, get_app_data_dir
+from helpers.configurationhelpers import get_app_data_dir
 
-
-set_testnet(get_use_testnet())
 
 PAYMENT_PROCESSOR_DIR = os.path.join(get_app_data_dir(), 'PaymentProcessor')
 if not os.path.isdir(PAYMENT_PROCESSOR_DIR):

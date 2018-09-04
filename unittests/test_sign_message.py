@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import pytest
 
-from helpers.BIP44 import set_testnet
+from bips.BIP32 import set_chain_mode
 from helpers.hotwallethelpers import get_address_from_wallet, get_private_key_from_wallet
 from sign_message import verify_message, sign_message
 
@@ -115,7 +115,7 @@ class TestSignMessage(object):
 
     @pytest.mark.parametrize('index', range(1))
     def test_sign_message_with_addresses_from_hot_wallet_in_testnet_mode(self, index):
-        set_testnet(True)
+        set_chain_mode(mainnet=False)
         account = 0
         address = get_address_from_wallet(account=account, index=index)
         private_key = get_private_key_from_wallet(account=account, index=index)[address]

@@ -3,16 +3,12 @@
 import os
 
 from data.data import block_by_height
-from helpers.BIP44 import set_testnet
 from helpers.actionhelpers import get_actions, get_action
 from helpers.triggerhelpers import get_trigger
-from helpers.configurationhelpers import get_use_testnet
 from helpers.hotwallethelpers import get_address_from_wallet
 from helpers.loghelpers import LOG
 from randomaddress.randomaddress import random_address_from_sil
 from spellbookscripts.spellbookscript import SpellbookScript
-
-set_testnet(get_use_testnet())
 
 
 class Lottery(SpellbookScript):

@@ -6,16 +6,13 @@ import time
 from trigger.triggertype import TriggerType
 from action.actiontype import ActionType
 from action.sendtransactionaction import TransactionType
-from helpers.BIP44 import set_testnet
 from helpers.actionhelpers import get_action
 from helpers.triggerhelpers import get_trigger
-from helpers.configurationhelpers import get_use_testnet
 from helpers.hotwallethelpers import get_address_from_wallet
 from helpers.loghelpers import LOG
 from spellbookscripts.spellbookscript import SpellbookScript
 from validators.validators import valid_op_return
 
-set_testnet(get_use_testnet())
 
 ##########################################################################################################
 # Notary parameters

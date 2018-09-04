@@ -4,13 +4,10 @@ import os
 import simplejson
 
 from helpers.ipfshelpers import IPFS_API
-from helpers.BIP44 import set_testnet
-from helpers.configurationhelpers import get_use_testnet
 from helpers.hotwallethelpers import get_address_from_wallet, get_private_key_from_wallet
 from helpers.setupscripthelpers import spellbook_call, clean_up_triggers
 from sign_message import sign_message
 
-set_testnet(get_use_testnet())
 
 print 'Starting Spellbook integration test: SignedMessage trigger conditions'
 print '----------------------------------------------\n'

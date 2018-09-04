@@ -3,8 +3,6 @@
 import pytest
 
 from hivemind.hivemind import HivemindIssue
-from helpers.BIP44 import set_testnet
-from helpers.configurationhelpers import get_use_testnet
 from helpers.hotwallethelpers import get_address_from_wallet
 
 
@@ -89,7 +87,6 @@ class TestHivemindIssue(object):
         assert issue_hash is not None
 
     def test_set_restrictions(self):
-        set_testnet(testnet=get_use_testnet())
         hivemind_issue = HivemindIssue()
 
         restrictions = {'addresses': [get_address_from_wallet(account=0, index=0), get_address_from_wallet(account=0, index=1)],

@@ -7,13 +7,10 @@ from pprint import pprint
 # random.seed('qsmldkfslskdjf')
 
 from hivemind.hivemind import HivemindIssue, HivemindOption, HivemindOpinion, HivemindState
-from helpers.BIP44 import set_testnet
-from helpers.configurationhelpers import get_use_testnet
 from helpers.hotwallethelpers import get_address_from_wallet
 from helpers.hotwallethelpers import get_private_key_from_wallet
 from sign_message import sign_message
 
-set_testnet(get_use_testnet())
 
 print 'Starting Spellbook integration test: hivemind'
 print '----------------------------------------------\n'
