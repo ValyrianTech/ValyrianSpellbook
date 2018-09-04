@@ -6,7 +6,7 @@ import hmac
 from helpers.py2specials import *
 from helpers.py3specials import *
 from helpers.privatekeyhelpers import privkey_to_pubkey, add_privkeys
-from helpers.publickeyhelpers import add_pubkeys, compress, bin_hash160
+from helpers.publickeyhelpers import add_pubkeys, compress, bin_hash160, encode_pubkey, pubkey_to_address
 
 from helpers.configurationhelpers import get_use_testnet
 
@@ -21,6 +21,7 @@ PRIVATE = [MAINNET_PRIVATE, TESTNET_PRIVATE]
 PUBLIC = [MAINNET_PUBLIC, TESTNET_PUBLIC]
 
 VERSION_BYTES = TESTNET_PRIVATE if get_use_testnet() is True else MAINNET_PRIVATE
+MAGICBYTE = 111 if get_use_testnet() is True else 0
 
 
 def set_chain_mode(mainnet=True):
@@ -29,8 +30,12 @@ def set_chain_mode(mainnet=True):
 
     :param mainnet: True or False
     """
-    global VERSION_BYTES
+    global VERSION_BYTES, MAGICBYTE
     VERSION_BYTES = MAINNET_PRIVATE if mainnet is True else TESTNET_PRIVATE
+    MAGICBYTE = 0 if mainnet is True else 111
+
+# Set the chain mode based on the current configuration
+set_chain_mode(mainnet=(get_use_testnet() is False))
 
 
 def parse_derivation_path(derivation_path):
@@ -101,6 +106,20 @@ def get_xpub_child(xpub, child_index):
     return bip32_ckd(data=xpub, i=child_index)
 
 
+def get_address_from_xpub(xpub, i):
+    """
+    Get a Bitcoin address from an xpub key
+
+    :param xpub: The xpub key
+    :param i: The index of the address
+    :return: A Bitcoin Address
+    """
+    pub0 = bip32_ckd(xpub, 0)
+    public_key = bip32_ckd(pub0, i)
+    hex_key = encode_pubkey(bip32_extract_key(public_key), 'hex_compressed')
+    address = pubkey_to_address(hex_key, magicbyte=MAGICBYTE)
+
+    return address
 # ----------------------------------------------------------------------------------------------------------------------
 
 

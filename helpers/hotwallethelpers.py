@@ -6,7 +6,8 @@ import getpass
 import simplejson
 
 from AESCipher import AESCipher
-from helpers.BIP44 import get_xpub_key, get_address_from_xpub, get_private_key, get_xpriv_key, get_addresses_from_xpub
+from bips.BIP32 import get_address_from_xpub
+from helpers.BIP44 import get_xpub_key, get_private_key, get_xpriv_key, get_addresses_from_xpub
 from helpers.configurationhelpers import get_wallet_dir, get_default_wallet
 from bips.BIP39 import get_seed
 
