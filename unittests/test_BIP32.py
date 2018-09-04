@@ -7,6 +7,7 @@ from BIP32_test_vectors import bip32_test_vectors
 from BIP39_test_vectors import BIP39_test_vectors, BIP39_test_vectors_japanese
 
 from bips.BIP32 import parse_derivation_path, get_xpriv, get_xpub, get_xpub_child, set_chain_mode, bip32_master_key
+from helpers.configurationhelpers import get_use_testnet
 
 testvectors = [[testvector[2], testvector[3]] for testvector in BIP39_test_vectors['english']]
 testvectors_japanese = [[testvector['seed'], testvector['bip32_xprv']] for testvector in BIP39_test_vectors_japanese]
@@ -14,8 +15,17 @@ testvectors_japanese = [[testvector['seed'], testvector['bip32_xprv']] for testv
 xpriv_testvectors = [[vector['seed'], vector['derivation_path'], vector['xpriv']] for vector in bip32_test_vectors]
 xpub_testvectors = [[vector['seed'], vector['derivation_path'], vector['xpub']] for vector in bip32_test_vectors]
 
-# Set chain mode to mainnet (just in case the current configuration is set to use testnet)
-set_chain_mode(mainnet=True)
+
+def setup_module(module):
+    """ setup any state specific to the execution of the given module."""
+    # Set chain mode to mainnet (just in case the current configuration is set to use testnet)
+    set_chain_mode(mainnet=True)
+
+
+def teardown_module(module):
+    """ teardown any state that was previously setup with a setup_module
+    method."""
+    set_chain_mode(mainnet=(get_use_testnet() is False))
 
 
 class TestBIP32(object):
