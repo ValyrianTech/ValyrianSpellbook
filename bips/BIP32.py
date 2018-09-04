@@ -185,3 +185,7 @@ def raw_bip32_privtopub(rawtuple):
 
 def bip32_privtopub(data):
     return bip32_serialize(raw_bip32_privtopub(bip32_deserialize(data)))
+
+
+def bip32_extract_key(data):
+    return safe_hexlify(bip32_deserialize(data)[-1])
