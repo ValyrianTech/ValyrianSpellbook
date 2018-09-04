@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 from bips.BIP32 import bip32_ckd, bip32_privtopub, bip32_master_key, bip32_extract_key, MAINNET_PRIVATE, TESTNET_PRIVATE
 from bips.BIP39 import get_seed
-from bips.BIP44 import get_addresses_from_xpub, get_change_addresses_from_xpub, get_xpriv_keys, get_xpriv_key
-from helpers.publickeyhelpers import pubkey_to_address, encode_pubkey
+from bips.BIP44 import get_addresses_from_xpub, get_change_addresses_from_xpub, get_xpriv_keys, get_xpub_keys
+from helpers.publickeyhelpers import pubkey_to_address
 from helpers.privatekeyhelpers import privkey_to_address, privkey_to_pubkey, encode_privkey
 
 from binascii import hexlify, unhexlify
@@ -111,21 +111,7 @@ def get_private_key(xpriv, i, k=0):
     return private_keys
 
 
-def get_xpub_keys(mnemonic, passphrase="", i=1):
-    # BIP32 paths: m / purpose' / coin_type' / account' / change / address_index
-    # ' means a hardened path is used
-    # path for bitcoin mainnet is m/44'/0'/0'/0/0
-    # path for bitcoin testnet is m/44'/1'/0'/0/0
 
-    seed = hexlify(get_seed(mnemonic=mnemonic, passphrase=passphrase))
-    priv = bip32_master_key(unhexlify(seed), vbytes=VBYTES)
-    xpubs = []
-    for i in range(0, i):
-        derived_private_key = bip32_ckd(bip32_ckd(bip32_ckd(priv, 44+HARDENED), HARDENED+COIN_TYPE), HARDENED+i)
-        xpub = bip32_privtopub(derived_private_key)
-        xpubs.append(xpub)
-
-    return xpubs
 
 
 
