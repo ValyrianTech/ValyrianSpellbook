@@ -89,19 +89,6 @@ def set_testnet(testnet=False):
     MAGICBYTE, VBYTES, COIN_TYPE = (111, TESTNET_PRIVATE, 1) if testnet is True else (0, MAINNET_PRIVATE, 0)
 
 
-def get_addresses_from_xpub(xpub, i=100):
-    address_list = []
-    pub0 = bip32_ckd(xpub, 0)
-
-    for i in range(0, i):
-        public_key = bip32_ckd(pub0, i)
-        hex_key = encode_pubkey(bip32_extract_key(public_key), 'hex_compressed')
-        address_from_public_key = pubkey_to_address(hex_key, magicbyte=MAGICBYTE)
-        address_list.append(address_from_public_key)
-
-    return address_list
-
-
 def get_change_addresses_from_xpub(xpub, i=100):
     address_list = []
     pub0 = bip32_ckd(xpub, 1)
