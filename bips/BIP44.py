@@ -68,6 +68,19 @@ def get_change_addresses_from_xpub(xpub, i=100):
     return address_list
 
 
+def get_xpriv_key(mnemonic, passphrase="", account=0):
+    # BIP32 paths: m / purpose' / coin_type' / account' / change / address_index
+    # ' means a hardened path is used
+    # path for bitcoin mainnet is m/44'/0'/0'/0/0
+    # path for bitcoin testnet is m/44'/1'/0'/0/0
+
+    seed = hexlify(get_seed(mnemonic=mnemonic, passphrase=passphrase))
+    master_key = bip32_master_key(unhexlify(seed), vbytes=VERSION_BYTES)
+    xpriv_key = bip32_ckd(bip32_ckd(bip32_ckd(master_key, 44+HARDENED), HARDENED+COIN_TYPE), HARDENED+account)
+
+    return xpriv_key
+
+
 def get_xpriv_keys(mnemonic, passphrase="", i=1):
     # BIP32 paths: m / purpose' / coin_type' / account' / change / address_index
     # ' means a hardened path is used
