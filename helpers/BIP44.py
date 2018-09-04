@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from bips.BIP32 import bip32_ckd, bip32_privtopub, bip32_master_key, bip32_extract_key, MAINNET_PRIVATE, TESTNET_PRIVATE
 from bips.BIP39 import get_seed
-from bips.BIP44 import get_addresses_from_xpub, get_change_addresses_from_xpub, get_xpriv_keys, get_xpub_keys
+from bips.BIP44 import get_addresses_from_xpub, get_change_addresses_from_xpub, get_xpriv_keys, get_xpub_keys, get_private_key
 from helpers.publickeyhelpers import pubkey_to_address
 from helpers.privatekeyhelpers import privkey_to_address, privkey_to_pubkey, encode_privkey
 
@@ -88,33 +88,6 @@ def set_testnet(testnet=False):
     """
     global MAGICBYTE, VBYTES, COIN_TYPE
     MAGICBYTE, VBYTES, COIN_TYPE = (111, TESTNET_PRIVATE, 1) if testnet is True else (0, MAINNET_PRIVATE, 0)
-
-
-
-
-
-
-
-
-
-
-
-def get_private_key(xpriv, i, k=0):
-    private_keys = {}
-    priv0 = bip32_ckd(xpriv, k)
-
-    private_key = bip32_ckd(priv0, i)
-    wif_key = encode_privkey(bip32_extract_key(private_key), 'wif_compressed', vbyte=MAGICBYTE)
-    address_from_private_key = privkey_to_address(wif_key, magicbyte=MAGICBYTE)
-    private_keys[address_from_private_key] = wif_key
-
-    return private_keys
-
-
-
-
-
-
 
 
 def show_details(mnemonic, passphrase="", n_accounts=1):

@@ -6,6 +6,7 @@ from binascii import hexlify, unhexlify
 from BIP32 import bip32_ckd, bip32_extract_key, MAGICBYTE, bip32_master_key, VERSION_BYTES, bip32_privtopub
 from BIP39 import get_seed
 from helpers.publickeyhelpers import encode_pubkey, pubkey_to_address
+from helpers.privatekeyhelpers import encode_privkey, privkey_to_address
 from helpers.configurationhelpers import get_use_testnet
 
 HARDENED = 2**31
@@ -118,3 +119,23 @@ def get_xpub_keys(mnemonic, passphrase="", i=1):
         xpubs.append(xpub)
 
     return xpubs
+
+
+def get_private_key(xpriv, i, k=0):
+    """
+    Get a private key derived from a xpriv key
+
+    :param xpriv: The xpriv key
+    :param i: The index of the address
+    :param k: 0=normal addresses, 1=change addresses
+    :return: A dict with the address as the key and the private key as the value
+    """
+    private_keys = {}
+    priv0 = bip32_ckd(xpriv, k)
+
+    private_key = bip32_ckd(priv0, i)
+    wif_key = encode_privkey(bip32_extract_key(private_key), 'wif_compressed', vbyte=MAGICBYTE)
+    address_from_private_key = privkey_to_address(wif_key, magicbyte=MAGICBYTE)
+    private_keys[address_from_private_key] = wif_key
+
+    return private_keys
