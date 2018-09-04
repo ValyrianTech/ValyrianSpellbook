@@ -128,10 +128,7 @@ def get_xpub_keys(mnemonic, passphrase="", i=1):
     return xpubs
 
 
-def get_xpub_key(mnemonic, passphrase="", account=0):
-    xpriv_key = get_xpriv_key(mnemonic=mnemonic, passphrase=passphrase, account=account)
-    xpub_key = bip32_privtopub(xpriv_key)
-    return xpub_key
+
 
 
 def show_details(mnemonic, passphrase="", n_accounts=1):
