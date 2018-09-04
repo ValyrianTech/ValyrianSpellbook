@@ -101,3 +101,20 @@ def get_xpub_key(mnemonic, passphrase="", account=0):
     xpriv_key = get_xpriv_key(mnemonic=mnemonic, passphrase=passphrase, account=account)
     xpub_key = bip32_privtopub(xpriv_key)
     return xpub_key
+
+
+def get_xpub_keys(mnemonic, passphrase="", i=1):
+    # BIP32 paths: m / purpose' / coin_type' / account' / change / address_index
+    # ' means a hardened path is used
+    # path for bitcoin mainnet is m/44'/0'/0'/0/0
+    # path for bitcoin testnet is m/44'/1'/0'/0/0
+
+    seed = hexlify(get_seed(mnemonic=mnemonic, passphrase=passphrase))
+    priv = bip32_master_key(unhexlify(seed), vbytes=VERSION_BYTES)
+    xpubs = []
+    for i in range(0, i):
+        derived_private_key = bip32_ckd(bip32_ckd(bip32_ckd(priv, 44+HARDENED), HARDENED+COIN_TYPE), HARDENED+i)
+        xpub = bip32_privtopub(derived_private_key)
+        xpubs.append(xpub)
+
+    return xpubs
