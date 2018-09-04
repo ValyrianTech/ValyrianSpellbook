@@ -3,7 +3,7 @@
 from binascii import hexlify, unhexlify
 
 
-from BIP32 import bip32_ckd, bip32_extract_key, MAGICBYTE, bip32_master_key, VERSION_BYTES
+from BIP32 import bip32_ckd, bip32_extract_key, MAGICBYTE, bip32_master_key, VERSION_BYTES, bip32_privtopub
 from BIP39 import get_seed
 from helpers.publickeyhelpers import encode_pubkey, pubkey_to_address
 from helpers.configurationhelpers import get_use_testnet
@@ -95,3 +95,9 @@ def get_xpriv_keys(mnemonic, passphrase="", i=1):
         xprivs.append(derived_private_key)
 
     return xprivs
+
+
+def get_xpub_key(mnemonic, passphrase="", account=0):
+    xpriv_key = get_xpriv_key(mnemonic=mnemonic, passphrase=passphrase, account=account)
+    xpub_key = bip32_privtopub(xpriv_key)
+    return xpub_key
