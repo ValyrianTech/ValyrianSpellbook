@@ -355,6 +355,30 @@ def num_to_var_int(x):
         return from_int_to_byte(255) + encode(x, 256, 8)[::-1]
 
 
+def b58check_to_hex(address):
+    """
+    Convert a base58check string to hexadecimal format
+
+    :param address: A Bitcoin address
+    :return: A base58check string in hexadecimal format
+    """
+    return safe_hexlify(b58check_to_bin(address))
+
+
+def b58check_to_bin(address):
+    """
+    Do a base58 check on the address and return the address minus first byte and the checksum (last 4 bytes) in binary format
+
+    :param address: A Bitcoin address
+    :return: A base58check string in binary format
+    """
+    leadingzbytes = len(re.match('^1*', address).group(0))  # number of leading zero bytes (1 == 0 in base58)
+    data = b'\x00' * leadingzbytes + changebase(address, 58, 256)
+    assert bin_dbl_sha256(data[:-4])[:4] == data[-4:]
+
+    return data[1:-4]
+
+
 def p2sh_script(address):
     """
     Make a Pay-To-Script-Hash (P2SH) script
@@ -450,10 +474,6 @@ else:
         return result
 
 
-def b58check_to_hex(inp):
-    return safe_hexlify(b58check_to_bin(inp))
-
-
 def ecdsa_raw_sign(msghash, priv):
 
     z = hash_to_int(msghash)
@@ -501,14 +521,6 @@ def serialize_script_unit(unit):
             return from_int_to_byte(77)+encode(len(unit), 256, 2)[::-1]+unit
         else:
             return from_int_to_byte(78)+encode(len(unit), 256, 4)[::-1]+unit
-
-
-def b58check_to_bin(inp):
-    leadingzbytes = len(re.match('^1*', inp).group(0))
-    data = b'\x00' * leadingzbytes + changebase(inp, 58, 256)
-    assert bin_dbl_sha256(data[:-4])[:4] == data[-4:]
-
-    return data[1:-4]
 
 
 def hash_to_int(x):
