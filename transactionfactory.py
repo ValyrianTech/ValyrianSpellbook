@@ -474,24 +474,6 @@ else:
         return result
 
 
-
-
-
-def der_encode_sig(v, r, s):
-    b1, b2 = safe_hexlify(encode(r, 256)), safe_hexlify(encode(s, 256))
-
-    if len(b1) and b1[0] in '89abcdef':
-        b1 = '00' + b1
-
-    if len(b2) and b2[0] in '89abcdef':
-        b2 = '00' + b2
-
-    left = '02'+encode(len(b1)//2, 16, 2)+b1
-    right = '02'+encode(len(b2)//2, 16, 2)+b2
-
-    return '30'+encode(len(left+right)//2, 16, 2)+left+right
-
-
 def serialize_script_unit(unit):
     if isinstance(unit, int):
         if unit < 16:
@@ -509,6 +491,21 @@ def serialize_script_unit(unit):
             return from_int_to_byte(77)+encode(len(unit), 256, 2)[::-1]+unit
         else:
             return from_int_to_byte(78)+encode(len(unit), 256, 4)[::-1]+unit
+
+
+def der_encode_sig(v, r, s):
+    b1, b2 = safe_hexlify(encode(r, 256)), safe_hexlify(encode(s, 256))
+
+    if len(b1) and b1[0] in '89abcdef':
+        b1 = '00' + b1
+
+    if len(b2) and b2[0] in '89abcdef':
+        b2 = '00' + b2
+
+    left = '02'+encode(len(b1)//2, 16, 2)+b1
+    right = '02'+encode(len(b2)//2, 16, 2)+b2
+
+    return '30'+encode(len(left+right)//2, 16, 2)+left+right
 
 
 def ecdsa_raw_sign(msghash, priv):
