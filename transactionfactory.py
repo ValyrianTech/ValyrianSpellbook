@@ -148,6 +148,8 @@ def add_op_return(msg, tx_hex=None):
         return serialize(txo)
 
 
+# copied from pybitcointools
+
 def serialize(txobj):
     # if isinstance(txobj, bytes):
     #    txobj = bytes_to_hex_string(txobj)
@@ -428,10 +430,6 @@ def ecdsa_raw_sign(msghash, priv):
     return v, r, s
 
 
-def bin_txhash(tx, hashcode=None):
-    return binascii.unhexlify(txhash(tx, hashcode))
-
-
 def der_encode_sig(v, r, s):
     b1, b2 = safe_hexlify(encode(r, 256)), safe_hexlify(encode(s, 256))
     if len(b1) and b1[0] in '89abcdef':
@@ -485,6 +483,10 @@ def deterministic_generate_k(msghash, priv):
     k = hmac.new(k, v+b'\x01'+priv+msghash, hashlib.sha256).digest()
     v = hmac.new(k, v, hashlib.sha256).digest()
     return decode(hmac.new(k, v, hashlib.sha256).digest(), 256)
+
+
+def bin_txhash(tx, hashcode=None):
+    return binascii.unhexlify(txhash(tx, hashcode))
 
 
 def txhash(tx, hashcode=None):
