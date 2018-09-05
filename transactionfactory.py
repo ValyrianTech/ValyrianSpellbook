@@ -290,14 +290,17 @@ def sign(tx, i, priv, hashcode=SIGHASH_ALL):
     i = int(i)
     if (not is_python2 and isinstance(re, bytes)) or not re.match('^[0-9a-fA-F]*$', tx):
         return binascii.unhexlify(sign(safe_hexlify(tx), i, priv))
+
     if len(priv) <= 33:
         priv = safe_hexlify(priv)
+
     pub = privkey_to_pubkey(priv)
     address = pubkey_to_address(pub)
-    signing_tx = signature_form(tx, i, mk_pubkey_script(address), hashcode)
+    signing_tx = signature_form(tx, i, p2pkh_script(address), hashcode)
     sig = ecdsa_tx_sign(signing_tx, priv, hashcode)
     txobj = deserialize(tx)
     txobj["ins"][i]["script"] = serialize_script([sig, pub])
+
     return serialize(txobj)
 
 
@@ -336,6 +339,7 @@ def json_changebase(obj, changer):
         return obj
     elif isinstance(obj, list):
         return [json_changebase(x, changer) for x in obj]
+
     return dict((x, json_changebase(obj[x], changer)) for x in obj)
 
 
@@ -351,20 +355,62 @@ def num_to_var_int(x):
         return from_int_to_byte(255) + encode(x, 256, 8)[::-1]
 
 
-def address_to_script(addr):
-    if addr[0] == '3' or addr[0] == '2':
-        return mk_scripthash_script(addr)
+def p2sh_script(address):
+    """
+    Make a Pay-To-Script-Hash (P2SH) script
+    This is the type of scripts used by multisig addresses -> starting with 3 (mainnet) or 2 (testnet)
+
+    OP_HASH160 <redeemScriptHash> OP_EQUAL
+    
+    a9         14             89 AB CD EF AB BA AB BA AB BA AB BA AB BA AB BA AB BA AB BA    87
+    OP_HASH160 Bytes to push  Data to push                                                   OP_EQUAL
+               14 hex = 20 bytes
+
+    :param address: A Bitcoin address
+    :return: a P2SH script
+    """
+    return 'a914' + b58check_to_hex(address) + '87'
+
+
+def p2pkh_script(address):
+    """
+    Make a Pay-To-Public-Key-Hash (P2PKH) script
+    This is the type of script old legacy addresses use -> starting with 1 (mainnet) or m or n (testnet)
+
+    OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG
+
+    76      a9            14             89 AB CD EF AB BA AB BA AB BA AB BA AB BA AB BA AB BA AB BA   88              ac
+    OP_DUP OP_HASH160    Bytes to push   Data to push                                                  OP_EQUALVERIFY OP_CHECKSIG
+                         14 hex = 20 bytes
+
+    :param address: A Bitcoin address
+    :return: a P2PKH script
+    """
+    return '76a914' + b58check_to_hex(address) + '88ac'
+
+
+def address_to_script(address):
+    """
+    Make the script based on the address
+
+    :param address: a Bitcoin address
+    :return: a P2SH or P2PKH script
+    """
+    if address[0] == '3' or address[0] == '2':
+        return p2sh_script(address)
     else:
-        return mk_pubkey_script(addr)
+        return p2pkh_script(address)
 
 
 def signature_form(tx, i, script, hashcode=SIGHASH_ALL):
     i, hashcode = int(i), int(hashcode)
     if isinstance(tx, string_or_bytes_types):
         return serialize(signature_form(deserialize(tx), i, script, hashcode))
+
     newtx = copy.deepcopy(tx)
     for inp in newtx["ins"]:
         inp["script"] = ""
+
     newtx["ins"][i]["script"] = script
     if hashcode == SIGHASH_NONE:
         newtx["outs"] = []
@@ -377,12 +423,8 @@ def signature_form(tx, i, script, hashcode=SIGHASH_ALL):
         newtx["ins"] = [newtx["ins"][i]]
     else:
         pass
+
     return newtx
-
-
-def mk_pubkey_script(addr):
-    # Keep the auxiliary functions around for altcoins' sake
-    return '76a914' + b58check_to_hex(addr) + '88ac'
 
 
 def ecdsa_tx_sign(tx, priv, hashcode=SIGHASH_ALL):
@@ -408,10 +450,6 @@ else:
         return result
 
 
-def mk_scripthash_script(addr):
-    return 'a914' + b58check_to_hex(addr) + '87'
-
-
 def b58check_to_hex(inp):
     return safe_hexlify(b58check_to_bin(inp))
 
@@ -427,17 +465,22 @@ def ecdsa_raw_sign(msghash, priv):
     v, r, s = 27+((y % 2) ^ (0 if s * 2 < N else 1)), r, s if s * 2 < N else N - s
     if 'compressed' in get_privkey_format(priv):
         v += 4
+
     return v, r, s
 
 
 def der_encode_sig(v, r, s):
     b1, b2 = safe_hexlify(encode(r, 256)), safe_hexlify(encode(s, 256))
+
     if len(b1) and b1[0] in '89abcdef':
         b1 = '00' + b1
+
     if len(b2) and b2[0] in '89abcdef':
         b2 = '00' + b2
+
     left = '02'+encode(len(b1)//2, 16, 2)+b1
     right = '02'+encode(len(b2)//2, 16, 2)+b2
+
     return '30'+encode(len(left+right)//2, 16, 2)+left+right
 
 
@@ -464,12 +507,14 @@ def b58check_to_bin(inp):
     leadingzbytes = len(re.match('^1*', inp).group(0))
     data = b'\x00' * leadingzbytes + changebase(inp, 58, 256)
     assert bin_dbl_sha256(data[:-4])[:4] == data[-4:]
+
     return data[1:-4]
 
 
 def hash_to_int(x):
     if len(x) in [40, 64]:
         return decode(x, 16)
+
     return decode(x, 256)
 
 
@@ -482,6 +527,7 @@ def deterministic_generate_k(msghash, priv):
     v = hmac.new(k, v, hashlib.sha256).digest()
     k = hmac.new(k, v+b'\x01'+priv+msghash, hashlib.sha256).digest()
     v = hmac.new(k, v, hashlib.sha256).digest()
+
     return decode(hmac.new(k, v, hashlib.sha256).digest(), 256)
 
 
