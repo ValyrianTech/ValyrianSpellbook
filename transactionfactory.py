@@ -544,17 +544,39 @@ def deterministic_generate_k(msghash, priv):
 
 
 def bin_txhash(tx, hashcode=None):
+    """
+    Get the transaction hash (txid) in binary format
+
+    :param tx: The transaction
+    :param hashcode: SIGHASH_ALL = 1, SIGHASH_NONE = 2, SIGHASH_SINGLE = 3, SIGHASH_ANYONECANPAY = 0x81
+    :return: a transaction hash (txid) in binary format
+    """
     return binascii.unhexlify(txhash(tx, hashcode))
 
 
 def txhash(tx, hashcode=None):
+    """
+    Get the transaction hash (txid)
+
+    :param tx: The transaction
+    :param hashcode: SIGHASH_ALL = 1, SIGHASH_NONE = 2, SIGHASH_SINGLE = 3, SIGHASH_ANYONECANPAY = 0x81
+    :return: a transaction hash (txid) in hexadecimal format
+    """
     if isinstance(tx, str) and re.match('^[0-9a-fA-F]*$', tx):
         tx = changebase(tx, 16, 256)
+
+    # [::-1] means the same as the list in reverse order
     if hashcode:
-        return dbl_sha256(from_string_to_bytes(tx) + encode(int(hashcode), 256, 4)[::-1])
+        return double_sha256(from_string_to_bytes(tx) + encode(int(hashcode), 256, 4)[::-1])
     else:
         return safe_hexlify(bin_dbl_sha256(tx)[::-1])
 
 
-def dbl_sha256(string):
+def double_sha256(string):
+    """
+    Do a double SHA256 hash on a string
+
+    :param string: A string
+    :return: The hash in hexadecimal format
+    """
     return safe_hexlify(bin_dbl_sha256(string))
