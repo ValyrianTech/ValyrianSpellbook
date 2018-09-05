@@ -474,19 +474,7 @@ else:
         return result
 
 
-def ecdsa_raw_sign(msghash, priv):
 
-    z = hash_to_int(msghash)
-    k = deterministic_generate_k(msghash, priv)
-
-    r, y = fast_multiply(G, k)
-    s = inv(k, N) * (z + r*decode_privkey(priv)) % N
-
-    v, r, s = 27+((y % 2) ^ (0 if s * 2 < N else 1)), r, s if s * 2 < N else N - s
-    if 'compressed' in get_privkey_format(priv):
-        v += 4
-
-    return v, r, s
 
 
 def der_encode_sig(v, r, s):
@@ -523,11 +511,32 @@ def serialize_script_unit(unit):
             return from_int_to_byte(78)+encode(len(unit), 256, 4)[::-1]+unit
 
 
-def hash_to_int(x):
-    if len(x) in [40, 64]:
-        return decode(x, 16)
+def ecdsa_raw_sign(msghash, priv):
 
-    return decode(x, 256)
+    z = hash_to_int(msghash)
+    k = deterministic_generate_k(msghash, priv)
+
+    r, y = fast_multiply(G, k)
+    s = inv(k, N) * (z + r*decode_privkey(priv)) % N
+
+    v, r, s = 27+((y % 2) ^ (0 if s * 2 < N else 1)), r, s if s * 2 < N else N - s
+    if 'compressed' in get_privkey_format(priv):
+        v += 4
+
+    return v, r, s
+
+
+def hash_to_int(string):
+    """
+    Convert a hash string to an integer
+
+    :param string: a hash string
+    :return: an integer
+    """
+    if len(string) in [40, 64]:
+        return decode(string, 16)
+
+    return decode(string, 256)
 
 
 def deterministic_generate_k(msghash, priv):
