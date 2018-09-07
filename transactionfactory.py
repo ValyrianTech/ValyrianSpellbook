@@ -9,6 +9,7 @@ from helpers.py3specials import *
 from helpers.privatekeyhelpers import privkey_to_pubkey, decode_privkey, get_privkey_format, encode_privkey
 from helpers.publickeyhelpers import pubkey_to_address
 from helpers.jacobianhelpers import fast_multiply, inv, G, N
+from helpers.bech32 import bech32_decode, decode
 
 from helpers.loghelpers import LOG
 
@@ -428,7 +429,11 @@ def p2wpkh_script(address):
     :param address: A Bitcoin address
     :return: a P2WPKH script
     """
-    return '0014' + b58check_to_hex(address)
+    hrp, data = bech32_decode(address)
+    version, decoded = decode(hrp=hrp, addr=address)
+    pubkeyhash = ''.join([chr(a) for a in decoded])
+
+    return '0014' + safe_hexlify(pubkeyhash)
 
 
 def p2wsh_script(address):
@@ -446,7 +451,11 @@ def p2wsh_script(address):
     :param address: A Bitcoin address
     :return: a P2WPKH script
     """
-    return '0020' + b58check_to_hex(address)
+    hrp, data = bech32_decode(address)
+    version, decoded = decode(hrp=hrp, addr=address)
+    scripthash = ''.join([chr(a) for a in decoded])
+
+    return '0020' + safe_hexlify(scripthash)
 
 
 def address_to_script(address):
