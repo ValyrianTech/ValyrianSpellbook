@@ -431,6 +431,24 @@ def p2wpkh_script(address):
     return '0014' + b58check_to_hex(address)
 
 
+def p2wsh_script(address):
+    """
+    Make a Pay-To-Witness-Script-Hash (P2WSH) script
+    This is the type of script used by the new bech32 addresses (multisig) -> starting with bc1 (mainnet) or tb1 (testnet)
+
+    0 <script hash>
+
+    00 20            89 AB CD EF AB BA AB BA AB BA AB BA AB BA AB BA AB BA AB BA AB BA AB BA AB BA AB BA AB BA AB BA
+    0  Bytes to push Data to push
+
+    20 hex = 32 bytes
+
+    :param address: A Bitcoin address
+    :return: a P2WPKH script
+    """
+    return '0020' + b58check_to_hex(address)
+
+
 def address_to_script(address):
     """
     Make the script based on the address
