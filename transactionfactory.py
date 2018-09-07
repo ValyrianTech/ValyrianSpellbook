@@ -466,9 +466,16 @@ def address_to_script(address):
     :return: a P2SH or P2PKH script
     """
     if address[0] == '3' or address[0] == '2':
-        return p2sh_script(address)
+        return p2sh_script(address=address)
+    elif address[:3] == 'bc1' or address[:3] == 'tb1':
+        if len(address) == 42:
+            return p2wpkh_script(address=address)
+        elif len(address) == 62:
+            return p2wsh_script(address=address)
+        else:
+            raise Exception('Invalid version 0 bech32 address (length must be 42 or 62): %s' % address)
     else:
-        return p2pkh_script(address)
+        return p2pkh_script(address=address)
 
 
 def signature_form(tx, i, script, hashcode=SIGHASH_ALL):
