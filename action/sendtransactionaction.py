@@ -10,7 +10,7 @@ from data.data import utxos, prime_input_address, push_tx
 from bips.BIP44 import get_xpriv_key, get_private_key
 from helpers.configurationhelpers import get_max_tx_fee_percentage
 from helpers.configurationhelpers import get_minimum_output_value
-from helpers.feehelpers import get_optimal_fee, get_high_priority_fee
+from helpers.feehelpers import get_medium_priority_fee, get_high_priority_fee, get_low_priority_fee
 from helpers.hotwallethelpers import get_address_from_wallet
 from helpers.hotwallethelpers import get_hot_wallet
 from inputs.inputs import get_sil
@@ -26,9 +26,16 @@ class SendTransactionAction(Action):
     def __init__(self, action_id):
         super(SendTransactionAction, self).__init__(action_id=action_id)
         self.action_type = ActionType.SENDTRANSACTION
+
+        # These are for the spellbook fees, not to be confused with transaction fees
         self.fee_address = None
         self.fee_percentage = 0
         self.fee_minimum_amount = 1000
+
+        # These are for the transaction fee
+        self.tx_fee_type = 'High'
+        self.tx_fee = 0
+
         self.wallet_type = None
         self.sending_address = None
         self.bip44_account = None
@@ -122,6 +129,12 @@ class SendTransactionAction(Action):
         if 'distribution' in config and valid_distribution(config['distribution']):
             self.distribution = config['distribution']
 
+        if 'tx_fee_type' in config and config['tx_fee_type'] in ['High', 'Medium', 'Low', 'Fixed']:
+            self.tx_fee_type = config['tx_fee_type']
+
+        if 'tx_fee' in config and valid_amount(config['tx_fee']) and self.tx_fee_type == 'Fixed':
+            self.tx_fee = config['tx_fee']
+
         # fill in the address in case of a BIP44 hot wallet
         if self.wallet_type == 'BIP44':
             self.sending_address = get_address_from_wallet(self.bip44_account, self.bip44_index)
@@ -150,6 +163,8 @@ class SendTransactionAction(Action):
                     'registration_address': self.registration_address,
                     'registration_block_height': self.registration_block_height,
                     'registration_xpub': self.registration_xpub,
+                    'tx_fee_type': self.tx_fee_type,
+                    'tx_fee': self.tx_fee,
                     'distribution': self.distribution})
         return ret
 
@@ -238,14 +253,26 @@ class SendTransactionAction(Action):
         if transaction is None:
             return False
 
-        # Get the current optimal transaction fee
-        optimal_fee = get_high_priority_fee()  # todo add option to choose fee type
-        LOG.info('Optimal transaction fee is %s sat/b' % optimal_fee)
+        # Get the transaction fee in satoshis per byte
+        if self.tx_fee_type == 'High':
+            satoshis_per_byte = get_high_priority_fee()
+        elif self.tx_fee_type == 'Medium':
+            satoshis_per_byte = get_medium_priority_fee()
+        elif self.tx_fee_type == 'Low':
+            satoshis_per_byte = get_low_priority_fee()
+        elif self.tx_fee_type == 'Fixed' and isinstance(self.tx_fee, int) and self.tx_fee >= 0:
+            satoshis_per_byte = self.tx_fee
+        elif self.tx_fee_type == 'Fixed':
+            raise Exception('Invalid fixed transaction fee amount: %s' % self.tx_fee)
+        else:
+            raise NotImplementedError('Unknown transaction fee type: %s' % self.tx_fee_type)
+
+        LOG.info('%s transaction fee is %s sat/b' % (self.tx_fee_type, satoshis_per_byte))
 
         # Because the transaction is in hexadecimal, to calculate the size in bytes all we need to do is divide the number of characters by 2
         transaction_size = len(transaction) / 2
-        transaction_fee = transaction_size * optimal_fee
-        LOG.info('Transaction size is %s bytes, total transaction fee = %s (%s sat/b)' % (transaction_size, transaction_fee, optimal_fee))
+        transaction_fee = transaction_size * satoshis_per_byte
+        LOG.info('Transaction size is %s bytes, total transaction fee = %s (%s sat/b)' % (transaction_size, transaction_fee, satoshis_per_byte))
 
         # if the total available amount needs to be sent, then transaction fee should be equally subtracted from all receiving_outputs
         if self.amount == 0:

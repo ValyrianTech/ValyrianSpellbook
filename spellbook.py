@@ -413,8 +413,8 @@ save_action_parser.add_argument('-w', '--webhook', help='The url of a webhook, o
 save_action_parser.add_argument('-rt', '--reveal_text', help='The text to reveal when the action is activated, only applicable to RevealSecret Actions')
 save_action_parser.add_argument('-rl', '--reveal_link', help='The link to reveal when the action is activated, only applicable to RevealSecret Actions')
 
-save_action_parser.add_argument('-fa', '--fee_address', help='The address to send the fee to')
-save_action_parser.add_argument('-fp', '--fee_percentage', help='The fee as a percentage', type=float)
+save_action_parser.add_argument('-fa', '--fee_address', help='The address to send the spellbook fee to')
+save_action_parser.add_argument('-fp', '--fee_percentage', help='The spellbook fee as a percentage', type=float)
 
 save_action_parser.add_argument('-wt', '--wallet_type', help='The type of the wallet of the sending address (Single or BIP44)', choices=['Single', 'BIP44'])
 save_action_parser.add_argument('-sa', '--sending_address', help='The address to send the funds from')
@@ -435,6 +435,8 @@ save_action_parser.add_argument('-tt', '--transaction_type', help='The type of t
 save_action_parser.add_argument('-reg_a', '--registration_address', help='The address used for the registration of a distribution')
 save_action_parser.add_argument('-reg_b', '--registration_block_height', help='The block height used for the registration of a distribution, 0=latest block height', default=0, type=int)
 save_action_parser.add_argument('-reg_x', '--registration_xpub', help='The xpub key used for the registration of a distribution')
+save_action_parser.add_argument('-tft', '--tx_fee_type', help='The type of transaction fee to use: High, Medium, Low or Fixed', choices=['High', 'Medium', 'Low', 'Fixed'], default='Medium')
+save_action_parser.add_argument('-tf', '--tx_fee', help='The transaction fee in satoshis per byte to use in case of Fixed fee type', type=int)
 
 save_action_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
 save_action_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
@@ -850,6 +852,12 @@ def save_action():
 
     if args.registration_xpub is not None:
         data['registration_xpub'] = args.registration_xpub
+
+    if args.tx_fee_type is not None:
+        data['tx_fee_type'] = args.tx_fee_type
+
+    if args.tx_fee is not None and args.tx_fee_type == 'Fixed':
+        data['tx_fee'] = args.tx_fee
 
     if args.distribution is not None and os.path.isfile(args.distribution):
         with open(args.distribution, 'r') as input_file:
