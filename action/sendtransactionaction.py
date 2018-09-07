@@ -10,7 +10,7 @@ from data.data import utxos, prime_input_address, push_tx
 from bips.BIP44 import get_xpriv_key, get_private_key
 from helpers.configurationhelpers import get_max_tx_fee_percentage
 from helpers.configurationhelpers import get_minimum_output_value
-from helpers.feehelpers import get_optimal_fee
+from helpers.feehelpers import get_optimal_fee, get_high_priority_fee
 from helpers.hotwallethelpers import get_address_from_wallet
 from helpers.hotwallethelpers import get_hot_wallet
 from inputs.inputs import get_sil
@@ -19,6 +19,7 @@ from transactionfactory import make_custom_tx
 from transactiontype import TransactionType
 from validators.validators import valid_address, valid_xpub, valid_amount, valid_op_return, valid_block_height
 from validators.validators import valid_transaction_type, valid_distribution, valid_percentage
+
 
 # Todo add option only_once so the action can not be run multiple times as a safety measure
 class SendTransactionAction(Action):
@@ -238,7 +239,7 @@ class SendTransactionAction(Action):
             return False
 
         # Get the current optimal transaction fee
-        optimal_fee = get_optimal_fee()
+        optimal_fee = get_high_priority_fee()  # todo add option to choose fee type
         LOG.info('Optimal transaction fee is %s sat/b' % optimal_fee)
 
         # Because the transaction is in hexadecimal, to calculate the size in bytes all we need to do is divide the number of characters by 2
