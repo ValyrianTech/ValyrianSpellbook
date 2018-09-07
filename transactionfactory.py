@@ -9,7 +9,8 @@ from helpers.py3specials import *
 from helpers.privatekeyhelpers import privkey_to_pubkey, decode_privkey, get_privkey_format, encode_privkey
 from helpers.publickeyhelpers import pubkey_to_address
 from helpers.jacobianhelpers import fast_multiply, inv, G, N
-from helpers.bech32 import bech32_decode, decode
+from helpers.bech32 import bech32_decode
+from helpers.bech32 import decode as decode_witness_program
 
 from helpers.loghelpers import LOG
 
@@ -430,7 +431,7 @@ def p2wpkh_script(address):
     :return: a P2WPKH script
     """
     hrp, data = bech32_decode(address)
-    version, decoded = decode(hrp=hrp, addr=address)
+    version, decoded = decode_witness_program(hrp=hrp, addr=address)
     pubkeyhash = ''.join([chr(a) for a in decoded])
 
     return '0014' + safe_hexlify(pubkeyhash)
@@ -452,7 +453,7 @@ def p2wsh_script(address):
     :return: a P2WPKH script
     """
     hrp, data = bech32_decode(address)
-    version, decoded = decode(hrp=hrp, addr=address)
+    version, decoded = decode_witness_program(hrp=hrp, addr=address)
     scripthash = ''.join([chr(a) for a in decoded])
 
     return '0020' + safe_hexlify(scripthash)
