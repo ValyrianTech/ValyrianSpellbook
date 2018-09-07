@@ -6,9 +6,9 @@ from helpers.loghelpers import LOG
 from helpers.configurationhelpers import get_use_testnet
 
 
-def get_optimal_fee():
+def get_medium_priority_fee():
     data = get_recommended_fee_blockcypher()
-    return int(data['optimal']/1024)
+    return int(data['medium_priority']/1024)
 
 
 def get_low_priority_fee():
@@ -33,7 +33,7 @@ def get_recommended_fee():
 
     return {'high_priority': data['fastestFee']*1024,
             'low_priority': data['hourFee']*1024,
-            'optimal': data['halfHourFee']*1024}
+            'medium_priority': data['halfHourFee']*1024}
 
 
 def get_recommended_fee_blockcypher():
@@ -48,4 +48,4 @@ def get_recommended_fee_blockcypher():
 
     return {'high_priority': data['high_fee_per_kb'],
             'low_priority': data['low_fee_per_kb'],
-            'optimal': data['medium_fee_per_kb']}
+            'medium_priority': data['medium_fee_per_kb']}
