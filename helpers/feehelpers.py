@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 import requests
 
-from data.data import get_explorer_api
 from helpers.loghelpers import LOG
 from helpers.configurationhelpers import get_use_testnet
 
