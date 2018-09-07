@@ -451,11 +451,6 @@ def signature_form(tx, i, script, hashcode=SIGHASH_ALL):
     return newtx
 
 
-def ecdsa_tx_sign(tx, priv, hashcode=SIGHASH_ALL):
-    rawsig = ecdsa_raw_sign(bin_txhash(tx, hashcode), priv)
-    return der_encode_sig(*rawsig)+encode(hashcode, 16, 2)
-
-
 if is_python2:
     def serialize_script(script):
         if json_is_base(script, 16):
@@ -506,6 +501,11 @@ def der_encode_sig(v, r, s):
     right = '02'+encode(len(b2)//2, 16, 2)+b2
 
     return '30'+encode(len(left+right)//2, 16, 2)+left+right
+
+
+def ecdsa_tx_sign(tx, priv, hashcode=SIGHASH_ALL):
+    rawsig = ecdsa_raw_sign(bin_txhash(tx, hashcode), priv)
+    return der_encode_sig(*rawsig)+encode(hashcode, 16, 2)
 
 
 def ecdsa_raw_sign(msghash, priv):
