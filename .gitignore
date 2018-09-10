@@ -135,3 +135,14 @@ configuration/Spellbook.conf
 
 # IPFS
 ipfs/
+
+
+# apps
+apps
+
+# do include the example apps
+!apps/Splitter
+!apps/Dividends
+!apps/Lottery
+!apps/Notary
+!apps/PaymentProcessor
