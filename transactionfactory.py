@@ -24,7 +24,7 @@ SIGHASH_ANYONECANPAY = 0x81
 is_python2 = sys.version_info.major == 2
 
 
-def make_custom_tx(private_keys, tx_inputs, tx_outputs, tx_fee=0, op_return_data=None):
+def make_custom_tx(private_keys, tx_inputs, tx_outputs, tx_fee=0, op_return_data=None, allow_zero_conf=False):
     """
     Construct a custom transaction
 
@@ -34,6 +34,7 @@ def make_custom_tx(private_keys, tx_inputs, tx_outputs, tx_fee=0, op_return_data
     :param tx_outputs: a list of dicts containing the keys 'address' and 'value'
     :param tx_fee: The total transaction fee in satoshis (The fee must be equal to the difference of the inputs and the outputs, this is an extra safety precaution)
     :param op_return_data: an optional message to add as an OP_RETURN output (max 80 chars)
+    :param allow_zero_conf: Allow zero confirmation inputs (default=False)
     :return: A raw transaction
     """
     # Check if the transaction fee is valid
@@ -56,11 +57,12 @@ def make_custom_tx(private_keys, tx_inputs, tx_outputs, tx_fee=0, op_return_data
         LOG.error("At least 1 private key is missing.")
         return
 
-    # Check if all inputs have at least 1 confirmation
-    all_inputs_confirmed = all([tx_input['confirmations'] > 0 for tx_input in tx_inputs])
-    if not all_inputs_confirmed:
-        LOG.error("At least 1 input is unconfirmed.")
-        return
+    if allow_zero_conf is False:
+        # Check if all inputs have at least 1 confirmation
+        all_inputs_confirmed = all([tx_input['confirmations'] > 0 for tx_input in tx_inputs])
+        if not all_inputs_confirmed:
+            LOG.error("At least 1 input is unconfirmed.")
+            return
 
     # Check if an OP_RETURN message needs to be added and if it is valid
     if isinstance(op_return_data, (str, unicode)) and len(op_return_data) > 80:
