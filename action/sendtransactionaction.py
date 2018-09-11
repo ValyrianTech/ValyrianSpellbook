@@ -54,6 +54,8 @@ class SendTransactionAction(Action):
         self.minimum_output_value = get_minimum_output_value()
         self.unspent_outputs = None
 
+        self.utxo_confirmations = 1
+
     def configure(self, **config):
         """
         Configure the action with given config settings
@@ -135,6 +137,9 @@ class SendTransactionAction(Action):
         if 'tx_fee' in config and valid_amount(config['tx_fee']) and self.tx_fee_type == 'Fixed':
             self.tx_fee = config['tx_fee']
 
+        if 'utxo_confirmations' in config and valid_amount(config['utxo_confirmations']):
+            self.utxo_confirmations = config['utxo_confirmations']
+
         # fill in the address in case of a BIP44 hot wallet
         if self.wallet_type == 'BIP44':
             self.sending_address = get_address_from_wallet(self.bip44_account, self.bip44_index)
@@ -165,6 +170,7 @@ class SendTransactionAction(Action):
                     'registration_xpub': self.registration_xpub,
                     'tx_fee_type': self.tx_fee_type,
                     'tx_fee': self.tx_fee,
+                    'utxo_confirmations': self.utxo_confirmations,
                     'distribution': self.distribution})
         return ret
 
@@ -186,7 +192,7 @@ class SendTransactionAction(Action):
         #
         # The benefit of this is that it will result in automatic consolidation of utxos, in the long run this is preferred otherwise you will end up with many small
         # utxos that might cost more in fees than they are worth
-        data = utxos(address=self.sending_address, confirmations=1)
+        data = utxos(address=self.sending_address, confirmations=self.utxo_confirmations)
         if 'utxos' in data:
             self.unspent_outputs = [TransactionInput(address=self.sending_address,
                                                      value=utxo['value'],
@@ -248,7 +254,7 @@ class SendTransactionAction(Action):
             return False
 
         # Make transaction without fee first to get the size
-        transaction = make_custom_tx(private_keys=private_keys, tx_inputs=tx_inputs, tx_outputs=tx_outputs, op_return_data=self.op_return_data)
+        transaction = make_custom_tx(private_keys=private_keys, tx_inputs=tx_inputs, tx_outputs=tx_outputs, op_return_data=self.op_return_data, allow_zero_conf=True if self.utxo_confirmations == 0 else False)
 
         if transaction is None:
             return False
@@ -312,7 +318,7 @@ class SendTransactionAction(Action):
             return False
 
         # Now make the real transaction including the transaction fee
-        transaction = make_custom_tx(private_keys=private_keys, tx_inputs=tx_inputs, tx_outputs=tx_outputs, op_return_data=self.op_return_data, tx_fee=transaction_fee)
+        transaction = make_custom_tx(private_keys=private_keys, tx_inputs=tx_inputs, tx_outputs=tx_outputs, op_return_data=self.op_return_data, tx_fee=transaction_fee, allow_zero_conf=True if self.utxo_confirmations == 0 else False)
 
         # explicitly delete local variable private_keys for security reasons as soon as possible
         del private_keys
