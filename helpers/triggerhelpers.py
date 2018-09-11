@@ -8,6 +8,7 @@ import time
 from helpers.loghelpers import LOG
 from trigger.balancetrigger import BalanceTrigger
 from trigger.blockheighttrigger import BlockHeightTrigger
+from trigger.txconfirmationtrigger import TxConfirmationTrigger
 from trigger.deadmansswitchtrigger import DeadMansSwitchTrigger
 from helpers.jsonhelpers import load_from_json_file
 from trigger.manualtrigger import ManualTrigger
@@ -63,6 +64,7 @@ def get_trigger(trigger_id, trigger_type=None):
     - ReceivedTrigger
     - SentTrigger
     - BlockHeightTrigger
+    - TxConfirmationTrigger
     - TimestampTrigger
     - RecurringTrigger
     - TriggerStatusTrigger
@@ -86,6 +88,8 @@ def get_trigger(trigger_id, trigger_type=None):
         trigger = SentTrigger(trigger_id)
     elif trigger_config['trigger_type'] == TriggerType.BLOCK_HEIGHT:
         trigger = BlockHeightTrigger(trigger_id)
+    elif trigger_config['trigger_type'] == TriggerType.TX_CONFIRMATION:
+        trigger = TxConfirmationTrigger(trigger_id)
     elif trigger_config['trigger_type'] == TriggerType.TIMESTAMP:
         trigger = TimestampTrigger(trigger_id)
     elif trigger_config['trigger_type'] == TriggerType.RECURRING:
