@@ -15,7 +15,7 @@ from helpers.hotwallethelpers import get_address_from_wallet
 from helpers.hotwallethelpers import get_hot_wallet
 from inputs.inputs import get_sil
 from linker.linker import get_lbl, get_lrl, get_lsl, get_lal
-from transactionfactory import make_custom_tx
+from transactionfactory import make_custom_tx, txhash
 from transactiontype import TransactionType
 from validators.validators import valid_address, valid_xpub, valid_amount, valid_op_return, valid_block_height
 from validators.validators import valid_transaction_type, valid_distribution, valid_percentage
@@ -55,6 +55,9 @@ class SendTransactionAction(Action):
         self.unspent_outputs = None
 
         self.utxo_confirmations = 1
+
+        # Used to store the txid after it has been sent
+        self.txid = None
 
     def configure(self, **config):
         """
@@ -327,6 +330,9 @@ class SendTransactionAction(Action):
             return False
 
         LOG.info('Raw transaction: %s' % transaction)
+
+        self.txid = txhash(tx=transaction)
+        LOG.info('Txid: %s' % self.txid)
 
         # Broadcast the transaction to the network
         response = push_tx(tx=transaction)
