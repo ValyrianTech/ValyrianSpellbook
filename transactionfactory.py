@@ -123,15 +123,22 @@ def num_to_op_push(x):
     return pc + num
 
 
-def wrap_script(hexdata):
-    if re.match('^[0-9a-fA-F]*$', hexdata):
-        return binascii.hexlify(wrap_script(binascii.unhexlify(hexdata)))
-    return num_to_op_push(len(hexdata)) + hexdata
+def op_return_script(hex_data):
+    """
+    Construct the OP_RETURN script for given data
+
+    :param hex_data: The data to add as OP_RETURN in hexadecimal format
+    :return: The OP_RETURN script
+    """
+    if re.match('^[0-9a-fA-F]*$', hex_data) is None or len(hex_data) % 2 != 0:
+        raise Exception('Data to add as OP_RETURN must be in hex format')
+
+    return '6a' + safe_hexlify(num_to_op_push(len(hex_data)/2)) + hex_data
 
 
 def add_op_return(msg, tx_hex=None):
     """Makes OP_RETURN script from msg, embeds in Tx hex"""
-    hex_data = binascii.hexlify(b'\x6a' + wrap_script(msg))
+    hex_data = op_return_script(hex_data=safe_hexlify(msg))
 
     if tx_hex is None:
         return hex_data

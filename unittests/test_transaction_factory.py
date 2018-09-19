@@ -1,8 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import pytest
+import binascii
+from random import choice, randint
+from string import lowercase
 
 from transactionfactory import p2pkh_script, p2sh_script, p2wpkh_script, p2wsh_script, address_to_script
+from transactionfactory import op_return_script, num_to_op_push
+from data.transaction import TX
 
 
 class TestTransactionFactory(object):
@@ -52,3 +57,35 @@ class TestTransactionFactory(object):
     ])
     def test_address_to_script(self, address, expected):
         assert address_to_script(address=address) == expected
+
+    def test_num_to_op_push(self):
+        for num in range(1, 1024):
+            op_push = binascii.hexlify(num_to_op_push(num))
+            print('%s -> %s' % (num, op_push))
+            # Todo add check length, there seems to be a bug with data longer than 255 chars, not really a problem because we don't allow more than the standard 80 chars (40 bytes)
+
+    def test_op_return_script_with_strings_of_various_lengths(self):
+
+        for x in range(1, 81):
+            message = 'a' * x
+
+            script = op_return_script(hex_data=binascii.hexlify(message))
+            print(message)
+            print(script)
+
+            assert TX().decode_op_return(hex_data=script) == message
+
+    def test_op_return_script_with_random_string(self):
+
+        for x in range(10000):
+            print('')
+            random_length = randint(1, 81)
+            random_string = "".join(choice(lowercase) for i in range(random_length))
+
+            script = op_return_script(hex_data=binascii.hexlify(random_string))
+            print(random_string)
+            print(script)
+
+            assert TX().decode_op_return(hex_data=script) == random_string
+
+
