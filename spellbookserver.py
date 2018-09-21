@@ -414,6 +414,11 @@ class SpellbookRESTAPI(Bottle):
     def http_get_request(trigger_id):
         response.content_type = 'application/json'
         data = request.json if request.json is not None else {}
+
+        # Also add parameters passed via the query string to the data, if any parameters have the same name then the query string has priority
+        query = dict(request.query)
+        data.update(query)
+
         return http_get_request(trigger_id, **data)
 
     @staticmethod
@@ -421,6 +426,11 @@ class SpellbookRESTAPI(Bottle):
     def http_post_request(trigger_id):
         response.content_type = 'application/json'
         data = request.json if request.json is not None else {}
+
+        # Also add parameters passed via the query string to the data, if any parameters have the same name then the query string has priority
+        query = dict(request.query)
+        data.update(query)
+
         return http_post_request(trigger_id, **data)
 
     @staticmethod
@@ -428,6 +438,11 @@ class SpellbookRESTAPI(Bottle):
     def http_delete_request(trigger_id):
         response.content_type = 'application/json'
         data = request.json if request.json is not None else {}
+
+        # Also add parameters passed via the query string to the data, if any parameters have the same name then the query string has priority
+        query = dict(request.query)
+        data.update(query)
+
         return http_delete_request(trigger_id, **data)
 
     @staticmethod
