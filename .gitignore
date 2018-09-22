@@ -139,6 +139,7 @@ ipfs/
 
 # apps
 apps
+app_data
 
 # do include the example apps
 !apps/Splitter
