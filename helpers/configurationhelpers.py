@@ -60,6 +60,11 @@ def get_minimum_output_value():
     return int(spellbook_config().get('Transactions', 'minimum_output_value'))
 
 
+@verify_config('SMTP', 'enable_smtp')
+def get_enable_smtp():
+    return spellbook_config().get('SMTP', 'enable_smtp')
+
+
 @verify_config('SMTP', 'from_address')
 def get_smtp_from_address():
     return spellbook_config().get('SMTP', 'from_address')
@@ -83,6 +88,11 @@ def get_smtp_user():
 @verify_config('SMTP', 'password')
 def get_smtp_password():
     return spellbook_config().get('SMTP', 'password')
+
+
+@verify_config('IPFS', 'enable_ipfs')
+def get_enable_ipfs():
+    return spellbook_config().get('IPFS', 'enable_ipfs')
 
 
 @verify_config('IPFS', 'host')
