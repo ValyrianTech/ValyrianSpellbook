@@ -6,6 +6,7 @@ import smtplib
 
 from helpers.loghelpers import LOG
 from helpers.configurationhelpers import get_smtp_from_address, get_smtp_host, get_smtp_port, get_smtp_user, get_smtp_password
+from helpers.configurationhelpers import get_enable_smtp
 
 
 FROM_ADDRESS = ''
@@ -41,6 +42,10 @@ def sendmail(recipients, subject, body_template, variables=None):
     """
     if variables is None:
         variables = {}
+
+    if get_enable_smtp() is False:
+        LOG.warning('SMTP is disabled, mail will not be sent! see spellbook configuration file')
+        return True  # Return true here so everything continues as normal
 
     # Load the smtp settings
     load_smtp_settings()
