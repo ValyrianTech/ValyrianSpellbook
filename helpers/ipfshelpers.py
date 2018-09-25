@@ -7,17 +7,18 @@ import shutil
 import zipfile
 
 from helpers.loghelpers import LOG
-from helpers.configurationhelpers import get_ipfs_host, get_ipfs_port
+from helpers.configurationhelpers import get_ipfs_host, get_ipfs_port, get_enable_ipfs
 from helpers.jsonhelpers import save_to_json_file
 
 IPFS_API = None
 IPFS_CACHE = {}
 
-# Check if IPFS node is running
-try:
-    IPFS_API = ipfsapi.connect(get_ipfs_host(), get_ipfs_port())
-except Exception as ex:
-    LOG.error('IPFS node is not running: %s' % ex)
+if get_enable_ipfs() is True:
+    # Check if IPFS node is running
+    try:
+        IPFS_API = ipfsapi.connect(get_ipfs_host(), get_ipfs_port())
+    except Exception as ex:
+        LOG.error('IPFS node is not running: %s' % ex)
 
 
 def add_json(data):
