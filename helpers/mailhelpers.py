@@ -31,7 +31,7 @@ def load_smtp_settings():
 
 def sendmail(recipients, subject, body_template, variables=None):
     """
-    Send an email using the smtp settings in the Spellbook.conf file
+    Send an email using the smtp settings in the spellbook.conf file
 
     :param recipients: Email address(es) of the recipient(s) separated by comma
     :param subject: The subject for the email

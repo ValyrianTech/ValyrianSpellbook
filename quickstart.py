@@ -7,13 +7,13 @@ from authentication import initialize_api_keys_file
 
 PROGRAM_DIR = os.path.abspath(os.path.dirname(__file__))
 
-configuration_file = os.path.join(PROGRAM_DIR, 'configuration', 'Spellbook.conf')
+configuration_file = os.path.join(PROGRAM_DIR, 'configuration', 'spellbook.conf')
 
 config = ConfigParser()
 if not os.path.isfile(configuration_file):
     config.read(os.path.join(PROGRAM_DIR, 'configuration', 'example_configuration_file.conf'))
 else:
-    config.read(os.path.join(PROGRAM_DIR, 'configuration', 'Spellbook.conf'))
+    config.read(os.path.join(PROGRAM_DIR, 'configuration', 'spellbook.conf'))
 
 
 # RESTAPI settings

@@ -131,7 +131,7 @@ spellbookscripts/
 !spellbookscripts/Echo.py
 
 # spellbookconfiguration
-configuration/Spellbook.conf
+configuration/spellbook.conf
 
 # IPFS
 ipfs/

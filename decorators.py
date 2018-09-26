@@ -11,7 +11,7 @@ from authentication import check_authentication, AuthenticationStatus
 from data.data import set_explorer, clear_explorer, get_last_explorer
 
 
-CONFIGURATION_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "configuration", "Spellbook.conf"))
+CONFIGURATION_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "configuration", "spellbook.conf"))
 
 
 def authentication_required(f):
