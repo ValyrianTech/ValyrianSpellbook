@@ -5,7 +5,7 @@ import os
 from ConfigParser import ConfigParser
 from decorators import verify_config
 
-CONFIGURATION_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "configuration", "Spellbook.conf"))
+CONFIGURATION_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "configuration", "spellbook.conf"))
 
 
 def spellbook_config():

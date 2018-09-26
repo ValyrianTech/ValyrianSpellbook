@@ -17,7 +17,7 @@ from pprint import pprint
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 # Read the spellbook configuration file
-spellbook_configuration_file = 'configuration/Spellbook.conf'
+spellbook_configuration_file = 'configuration/spellbook.conf'
 config = ConfigParser()
 config.read(spellbook_configuration_file)
 

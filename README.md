@@ -18,7 +18,7 @@ Prerequisites
 Instructions
 ------------
 
-1. In the 'configuration' folder, you will find an example configuration file, fill in the required values and rename the file to '**Spellbook.conf**'  
+1. In the 'configuration' folder, you will find an example configuration file, fill in the required values and rename the file to '**spellbook.conf**'  
 
 2. Using the **hot_wallet.py** CLI, add the private keys of the addresses or the mnemonic seed of a BIP44 wallet that your app will use.  
 You will need to provide a password to encrypt the hot wallet.
