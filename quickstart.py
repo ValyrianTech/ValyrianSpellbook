@@ -122,4 +122,10 @@ with open(configuration_file, 'w') as output_file:
     config.write(output_file)
     print('spellbook.conf file updated')
 
+print("")
 print("Don't forget to initialize the hot wallet before starting the spellbookserver")
+print("use command: ./hot_wallet.py set_bip44 <your 12 or 24 mnemonic words>")
+print("")
+print("To keep the server running after you close the session use the following command:")
+print("nohup ./spellbookserver.py &")
+print("")
