@@ -118,7 +118,8 @@ if config.getboolean(section='IPFS', option='enable_ipfs') is True:
     config.set(section='IPFS', option='port', value=port)
 
 
-
 with open(configuration_file, 'w') as output_file:
     config.write(output_file)
+    print('spellbook.conf file updated')
 
+print("Don't forget to initialize the hot wallet before starting the spellbookserver")
