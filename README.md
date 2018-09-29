@@ -1,4 +1,4 @@
-# BitcoinSpellbook-v0.3
+# BitcoinSpellbook
 
 The Bitcoin Spellbook is an Open Source platform that lets you create the back-end of your own Bitcoin application.
 
