@@ -7,7 +7,7 @@
 # usermod -aG sudo spellbook
 # su spellbook
 # cd ~
-# wget https://raw.githubusercontent.com/ValyrianTech/BitcoinSpellbook-v0.3/master/install-spellbook.sh
+# wget https://raw.githubusercontent.com/ValyrianTech/BitcoinSpellbook/master/install-spellbook.sh
 # sh install-spellbook.h
 
 cd ~
@@ -18,9 +18,12 @@ sudo apt-get install git python2.7 python-dev python-pip -y
 mkdir spellbook_wallet
 mkdir spellbook_data
 
-git clone https://github.com/ValyrianTech/BitcoinSpellbook-v0.3.git spellbook
+git clone https://github.com/ValyrianTech/BitcoinSpellbook.git spellbook
 cd spellbook
 
 pip install -r requirements.txt
+
+# add the spellbook to the pythonpath so it can correctly import modules
+export PYTHONPATH=$PYTHONPATH:~/spellbook
 
 ./quickstart.py
