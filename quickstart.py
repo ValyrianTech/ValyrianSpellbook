@@ -86,7 +86,7 @@ if config.getboolean(section='SMTP', option='enable_smtp') is True:
     config.set(section='SMTP', option='from_address', value=from_address)
 
     current_host = config.get(section='SMTP', option='host')
-    host = raw_input('Enter the IP address of the SMTP server or press enter to keep the current value (%s) ' % current_host) or current_host
+    host = raw_input('Enter the host address of the SMTP server or press enter to keep the current value (%s) ' % current_host) or current_host
     config.set(section='SMTP', option='host', value=host)
 
     current_port = config.get(section='SMTP', option='port')
