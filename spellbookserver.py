@@ -55,6 +55,8 @@ class SpellbookRESTAPI(Bottle):
             LOG.error('Unable to decrypt hot wallet: %s' % ex)
             sys.exit(1)
 
+        LOG.info('To make the server run in the background: use Control-Z, then use command: bg %1')
+
         # Initialize the routes for the REST API
         self.route('/', method='GET', callback=self.index)  # on linux this gets requested every minute or so, but not on windows
         self.route('/favicon.ico', method='GET', callback=self.get_favicon)
