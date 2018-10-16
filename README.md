@@ -1,8 +1,15 @@
 # BitcoinSpellbook
 
-The Bitcoin Spellbook is an Open Source platform that lets you create the back-end of your own Bitcoin application.
+The Bitcoin Spellbook is an Open Source platform that lets you create the back-end of your own Bitcoin application.  
 
-It is a configurable REST API where you can define triggers and actions. Think of it as something similar to IfThisThenThat but for Bitcoin.
+Creating your own Bitcoin app from scratch could easily take months or more to develop, but the Bitcoin Spellbook will allow you to make your app much quicker.  
+Even if you don't know how to code you can use this platform to create simple Bitcoin applications. Most of the functionality can be configured with simple command line instructions.  
+For more advanced applications you can write custom python scripts (see example apps below).
+
+The Bitcoin Spellbook is a configurable REST API server where you can define triggers and actions. Think of it as something similar to IfThisThenThat but for Bitcoin.  
+for example: IF balance of address A is higher than x, THEN send a transaction to address B  
+There are many different types of triggers and actions.  
+All triggers and actions have many parameters to set, no coding required.
 
 When a trigger is activated, it runs a custom python script and\or predefined actions. The python script can also create or modify actions if needed.
 
@@ -14,6 +21,7 @@ Prerequisites
 3. (optional) Login credentials for a SMTP server (needed for sending emails)
 4. (optional) A [Blocktrail.com](https://www.blocktrail.com/) account (needed if you want to use blocktrail as blockexplorer)
 
+You can use Linux or Windows to run the Bitcoin Spellbook server.
 
 Installation
 ------------
@@ -37,7 +45,7 @@ Run **hot_wallet.py -h** for more information.
 Instructions
 ------------
 
-1. Start the Bitcoin Spellbook server with **spellbookserver.py**
+1. Start the Bitcoin Spellbook server with **spellbookserver.py**  
 It will ask to provide the password to decrypt the hot wallet.
 
 2. To keep the server running in the background even after you close the session:
@@ -323,6 +331,15 @@ Currently supported blockchain explorers are:
 * Any Insight blockexplorer (blockexplorer.com) 
 * Blocktrail.com (testnet seems to be broken, no longer maintained)  
 * Chain.so (not recommended)
+
+
+Segwit
+------
+There currently is partial segwit support. It is possible to send to segwit addresses (including bech32 addresses).
+
+What is not possible yet:  
+* sending from segwit addresses (I'm working on it)  
+* looking up transactions or balances from bech32 addresses (this is because blockchain.info and BTC.com do not support this yet)
 
 
 Donations
