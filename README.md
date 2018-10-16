@@ -10,32 +10,48 @@ Prerequisites
 -------------
 
 1. Python 2.7  
-2. An [IPFS node](https://ipfs.io/docs/install/ "IPFS")  
-3. Login credentials for a SMTP server (optional, needed for sending emails)
-4. A [Blocktrail.com](https://www.blocktrail.com/) account (optional, needed if you want to use blocktrail as blockexplorer)
+2. (optional) An [IPFS node](https://ipfs.io/docs/install/ "IPFS") 
+3. (optional) Login credentials for a SMTP server (needed for sending emails)
+4. (optional) A [Blocktrail.com](https://www.blocktrail.com/) account (needed if you want to use blocktrail as blockexplorer)
+
+
+Installation
+------------
+
+I made a simple [install script](./install-spellbook.sh) to make installing all dependencies and stuff as easy as possible.
+
+1. Spin up a new linux virtual machine on your favourite cloud service (e.g digital ocean, ...).  
+
+2. Create a new user 'spellbook' and give that user sudo rights, then download the [install script](./install-spellbook.sh) and run it.
+Take a look at the first few lines in the install script that are commented out if you don't know how to do this.
+
+3. At the end of the script the quickstart.py program will be started to help configure the settings.
+
+4. Using the **hot_wallet.py** CLI, add the private keys of the addresses or the mnemonic seed of a BIP44 wallet that your app will use.  
+You will need to provide a password to encrypt the hot wallet.
+The wallet will be stored in encrypted format in the location that was specified during the quickstart program.  
+Each time the spellbookserver is started it will ask for the decryption password of the hot wallet. The password is only stored in memory, never written to file, and the hot wallet is only decrypted when a private key is needed.  
+Run **hot_wallet.py -h** for more information.
 
 
 Instructions
 ------------
 
-1. In the 'configuration' folder, you will find an example configuration file, fill in the required values and rename the file to '**spellbook.conf**'  
+1. Start the Bitcoin Spellbook server with **spellbookserver.py**
+It will ask to provide the password to decrypt the hot wallet.
 
-2. Using the **hot_wallet.py** CLI, add the private keys of the addresses or the mnemonic seed of a BIP44 wallet that your app will use.  
-You will need to provide a password to encrypt the hot wallet.
-The wallet will be stored in encrypted format in the location that was specified in the configuration file.  
-Each time the spellbookserver is started it will ask for the decryption password of the hot wallet. The password is only stored in memory, never written to file, and the hot wallet is only decrypted when a private key is needed.  
-Run **hot_wallet.py -h** for more information.
+2. To keep the server running in the background even after you close the session:
+use **Control-Z** to pause the program, then use command **bg %1** to resume it in the background
 
-3. Start the Bitcoin Spellbook server with **spellbookserver.py**
-
-4. Add triggers and actions with the **spellbook.py** CLI. See **spellbook.py save_trigger -h** and **spellbook.py save_action -h** for more information.  
+3. Add triggers and actions with the **spellbook.py** CLI. See **spellbook.py save_trigger -h** and **spellbook.py save_action -h** for more information.  
 Take a look at the example apps in the 'apps' folder to get an idea of what is possible.  
 
-5. Set up a cron that executes **spellbook.py check_triggers** (for example every 10 minutes) depending on the needs of your app, alternatively if you have a bitcoin node you could use the blocknotify option to run **spellbook.py check_triggers** each time a new block is found.
+4. Set up a cron that executes **spellbook.py check_triggers** (for example every 10 minutes) depending on the needs of your app, alternatively if you have a bitcoin node you could use the blocknotify option to run **spellbook.py check_triggers** each time a new block is found.
 
 
 Run **spellbook.py -h** to get a list of all available subcommands.  
 Each subcommand also has more detailed information which you can see by running **spellbook.py *subcommand* -h**
+
 
 Triggers:
 ---------

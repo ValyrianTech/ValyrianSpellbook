@@ -126,6 +126,6 @@ print("")
 print("Don't forget to initialize the hot wallet before starting the spellbookserver")
 print("use command: ./hot_wallet.py set_bip44 <your 12 or 24 mnemonic words>")
 print("")
-print("To keep the server running after you close the session use the following command:")
-print("nohup ./spellbookserver.py &")
+print("To start the server, use command: ./spellbookserver.py")
 print("")
+
