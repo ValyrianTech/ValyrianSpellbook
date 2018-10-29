@@ -18,7 +18,7 @@ from linker.linker import get_lbl, get_lrl, get_lsl, get_lal
 from transactionfactory import make_custom_tx, txhash
 from transactiontype import TransactionType
 from validators.validators import valid_address, valid_xpub, valid_amount, valid_op_return, valid_block_height
-from validators.validators import valid_transaction_type, valid_distribution, valid_percentage
+from validators.validators import valid_transaction_type, valid_distribution, valid_percentage, valid_private_key
 
 
 # Todo add option only_once so the action can not be run multiple times as a safety measure
@@ -55,6 +55,7 @@ class SendTransactionAction(Action):
         self.unspent_outputs = None
 
         self.utxo_confirmations = 1
+        self.private_key = None
 
         # Used to store the txid after it has been sent
         self.txid = None
@@ -143,6 +144,9 @@ class SendTransactionAction(Action):
         if 'utxo_confirmations' in config and valid_amount(config['utxo_confirmations']):
             self.utxo_confirmations = config['utxo_confirmations']
 
+        if 'private_key' in config and valid_private_key(private_key=config['private_key']):
+            self.private_key = config['private_key']
+
         # fill in the address in case of a BIP44 hot wallet
         if self.wallet_type == 'BIP44':
             self.sending_address = get_address_from_wallet(self.bip44_account, self.bip44_index)
@@ -174,7 +178,8 @@ class SendTransactionAction(Action):
                     'tx_fee_type': self.tx_fee_type,
                     'tx_fee': self.tx_fee,
                     'utxo_confirmations': self.utxo_confirmations,
-                    'distribution': self.distribution})
+                    'distribution': self.distribution,
+                    'private_key': self.private_key})
         return ret
 
     def run(self):
@@ -251,8 +256,8 @@ class SendTransactionAction(Action):
                                                         change_output=change_output,
                                                         spellbook_fee_output=spellbook_fee_output)
 
-        # Get the necessary private keys from the hot wallet
-        private_keys = self.get_private_key()
+        # Get the necessary private keys from the hot wallet if no private key is given
+        private_keys = self.get_private_key() if self.private_key is None else {self.sending_address: self.private_key}
         if len(private_keys) == 0:
             return False
 
