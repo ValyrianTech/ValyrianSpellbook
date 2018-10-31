@@ -10,8 +10,7 @@ import time
 import logging
 from logging.handlers import RotatingFileHandler
 from helpers.runcommandprocess import RunCommandProcess
-from helpers.mysqlhelpers import mysql_cursor
-
+import mysql.connector
 
 PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -31,6 +30,9 @@ file_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(mes
 LISTENER_LOG.addHandler(file_handler)
 
 LISTENER_LOG.setLevel(logging.WARNING)
+
+WEBSOCKET_LOG = logging.getLogger('websocket')
+WEBSOCKET_LOG.addHandler(stream_handler)
 
 WATCHLIST = {}
 EXIT_ON_EVENT = False
@@ -84,8 +86,11 @@ def on_message(ws, message):
         sql_query = """SELECT Address FROM Addresses 
                        WHERE Address IN (%s)""" % ", ".join(["'%s'" % output_address for output_address in address_list])
 
-        CURSOR.execute(sql_query)
-        result = CURSOR.fetchall()
+        cursor = DB_CONNECTOR.cursor()
+        cursor.execute(sql_query)
+        result = cursor.fetchall()
+        cursor.close()
+        DB_CONNECTOR.commit()
 
         if len(result) > 0:
             LISTENER_LOG.info(result)
@@ -187,6 +192,12 @@ if __name__ == "__main__":
         if args.receive is True:
             LISTENER_LOG.info('Receiving addresses are monitored')
 
+        DB_CONNECTOR = mysql.connector.connect(user=args.user,
+                                               password=args.password,
+                                               database=args.database,
+                                               host=args.host,
+                                               port=args.port)
+
     elif args.address is not None:
         LISTENER_LOG.info('Single address mode selected')
 
@@ -229,14 +240,4 @@ if __name__ == "__main__":
                                        on_message=on_message,
                                        on_error=on_error,
                                        on_close=on_close)
-
-    # when running in database mode, a mysql cursor must be available while the listener is running
-    if DATABASE is not None:
-        with mysql_cursor(user=args.user,
-                          password=args.password,
-                          database=args.database,
-                          host=args.host,
-                          port=args.port) as CURSOR:
-            websocket.run_forever()
-    else:
-        websocket.run_forever()
+    websocket.run_forever()
