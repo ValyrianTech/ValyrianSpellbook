@@ -150,7 +150,7 @@ class TX(object):
                     'OP_RETURN data is not the correct length! {0} -> should be {1}'.format(str(len(unhex_data)),
                                                                                             str(int(check_length,
                                                                                                     16))))
-                unhex_data = None
+                unhex_data = 'Unable to decode hex data'
 
         # Sometimes the unhexed data is encoded in another coded than utf-8 which could cause problems when converting to json later
         try:
