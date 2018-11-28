@@ -89,6 +89,18 @@ def get_str(multihash):
     return string
 
 
+def add_file(filename):
+    global IPFS_API
+
+    try:
+        ipfs_info = IPFS_API.add(filename)
+    except Exception as e:
+        LOG.error('Unable to store file on IPFS: %s' % e)
+        raise Exception('IPFS failure')
+
+    return ipfs_info['Hash'], ipfs_info['Name'], ipfs_info['Size']
+
+
 def add_zipped_dir(directory_path, name):
     """
     Zip a directory and add the zip file to IPFS
@@ -215,6 +227,8 @@ class IPFSDict(object):
             for key, value in data.items():
                 if key != '_multihash':
                     self.__setattr__(key, value)
+        else:
+            raise Exception('Invalid multihash for IPFSDict object')
 
     def is_valid(self, data):
         """
