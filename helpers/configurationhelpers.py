@@ -92,7 +92,7 @@ def get_smtp_password():
 
 @verify_config('IPFS', 'enable_ipfs')
 def get_enable_ipfs():
-    return spellbook_config().get('IPFS', 'enable_ipfs')
+    return spellbook_config().getboolean('IPFS', 'enable_ipfs')
 
 
 @verify_config('IPFS', 'host')
