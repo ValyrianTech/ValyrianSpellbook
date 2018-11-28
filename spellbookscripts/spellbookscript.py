@@ -101,3 +101,12 @@ class SpellbookScript(object):
         :param action_id: The id of the action
         """
         self.new_actions.append(action_id)
+
+    def exit_with_error(self, message):
+        """
+        Log an error message and set the http response with the same error message
+
+        :param message: The error message
+        """
+        LOG.error(message)
+        self.http_response = {'error': message}
