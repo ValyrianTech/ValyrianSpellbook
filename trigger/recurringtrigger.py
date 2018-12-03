@@ -19,11 +19,13 @@ class RecurringTrigger(Trigger):
         self.interval = None
 
     def conditions_fulfilled(self):
-        if self.interval is None or self.begin_time is None or self.end_time is None:
+        if self.interval is None or self.begin_time is None:
             return False
 
-        # Todo allow for recurring triggers without an end_time
-        if self.end_time <= int(time.time()):
+        if self.end_time is None:
+            return self.next_activation <= int(time.time())
+
+        elif self.end_time <= int(time.time()):
             LOG.info('Recurring trigger %s has reached its end time' % self.id)
             self.status = 'Succeeded'
             self.save()
@@ -34,7 +36,7 @@ class RecurringTrigger(Trigger):
     def activate(self):
         super(RecurringTrigger, self).activate()
 
-        if self.next_activation + self.interval <= self.end_time:
+        if self.next_activation + self.interval <= self.end_time or self.end_time is None:
             self.next_activation += self.interval
             LOG.info('Setting next activation of recurring trigger %s to %s' % (self.id, datetime.fromtimestamp(self.next_activation)))
             self.save()
