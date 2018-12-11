@@ -112,6 +112,11 @@ class SpellbookRESTAPI(Bottle):
         self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/check', method='GET', callback=self.check_trigger)
         self.route('/spellbook/check_triggers', method='GET', callback=self.check_all_triggers)
 
+        # Additional routes for Rest API endpoints
+        self.route('/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.http_get_request)
+        self.route('/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.http_post_request)
+        self.route('/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.http_delete_request)
+
         # Routes for Actions
         self.route('/spellbook/actions', method='GET', callback=self.get_actions)
         self.route('/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.get_action)
