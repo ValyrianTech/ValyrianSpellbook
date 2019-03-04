@@ -117,6 +117,7 @@ logs/
 !requirements.txt
 !bips/wordlist/*.txt
 !apps/PaymentProcessor/templates/*.txt
+!apps/Voucher/templates/*.txt
 !email_templates/template1.txt
 !email_templates/deadmansswitchactivated.txt
 !email_templates/deadmansswitchwarning.txt
