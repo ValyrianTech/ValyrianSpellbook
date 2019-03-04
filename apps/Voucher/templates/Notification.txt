@@ -1,0 +1,11 @@
+A voucher has been redeemed!
+
+voucher: $VOUCHER$
+
+amount USD: $AMOUNT_USD$ $
+amount satoshis: $AMOUNT_SAT$
+
+btc price : $BTC_PRICE$
+
+txid: $TXID$
+
