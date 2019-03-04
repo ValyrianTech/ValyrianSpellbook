@@ -147,3 +147,4 @@ app_data
 !apps/Lottery
 !apps/Notary
 !apps/PaymentProcessor
+!apps/Voucher
