@@ -1,0 +1,11 @@
+ALERT: something went wrong during sending of a redeem transaction
+check what went wrong immediately!
+
+txid:
+$TXID$
+
+voucher: $VOUCHER$
+
+address : $ADDRESS$
+
+
