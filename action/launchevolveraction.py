@@ -1,18 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
+import platform
 
 from actiontype import ActionType
 from spawnprocessaction import SpawnProcessAction
 
-DARWIN_PROGRAM = os.path.join('darwin', 'darwin.py')
+if platform.system() == 'Windows':
+    DARWIN_PROGRAM = os.path.join('darwin', 'darwin.py')
+elif platform.system() == 'Linux':
+    DARWIN_PROGRAM = os.path.join('./darwin', 'darwin.py')
+else:
+    raise NotImplementedError('Unsupported platform: only windows and linux are supported')
 
 
 class LaunchEvolverAction(SpawnProcessAction):
     def __init__(self, action_id):
         super(LaunchEvolverAction, self).__init__(action_id=action_id)
         self.action_type = ActionType.LAUNCHEVOLVER
-        # self.run_command = '%s %s' % (DARWIN_PROGRAM, r'D:\darwin\fulltest.json')
         self.job_config = None
 
     def configure(self, **config):
