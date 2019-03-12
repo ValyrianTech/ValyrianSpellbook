@@ -37,7 +37,7 @@ class RecurringTrigger(Trigger):
         super(RecurringTrigger, self).activate()
 
         if self.next_activation + self.interval <= self.end_time or self.end_time is None:
-            self.next_activation += self.interval
+            self.next_activation += self.interval  # Todo what if trigger was activated after interval has passed??
             LOG.info('Setting next activation of recurring trigger %s to %s' % (self.id, datetime.fromtimestamp(self.next_activation)))
             self.save()
 
