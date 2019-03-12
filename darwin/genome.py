@@ -2,16 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from chromosome import Chromosome
-from helpers.enumhelpers import Enum
 
 import hashlib
 import binascii
 import simplejson
-
-
-class GenomeType(Enum):
-    DARWIN = 0
-    RANDOM_TRADEBOT = 1
 
 
 class Genome(object):
