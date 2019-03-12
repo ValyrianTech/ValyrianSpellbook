@@ -11,3 +11,4 @@ pycrypto==2.6.1
 python_daemon==2.2.0
 websocket_client==0.51.0
 mysql_connector_repackaged==0.3.1
+numpy=1.15.4
