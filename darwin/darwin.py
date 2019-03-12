@@ -4,7 +4,7 @@ import argparse
 import os
 import sys
 
-PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
+PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, PROGRAM_DIR)
 
 from evolver import Evolver
