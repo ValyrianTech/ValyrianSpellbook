@@ -7,6 +7,7 @@ import os
 from action.actiontype import ActionType
 from action.commandaction import CommandAction
 from action.spawnprocessaction import SpawnProcessAction
+from action.launchevolveraction import LaunchEvolverAction
 from helpers.jsonhelpers import load_from_json_file
 from action.revealsecretaction import RevealSecretAction
 from action.sendmailaction import SendMailAction
@@ -83,6 +84,8 @@ def get_action(action_id, action_type=None):
         action = WebhookAction(action_id)
     elif action_config['action_type'] == ActionType.DELETETRIGGER:
         action = DeleteTriggerAction(action_id)
+    elif action_config['action_type'] == ActionType.LAUNCHEVOLVER:
+        action = LaunchEvolverAction(action_id)
     else:
         raise NotImplementedError('Unknown action type: %s' % action_config['action_type'])
 

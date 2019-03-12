@@ -10,4 +10,5 @@ class ActionType(object):
     WEBHOOK = 'Webhook'
     SENDTRANSACTION = 'SendTransaction'
     DELETETRIGGER = 'DeleteTrigger'
+    LAUNCHEVOLVER = 'LaunchEvolver'
     # Todo SendTweetAction

@@ -401,9 +401,10 @@ save_action_parser = subparsers.add_parser(name='save_action',
                                            epilog=texts.SAVE_ACTION_EPILOG)
 
 save_action_parser.add_argument('action_id', help='The id of the action')
-save_action_parser.add_argument('-t', '--type', help='The type of the action', choices=['Command', 'SpawnProcess', 'SendTransaction', 'RevealSecret', 'SendMail', 'Webhook'])
+save_action_parser.add_argument('-t', '--type', help='The type of the action', choices=['Command', 'SpawnProcess', 'SendTransaction', 'RevealSecret', 'SendMail', 'Webhook', 'LaunchEvolver'])
 
 save_action_parser.add_argument('-c', '--run_command', help='The command to run, only applicable to Command Actions')
+save_action_parser.add_argument('-j', '--job_config', help='Configuration file for a LaunchEvolver action')
 
 save_action_parser.add_argument('-mr', '--mail_recipients', help='The recipients of the email in a SendEmail Action, separated with comma')
 save_action_parser.add_argument('-ms', '--mail_subject', help='The subject of the email in a SendEmail Action')
@@ -793,6 +794,9 @@ def save_action():
 
     if args.run_command is not None:
         data['run_command'] = args.run_command
+
+    if args.job_config is not None:
+        data['job_config'] = args.job_config
 
     if args.mail_recipients is not None:
         data['mail_recipients'] = args.mail_recipients
