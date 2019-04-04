@@ -189,6 +189,7 @@ class BTCComAPI(ExplorerAPI):
 
         data = data['data'] if data['data'] is not None else {}
 
+        # todo check key names , test by setting testnet wrong on explorers
         tx = TX()
         tx.txid = txid
         tx.wtxid = data['witness_hash']
@@ -263,6 +264,10 @@ class BTCComAPI(ExplorerAPI):
                 page += 1
             else:
                 return {'error': 'Received invalid data: %s' % data}
+
+            # Sometimes the 'total_count' value from btc.com is just wrong!
+            if not data['list']:
+                n_outputs = len(unspent_outputs)
 
             if len(unspent_outputs) < n_outputs:
                 sleep(1)
