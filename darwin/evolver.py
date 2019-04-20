@@ -37,7 +37,9 @@ class Evolver(object):
         self.current_generation = 0
         self.elapsed_time = 0
         self.generations_since_new_champion = 0
-        self.highest_fitness = 0
+        self.highest_fitness = None
+
+        self.scripts_dir = None
 
         self.model_script = None
         self.model_class = None
@@ -85,6 +87,7 @@ class Evolver(object):
         self.champions_dir = config['champions_dir']
         self.load_champions = config['load_champions'] if 'load_champions' in config else False
 
+        self.scripts_dir = config['scripts_dir'] if 'scripts_dir' in config else None
         self.model_script = config['model_script']
         self.model_class = config['model_class']
         self.rosetta_stone_script = config['rosetta_stone_script']
@@ -257,7 +260,7 @@ class Evolver(object):
             # Truncate the population by removing the worst performing genomes so they don't have a chance to be selected for recombination
             population.genomes = population.genomes[:int((len(population.genomes) * self.truncation) / 100)]
 
-            if population.genomes[0].fitness > self.highest_fitness:
+            if population.genomes[0].fitness > self.highest_fitness or self.highest_fitness is None:
                 self.highest_fitness = population.genomes[0].fitness
                 champion = population.genomes[0]
                 self.generations_since_new_champion = 0
@@ -360,7 +363,8 @@ class Evolver(object):
                 raise NotImplementedError('Unsupported platform: only windows and linux are supported')
 
         if script_path is None:
-            print('Can not find script' % script)
+            print('Can not find script %s' % script)
+            print(os.getcwd())
             return
 
         print('Loading Script %s' % script_path)
