@@ -6,8 +6,10 @@ import platform
 from actiontype import ActionType
 from spawnprocessaction import SpawnProcessAction
 
+PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
 if platform.system() == 'Windows':
-    DARWIN_PROGRAM = os.path.join('darwin', 'darwin.py')
+    DARWIN_PROGRAM = os.path.join(PROGRAM_DIR, 'darwin', 'darwin.py')
 elif platform.system() == 'Linux':
     DARWIN_PROGRAM = os.path.join('./darwin', 'darwin.py')
 else:
@@ -30,8 +32,7 @@ class LaunchEvolverAction(SpawnProcessAction):
         super(LaunchEvolverAction, self).configure(**config)
         if 'job_config' in config:
             self.job_config = config['job_config']
-
-        self.run_command = '%s %s' % (DARWIN_PROGRAM, self.job_config)
+            self.run_command = '"%s" %s' % (DARWIN_PROGRAM, self.job_config)
 
     def json_encodable(self):
         """
@@ -42,3 +43,7 @@ class LaunchEvolverAction(SpawnProcessAction):
         ret = super(LaunchEvolverAction, self).json_encodable()
         ret.update({'job_config': self.job_config})
         return ret
+
+    def run(self):
+        self.run_command = '"%s" %s' % (DARWIN_PROGRAM, self.job_config)
+        super(LaunchEvolverAction, self).run()
