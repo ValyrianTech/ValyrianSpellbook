@@ -16,9 +16,6 @@ class Population(object):
         self.genomes = []
 
     def add_genome(self, genome):
-        if not isinstance(genome, Genome):
-            raise Exception('Can not add genome to population: unexpected type: %s' % type(genome))
-
         self.genomes.append(genome)
 
     def save(self, directory):
