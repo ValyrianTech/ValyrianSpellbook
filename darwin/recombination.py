@@ -7,9 +7,6 @@ from copy import deepcopy
 
 
 def recombine(parent_a, parent_b):
-    if not (isinstance(parent_a, Genome) and isinstance(parent_b, Genome)):
-        raise Exception('Can not recombine: both parents must be of type Genome')
-
     offspring = Genome()
 
     for chromosome_id in parent_a.chromosomes.keys():
