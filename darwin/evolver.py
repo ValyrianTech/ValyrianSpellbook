@@ -129,7 +129,7 @@ class Evolver(object):
         if not os.path.isdir(self.save_dir):
             os.makedirs(self.save_dir)
 
-        self.progress_file = os.path.join(self.dir, 'progress.txt')
+        self.progress_file = os.path.join(DARWIN_DIR, 'progress.txt')
 
     def save_config(self, filename):
 
