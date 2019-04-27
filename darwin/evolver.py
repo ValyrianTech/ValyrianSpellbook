@@ -129,7 +129,7 @@ class Evolver(object):
         if not os.path.isdir(self.save_dir):
             os.makedirs(self.save_dir)
 
-        self.progress_file = os.path.join(self.dir, 'progress_%s.txt' % self.title)
+        self.progress_file = os.path.join(self.dir, 'progress.txt')
 
     def save_config(self, filename):
 
@@ -229,6 +229,10 @@ class Evolver(object):
         champion = population.genomes[0]
 
         evolver_start_time = time.time()
+
+        # Remove the progress file from earlier runs to start with a clean slate
+        if os.path.isfile(self.progress_file):
+            os.remove(self.progress_file)
 
         while not self.termination():
             self.current_generation += 1
