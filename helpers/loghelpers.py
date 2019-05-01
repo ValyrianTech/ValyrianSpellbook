@@ -19,7 +19,7 @@ stream_handler = logging.StreamHandler(sys.stdout)
 stream_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(message)s'))
 LOG.addHandler(stream_handler)
 
-file_handler = RotatingFileHandler(os.path.join(logs_dir, 'spellbook.txt'), maxBytes=10000000, backupCount=5)
+file_handler = RotatingFileHandler(os.path.join(logs_dir, 'spellbook.txt'), maxBytes=10000000, backupCount=0)  # Todo change to concurrent_log_handler.ConcurrentRotatingFileHandler with backupCount 5 after python3 conversion
 file_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(message)s'))
 LOG.addHandler(file_handler)
 
@@ -28,7 +28,7 @@ LOG.setLevel(logging.DEBUG)
 # Create a log file for the http requests to the REST API
 REQUESTS_LOG = logging.getLogger('api_requests')
 
-file_handler = RotatingFileHandler(os.path.join(logs_dir, 'requests.txt'), maxBytes=10000000, backupCount=5)
+file_handler = RotatingFileHandler(os.path.join(logs_dir, 'requests.txt'), maxBytes=10000000, backupCount=0)  # Todo change to concurrent_log_handler.ConcurrentRotatingFileHandler with backupCount 5 after python3 conversion
 file_handler.setFormatter(logging.Formatter('%(message)s'))
 REQUESTS_LOG.addHandler(file_handler)
 
