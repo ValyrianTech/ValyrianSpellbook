@@ -33,6 +33,7 @@ from randomaddress.randomaddress import random_address_from_sil, random_address_
 PROGRAM_DIR = os.path.abspath(os.path.dirname(__file__))
 os.chdir(PROGRAM_DIR)
 
+
 class SpellbookRESTAPI(Bottle):
     def __init__(self):
         super(SpellbookRESTAPI, self).__init__()
