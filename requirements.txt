@@ -8,7 +8,6 @@ ecdsa==0.13
 simplejson==3.11.1
 ipfsapi==0.4.2.post1
 pycrypto==2.6.1
-python_daemon==2.2.0
 websocket_client==0.51.0
 mysql_connector_repackaged==0.3.1
 numpy==1.15.4
