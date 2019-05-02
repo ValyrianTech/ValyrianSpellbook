@@ -29,6 +29,9 @@ from linker.linker import get_lal, get_lbl, get_lrl, get_lsl
 from randomaddress.randomaddress import random_address_from_sil, random_address_from_lbl, random_address_from_lrl, \
     random_address_from_lsl
 
+# Make sure the current working directory is correct
+PROGRAM_DIR = os.path.abspath(os.path.dirname(__file__))
+os.chdir(PROGRAM_DIR)
 
 class SpellbookRESTAPI(Bottle):
     def __init__(self):
