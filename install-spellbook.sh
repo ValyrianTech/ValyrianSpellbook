@@ -21,6 +21,6 @@ cd /spellbook
 pip install -r requirements.txt
 
 # add the spellbook to the pythonpath so it can correctly import modules
-export PYTHONPATH=$PYTHONPATH:~/spellbook
+export PYTHONPATH=$PYTHONPATH:/spellbook
 
 ./quickstart.py
