@@ -275,7 +275,7 @@ class Evolver(object):
             print('Generations since improvement: %s' % self.generations_since_new_champion)
 
             with open(self.progress_file, 'a') as output_file:
-                output_file.write('%s;%s;%s\n' % (self.current_generation, self.highest_fitness, (time.time()-generation_start_time)))
+                output_file.write('%s;%s;%s;%s\n' % (int(time.time()), self.current_generation, self.highest_fitness, (time.time()-generation_start_time)))
 
             # Set a new random seed because some models might use a specific seed which could influence the evolution process
             random.seed(time.time())
