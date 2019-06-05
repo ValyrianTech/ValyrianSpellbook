@@ -20,3 +20,6 @@ class Model(object):
 
     def champion_actions(self):
         pass
+
+    def info(self):
+        pass
