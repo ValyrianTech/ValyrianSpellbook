@@ -193,6 +193,7 @@ class Evolver(object):
             raise Exception('Script %s is not a valid Model Script, instead it is a %s' % (model, type(model)))
 
         model.darwin_init_actions()
+        model.info()
 
         # Load the RosettaStone script
         rosetta_stone = self.load_script(script=os.path.join('rosettastone', self.rosetta_stone_script),
