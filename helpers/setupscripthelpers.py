@@ -12,7 +12,7 @@ PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 def spellbook_call(*args):
     args = [str(arg) for arg in args]
-    spellbook_args = [os.path.join(PROGRAM_DIR, 'spellbook.py')]
+    spellbook_args = ['python', os.path.join(PROGRAM_DIR, 'spellbook.py')]
     spellbook_args.extend(args)
 
     print '\nCALL: %s' % ' '.join(spellbook_args)
