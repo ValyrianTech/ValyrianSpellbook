@@ -9,6 +9,7 @@ from blockexplorers.blocktrail_com import BlocktrailComAPI
 from blockexplorers.insight import InsightAPI
 from blockexplorers.chain_so import ChainSoAPI
 from blockexplorers.btc_com import BTCComAPI
+from blockexplorers.blockstream import BlockstreamAPI
 from explorer import Explorer, ExplorerType
 from helpers.jsonhelpers import save_to_json_file, load_from_json_file
 from validators.validators import valid_address
@@ -126,6 +127,8 @@ def get_explorer_api(name):
             return ChainSoAPI(url=explorer['url'], testnet=explorer['testnet'])
         elif explorer['type'] == ExplorerType.BTC_COM:
             return BTCComAPI(url=explorer['url'], testnet=explorer['testnet'])
+        elif explorer['type'] == ExplorerType.BLOCKSTREAM:
+            return BlockstreamAPI(url=explorer['url'], testnet=explorer['testnet'])
         else:
             raise NotImplementedError('Unknown explorer API: %s' % name)
 
