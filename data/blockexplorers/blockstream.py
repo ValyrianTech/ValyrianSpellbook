@@ -106,7 +106,8 @@ class BlockstreamAPI(ExplorerAPI):
         return {'transaction': tx.json_encodable()}
 
     def get_prime_input_address(self, txid):
-        pass
+        transaction_data = self.get_transaction(txid=txid)
+        return transaction_data['transaction']['prime_input_address'] if 'prime_input_address' in transaction_data['transaction'] else None
 
     def get_utxos(self, address, confirmations=3):
         pass
