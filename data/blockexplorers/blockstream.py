@@ -3,7 +3,6 @@
 import requests
 from time import sleep
 
-from helpers.txhelpers import push_tx
 from helpers.loghelpers import LOG
 from data.transaction import TX, TxInput, TxOutput
 from data.explorer_api import ExplorerAPI
