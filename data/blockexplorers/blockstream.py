@@ -62,7 +62,23 @@ class BlockstreamAPI(ExplorerAPI):
         pass
 
     def get_balance(self, address):
-        pass
+        url = self.url + '/address/{address}'.format(address=address)
+        LOG.info('GET %s' % url)
+        try:
+            r = requests.get(url)
+            data = r.json()
+        except Exception as ex:
+            LOG.error('Unable to get address info for %s from Blockstream.info: %s' % (address, ex))
+            return {'error': 'Unable to get address info for %s from Blockstream.info' % address}
+
+        sent_balance = data['chain_stats']['spent_txo_sum']  # Todo fix the sent and received balance because blockstream reports this wrong (also counts when change is sent back to the address itself)
+        received_balance = data['chain_stats']['funded_txo_sum']
+        final_balance = received_balance - sent_balance
+
+        balance = {'final': final_balance,
+                   'received': received_balance,
+                   'sent': sent_balance}
+        return {'balance': balance}
 
     def get_transaction(self, txid):
         url = self.url + '/tx/{txid}'.format(txid=txid)
