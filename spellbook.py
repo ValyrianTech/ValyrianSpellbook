@@ -135,7 +135,7 @@ get_balance_parser = subparsers.add_parser(name='get_balance',
                                            help='Get the current balance of an address',
                                            formatter_class=argparse.RawDescriptionHelpFormatter,
                                            description=texts.GET_BALANCE_DESCRIPTION,
-                                           epilog=texts.GET_BLOCK_EPILOG)
+                                           epilog=texts.GET_BALANCE_EPILOG)
 
 get_balance_parser.add_argument('address', help='The address')
 get_balance_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
