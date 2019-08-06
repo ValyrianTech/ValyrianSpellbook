@@ -180,7 +180,39 @@ class BlockstreamAPI(ExplorerAPI):
         return transaction_data['transaction']['prime_input_address'] if 'prime_input_address' in transaction_data['transaction'] else None
 
     def get_utxos(self, address, confirmations=3):
-        pass
+        url = self.url + '/blocks/tip/height'
+        LOG.info('GET %s' % url)
+        try:
+            r = requests.get(url)
+            latest_block_height = int(r.text)
+        except Exception as ex:
+            LOG.error('Unable to get latest block_height from Blockstream.info: %s' % ex)
+            return {'error': 'Unable to get latest block_height from Blockstream.info'}
+
+        url = self.url + '/address/{address}/utxo'.format(address=address)
+        LOG.info('GET %s' % url)
+        try:
+            r = requests.get(url)
+            data = r.json()
+        except Exception as ex:
+            LOG.error('Unable to get address utxos for %s from Blockstream.info: %s' % (address, ex))
+            return {'error': 'Unable to get utxos info for %s from Blockstream.info' % address}
+
+        LOG.info('Got %s utxos' % len(data))
+
+        utxos = []
+        for output in data:
+            confirmations = latest_block_height - int(output['status']['block_height']) + 1 if output['status']['confirmed'] is True else 0
+            utxo = {'confirmations': confirmations,
+                    'output_hash': output['txid'],
+                    'output_n': output['vout'],
+                    'value': output['value'],
+                    'script': None}  # Blockstream.info does not provide the script for utxos
+
+            if utxo['confirmations'] >= confirmations:
+                utxos.append(utxo)
+
+        return {'utxos': sorted(utxos, key=lambda k: (k['confirmations'], k['output_hash'], k['output_n']))}
 
     @staticmethod
     def push_tx(tx):
