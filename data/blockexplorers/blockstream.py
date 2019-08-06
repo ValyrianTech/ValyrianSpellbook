@@ -7,6 +7,8 @@ from helpers.loghelpers import LOG
 from data.transaction import TX, TxInput, TxOutput
 from data.explorer_api import ExplorerAPI
 
+from pprint import pprint
+
 
 class BlockstreamAPI(ExplorerAPI):
     def __init__(self, url='', key='', testnet=False):
@@ -59,7 +61,44 @@ class BlockstreamAPI(ExplorerAPI):
         return self.get_block_by_hash(block_hash=block_hash)
 
     def get_transactions(self, address):
-        pass
+        url = self.url + '/blocks/tip/height'
+        LOG.info('GET %s' % url)
+        try:
+            r = requests.get(url)
+            latest_block_height = int(r.text)
+        except Exception as ex:
+            LOG.error('Unable to get latest block_height from Blockstream.info: %s' % ex)
+            return {'error': 'Unable to get latest block_height from Blockstream.info'}
+
+        url = self.url + '/address/{address}/txs'.format(address=address)
+        LOG.info('GET %s' % url)
+        try:
+            r = requests.get(url)
+            data = r.json()
+        except Exception as ex:
+            LOG.error('Unable to get address transactions for %s from Blockstream.info: %s' % (address, ex))
+            return {'error': 'Unable to get address transactions for %s from Blockstream.info' % address}
+
+        txs = []
+        for transaction in data:
+            txs.append(self.parse_transaction(data=transaction, latest_block_height=latest_block_height).to_dict(address=address))
+
+        while len(data) == 25:
+            sleep(0.5)
+            last_txid = data[24]['txid']
+            url = self.url + '/address/{address}/txs/chain/{last_txid}'.format(address=address, last_txid=last_txid)
+            LOG.info('GET %s' % url)
+            try:
+                r = requests.get(url)
+                data = r.json()
+            except Exception as ex:
+                LOG.error('Unable to get address transactions for %s from Blockstream.info: %s' % (address, ex))
+                return {'error': 'Unable to get address transactions for %s from Blockstream.info' % address}
+
+        for transaction in data:
+            txs.append(self.parse_transaction(data=transaction, latest_block_height=latest_block_height).to_dict(address=address))
+
+        return {'transactions': txs}
 
     def get_balance(self, address):
         url = self.url + '/address/{address}'.format(address=address)
@@ -90,11 +129,26 @@ class BlockstreamAPI(ExplorerAPI):
             LOG.error('Unable to get transaction %s from Blockstream.info: %s' % (txid, ex))
             return {'error': 'Unable to get transaction %s from Blockstream.info' % txid}
 
+        tx = self.parse_transaction(data=data)
+
+        return {'transaction': tx.json_encodable()}
+
+    def parse_transaction(self, data, latest_block_height=None):
+        if latest_block_height is None:
+            url = self.url + '/blocks/tip/height'
+            LOG.info('GET %s' % url)
+            try:
+                r = requests.get(url)
+                latest_block_height = int(r.text)
+            except Exception as ex:
+                LOG.error('Unable to get latest block_height from Blockstream.info: %s' % ex)
+                return {'error': 'Unable to get latest block_height from Blockstream.info'}
+
         tx = TX()
-        tx.txid = txid
+        tx.txid = data['txid']
         tx.lock_time = data['locktime']
         tx.block_height = data['status']['block_height'] if 'block_height' in data['status'] else None
-        tx.confirmations = self.get_latest_block_height() - tx.block_height + 1 if tx.block_height is not None else 0
+        tx.confirmations = latest_block_height - tx.block_height + 1 if tx.block_height is not None else 0
 
         for item in data['vin']:
             tx_input = TxInput()
@@ -119,7 +173,7 @@ class BlockstreamAPI(ExplorerAPI):
 
             tx.outputs.append(tx_output)
 
-        return {'transaction': tx.json_encodable()}
+        return tx
 
     def get_prime_input_address(self, txid):
         transaction_data = self.get_transaction(txid=txid)
