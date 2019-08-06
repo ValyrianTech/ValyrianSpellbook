@@ -214,6 +214,19 @@ class BlockstreamAPI(ExplorerAPI):
 
         return {'utxos': sorted(utxos, key=lambda k: (k['confirmations'], k['output_hash'], k['output_n']))}
 
-    @staticmethod
-    def push_tx(tx):
-        pass
+    def push_tx(self, tx):
+        url = self.url + '/broadcast?tx={tx}'.format(tx=tx)
+        LOG.info('GET %s' % url)
+        try:
+            r = requests.get(url)
+        except Exception as ex:
+            LOG.error('Unable to push tx via Blockstream.info: %s' % ex)
+            return {'error': 'Unable to push tx Blockstream.info: %s' % ex}
+
+        data = r.text.strip()
+        if r.status_code == 200:
+            return {'success': True,
+                    'txid': data}
+        else:
+            LOG.error('Unable to push tx via Blockstream.info: %s' % data)
+            return {'error': 'Unable to push tx Blockstream.info: %s' % data}
