@@ -194,7 +194,7 @@ class BTCComAPI(ExplorerAPI):
         tx.txid = txid
         tx.wtxid = data['witness_hash']
         tx.lock_time = data['lock_time']
-        tx.block_height = data['block_height'] if 'block_height' in data else None
+        tx.block_height = data['block_height'] if 'block_height' in data and data['block_height'] != -1 else None
         tx.confirmations = data['confirmations'] if 'confirmations' in data else None
 
         for item in data['inputs']:
