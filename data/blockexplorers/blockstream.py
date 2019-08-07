@@ -152,9 +152,9 @@ class BlockstreamAPI(ExplorerAPI):
 
         for item in data['vin']:
             tx_input = TxInput()
-            tx_input.address = item['prevout']['scriptpubkey_address'] if 'prevout' in item else None
-            tx_input.value = item['prevout']['value'] if 'prevout' in item else 0
-            tx_input.n = item['vout']
+            tx_input.address = item['prevout']['scriptpubkey_address'] if item['prevout'] is not None else None
+            tx_input.value = item['prevout']['value'] if item['prevout'] is not None else 0
+            tx_input.n = item['vout'] if item['is_coinbase'] is False else None
             tx_input.txid = item['txid']
             tx_input.script = item['scriptsig']
             tx_input.sequence = item['sequence']
