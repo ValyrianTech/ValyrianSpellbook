@@ -790,6 +790,10 @@ def sign_message():
         else:
             data['message'] = message
 
+    if len(data['message']) >= 255:
+        print('Message is to long: maximum 255 characters!')
+        return
+
     url = 'http://{host}:{port}/api/sign_message'.format(host=host, port=port)
     do_post_request(url=url, data=data, authenticate=True)
 
