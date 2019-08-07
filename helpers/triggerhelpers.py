@@ -15,7 +15,7 @@ from trigger.manualtrigger import ManualTrigger
 from trigger.receivedtrigger import ReceivedTrigger
 from trigger.recurringtrigger import RecurringTrigger
 from trigger.senttrigger import SentTrigger
-from sign_message import verify_message
+from sign_message import verify_message, sign_and_verify
 from trigger.signedmessagetrigger import SignedMessageTrigger
 from trigger.timestamptrigger import TimestampTrigger
 from trigger.triggerstatustrigger import TriggerStatusTrigger
@@ -24,6 +24,7 @@ from trigger.httppostrequesttrigger import HTTPPostRequestTrigger
 from trigger.httpdeleterequesttrigger import HTTPDeleteRequestTrigger
 from trigger.triggertype import TriggerType
 from helpers.actionhelpers import delete_action
+from helpers.hotwallethelpers import get_private_key_from_wallet, find_address_in_wallet
 
 TRIGGERS_DIR = 'json/public/triggers'
 
@@ -217,6 +218,20 @@ def verify_signed_message(trigger_id, **data):
             return trigger.activate()
     else:
         LOG.warning('Trigger %s received a bad signed message' % trigger_id)
+
+
+def sign_message(**data):
+    if not all(key in data for key in ['address', 'message']):
+        return {'error': 'Request data does not contain all required keys: address, message'}
+
+    account, index = find_address_in_wallet(address=data['address'])
+    private_key = get_private_key_from_wallet(account=account, index=index)
+
+    signature = sign_and_verify(private_key=private_key[data['address']], address=data['address'], message=data['message'])
+
+    return {'signature': signature,
+            'address': data['address'],
+            'message': data['message']}
 
 
 def http_get_request(trigger_id, **data):

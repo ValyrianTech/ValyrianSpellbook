@@ -419,6 +419,18 @@ examples:
        If <message> contains an existing filename, then the contents of that file are sent as message.
 '''
 
+
+########################################################################################################
+# send_signed_message                                                                                  #
+########################################################################################################
+SIGN_MESSAGE_DESCRIPTION = "Sign a message by the private key of a bitcoin address in the hot wallet of the server'"
+SIGN_MESSAGE_EPILOG = '''
+examples:
+  - spellbook.py sign_message <address> <message>
+    -> Sign the message with the private key of the address
+'''
+
+
 ########################################################################################################
 # check_triggers                                                                                       #
 ########################################################################################################
