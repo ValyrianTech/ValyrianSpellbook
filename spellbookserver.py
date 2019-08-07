@@ -23,7 +23,7 @@ from helpers.hivemindhelpers import get_hivemind_state_hash
 from helpers.hotwallethelpers import get_hot_wallet
 from helpers.loghelpers import LOG, REQUESTS_LOG
 from helpers.triggerhelpers import get_triggers, get_trigger_config, save_trigger, delete_trigger, activate_trigger, \
-    check_triggers, verify_signed_message, http_get_request, http_post_request, http_delete_request
+    check_triggers, verify_signed_message, http_get_request, http_post_request, http_delete_request, sign_message
 from inputs.inputs import get_sil, get_profile, get_sul
 from linker.linker import get_lal, get_lbl, get_lrl, get_lsl
 from randomaddress.randomaddress import random_address_from_sil, random_address_from_lbl, random_address_from_lrl, \
@@ -120,6 +120,8 @@ class SpellbookRESTAPI(Bottle):
         self.route('/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.http_get_request)
         self.route('/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.http_post_request)
         self.route('/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.http_delete_request)
+
+        self.route('/api/sign_message', method='POST', callback=self.sign_message)
 
         # Routes for Actions
         self.route('/spellbook/actions', method='GET', callback=self.get_actions)
@@ -419,6 +421,13 @@ class SpellbookRESTAPI(Bottle):
     def verify_signed_message(trigger_id):
         response.content_type = 'application/json'
         return verify_signed_message(trigger_id, **request.json)
+
+    @staticmethod
+    @output_json
+    @authentication_required
+    def sign_message():
+        response.content_type = 'application/json'
+        return sign_message(**request.json)
 
     @staticmethod
     @output_json

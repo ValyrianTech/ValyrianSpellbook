@@ -357,6 +357,19 @@ send_signed_message_parser.add_argument('message', help='The message that was si
 send_signed_message_parser.add_argument('signature', help='The signature of the message')
 
 
+# Create parser for the sign_message subcommand
+sign_message_parser = subparsers.add_parser(name='sign_message',
+                                            help='Sign a message with the private key of an address in the hot wallet',
+                                            formatter_class=argparse.RawDescriptionHelpFormatter,
+                                            description=texts.SIGN_MESSAGE_DESCRIPTION,
+                                            epilog=texts.SIGN_MESSAGE_EPILOG)
+
+sign_message_parser.add_argument('address', help='The address to the message (must be in the hot wallet of the server)')
+sign_message_parser.add_argument('message', help='The message to sign (max 255 characters)', nargs='*')
+sign_message_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
+sign_message_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
+
+
 # Create parser for the check_triggers subcommand
 check_triggers_parser = subparsers.add_parser(name='check_triggers',
                                               help='Check a triggers and activate it them if conditions have been fulfilled',
@@ -764,6 +777,23 @@ def send_signed_message():
     do_post_request(url=url, data=data)
 
 
+def sign_message():
+    data = {}
+    if args.address is not None:
+        data['address'] = args.address
+
+    if args.message is not None:
+        message = ' '.join(args.message)
+        if os.path.isfile(message):
+            with open(message, 'r') as input_file:
+                data['message'] = input_file.read()
+        else:
+            data['message'] = message
+
+    url = 'http://{host}:{port}/api/sign_message'.format(host=host, port=port)
+    do_post_request(url=url, data=data, authenticate=True)
+
+
 def check_triggers():
     if args.trigger_id is not None:
         url = 'http://{host}:{port}/spellbook/triggers/{trigger_id}/check'.format(host=host, port=port, trigger_id=args.trigger_id)
@@ -1008,6 +1038,8 @@ elif args.command == 'activate_trigger':
     activate_trigger()
 elif args.command == 'send_signed_message':
     send_signed_message()
+elif args.command == 'sign_message':
+    sign_message()
 elif args.command == 'check_triggers':
     check_triggers()
 elif args.command == 'get_actions':
