@@ -365,7 +365,7 @@ sign_message_parser = subparsers.add_parser(name='sign_message',
                                             epilog=texts.SIGN_MESSAGE_EPILOG)
 
 sign_message_parser.add_argument('address', help='The address to the message (must be in the hot wallet of the server)')
-sign_message_parser.add_argument('message', help='The message to sign (max 255 characters)', nargs='*')
+sign_message_parser.add_argument('message', help='The message to sign OR a filename containing the message (max 255 characters)', nargs='*')
 sign_message_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
 sign_message_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
 
