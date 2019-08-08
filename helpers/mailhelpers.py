@@ -64,6 +64,8 @@ def sendmail(recipients, subject, body_template, variables=None, images=None, at
     if attachments is None:
         attachments = {}
 
+    LOG.info('Creating new email with template %s' % body_template)
+
     # Create message container - the correct MIME type is multipart/alternative.
     msg = MIMEMultipart('alternative')
     msg['Subject'] = subject
@@ -125,6 +127,7 @@ def sendmail(recipients, subject, body_template, variables=None, images=None, at
 
     # Attach all images that are referenced in the html email template
     for image_name, image_file in images.items():
+        LOG.info('adding image %s' % image_file)
         try:
             fp = open(image_file, 'rb')
             mime_image = MIMEImage(fp.read())
