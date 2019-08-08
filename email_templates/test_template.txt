@@ -1,0 +1,4 @@
+This is the plain version of the test email template
+
+a first variable: $MY_VARIABLE1$
+a second variable: $MY_VARIABLE2$
