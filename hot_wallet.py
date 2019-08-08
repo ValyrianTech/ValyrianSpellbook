@@ -7,6 +7,7 @@ import argparse
 import simplejson
 import getpass
 
+from helpers.configurationhelpers import get_use_testnet
 from helpers.privatekeyhelpers import privkey_to_address
 from AESCipher import AESCipher
 from ConfigParser import ConfigParser
@@ -161,7 +162,7 @@ def add_key():
     wallet = load_wallet()
 
     try:
-        address = privkey_to_address(args.private_key)
+        address = privkey_to_address(args.private_key, magicbyte=0 if get_use_testnet() is False else 111)
     except AssertionError:
         print >> sys.stderr, 'Invalid private key: %s' % args.private_key
         sys.exit(1)
