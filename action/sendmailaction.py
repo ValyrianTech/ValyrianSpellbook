@@ -15,6 +15,7 @@ class SendMailAction(Action):
         self.mail_body_template = None
         self.mail_variables = None
         self.mail_images = None
+        self.mail_attachments = None
 
     def run(self):
         """
@@ -26,7 +27,8 @@ class SendMailAction(Action):
                         subject=self.mail_subject,
                         body_template=self.mail_body_template,
                         variables=self.mail_variables,
-                        images=self.mail_images)
+                        images=self.mail_images,
+                        attachments=self.mail_attachments)
 
     def configure(self, **config):
         """
@@ -53,6 +55,9 @@ class SendMailAction(Action):
         if 'mail_images' in config and isinstance(config['mail_images'], dict):
             self.mail_images = config['mail_images']
 
+        if 'mail_attachments' in config and isinstance(config['mail_attachments'], dict):
+            self.mail_attachments = config['mail_attachments']
+
     def json_encodable(self):
         """
         Get the action config in a json encodable format
@@ -64,5 +69,6 @@ class SendMailAction(Action):
                     'mail_subject': self.mail_subject,
                     'mail_body_template': self.mail_body_template,
                     'mail_variables': self.mail_variables,
-                    'mail_images': self.mail_images})
+                    'mail_images': self.mail_images,
+                    'mail_attachments': self.mail_attachments})
         return ret
