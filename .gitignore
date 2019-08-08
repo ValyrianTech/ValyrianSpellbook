@@ -121,6 +121,8 @@ logs/
 !email_templates/template1.txt
 !email_templates/deadmansswitchactivated.txt
 !email_templates/deadmansswitchwarning.txt
+!email_templates/test_template.txt
+!email_templates/test_template.html
 
 # setupscripts
 setupscripts/
