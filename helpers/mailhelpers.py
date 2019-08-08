@@ -7,6 +7,8 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
+from email.mime.base import MIMEBase
+from email import Encoders
 
 from helpers.loghelpers import LOG
 from helpers.configurationhelpers import get_smtp_from_address, get_smtp_host, get_smtp_port, get_smtp_user, get_smtp_password
@@ -33,7 +35,7 @@ def load_smtp_settings():
     PASSWORD = get_smtp_password()
 
 
-def sendmail(recipients, subject, body_template, variables=None, images=None):
+def sendmail(recipients, subject, body_template, variables=None, images=None, attachments=None):
     """
     Send an email using the smtp settings in the spellbook.conf file
 
@@ -43,6 +45,7 @@ def sendmail(recipients, subject, body_template, variables=None, images=None):
     :param variables: A dict containing the variables that will be replaced in the email body template
                       The body template can contain variables like $MYVARIABLE$, if the dict contains a key MYVARIABLE (without $), then it will be replaced by the value of that key
     :param images: A dict containing the filename of the images that need to be embedded in the html email
+    :param attachments: A dict containing the filename and path for each attachment that needs to be added to the email
     :return: True upon success, False upon failure
     """
     if get_enable_smtp() is False:
@@ -57,6 +60,9 @@ def sendmail(recipients, subject, body_template, variables=None, images=None):
 
     if images is None:
         images = {}
+
+    if attachments is None:
+        attachments = {}
 
     # Create message container - the correct MIME type is multipart/alternative.
     msg = MIMEMultipart('alternative')
@@ -130,6 +136,23 @@ def sendmail(recipients, subject, body_template, variables=None, images=None):
             msg.attach(mime_image)
         except Exception as ex:
             LOG.error('Unable to add image %s to email: %s' % (image_name, ex))
+
+    # Attach all attachments
+    for attachment_name, attachment_file in attachments.items():
+        LOG.info('adding attachment %s' % attachment_file)
+        try:
+            fp = open(attachment_file, 'rb')
+            mime_file = MIMEBase('application', "octet-stream")
+            mime_file.set_payload(fp.read())
+            Encoders.encode_base64(mime_file)
+
+            fp.close()
+
+            # Define the image's ID as referenced in the template
+            mime_file.add_header('content-disposition', 'attachment', filename=attachment_name)
+            msg.attach(mime_file)
+        except Exception as ex:
+            LOG.error('Unable to add attachment %s to email: %s' % (attachment_name, ex))
 
     # Attempt to connect to the smtp server and send the message.
     try:
