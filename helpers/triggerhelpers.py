@@ -24,7 +24,9 @@ from trigger.httppostrequesttrigger import HTTPPostRequestTrigger
 from trigger.httpdeleterequesttrigger import HTTPDeleteRequestTrigger
 from trigger.triggertype import TriggerType
 from helpers.actionhelpers import delete_action
-from helpers.hotwallethelpers import get_private_key_from_wallet, find_address_in_wallet
+from helpers.hotwallethelpers import get_private_key_from_wallet, find_address_in_wallet, find_single_address_in_wallet
+
+from validators.validators import valid_address
 
 TRIGGERS_DIR = 'json/public/triggers'
 
@@ -222,16 +224,35 @@ def verify_signed_message(trigger_id, **data):
 
 def sign_message(**data):
     if not all(key in data for key in ['address', 'message']):
-        return {'error': 'Request data does not contain all required keys: address, message'}
+        return {'success': False, 'error': 'Request data does not contain all required keys: address, message'}
 
-    account, index = find_address_in_wallet(address=data['address'])
-    private_key = get_private_key_from_wallet(account=account, index=index)
+    address = data['address']
+    message = data['message']
 
-    signature = sign_and_verify(private_key=private_key[data['address']], address=data['address'], message=data['message'])
+    if not valid_address(address=address):
+        return {'success': False, 'error': 'Invalid address: %s' % address}
 
-    return {'signature': signature,
-            'address': data['address'],
-            'message': data['message']}
+    if len(message) > 255:
+        return {'success': False, 'error': 'Message is too long, can not be longer than 255 characters.'}
+
+    account, index = find_address_in_wallet(address=address)
+    if account is None or index is None:
+        private_key = find_single_address_in_wallet(address=address)
+
+        if private_key is None:
+            return {'success': False, 'error': 'Address %s not found in hot wallet' % address}
+    else:
+        private_key = get_private_key_from_wallet(account=account, index=index)[address]
+
+    try:
+        signature = sign_and_verify(private_key=private_key, address=address, message=message)
+    except Exception as ex:
+        return {'success': False, 'error': 'Unable to sign message: %s' % ex}
+
+    return {'success': True,
+            'signature': signature,
+            'address': address,
+            'message': message}
 
 
 def http_get_request(trigger_id, **data):
