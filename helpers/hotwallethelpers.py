@@ -101,6 +101,12 @@ def find_address_in_wallet(address, accounts=1, indexes=20):
     return None, None
 
 
+def find_single_address_in_wallet(address):
+    hot_wallet = get_hot_wallet()
+
+    return hot_wallet[address] if address in hot_wallet else None
+
+
 def hot_wallet_seed():
     hot_wallet = get_hot_wallet()
     return get_seed(mnemonic=' '.join(hot_wallet['mnemonic']), passphrase=hot_wallet['passphrase'])
