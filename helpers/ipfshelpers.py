@@ -45,13 +45,11 @@ def get_json(multihash):
     if multihash in IPFS_CACHE:
         return IPFS_CACHE[multihash]
 
+    json = None
     try:
-        json = IPFS_API.get_json(multihash)
+        json = IPFS_API.get_json(multihash, timeout=1)
     except Exception as e:
         LOG.error('Failed to retrieve json data from IPFS hash %s: %s' % (multihash, e))
-        LOG.error('Sleeping 1 second before trying again...')
-        time.sleep(1)
-        json = IPFS_API.get_json(multihash)
 
     if multihash not in IPFS_CACHE:
         IPFS_CACHE[multihash] = json
@@ -77,11 +75,11 @@ def get_str(multihash):
     if multihash in IPFS_CACHE:
         return IPFS_CACHE[multihash]
 
+    string = None
     try:
-        string = IPFS_API.cat(multihash=multihash)
+        string = IPFS_API.cat(multihash=multihash, timeout=1)
     except Exception as e:
         LOG.error('Unable to retrieve string from IPFS with multihash %s: %s' % (multihash, e))
-        raise Exception('IPFS failure: %s' % e)
 
     if multihash not in IPFS_CACHE:
         IPFS_CACHE[multihash] = string
