@@ -95,9 +95,10 @@ class BlockstreamAPI(ExplorerAPI):
                 LOG.error('Unable to get address transactions for %s from Blockstream.info: %s' % (address, ex))
                 return {'error': 'Unable to get address transactions for %s from Blockstream.info' % address}
 
-        for transaction in data:
-            txs.append(self.parse_transaction(data=transaction, latest_block_height=latest_block_height).to_dict(address=address))
+            for transaction in data:
+                txs.append(self.parse_transaction(data=transaction, latest_block_height=latest_block_height).to_dict(address=address))
 
+        LOG.info('Retrieved %s transactions' % len(txs))
         return {'transactions': txs}
 
     def get_balance(self, address):
