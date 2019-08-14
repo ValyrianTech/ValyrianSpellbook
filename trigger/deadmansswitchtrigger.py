@@ -5,8 +5,8 @@ from datetime import datetime
 
 from helpers.loghelpers import LOG
 from helpers.mailhelpers import sendmail
-from trigger import Trigger
-from triggertype import TriggerType
+from .trigger import Trigger
+from .triggertype import TriggerType
 from validators.validators import valid_phase, valid_email, valid_amount, valid_timestamp
 
 

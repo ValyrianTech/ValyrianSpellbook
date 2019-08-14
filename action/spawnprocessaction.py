@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from action import Action
-from actiontype import ActionType
+from .action import Action
+from .actiontype import ActionType
 from helpers.loghelpers import LOG
 from helpers.runcommandprocess import RunCommandProcess
 

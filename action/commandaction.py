@@ -4,8 +4,8 @@
 from subprocess import Popen, PIPE
 
 from helpers.loghelpers import LOG
-from action import Action
-from actiontype import ActionType
+from .action import Action
+from .actiontype import ActionType
 
 
 class CommandAction(Action):

@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from py2specials import *
-from py3specials import *
+from .py2specials import *
+from .py3specials import *
 
-from jacobianhelpers import fast_add, A, B, P
+from .jacobianhelpers import fast_add, A, B, P
 
 
 def get_pubkey_format(pub):

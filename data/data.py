@@ -4,13 +4,13 @@
 import os
 
 from helpers.loghelpers import LOG
-from blockexplorers.blockchain_info import BlockchainInfoAPI
-from blockexplorers.blocktrail_com import BlocktrailComAPI
-from blockexplorers.insight import InsightAPI
-from blockexplorers.chain_so import ChainSoAPI
-from blockexplorers.btc_com import BTCComAPI
-from blockexplorers.blockstream import BlockstreamAPI
-from explorer import Explorer, ExplorerType
+from .blockexplorers.blockchain_info import BlockchainInfoAPI
+from .blockexplorers.blocktrail_com import BlocktrailComAPI
+from .blockexplorers.insight import InsightAPI
+from .blockexplorers.chain_so import ChainSoAPI
+from .blockexplorers.btc_com import BTCComAPI
+from .blockexplorers.blockstream import BlockstreamAPI
+from .explorer import Explorer, ExplorerType
 from helpers.jsonhelpers import save_to_json_file, load_from_json_file
 from validators.validators import valid_address
 

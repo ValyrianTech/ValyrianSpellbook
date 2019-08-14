@@ -3,8 +3,8 @@
 from binascii import hexlify, unhexlify
 
 
-from BIP32 import bip32_ckd, bip32_extract_key, MAGICBYTE, bip32_master_key, VERSION_BYTES, bip32_privtopub
-from BIP39 import get_seed
+from .BIP32 import bip32_ckd, bip32_extract_key, MAGICBYTE, bip32_master_key, VERSION_BYTES, bip32_privtopub
+from .BIP39 import get_seed
 from helpers.publickeyhelpers import encode_pubkey, pubkey_to_address
 from helpers.privatekeyhelpers import encode_privkey, privkey_to_address
 from helpers.configurationhelpers import get_use_testnet

@@ -2,7 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import os
-from ConfigParser import ConfigParser
+try:
+    from ConfigParser import ConfigParser  # Python2.7
+except:
+    from configparser import ConfigParser  # Python3
 from decorators import verify_config
 
 CONFIGURATION_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "configuration", "spellbook.conf"))

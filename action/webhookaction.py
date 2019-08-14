@@ -4,8 +4,8 @@
 import requests
 
 from helpers.loghelpers import LOG
-from action import Action
-from actiontype import ActionType
+from .action import Action
+from .actiontype import ActionType
 from validators.validators import valid_url
 
 

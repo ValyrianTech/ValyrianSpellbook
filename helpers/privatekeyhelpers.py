@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from py2specials import *
-from py3specials import *
+from .py2specials import *
+from .py3specials import *
 
-from jacobianhelpers import fast_multiply, N, G
-from publickeyhelpers import encode_pubkey, pubkey_to_address
+from .jacobianhelpers import fast_multiply, N, G
+from .publickeyhelpers import encode_pubkey, pubkey_to_address
 
 # Regular expressions for private key formats
 wif_compressed_regex = '^[LK][1-9A-Za-z][^OIl]{50}$'
