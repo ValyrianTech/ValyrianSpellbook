@@ -22,10 +22,10 @@ class TX(object):
         """
         Print info about the transaction
         """
-        print '\nblock ', str(self.block_height), "(" + str(self.confirmations) + " confirmations)", self.txid
-        print 'IN:', self.inputs
-        print 'OUT:', self.outputs
-        print 'primeInput:', self.prime_input_address()
+        print('\nblock ', str(self.block_height), "(" + str(self.confirmations) + " confirmations)", self.txid)
+        print('IN:', self.inputs)
+        print('OUT:', self.outputs)
+        print('primeInput:', self.prime_input_address())
 
     def prime_input_address(self):
         """
