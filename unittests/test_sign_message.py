@@ -33,12 +33,12 @@ class TestSignMessage(object):
         private_key = 'L41XHGJA5QX43QRG3FEwPbqD5BYvy6WxUxqAMM9oQdHJ5FcRHcGk'
         message = 'test message'
 
-        print 'Address:', address
-        print 'Message:', message
+        print('Address:', address)
+        print('Message:', message)
 
         # signature keeps changing, sign_input_message both signs and verifies
         signature = sign_message(address, message, private_key)
-        print 'Signature:', signature
+        print('Signature:', signature)
 
         assert verify_message(address=address, message=message, signature=signature)
 
@@ -59,12 +59,12 @@ class TestSignMessage(object):
         private_key = '5KMWWy2d3Mjc8LojNoj8Lcz9B1aWu8bRofUgGwQk959Dw5h2iyw'
         message = 'test message'
 
-        print 'Address:', address
-        print 'Message:', message
+        print('Address:', address)
+        print('Message:', message)
 
         # signature keeps changing, sign_input_message both signs and verifies
         signature = sign_message(address, message, private_key)
-        print 'Signature:', signature
+        print('Signature:', signature)
 
         assert verify_message(address=address, message=message, signature=signature)
 
@@ -81,11 +81,11 @@ class TestSignMessage(object):
         private_key = get_private_key_from_wallet(account=account, index=index)[address]
         message = 'This is a test message'
 
-        print 'Address:', address
-        print 'Message:', message
+        print('Address:', address)
+        print('Message:', message)
 
         signature = sign_message(address, message, private_key)
-        print 'Signature:', signature
+        print('Signature:', signature)
 
         assert verify_message(address=address, message=message, signature=signature)
 
@@ -121,11 +121,11 @@ class TestSignMessage(object):
         private_key = get_private_key_from_wallet(account=account, index=index)[address]
         message = 'This is a test message'
 
-        print 'Address:', address
-        print 'Message:', message
+        print('Address:', address)
+        print('Message:', message)
 
         signature = sign_message(address, message, private_key)
-        print 'Signature:', signature
+        print('Signature:', signature)
 
         assert verify_message(address=address, message=message, signature=signature)
 
@@ -135,6 +135,6 @@ class TestSignMessage(object):
         private_key = get_private_key_from_wallet(account=0, index=0)[address]
 
         signature = sign_message(address, message, private_key)
-        print 'Signature:', signature
+        print('Signature:', signature)
 
         assert verify_message(address=address, message=message, signature=signature)
