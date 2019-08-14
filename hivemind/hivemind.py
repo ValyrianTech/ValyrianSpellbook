@@ -9,7 +9,7 @@ from validators.validators import valid_address, valid_bech32_address
 from taghash.taghash import TagHash
 from inputs.inputs import get_sil
 from linker.linker import get_lal
-from sign_message import verify_message
+from helpers.messagehelpers import verify_message
 
 
 class HivemindIssue(IPFSDict):
