@@ -10,6 +10,9 @@ from helpers.loghelpers import LOG
 from helpers.configurationhelpers import get_ipfs_host, get_ipfs_port, get_enable_ipfs
 from helpers.jsonhelpers import save_to_json_file
 
+from helpers.py2specials import *
+from helpers.py3specials import *
+
 IPFS_API = None
 IPFS_CACHE = {}
 
@@ -205,7 +208,7 @@ class IPFSDict(object):
 
         :param multihash: An IPFS multihash
         """
-        if not isinstance(multihash, (str, unicode)):
+        if not isinstance(multihash, string_types):
             LOG.error('Can not retrieve IPFS data: multihash must be a string or unicode, got %s instead' % type(multihash))
             return
 

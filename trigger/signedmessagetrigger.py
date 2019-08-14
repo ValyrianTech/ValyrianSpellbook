@@ -9,6 +9,9 @@ from .triggertype import TriggerType
 from spellbookscripts.spellbookscript import SpellbookScript
 from validators.validators import valid_address
 
+from helpers.py2specials import *
+from helpers.py3specials import *
+
 
 class SignedMessageTrigger(Trigger):
     def __init__(self, trigger_id):
@@ -43,7 +46,7 @@ class SignedMessageTrigger(Trigger):
         return ret
 
     def process_message(self, address, message, signature):
-        if not isinstance(message, (str, unicode)):
+        if not isinstance(message, string_types):
             return
 
         self.message = message
