@@ -15,18 +15,18 @@ def spellbook_call(*args):
     spellbook_args = ['python', os.path.join(PROGRAM_DIR, 'spellbook.py')]
     spellbook_args.extend(args)
 
-    print '\nCALL: %s' % ' '.join(spellbook_args)
+    print('\nCALL: %s' % ' '.join(spellbook_args))
     spellbook = Popen(format_args(spellbook_args), stdout=PIPE, stderr=PIPE, shell=True)
     output, error = spellbook.communicate()
-    stripped_output = output.strip()
-    print 'RESPONSE: %s\n' % stripped_output
+    stripped_output = output.strip().decode()
+    print('RESPONSE: %s\n' % stripped_output)
 
     stripped_error = error.strip()
     if len(stripped_error):
-        print >> sys.stderr, '\n------------------BEGIN OF SPELLBOOK ERROR------------------'
-        print >> sys.stderr, stripped_error
-        print >> sys.stderr, '\nCALL: %s' % ' '.join(spellbook_args)
-        print >> sys.stderr, '------------------END OF SPELLBOOK ERROR------------------\n'
+        print('\n------------------BEGIN OF SPELLBOOK ERROR------------------', file=sys.stderr)
+        print(stripped_error, file=sys.stderr)
+        print('\nCALL: %s' % ' '.join(spellbook_args), file=sys.stderr)
+        print('------------------END OF SPELLBOOK ERROR------------------\n', file=sys.stderr)
 
     if len(stripped_output):
         spellbook_response = simplejson.loads(stripped_output)
@@ -36,18 +36,18 @@ def spellbook_call(*args):
 def bitcoinwand_call(address, message, url):
     bitcoinwand_args = [os.path.join(PROGRAM_DIR, 'bitcoinwand.py'), address, message, url]
 
-    print '\nCALL: %s' % ' '.join(bitcoinwand_args)
+    print('\nCALL: %s' % ' '.join(bitcoinwand_args))
     bitcoinwand = Popen(format_args(bitcoinwand_args), stdout=PIPE, stderr=PIPE, shell=True)
     output, error = bitcoinwand.communicate()
     stripped_output = output.strip()
-    print 'RESPONSE: %s\n' % stripped_output
+    print('RESPONSE: %s\n' % stripped_output)
 
     stripped_error = error.strip()
     if len(stripped_error):
-        print >> sys.stderr, '\n------------------BEGIN OF BITCOINWAND ERROR------------------'
-        print >> sys.stderr, stripped_error
-        print >> sys.stderr, '\nCALL: %s' % ' '.join(bitcoinwand_args)
-        print >> sys.stderr, '------------------END OF BITCOINWAND ERROR------------------\n'
+        print('\n------------------BEGIN OF BITCOINWAND ERROR------------------', file=sys.stderr)
+        print(stripped_error, file=sys.stderr)
+        print('\nCALL: %s' % ' '.join(bitcoinwand_args), file=sys.stderr)
+        print('------------------END OF BITCOINWAND ERROR------------------\n', file=sys.stderr)
 
     if len(stripped_output):
         bitcoinwand_response = simplejson.loads(stripped_output)
@@ -55,8 +55,8 @@ def bitcoinwand_call(address, message, url):
 
 
 def clean_up_triggers(trigger_ids):
-    print 'Cleaning up triggers: %s' % trigger_ids
-    print 'Getting the list of configured triggers'
+    print('Cleaning up triggers: %s' % trigger_ids)
+    print('Getting the list of configured triggers')
     configured_trigger_ids = spellbook_call('get_triggers')
 
     for trigger_id in trigger_ids:
@@ -66,8 +66,8 @@ def clean_up_triggers(trigger_ids):
 
 
 def clean_up_actions(action_ids):
-    print 'Cleaning up actions: %s' % action_ids
-    print 'Getting the list of configured actions'
+    print('Cleaning up actions: %s' % action_ids)
+    print('Getting the list of configured actions')
     configured_action_ids = spellbook_call('get_actions')
 
     for action_id in action_ids:

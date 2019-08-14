@@ -906,14 +906,14 @@ def save_action():
             try:
                 distribution = simplejson.load(input_file)
             except Exception as ex:
-                print >> sys.stderr, 'Distribution file %s is not a valid json file: %s' % (args.distribution, ex)
+                print('Distribution file %s is not a valid json file: %s' % (args.distribution, ex), file=sys.stderr)
                 sys.exit(1)
 
         if valid_distribution(distribution):
             data['distribution'] = distribution
         else:
-            print >> sys.stderr, 'Distribution file does not contain a valid distribution: %s' % distribution
-            print >> sys.stderr, 'Must be a dict where all keys are a valid address and the value is a integer greater than or equal to zero'
+            print('Distribution file does not contain a valid distribution: %s' % distribution, file=sys.stderr)
+            print('Must be a dict where all keys are a valid address and the value is a integer greater than or equal to zero', file=sys.stderr)
             sys.exit(1)
 
     url = 'http://{host}:{port}/spellbook/actions/{action_id}'.format(host=host, port=port, action_id=args.action_id)
@@ -958,9 +958,9 @@ def do_get_request(url, authenticate=False, data=None):
 
     try:
         r = requests.get(url, headers=headers, json=data)
-        print r.text
+        print(r.text)
     except Exception as ex:
-        print >> sys.stderr, 'GET %s failed: %s' % (url, ex)
+        print('GET %s failed: %s' % (url, ex), file=sys.stderr)
         sys.exit(1)
 
 
@@ -970,9 +970,9 @@ def do_post_request(url, authenticate=False, data=None):
 
     try:
         r = requests.post(url, headers=headers, json=data)
-        print r.text
+        print(r.text)
     except Exception as ex:
-        print >> sys.stderr, 'POST %s failed: %s' % (url, ex)
+        print('POST %s failed: %s' % (url, ex), file=sys.stderr)
         sys.exit(1)
 
 
@@ -982,9 +982,9 @@ def do_delete_request(url, authenticate=False, data=None):
 
     try:
         r = requests.delete(url, headers=headers, json=data)
-        print r.text
+        print(r.text)
     except Exception as ex:
-        print >> sys.stderr, 'DELETE %s failed: %s' % (url, ex)
+        print('DELETE %s failed: %s' % (url, ex), file=sys.stderr)
         sys.exit(1)
 
 
