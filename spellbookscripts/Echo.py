@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import os
 
-from spellbookscript import SpellbookScript
+from .spellbookscript import SpellbookScript
 from helpers.loghelpers import LOG
 
 

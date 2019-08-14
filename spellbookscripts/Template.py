@@ -3,7 +3,7 @@
 import os
 
 from helpers.loghelpers import LOG
-from spellbookscript import SpellbookScript
+from .spellbookscript import SpellbookScript
 from helpers.triggerhelpers import get_trigger
 from trigger.triggertype import TriggerType
 from helpers.actionhelpers import get_action
