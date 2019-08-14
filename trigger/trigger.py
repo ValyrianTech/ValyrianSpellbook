@@ -194,7 +194,7 @@ class Trigger(object):
                         raise NotImplementedError('Unsupported platform: only windows and linux are supported')
 
             if script_path is None:
-                LOG.error('Can not find spellbook script' % self.script)
+                LOG.error('Can not find spellbook script %s' % self.script)
                 return
 
             LOG.info('Loading Spellbook Script %s' % script_path)
