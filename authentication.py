@@ -52,7 +52,8 @@ def hash_message(data, nonce):
     :param nonce: An integer
     :return: A SHA512 hash
     """
-    return hashlib.sha512(str(nonce) + simplejson.dumps(data, sort_keys=True, indent=2)).digest()
+    message = str(nonce) + simplejson.dumps(data, sort_keys=True, indent=2)
+    return hashlib.sha512(message.encode('utf-8')).digest()
 
 
 def signature(data, nonce, secret):
@@ -67,7 +68,7 @@ def signature(data, nonce, secret):
     if len(secret) % 4 != 0:
         raise Exception('The secret must be a string with a length of a multiple of 4!')
 
-    return base64.b64encode(hmac.new(base64.b64decode(secret), hash_message(data, nonce), hashlib.sha512).digest())
+    return base64.b64encode(hmac.new(base64.b64decode(secret), hash_message(data, nonce), hashlib.sha512).digest()).decode()
 
 
 def check_authentication(headers, data):
