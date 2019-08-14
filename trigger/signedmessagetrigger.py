@@ -4,8 +4,8 @@ import os
 import logging
 import importlib
 
-from trigger import Trigger
-from triggertype import TriggerType
+from .trigger import Trigger
+from .triggertype import TriggerType
 from spellbookscripts.spellbookscript import SpellbookScript
 from validators.validators import valid_address
 

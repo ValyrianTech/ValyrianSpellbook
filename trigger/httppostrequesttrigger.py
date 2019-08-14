@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from trigger import Trigger
-from triggertype import TriggerType
+from .trigger import Trigger
+from .triggertype import TriggerType
 
 
 class HTTPPostRequestTrigger(Trigger):

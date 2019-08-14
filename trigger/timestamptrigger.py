@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 import time
 
-from trigger import Trigger
-from triggertype import TriggerType
+from .trigger import Trigger
+from .triggertype import TriggerType
 from validators.validators import valid_timestamp
 
 
