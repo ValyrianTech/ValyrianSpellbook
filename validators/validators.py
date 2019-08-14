@@ -186,7 +186,7 @@ def valid_script(script):
 
 
 def valid_bech32_address(address):
-    if not isinstance(address, (str, unicode)):
+    if not isinstance(address, string_types):
         return False
 
     hrp, data = bech32_decode(address)
