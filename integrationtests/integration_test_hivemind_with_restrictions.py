@@ -8,7 +8,7 @@ import random
 from hivemind.hivemind import HivemindIssue, HivemindOption, HivemindOpinion, HivemindState
 from helpers.hotwallethelpers import get_address_from_wallet
 from helpers.hotwallethelpers import get_private_key_from_wallet
-from sign_message import sign_message
+from helpers.messagehelpers import sign_message
 
 print 'Starting Spellbook integration test: hivemind with restrictions'
 print '----------------------------------------------\n'
