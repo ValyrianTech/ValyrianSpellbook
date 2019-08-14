@@ -4,8 +4,8 @@
 import operator
 
 from helpers.loghelpers import LOG
-from action import Action
-from actiontype import ActionType
+from .action import Action
+from .actiontype import ActionType
 from data.data import utxos, prime_input_address, push_tx
 from bips.BIP44 import get_xpriv_key, get_private_key
 from helpers.configurationhelpers import get_max_tx_fee_percentage
@@ -16,7 +16,7 @@ from helpers.hotwallethelpers import get_hot_wallet
 from inputs.inputs import get_sil
 from linker.linker import get_lbl, get_lrl, get_lsl, get_lal
 from transactionfactory import make_custom_tx, txhash
-from transactiontype import TransactionType
+from .transactiontype import TransactionType
 from validators.validators import valid_address, valid_xpub, valid_amount, valid_op_return, valid_block_height
 from validators.validators import valid_transaction_type, valid_distribution, valid_percentage, valid_private_key
 

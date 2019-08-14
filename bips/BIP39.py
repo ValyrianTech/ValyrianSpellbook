@@ -1,4 +1,4 @@
-from mnemonic import Mnemonic
+from .mnemonic import Mnemonic
 
 
 def get_seed(mnemonic, passphrase, language='english'):

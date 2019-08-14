@@ -4,8 +4,8 @@ import time
 from datetime import datetime
 
 from helpers.loghelpers import LOG
-from trigger import Trigger
-from triggertype import TriggerType
+from .trigger import Trigger
+from .triggertype import TriggerType
 from validators.validators import valid_amount, valid_timestamp
 
 

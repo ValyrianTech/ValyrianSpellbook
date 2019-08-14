@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from trigger import Trigger
-from triggertype import TriggerType
+from .trigger import Trigger
+from .triggertype import TriggerType
 from data.data import latest_block
 from validators.validators import valid_block_height, valid_amount
 

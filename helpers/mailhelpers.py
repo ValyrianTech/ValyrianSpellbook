@@ -8,7 +8,11 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.mime.base import MIMEBase
-from email import Encoders
+try:
+    from email import Encoders  # Python2.7
+except:
+    from email import encoders  # Python3
+
 
 from helpers.loghelpers import LOG
 from helpers.configurationhelpers import get_smtp_from_address, get_smtp_host, get_smtp_port, get_smtp_user, get_smtp_password

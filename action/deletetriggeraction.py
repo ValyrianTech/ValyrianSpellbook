@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from helpers.loghelpers import LOG
-from action import Action
-from actiontype import ActionType
+from .action import Action
+from .actiontype import ActionType
 
 
 class DeleteTriggerAction(Action):
