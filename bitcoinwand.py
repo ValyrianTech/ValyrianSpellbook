@@ -8,7 +8,7 @@ import ipfsapi
 
 from helpers.configurationhelpers import get_ipfs_host, get_ipfs_port
 from helpers.hotwallethelpers import get_private_key_from_wallet, find_address_in_wallet
-from sign_message import sign_message
+from helpers.messagehelpers import sign_message
 from validators.validators import valid_address
 
 
@@ -23,7 +23,7 @@ args = parser.parse_args()
 
 # Check if address is valid
 if not valid_address(args.address):
-    print >> sys.stderr, 'Invalid address: %s' % args.address
+    print('Invalid address: %s' % args.address)
     sys.exit(1)
 
 data = {'address': args.address}
@@ -31,7 +31,7 @@ data = {'address': args.address}
 # Find the private key of the address in the hot wallet
 account, index = find_address_in_wallet(address=data['address'], accounts=100)  # Todo find better way to specify number of accounts to search
 if account is None or index is None:
-    print >> sys.stderr, 'Can not find address in wallet!'
+    print('Can not find address in wallet!')
     sys.exit(1)
 else:
     private_key = get_private_key_from_wallet(account=account, index=index)[data['address']]
@@ -50,7 +50,7 @@ if len(data['message']) >= 256:
     try:
         ipfs = ipfsapi.connect(get_ipfs_host(), get_ipfs_port())
     except Exception as ex:
-        print 'IPFS node is not running: %s' % ex
+        print('IPFS node is not running: %s' % ex)
         sys.exit(1)
 
     message_hash = ipfs.add_json(data['message'])
@@ -58,12 +58,12 @@ if len(data['message']) >= 256:
 
 
 # Calculate the signature
-data['signature'] = sign_message(address=data['address'], message=data['message'], private_key=private_key)
+data['signature'] = sign_message(message=data['message'], private_key=private_key)
 
 # Send the signed message as a POST request to the url
 try:
     r = requests.post('{url}'.format(url=args.url), json=data)
-    print r.text
+    print(r.text)
 except Exception as ex:
-    print >> sys.stderr, 'Unable to send signed message to trigger: %s' % ex
+    print('Unable to send signed message to trigger: %s' % ex)
     sys.exit(1)

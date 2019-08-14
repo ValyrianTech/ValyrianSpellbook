@@ -15,7 +15,7 @@ from trigger.manualtrigger import ManualTrigger
 from trigger.receivedtrigger import ReceivedTrigger
 from trigger.recurringtrigger import RecurringTrigger
 from trigger.senttrigger import SentTrigger
-from sign_message import verify_message, sign_and_verify
+from helpers.messagehelpers import verify_message, sign_and_verify
 from trigger.signedmessagetrigger import SignedMessageTrigger
 from trigger.timestamptrigger import TimestampTrigger
 from trigger.triggerstatustrigger import TriggerStatusTrigger
