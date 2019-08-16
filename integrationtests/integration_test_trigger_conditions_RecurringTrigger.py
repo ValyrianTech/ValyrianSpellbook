@@ -4,8 +4,8 @@ import time
 from helpers.setupscripthelpers import spellbook_call, clean_up_triggers
 
 
-print 'Starting Spellbook integration test: Recurring trigger conditions'
-print '----------------------------------------------\n'
+print('Starting Spellbook integration test: Recurring trigger conditions')
+print('----------------------------------------------\n')
 
 # Clean up triggers if necessary
 clean_up_triggers(trigger_ids=['test_trigger_conditions_RecurringTrigger'])
@@ -32,7 +32,7 @@ assert response['interval'] == interval
 assert response['next_activation'] == begin_time
 assert response['triggered'] == 0
 
-print 'Checking recurring trigger, should not activate because begin time has not been reached'
+print('Checking recurring trigger, should not activate because begin time has not been reached')
 response = spellbook_call('check_triggers', trigger_name)
 assert response is None
 
@@ -42,11 +42,11 @@ assert response['begin_time'] == begin_time
 assert response['next_activation'] == begin_time
 assert response['triggered'] == 0
 
-print 'Sleeping 5 seconds...'
-time.sleep(5)
+print('Sleeping 2 seconds...')
+time.sleep(2)
 
 while int(time.time()) < end_time - (interval/2):
-    print 'Checking recurring trigger each second'
+    print('Checking recurring trigger each second')
     response = spellbook_call('check_triggers', trigger_name)
     assert response is None
 
@@ -57,10 +57,10 @@ while int(time.time()) < end_time - (interval/2):
     time.sleep(1)
 
 
-print 'Sleeping until end time has passed'
+print('Sleeping until end time has passed')
 time.sleep(interval)
 
-print 'Checking recurring trigger again, triggered should be true'
+print('Checking recurring trigger again, triggered should be true')
 response = spellbook_call('check_triggers', trigger_name)
 assert response is None
 
