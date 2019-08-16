@@ -4,8 +4,8 @@ import time
 from helpers.setupscripthelpers import spellbook_call, clean_up_triggers
 
 
-print 'Starting Spellbook integration test: Timestamp trigger conditions'
-print '----------------------------------------------\n'
+print('Starting Spellbook integration test: Timestamp trigger conditions')
+print('----------------------------------------------\n')
 
 # Clean up triggers if necessary
 clean_up_triggers(trigger_ids=['test_trigger_conditions_TimestampTrigger'])
@@ -27,7 +27,7 @@ assert response['trigger_type'] == trigger_type
 assert response['timestamp'] == timestamp
 assert response['triggered'] == 0
 
-print 'Checking timestamp trigger, should not activate'
+print('Checking timestamp trigger, should not activate')
 response = spellbook_call('check_triggers', trigger_name)
 assert response is None
 
@@ -36,10 +36,10 @@ assert response['trigger_type'] == trigger_type
 assert response['timestamp'] == timestamp
 assert response['triggered'] == 0
 
-print 'Sleeping 6 seconds...'
+print('Sleeping 6 seconds...')
 time.sleep(6)
 
-print 'Checking timestamp trigger again, should activate now'
+print('Checking timestamp trigger again, should activate now')
 response = spellbook_call('check_triggers', trigger_name)
 assert response is None
 
