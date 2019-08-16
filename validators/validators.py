@@ -87,7 +87,7 @@ def valid_email(email):
 
 
 def valid_amount(amount):
-    return isinstance(amount, int_types) and amount >= 0
+    return isinstance(amount, int_types) and not isinstance(amount, float) and amount >= 0
 
 
 def valid_block_height(block_height):
