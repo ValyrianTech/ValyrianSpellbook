@@ -6,8 +6,8 @@ from helpers.hotwallethelpers import get_address_from_wallet
 from helpers.setupscripthelpers import spellbook_call, clean_up_triggers
 
 
-print 'Starting Spellbook integration test: triggers'
-print '----------------------------------------------\n'
+print('Starting Spellbook integration test: triggers')
+print('----------------------------------------------\n')
 
 # Clean up triggers if necessary
 clean_up_triggers(trigger_ids=['test_trigger_Manual',
@@ -23,8 +23,8 @@ trigger_types = ['Manual', 'Balance', 'Received', 'Sent', 'Block_height', 'Times
 
 for trigger_type in trigger_types:
 
-    print '--------------------------------------------------------------------------------------------------------'
-    print 'Saving trigger of type: %s' % trigger_type
+    print('--------------------------------------------------------------------------------------------------------')
+    print('Saving trigger of type: %s' % trigger_type)
     trigger_name = 'test_trigger_%s' % trigger_type
 
     response = spellbook_call('save_trigger', trigger_name, '-t=%s' % trigger_type)
@@ -33,13 +33,13 @@ for trigger_type in trigger_types:
     response = spellbook_call('get_trigger_config', trigger_name)
     assert response['trigger_id'] == trigger_name
     assert response['trigger_type'] == trigger_type
-    print '--------------------------------------------------------------------------------------------------------'
+    print('--------------------------------------------------------------------------------------------------------')
 
 
 for trigger_type in trigger_types:
 
-    print '--------------------------------------------------------------------------------------------------------'
-    print 'updating trigger of type: %s' % trigger_type
+    print('--------------------------------------------------------------------------------------------------------')
+    print('updating trigger of type: %s' % trigger_type)
     trigger_name = 'test_trigger_%s' % trigger_type
     address = get_address_from_wallet(0, 3)
     amount = 1000000
@@ -60,11 +60,11 @@ for trigger_type in trigger_types:
         assert response['block_height'] == block_height
     elif trigger_type == 'Timestamp':
         assert response['timestamp'] == timestamp
-    print '--------------------------------------------------------------------------------------------------------'
+    print('--------------------------------------------------------------------------------------------------------')
 
 
-print '--------------------------------------------------------------------------------------------------------'
-print 'Updating trigger test_trigger_Manual'
+print('--------------------------------------------------------------------------------------------------------')
+print('Updating trigger test_trigger_Manual')
 trigger_name = 'test_trigger_Manual'
 
 description = 'A test description'
@@ -105,8 +105,8 @@ for status in ['Pending', 'Disabled', 'Active']:
 
 # Activating test triggers
 for trigger_type in trigger_types:
-    print '--------------------------------------------------------------------------------------------------------'
-    print 'activating trigger of type: %s' % trigger_type
+    print('--------------------------------------------------------------------------------------------------------')
+    print('activating trigger of type: %s' % trigger_type)
     trigger_name = 'test_trigger_%s' % trigger_type
 
     response = spellbook_call('get_trigger_config', trigger_name)
