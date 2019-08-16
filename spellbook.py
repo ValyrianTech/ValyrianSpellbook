@@ -14,6 +14,9 @@ from authentication import signature
 from helpers.configurationhelpers import get_host, get_port, get_key, get_secret
 from validators.validators import valid_distribution
 
+from helpers.py2specials import *
+from helpers.py3specials import *
+
 # Make sure we are in the correct working directory
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -906,14 +909,14 @@ def save_action():
             try:
                 distribution = simplejson.load(input_file)
             except Exception as ex:
-                print('Distribution file %s is not a valid json file: %s' % (args.distribution, ex), file=sys.stderr)
+                print_to_stderr('Distribution file %s is not a valid json file: %s' % (args.distribution, ex))
                 sys.exit(1)
 
         if valid_distribution(distribution):
             data['distribution'] = distribution
         else:
-            print('Distribution file does not contain a valid distribution: %s' % distribution, file=sys.stderr)
-            print('Must be a dict where all keys are a valid address and the value is a integer greater than or equal to zero', file=sys.stderr)
+            print_to_stderr('Distribution file does not contain a valid distribution: %s' % distribution)
+            print_to_stderr('Must be a dict where all keys are a valid address and the value is a integer greater than or equal to zero')
             sys.exit(1)
 
     url = 'http://{host}:{port}/spellbook/actions/{action_id}'.format(host=host, port=port, action_id=args.action_id)
@@ -960,7 +963,7 @@ def do_get_request(url, authenticate=False, data=None):
         r = requests.get(url, headers=headers, json=data)
         print(r.text)
     except Exception as ex:
-        print('GET %s failed: %s' % (url, ex), file=sys.stderr)
+        print_to_stderr('GET %s failed: %s' % (url, ex))
         sys.exit(1)
 
 
@@ -972,7 +975,7 @@ def do_post_request(url, authenticate=False, data=None):
         r = requests.post(url, headers=headers, json=data)
         print(r.text)
     except Exception as ex:
-        print('POST %s failed: %s' % (url, ex), file=sys.stderr)
+        print_to_stderr('POST %s failed: %s' % (url, ex))
         sys.exit(1)
 
 
@@ -984,7 +987,7 @@ def do_delete_request(url, authenticate=False, data=None):
         r = requests.delete(url, headers=headers, json=data)
         print(r.text)
     except Exception as ex:
-        print('DELETE %s failed: %s' % (url, ex), file=sys.stderr)
+        print_to_stderr('DELETE %s failed: %s' % (url, ex))
         sys.exit(1)
 
 

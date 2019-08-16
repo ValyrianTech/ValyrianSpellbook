@@ -104,3 +104,6 @@ if sys.version_info.major == 2:
 
     def random_string(x):
         return os.urandom(x)
+
+    def print_to_stderr(message):
+        print >> sys.stderr, message

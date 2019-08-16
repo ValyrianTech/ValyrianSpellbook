@@ -6,6 +6,8 @@ import sys
 import simplejson
 
 from helpers.platformhelpers import format_args
+from helpers.py2specials import *
+from helpers.py3specials import *
 
 PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -23,10 +25,10 @@ def spellbook_call(*args):
 
     stripped_error = error.strip()
     if len(stripped_error):
-        print('\n------------------BEGIN OF SPELLBOOK ERROR------------------', file=sys.stderr)
-        print(stripped_error, file=sys.stderr)
-        print('\nCALL: %s' % ' '.join(spellbook_args), file=sys.stderr)
-        print('------------------END OF SPELLBOOK ERROR------------------\n', file=sys.stderr)
+        print_to_stderr('\n------------------BEGIN OF SPELLBOOK ERROR------------------')
+        print_to_stderr(stripped_error)
+        print_to_stderr('\nCALL: %s' % ' '.join(spellbook_args))
+        print_to_stderr('------------------END OF SPELLBOOK ERROR------------------\n')
 
     if len(stripped_output):
         spellbook_response = simplejson.loads(stripped_output)
@@ -44,10 +46,10 @@ def bitcoinwand_call(address, message, url):
 
     stripped_error = error.strip()
     if len(stripped_error):
-        print('\n------------------BEGIN OF BITCOINWAND ERROR------------------', file=sys.stderr)
-        print(stripped_error, file=sys.stderr)
-        print('\nCALL: %s' % ' '.join(bitcoinwand_args), file=sys.stderr)
-        print('------------------END OF BITCOINWAND ERROR------------------\n', file=sys.stderr)
+        print_to_stderr('\n------------------BEGIN OF BITCOINWAND ERROR------------------')
+        print_to_stderr(stripped_error)
+        print_to_stderr('\nCALL: %s' % ' '.join(bitcoinwand_args))
+        print_to_stderr('------------------END OF BITCOINWAND ERROR------------------\n')
 
     if len(stripped_output):
         bitcoinwand_response = simplejson.loads(stripped_output)
