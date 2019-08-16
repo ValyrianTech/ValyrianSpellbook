@@ -3,8 +3,8 @@
 import pytest
 import binascii
 
-from BIP32_test_vectors import bip32_test_vectors
-from BIP39_test_vectors import BIP39_test_vectors, BIP39_test_vectors_japanese
+from .BIP32_test_vectors import bip32_test_vectors
+from .BIP39_test_vectors import BIP39_test_vectors, BIP39_test_vectors_japanese
 
 from bips.BIP32 import parse_derivation_path, get_xpriv, get_xpub, get_xpub_child, set_chain_mode, bip32_master_key
 from helpers.configurationhelpers import get_use_testnet
@@ -31,9 +31,9 @@ def teardown_module(module):
 class TestBIP32(object):
     @pytest.mark.parametrize('seed, xpriv', [testvector for testvector in testvectors])
     def test_get_master_key(self, seed, xpriv):
-        print '\nseed (hex): %s' % seed
-        print 'seed (bin): %s' % binascii.unhexlify(seed)
-        print 'expected xpriv: %s' % xpriv
+        print('\nseed (hex): %s' % seed)
+        print('seed (bin): %s' % binascii.unhexlify(seed))
+        print('expected xpriv: %s' % xpriv)
 
         assert bip32_master_key(seed=binascii.unhexlify(seed), vbytes=b'\x04\x88\xAD\xE4') == xpriv
 
@@ -57,24 +57,24 @@ class TestBIP32(object):
         ["m/44'/1'", [44 + (2 ** 31), 1 + (2 ** 31)]],
     ])
     def test_parse_derivation_path(self, derivation_path, expected):
-        print '\nderivation path: %s' % derivation_path
-        print 'expected: %s' % expected
+        print('\nderivation path: %s' % derivation_path)
+        print('expected: %s' % expected)
 
         assert parse_derivation_path(derivation_path=derivation_path) == expected
 
     @pytest.mark.parametrize('seed, derivation_path, xpriv', [testvector for testvector in xpriv_testvectors])
     def test_get_xpriv(self, seed, derivation_path, xpriv):
-        print '\nseed: %s' % seed
-        print 'derivation path: %s' % derivation_path
-        print 'expected xpriv: %s' % xpriv
+        print('\nseed: %s' % seed)
+        print('derivation path: %s' % derivation_path)
+        print('expected xpriv: %s' % xpriv)
 
         assert get_xpriv(seed=binascii.unhexlify(seed), derivation_path=derivation_path) == xpriv
 
     @pytest.mark.parametrize('seed, derivation_path, xpub', [testvector for testvector in xpub_testvectors])
     def test_get_xpub(self, seed, derivation_path, xpub):
-        print '\nseed: %s' % seed
-        print 'derivation path: %s' % derivation_path
-        print 'expected xpub: %s' % xpub
+        print('\nseed: %s' % seed)
+        print('derivation path: %s' % derivation_path)
+        print('expected xpub: %s' % xpub)
 
         assert get_xpub(seed=binascii.unhexlify(seed), derivation_path=derivation_path) == xpub
 
