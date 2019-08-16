@@ -3,8 +3,8 @@
 from helpers.setupscripthelpers import spellbook_call, clean_up_triggers, clean_up_actions
 
 
-print 'Starting Spellbook integration test: TriggerStatus trigger conditions'
-print '----------------------------------------------\n'
+print('Starting Spellbook integration test: TriggerStatus trigger conditions')
+print('----------------------------------------------\n')
 
 # Clean up triggers if necessary
 clean_up_triggers(trigger_ids=['test_trigger_conditions_TriggerStatusTrigger',
@@ -17,7 +17,7 @@ clean_up_actions(action_ids=['test_triggerstatus_action'])
 #########################################################################################################
 # TriggerStatus trigger
 #########################################################################################################
-print 'Creating previous trigger with webhook action'
+print('Creating previous trigger with webhook action')
 previous_trigger = 'test_trigger_conditions_TriggerStatusTrigger_A'
 previous_trigger_status = 'Succeeded'
 previous_trigger_type = 'Manual'
@@ -36,7 +36,7 @@ response = spellbook_call('save_trigger', previous_trigger, '--actions', 'test_t
 assert response is None
 
 
-print 'Creating the test TriggerStatus trigger'
+print('Creating the test TriggerStatus trigger')
 trigger_name = 'test_trigger_conditions_TriggerStatusTrigger'
 trigger_type = 'TriggerStatus'
 
@@ -49,7 +49,7 @@ assert response['previous_trigger'] == previous_trigger
 assert response['previous_trigger_status'] == previous_trigger_status
 assert response['triggered'] == 0
 
-print 'Checking TriggerStatus trigger, should not trigger because the previous trigger has not been activated yet'
+print('Checking TriggerStatus trigger, should not trigger because the previous trigger has not been activated yet')
 response = spellbook_call('check_triggers', trigger_name)
 assert response is None
 
@@ -58,11 +58,11 @@ assert response['triggered'] == 0
 
 # --------------------------------------------------------------------------------------------------------
 
-print 'Activate the previous trigger'
+print('Activate the previous trigger')
 response = spellbook_call('activate_trigger', previous_trigger)
 assert response is None
 
-print 'Checking TriggerStatus trigger, should trigger now because previous trigger succeeded'
+print('Checking TriggerStatus trigger, should trigger now because previous trigger succeeded')
 response = spellbook_call('check_triggers', trigger_name)
 assert response is None
 
@@ -71,7 +71,7 @@ assert response['triggered'] == 1
 
 # --------------------------------------------------------------------------------------------------------
 
-print 'Resetting triggers'
+print('Resetting triggers')
 
 response = spellbook_call('save_trigger', previous_trigger, '--reset')
 assert response is None
@@ -88,7 +88,7 @@ assert response['triggered'] == 0
 assert response['status'] == 'Active'
 
 
-print 'Changing webhook action so it will fail the next time'
+print('Changing webhook action so it will fail the next time')
 webhook = 'http://www.qsdfqeqessefeddsdfsfe.com'
 
 response = spellbook_call('save_action', action_name, '-t=Webhook', '-w=%s' % webhook)
@@ -96,11 +96,11 @@ assert response is None
 
 # --------------------------------------------------------------------------------------------------------
 
-print 'Activate the previous trigger'
+print('Activate the previous trigger')
 response = spellbook_call('activate_trigger', previous_trigger)
 assert response is None
 
-print 'Checking TriggerStatus trigger, should not trigger because previous trigger failed'
+print('Checking TriggerStatus trigger, should not trigger because previous trigger failed')
 response = spellbook_call('check_triggers', trigger_name)
 assert response is None
 
@@ -109,12 +109,12 @@ assert response['triggered'] == 0
 
 # --------------------------------------------------------------------------------------------------------
 
-print 'Changing previous_trigger_status to Failed'
+print('Changing previous_trigger_status to Failed')
 previous_trigger_status = 'Failed'
 response = spellbook_call('save_trigger', trigger_name, '-pts=%s' % previous_trigger_status)
 assert response is None
 
-print 'Checking TriggerStatus trigger, should trigger because previous trigger failed'
+print('Checking TriggerStatus trigger, should trigger because previous trigger failed')
 response = spellbook_call('check_triggers', trigger_name)
 assert response is None
 
