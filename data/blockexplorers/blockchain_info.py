@@ -255,7 +255,8 @@ class BlockchainInfoAPI(ExplorerAPI):
 
             input_addresses = []
             for i in range(0, len(tx_inputs)):
-                input_addresses.append(tx_inputs[i]['prev_out']['addr'])
+                if 'prev_out' in tx_inputs[i]:  # Coinbase transactions don't have a input address
+                    input_addresses.append(tx_inputs[i]['prev_out']['addr'])
 
             if len(input_addresses) > 0:
                 prime_input_address = sorted(input_addresses)[0]
