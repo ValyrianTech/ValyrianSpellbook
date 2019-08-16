@@ -8,7 +8,7 @@ import helpers.configurationhelpers
 
 class TestValidators(object):
     def test_pytest(self):
-        print 'testing pytest...',
+        print('testing pytest...',)
         assert True
 
     @pytest.mark.parametrize('address, expected, description', [
@@ -28,7 +28,7 @@ class TestValidators(object):
     ])
     def test_valid_address_mainnet(self, address, expected, description):
         helpers.configurationhelpers.get_use_testnet = mock.MagicMock(return_value=False)
-        print description
+        print(description)
         assert validators.valid_address(address) == expected, description
 
     @pytest.mark.parametrize('address, expected, description', [
@@ -46,7 +46,7 @@ class TestValidators(object):
     ])
     def test_valid_address_testnet(self, address, expected, description):
         helpers.configurationhelpers.get_use_testnet = mock.MagicMock(return_value=True)
-        print description
+        print(description)
         assert validators.valid_address(address) == expected, description
 
     @pytest.mark.parametrize('xpub, expected, description', [
@@ -57,7 +57,7 @@ class TestValidators(object):
     ])
     def test_valid_xpub_mainnet(self, xpub, expected, description):
         helpers.configurationhelpers.get_use_testnet = mock.MagicMock(return_value=False)
-        print description
+        print(description)
         assert validators.valid_xpub(xpub) == expected, description
 
     @pytest.mark.parametrize('xpub, expected, description', [
@@ -68,7 +68,7 @@ class TestValidators(object):
     ])
     def test_valid_xpub_testnet(self, xpub, expected, description):
         helpers.configurationhelpers.get_use_testnet = mock.MagicMock(return_value=True)
-        print description
+        print(description)
         assert validators.valid_xpub(xpub) == expected, description
 
     @pytest.mark.parametrize('txid, expected, description', [
@@ -81,7 +81,7 @@ class TestValidators(object):
         [None, False, 'None value'],
     ])
     def test_valid_txid(self, txid, expected, description):
-        print description
+        print(description)
         assert validators.valid_txid(txid) == expected
 
     @pytest.mark.parametrize('text, expected, description', [
@@ -91,7 +91,7 @@ class TestValidators(object):
         [None, False, 'None value'],
     ])
     def test_valid_description(self, text, expected, description):
-        print description
+        print(description)
         assert validators.valid_description(text) == expected
 
     @pytest.mark.parametrize('message, expected, description', [
@@ -101,7 +101,7 @@ class TestValidators(object):
         [None, False, 'None value'],
     ])
     def test_valid_op_return(self, message, expected, description):
-        print description
+        print(description)
         assert validators.valid_op_return(message) == expected
 
     @pytest.mark.parametrize('message, expected, description', [
@@ -129,7 +129,7 @@ class TestValidators(object):
         [None, False, 'None value'],
     ])
     def test_valid_blockprofile_message(self, message, expected, description):
-        print description
+        print(description)
         assert validators.valid_blockprofile_message(message) == expected
 
     @pytest.mark.parametrize('text, expected, description', [
@@ -139,7 +139,7 @@ class TestValidators(object):
         [None, False, 'None value'],
     ])
     def test_valid_text(self, text, expected, description):
-        print description
+        print(description)
         assert validators.valid_text(text) == expected
 
     @pytest.mark.parametrize('url, expected, description', [
@@ -180,7 +180,7 @@ class TestValidators(object):
         [None, False, 'None value'],
     ])
     def test_valid_url(self, url, expected, description):
-        print description
+        print(description)
         assert validators.valid_url(url) == expected
 
     @pytest.mark.parametrize('text, expected, description', [
@@ -190,7 +190,7 @@ class TestValidators(object):
         [None, False, 'None value'],
     ])
     def test_valid_creator(self, text, expected, description):
-        print description
+        print(description)
         assert validators.valid_creator(text) == expected
 
     @pytest.mark.parametrize('email, expected, description', [
@@ -201,7 +201,7 @@ class TestValidators(object):
         [None, False, 'None value'],
     ])
     def test_valid_email(self, email, expected, description):
-        print description
+        print(description)
         assert validators.valid_email(email) == expected
 
     @pytest.mark.parametrize('amount, expected, description', [
@@ -214,7 +214,7 @@ class TestValidators(object):
         [None, False, 'None value'],
     ])
     def test_valid_amount(self, amount, expected, description):
-        print description
+        print(description)
         assert validators.valid_amount(amount) == expected
 
     @pytest.mark.parametrize('block_height, expected, description', [
@@ -227,7 +227,7 @@ class TestValidators(object):
         [None, False, 'None value'],
     ])
     def test_valid_block_height(self, block_height, expected, description):
-        print description
+        print(description)
         assert validators.valid_block_height(block_height) == expected
 
     @pytest.mark.parametrize('percentage, expected, description', [
@@ -242,7 +242,7 @@ class TestValidators(object):
         [None, False, 'None value'],
     ])
     def test_valid_percentage(self, percentage, expected, description):
-        print description
+        print(description)
         assert validators.valid_percentage(percentage) == expected
 
     @pytest.mark.parametrize('url, expected, description', [
@@ -258,7 +258,7 @@ class TestValidators(object):
         [None, False, 'None value'],
     ])
     def test_valid_youtube(self, url, expected, description):
-        print description
+        print(description)
         assert validators.valid_youtube(url) == expected
 
     @pytest.mark.parametrize('url, expected, description', [
@@ -271,7 +271,7 @@ class TestValidators(object):
         [None, False, 'None value'],
     ])
     def test_valid_youtube_id(self, url, expected, description):
-        print description
+        print(description)
         assert validators.valid_youtube_id(url) == expected
 
     @pytest.mark.parametrize('key, expected, description', [
@@ -285,7 +285,7 @@ class TestValidators(object):
         [None, False, 'None value'],
     ])
     def test_valid_private_key(self, key, expected, description):
-        print description
+        print(description)
         assert validators.valid_private_key(key) == expected
 
     @pytest.mark.parametrize('distribution, expected, description', [
@@ -307,7 +307,7 @@ class TestValidators(object):
     ])
     def test_valid_distribution(self, distribution, expected, description):
         helpers.configurationhelpers.get_use_testnet = mock.MagicMock(return_value=False)
-        print description
+        print(description)
         assert validators.valid_distribution(distribution) == expected
 
     @pytest.mark.parametrize('outputs, expected, description', [
@@ -319,7 +319,7 @@ class TestValidators(object):
     ])
     def test_valid_outputs(self, outputs, expected, description):
         helpers.configurationhelpers.get_use_testnet = mock.MagicMock(return_value=False)
-        print description
+        print(description)
         assert validators.valid_outputs(outputs) == expected
 
     @pytest.mark.parametrize('address, expected, description', [
@@ -339,7 +339,7 @@ class TestValidators(object):
     ])
     def test_valid_bech32_address_mainnet(self, address, expected, description):
         helpers.configurationhelpers.get_use_testnet = mock.MagicMock(return_value=False)
-        print description
+        print(description)
         assert validators.valid_bech32_address(address) == expected
 
     @pytest.mark.parametrize('address, expected, description', [
@@ -351,5 +351,5 @@ class TestValidators(object):
     ])
     def test_valid_bech32_address_testnet(self, address, expected, description):
         helpers.configurationhelpers.get_use_testnet = mock.MagicMock(return_value=True)
-        print description
+        print(description)
         assert validators.valid_bech32_address(address) == expected
