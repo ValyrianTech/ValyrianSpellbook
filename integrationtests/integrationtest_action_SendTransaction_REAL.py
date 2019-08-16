@@ -7,8 +7,8 @@ from helpers.setupscripthelpers import spellbook_call, clean_up_actions
 # make sure testnet is always on for this integrationtest
 set_chain_mode(mainnet=False)
 
-print 'Starting Spellbook integration test: SendTransaction action'
-print '----------------------------------------------\n'
+print('Starting Spellbook integration test: SendTransaction action')
+print('----------------------------------------------\n')
 
 # Clean up actions if necessary
 clean_up_actions(action_ids=['integrationtest_action_SendTransaction_REAL'])
@@ -33,7 +33,7 @@ op_return_data = 'A test op return message'
 # --------------------------------------------------------------------------------------------------------
 
 
-print 'Creating test action: SendTransaction'
+print('Creating test action: SendTransaction')
 response = spellbook_call('save_action', action_name, '-t=SendTransaction', '-fa=%s' % fee_address, '-fp=%s' % fee_percentage,
                           '-wt=%s' % wallet_type, '-ba=%s' % bip44_account, '-bi=%s' % bip44_index, '-ma=%s' % minimum_amount, '-ra=%s' % receiving_address,
                           '-or=%s' % op_return_data)
