@@ -178,7 +178,7 @@ class BlockstreamAPI(ExplorerAPI):
 
     def get_prime_input_address(self, txid):
         transaction_data = self.get_transaction(txid=txid)
-        return transaction_data['transaction']['prime_input_address'] if 'prime_input_address' in transaction_data['transaction'] else None
+        return {'prime_input_address': transaction_data['transaction']['prime_input_address']} if 'prime_input_address' in transaction_data['transaction'] else {'error': 'Received invalid data: %s' % transaction_data}
 
     def get_utxos(self, address, confirmations=3):
         url = self.url + '/blocks/tip/height'

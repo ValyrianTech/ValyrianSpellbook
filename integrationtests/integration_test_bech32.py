@@ -3,11 +3,11 @@
 from helpers.setupscripthelpers import spellbook_call
 
 
-print 'Starting Spellbook integration test: bech32'
-print '----------------------------------------------\n'
+print('Starting Spellbook integration test: bech32')
+print('----------------------------------------------\n')
 
 
-print 'Getting the list of configured explorers'
+print('Getting the list of configured explorers')
 configured_explorers = spellbook_call('get_explorers')
 
 txid = '48089a814ac571944feb7162cc0145eea4e72742aa51f6f23d470debd838eeb3'
@@ -19,7 +19,7 @@ testnet_P2WSH = 'tb1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q0sl5k7'
 for explorer in configured_explorers:
     response = spellbook_call('get_prime_input_address', txid, '-e=%s' % explorer)
     if response['prime_input_address'] is None:
-        print '%s does NOT support Bech32!' % explorer
+        print('%s does NOT support Bech32!' % explorer)
 
 for explorer in configured_explorers:
     response = spellbook_call('get_transactions', address, '-e=%s' % explorer)
