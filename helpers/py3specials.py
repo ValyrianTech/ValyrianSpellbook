@@ -1,4 +1,5 @@
 # Code copied from Vitalik Buterin's pybitcointools (library is no longer maintained)
+from __future__ import print_function
 
 import sys, os
 import binascii
@@ -128,3 +129,6 @@ if sys.version_info.major == 3:
 
     def random_string(x):
         return str(os.urandom(x))
+
+    def print_to_stderr(message):
+        print(message, file=sys.stderr)
