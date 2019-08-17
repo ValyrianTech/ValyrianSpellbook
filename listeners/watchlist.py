@@ -71,13 +71,13 @@ class Watchlist(object):
         """
         if address is None:
             for address in self.watchlist:
-                print address
-                print self.watchlist[address], '\n'
+                print(address)
+                print(self.watchlist[address], '\n')
         elif address in self.watchlist:
-            print address
-            print self.watchlist[address]
+            print(address)
+            print(self.watchlist[address])
         else:
-            print 'No events found for address %s' % address
+            print('No events found for address %s' % address)
 
 
 if __name__ == "__main__":
