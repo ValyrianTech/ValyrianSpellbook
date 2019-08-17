@@ -37,10 +37,10 @@ dividends_fee_address = get_address_from_wallet(account=bip44_account, index=bip
 
 ##########################################################################################################
 
-print 'Setting up Dividends'
-print '----------------------------------------------\n'
+print( 'Setting up Dividends')
+print( '----------------------------------------------\n')
 
-print 'The address for the dividends is %s' % dividends_address
+print( 'The address for the dividends is %s' % dividends_address)
 
 # --------------------------------------------------------------------------------------------------------
 # Clean up old triggers and actions first
@@ -51,7 +51,7 @@ clean_up_actions(action_ids=['Dividends'])
 # --------------------------------------------------------------------------------------------------------
 # Create Actions
 # --------------------------------------------------------------------------------------------------------
-print '\nCreating Action...'
+print( '\nCreating Action...')
 action_id = 'Dividends'
 action_type = ActionType.SENDTRANSACTION
 transaction_type = TransactionType.SEND2SIL
@@ -75,7 +75,7 @@ assert response is None
 # --------------------------------------------------------------------------------------------------------
 # Create Triggers
 # --------------------------------------------------------------------------------------------------------
-print '\nCreating Trigger...'
+print( '\nCreating Trigger...')
 trigger_id = 'Dividends'
 trigger_type = TriggerType.BALANCE
 
