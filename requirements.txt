@@ -6,7 +6,7 @@ requests==2.20.0
 deepdiff==3.3.0
 ecdsa==0.13
 simplejson==3.11.1
-ipfsapi==0.4.2.post1
+ipfshttpclient==0.4.12
 pycryptodome==3.8.2
 websocket_client==0.51.0
 mysql_connector_repackaged==0.3.1
