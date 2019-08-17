@@ -59,10 +59,10 @@ save_to_json_file(filename=distribution_filename, data=distribution)
 
 ##########################################################################################################
 
-print 'Setting up Splitter'
-print '----------------------------------------------\n'
+print('Setting up Splitter')
+print('----------------------------------------------\n')
 
-print 'The address for the splitter is %s' % splitter_address
+print('The address for the splitter is %s' % splitter_address)
 
 # --------------------------------------------------------------------------------------------------------
 # Clean up old triggers and actions first
@@ -73,7 +73,7 @@ clean_up_actions(action_ids=['Splitter'])
 # --------------------------------------------------------------------------------------------------------
 # Create Actions
 # --------------------------------------------------------------------------------------------------------
-print '\nCreating Action...'
+print('\nCreating Action...')
 action_id = 'Splitter'
 action_type = ActionType.SENDTRANSACTION
 transaction_type = TransactionType.SEND2MANY
@@ -100,7 +100,7 @@ assert response is None
 # --------------------------------------------------------------------------------------------------------
 # Create Triggers
 # --------------------------------------------------------------------------------------------------------
-print '\nCreating Trigger...'
+print('\nCreating Trigger...')
 trigger_id = 'Splitter'
 trigger_type = TriggerType.BALANCE
 
