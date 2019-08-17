@@ -33,26 +33,26 @@ confirmations = 6
 
 ##########################################################################################################
 
-print 'Setting up Lottery'
-print '----------------------------------------------\n'
+print('Setting up Lottery')
+print('----------------------------------------------\n')
 
-print 'The address for the lottery is %s' % lottery_address
+print('The address for the lottery is %s' % lottery_address)
 balances = balance(address=lottery_address)
-print 'Current balance: %s' % balances
+print('Current balance: %s' % balances)
 if balances['balance']['sent'] > 0:
-    print '\nERROR: there have been prior transactions sent from this address, this means not all funds are available for the lottery!'
-    print 'Only unused addresses (or at least addresses that have not spent any funds yet) should be used for the lottery.'
+    print('\nERROR: there have been prior transactions sent from this address, this means not all funds are available for the lottery!')
+    print('Only unused addresses (or at least addresses that have not spent any funds yet) should be used for the lottery.')
     exit(1)
 
 
 latest_block_data = latest_block()
 if 'block' not in latest_block_data:
-    print 'Unable to get latest block'
+    print('Unable to get latest block')
     exit(1)
 
 current_block_height = latest_block_data['block']['height']
-print '\nCurrent block height: %s' % current_block_height
-print 'Lottery will pick winner at block height: %s' % (current_block_height + block_height_offset)
+print('\nCurrent block height: %s' % current_block_height)
+print('Lottery will pick winner at block height: %s' % (current_block_height + block_height_offset))
 
 # --------------------------------------------------------------------------------------------------------
 # Clean up old triggers and actions first
@@ -63,7 +63,7 @@ clean_up_actions(action_ids=['Lottery-payout'])
 # --------------------------------------------------------------------------------------------------------
 # Create Actions
 # --------------------------------------------------------------------------------------------------------
-print '\nCreating Action...'
+print('\nCreating Action...')
 action_id = 'Lottery-payout'
 action_type = ActionType.SENDTRANSACTION
 transaction_type = TransactionType.SEND2SINGLE
@@ -80,7 +80,7 @@ assert response is None
 # --------------------------------------------------------------------------------------------------------
 # Create Triggers
 # --------------------------------------------------------------------------------------------------------
-print '\nCreating Trigger...'
+print('\nCreating Trigger...')
 trigger_id = 'Lottery'
 trigger_type = TriggerType.BLOCK_HEIGHT
 block_height = current_block_height + block_height_offset
