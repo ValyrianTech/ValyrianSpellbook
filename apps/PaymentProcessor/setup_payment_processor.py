@@ -37,8 +37,8 @@ from helpers.setupscripthelpers import spellbook_call, clean_up_triggers
 
 ##########################################################################################################
 
-print 'Setting up PaymentProcessor'
-print '----------------------------------------------\n'
+print('Setting up PaymentProcessor')
+print('----------------------------------------------\n')
 
 # --------------------------------------------------------------------------------------------------------
 # Clean up old triggers and actions first
@@ -48,7 +48,7 @@ clean_up_triggers(trigger_ids=['PaymentProcessorNewPayment', 'PaymentProcessorPa
 # --------------------------------------------------------------------------------------------------------
 # Create Triggers
 # --------------------------------------------------------------------------------------------------------
-print 'Creating Triggers...'
+print('Creating Triggers...')
 trigger_id = 'PaymentProcessorNewPayment'
 trigger_type = 'HTTPPostRequest'
 script = os.path.join('PaymentProcessor', 'PaymentProcessorNewPayment.py')
@@ -82,19 +82,19 @@ assert response is None
 
 
 # --------------------------------------------------------------------------------------------------------
-print '\n\n'
-print 'HTTP POST endpoint created'
-print 'To create a new Payment request, send a HTTP POST request with the following fields: seller_id, amount_fiat, currency'
-print 'To this url:'
+print('\n\n')
+print('HTTP POST endpoint created')
+print('To create a new Payment request, send a HTTP POST request with the following fields: seller_id, amount_fiat, currency')
+print('To this url:')
 
 url = 'http://{host}:{port}/spellbook/triggers/PaymentProcessorNewPayment/post'.format(host=get_host(), port=get_port())
-print url
+print(url)
 
 # --------------------------------------------------------------------------------------------------------
-print '\n\n'
-print 'HTTP GET endpoint created'
-print 'To get a payment status, send a HTTP GET request with the following fields: payment_request_id'
-print 'To this url:'
+print('\n\n')
+print('HTTP GET endpoint created')
+print('To get a payment status, send a HTTP GET request with the following fields: payment_request_id')
+print('To this url:')
 
 url = 'http://{host}:{port}/spellbook/triggers/PaymentProcessorPaymentStatus/get'.format(host=get_host(), port=get_port())
-print url
+print(url)
