@@ -26,7 +26,7 @@ class TestTagHash(object):
         False,
     ])
     def test_given_anything_that_is_not_a_string_as_input_value_when_initializing_a_taghash_then_exception_is_raised(self, tags):
-        print tags, type(tags)
+        print(tags, type(tags))
 
         with pytest.raises(Exception):
             TagHash(tags=tags)
@@ -82,5 +82,5 @@ class TestTagHash(object):
         taghash = TagHash()
 
         for variation in variations:
-            print variation
+            print(variation)
             assert taghash.normalize_tag(variation) == letter
