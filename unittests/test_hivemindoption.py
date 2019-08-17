@@ -36,13 +36,13 @@ class TestHivemindOption(object):
 
     def test_initializing_with_option_hash(self):
         option = HivemindOption()
-        print option.__dict__
+        print(option.__dict__)
         option.set_hivemind_issue(hivemind_issue_hash=STRING_QUESTION_HASH)
         option.set('42')
-        print option.__dict__
+        print(option.__dict__)
 
         option_hash = option.save()
-        print option_hash
+        print(option_hash)
 
         option2 = HivemindOption(multihash=option_hash)
         assert option2.hivemind_issue_hash == option.hivemind_issue_hash
