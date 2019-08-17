@@ -21,8 +21,8 @@ from helpers.triggerhelpers import TriggerType
 
 ##########################################################################################################
 
-print 'Setting up Notary'
-print '----------------------------------------------\n'
+print('Setting up Notary')
+print('----------------------------------------------\n')
 
 # --------------------------------------------------------------------------------------------------------
 # Clean up old triggers and actions first
@@ -32,7 +32,7 @@ clean_up_triggers(trigger_ids=['Notary-request'])
 # --------------------------------------------------------------------------------------------------------
 # Create Triggers
 # --------------------------------------------------------------------------------------------------------
-print '\nCreating Trigger...'
+print('\nCreating Trigger...')
 trigger_id = 'Notary-request'
 trigger_type = TriggerType.HTTPPOSTREQUEST
 script = 'Notary\Notary.py'
@@ -43,8 +43,8 @@ response = spellbook_call('save_trigger', trigger_id,
                           '--multi')
 assert response is None
 
-print 'HTTP POST endpoint created'
-print 'To create a new Notary request, send a HTTP POST request with the desired message as the "message" field in the request data to:'
+print('HTTP POST endpoint created')
+print('To create a new Notary request, send a HTTP POST request with the desired message as the "message" field in the request data to:')
 
 url = 'http://{host}:{port}/spellbook/triggers/Notary-request/post'.format(host=get_host(), port=get_port())
-print url
+print(url)
