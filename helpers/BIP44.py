@@ -7,8 +7,7 @@ from helpers.publickeyhelpers import pubkey_to_address
 from helpers.privatekeyhelpers import privkey_to_address, privkey_to_pubkey, encode_privkey
 
 from binascii import hexlify, unhexlify
-import json
-import urllib2  # todo replace with requests
+import requests
 from pprint import pprint
 import time
 
@@ -40,8 +39,8 @@ class BIP44Wallet(object):
                 chunk = addressList[i:i+chunk_size]
 
                 url = 'https://blockchain.info/multiaddr?active={0}'.format('|'.join(chunk))
-                ret = urllib2.urlopen(urllib2.Request(url))
-                data = json.loads(ret.read())
+                r = requests.get(url)
+                data = r.json()
 
                 for j in range(0, len(data['addresses'])):
                     if data['addresses'][j]['final_balance'] > 0:
@@ -64,7 +63,7 @@ class BIP44Wallet(object):
         for address in unspent_outputs:
             total_value += unspent_outputs[address]['value']
 
-        print 'Total value:', total_value/1e8, 'BTC'
+        print('Total value:', total_value/1e8, 'BTC')
 
         return unspent_outputs
 
@@ -92,46 +91,46 @@ def set_testnet(testnet=False):
 
 def show_details(mnemonic, passphrase="", n_accounts=1):
     seed = hexlify(get_seed(mnemonic=mnemonic, passphrase=passphrase))
-    print 'Seed:\t\t\t\t', seed
+    print('Seed:\t\t\t\t', seed)
 
     priv = bip32_master_key(unhexlify(seed), vbytes=VBYTES)
-    print 'Xpriv:\t\t\t\t', priv
+    print('Xpriv:\t\t\t\t', priv)
 
     key = encode_privkey(bip32_extract_key(priv), 'wif_compressed', vbyte=MAGICBYTE)
-    print 'Key:\t\t\t\t', key
+    print('Key:\t\t\t\t', key)
 
     pub = bip32_privtopub(priv)
-    print 'Derived public key:\t', pub
+    print('Derived public key:\t', pub)
     pub_hex = bip32_extract_key(pub)
-    print 'public key (hex):\t', pub_hex
-    print 'Master Key address:\t', pubkey_to_address(pub_hex, magicbyte=MAGICBYTE)
+    print('public key (hex):\t', pub_hex)
+    print('Master Key address:\t', pubkey_to_address(pub_hex, magicbyte=MAGICBYTE))
 
-    print ""
-    print "TREZOR Keys:"
+    print("")
+    print("TREZOR Keys:")
 
     account = 0
     derived_private_key = bip32_ckd(bip32_ckd(bip32_ckd(priv, 44+HARDENED), HARDENED), HARDENED+account)
-    print 'Derived private key:', derived_private_key
+    print('Derived private key:', derived_private_key)
 
     private_key = encode_privkey(bip32_extract_key(derived_private_key), 'wif_compressed', vbyte=MAGICBYTE)
-    print 'private key (wif):\t', private_key
+    print('private key (wif):\t', private_key)
 
     derived_public_key = bip32_privtopub(derived_private_key)
-    print 'Derived public key:', derived_public_key
+    print('Derived public key:', derived_public_key)
 
     public_key_hex = privkey_to_pubkey(private_key)
-    print 'public key (hex):\t', public_key_hex
+    print('public key (hex):\t', public_key_hex)
 
     address = pubkey_to_address(public_key_hex, magicbyte=MAGICBYTE)
-    print 'address:\t\t\t', address
+    print('address:\t\t\t', address)
 
-    print ""
-    print "Account public keys (XPUB)"
+    print("")
+    print("Account public keys (XPUB)")
     xpubs = []
     for i in range(0, n_accounts):
         derived_private_key = bip32_ckd(bip32_ckd(bip32_ckd(priv, 44+HARDENED), HARDENED+COIN_TYPE), HARDENED+i)
         xpub = bip32_privtopub(derived_private_key)
-        print 'Account', i, 'xpub:', xpub
+        print('Account', i, 'xpub:', xpub)
         xpubs.append(xpub)
 
     return xpubs
