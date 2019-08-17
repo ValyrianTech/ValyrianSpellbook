@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import ipfsapi
+import ipfshttpclient  # needs python 3.5+ , earlier version are no longer supported
 import time
-import os
 import shutil
 import zipfile
 
@@ -18,8 +17,11 @@ IPFS_CACHE = {}
 
 if get_enable_ipfs() is True:
     # Check if IPFS node is running
+    multi_address = '/ip4/{host}/tcp/{port}/http'.format(host=get_ipfs_host(), port=get_ipfs_port())
+    LOG.info('Trying to connect with IPFS on %s' % multi_address)
     try:
-        IPFS_API = ipfsapi.connect(get_ipfs_host(), get_ipfs_port())
+        IPFS_API = ipfshttpclient.connect(multi_address)
+        LOG.info('Connected with IPFS')
     except Exception as ex:
         LOG.error('IPFS node is not running: %s' % ex)
 
