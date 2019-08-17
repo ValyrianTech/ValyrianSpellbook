@@ -3,7 +3,9 @@
 
 
 import hashlib
-import types
+
+from helpers.py2specials import *
+from helpers.py3specials import *
 
 
 class TagHash(object):
@@ -20,9 +22,9 @@ class TagHash(object):
         self.taghash = ''
 
         # If tags are given as input it must be a string
-        if isinstance(tags, types.StringTypes):
+        if isinstance(tags, string_types):
             # Convert all tags to unicode
-            self.tags = [tag.decode('utf-8') for tag in tags.split()]
+            self.tags = [tag for tag in tags.split()]
             self.calculate()
         else:
             raise Exception('Expected a string or unicode as input value but got %s instead: %s' % (type(tags), tags))
@@ -38,7 +40,7 @@ class TagHash(object):
         for normalized_tag in sorted(set(self.normalize_tag(tag) for tag in self.tags)):
             concatenated += normalized_tag
 
-        self.taghash = hashlib.sha256(concatenated).hexdigest()
+        self.taghash = hashlib.sha256(concatenated.encode()).hexdigest()
         return self.taghash
 
     @staticmethod
@@ -96,7 +98,7 @@ class TagHash(object):
 
         :param tag: A string or unicode that contains a single tag
         """
-        if isinstance(tag, types.StringTypes):
+        if isinstance(tag, string_types):
             # Convert to unicode before adding the tag
             self.tags.append(tag.decode('utf-8'))
             self.calculate()
