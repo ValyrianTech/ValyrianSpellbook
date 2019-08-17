@@ -10,17 +10,17 @@ from helpers.hotwallethelpers import get_address_from_wallet
 from helpers.hotwallethelpers import get_private_key_from_wallet
 from helpers.messagehelpers import sign_message
 
-print 'Starting Spellbook integration test: hivemind with restrictions'
-print '----------------------------------------------\n'
+print('Starting Spellbook integration test: hivemind with restrictions')
+print('----------------------------------------------\n')
 
 
 question = 'Which number is bigger?'
 description = 'Rank the numbers from high to low'
 option_type = 'String'
 
-print 'question:', question
-print 'description:', description
-print 'option_type:', option_type
+print('question:', question)
+print('description:', description)
+print('option_type:', option_type)
 
 hivemind_issue = HivemindIssue()
 assert isinstance(hivemind_issue, HivemindIssue)
@@ -42,9 +42,9 @@ restrictions = {'addresses': [get_address_from_wallet(account=0, index=0), get_a
 hivemind_issue.set_restrictions(restrictions=restrictions)
 
 
-print ''
+print('')
 hivemind_issue_hash = hivemind_issue.save()
-print 'Hivemind hash:', hivemind_issue_hash
+print('Hivemind hash:', hivemind_issue_hash)
 
 hivemind_state = HivemindState()
 hivemind_state.set_hivemind_issue(issue_hash=hivemind_issue_hash)
@@ -54,13 +54,13 @@ assert hivemind_state.options == []
 option_hashes = {}
 option_values = ['One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten']
 for option_value in option_values:
-    print 'adding option %s' % option_value
+    print('adding option %s' % option_value)
     option = HivemindOption()
     option.set_hivemind_issue(hivemind_issue_hash=hivemind_issue_hash)
     option.answer_type = option_type
     option.set(value=option_value)
     option_hashes[option_value] = option.save()
-    print 'saved with ipfs hash %s' % option.multihash()
+    print('saved with ipfs hash %s' % option.multihash())
 
     address = get_address_from_wallet(account=0, index=0)
     message = '/ipfs/%s' % option.multihash()
@@ -69,16 +69,16 @@ for option_value in option_values:
     signature = sign_message(address=address, message=message, private_key=private_key)
 
     hivemind_state.add_option(option_hash=option.multihash(), address=address, signature=signature)
-    print ''
+    print('')
 
-print 'All options:'
-print hivemind_state.options
+print('All options:')
+print(hivemind_state.options)
 assert len(hivemind_state.options) == len(option_values)
 
-print ''
+print('')
 hivemind_state_hash = hivemind_state.save()
-print 'Hivemind state hash:', hivemind_state_hash
-print hivemind_state.hivemind_issue_hash
+print('Hivemind state hash:', hivemind_state_hash)
+print(hivemind_state.hivemind_issue_hash)
 
 n_opinions = 10
 for i in range(n_opinions):
@@ -89,24 +89,24 @@ for i in range(n_opinions):
     random.shuffle(ranked_choice)
     opinion.set(opinionator=opinionator, ranked_choice=ranked_choice)
     opinion.save()
-    print '%s = %s' % (opinionator, opinion.ranked_choice)
-    print 'saved as %s' % opinion.multihash()
+    print('%s = %s' % (opinionator, opinion.ranked_choice))
+    print('saved as %s' % opinion.multihash())
     signature = sign_message(private_key=get_private_key_from_wallet(account=3, index=i+1)[opinionator], message='/ipfs/%s' % opinion.multihash(), address=opinionator)
     hivemind_state.add_opinion(opinion_hash=opinion.multihash(), signature=signature, weight=1.0)
-    print ''
+    print('')
 
-print 'All opinions:'
-print hivemind_state.opinions[0]
+print('All opinions:')
+print(hivemind_state.opinions[0])
 assert len(hivemind_state.opinions[0]) == n_opinions
 
-print ''
+print('')
 
 hivemind_state_hash = hivemind_state.save()
-print 'Hivemind state hash:', hivemind_state_hash
+print('Hivemind state hash:', hivemind_state_hash)
 
 hivemind_state.calculate_results(question_index=0)
-print ''
-print hivemind_state.info()
+print('')
+print(hivemind_state.info())
 
 scores = {}
 
