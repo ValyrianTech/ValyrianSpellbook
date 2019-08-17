@@ -22,8 +22,8 @@ from helpers.triggerhelpers import TriggerType
 
 ##########################################################################################################
 
-print 'Setting up Voucher'
-print '----------------------------------------------\n'
+print('Setting up Voucher')
+print('----------------------------------------------\n')
 
 # --------------------------------------------------------------------------------------------------------
 # Clean up old triggers and actions first
@@ -33,7 +33,7 @@ clean_up_triggers(trigger_ids=['RedeemVoucher'])
 # --------------------------------------------------------------------------------------------------------
 # Create Triggers
 # --------------------------------------------------------------------------------------------------------
-print '\nCreating Trigger...'
+print('\nCreating Trigger...')
 trigger_id = 'RedeemVoucher'
 trigger_type = TriggerType.HTTPPOSTREQUEST
 script = os.path.join('Voucher', 'RedeemVoucher.py')
@@ -45,9 +45,9 @@ response = spellbook_call('save_trigger', trigger_id,
                           '--status=Active')
 assert response is None
 
-print 'HTTP POST endpoint created'
-print 'To create a new Voucher request, send a HTTP POST request with the voucher code as the "voucher" field ' \
-      'in the request data and the bitcoin address as the "address" field to:'
+print('HTTP POST endpoint created')
+print('To create a new Voucher request, send a HTTP POST request with the voucher code as the "voucher" field ' \
+      'in the request data and the bitcoin address as the "address" field to:')
 
 url = 'http://{host}:{port}/api/RedeemVoucher'.format(host=get_host(), port=get_port())
-print url
+print(url)
