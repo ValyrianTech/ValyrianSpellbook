@@ -3,11 +3,14 @@
 import pytest
 import binascii
 from random import choice, randint
-from string import lowercase
+
 
 from transactionfactory import p2pkh_script, p2sh_script, p2wpkh_script, p2wsh_script, address_to_script
 from transactionfactory import op_return_script, num_to_op_push
 from data.transaction import TX
+
+from helpers.py2specials import *
+from helpers.py3specials import *
 
 
 class TestTransactionFactory(object):
@@ -67,7 +70,7 @@ class TestTransactionFactory(object):
     def test_op_return_script_with_strings_of_various_lengths(self):
 
         for x in range(1, 81):
-            message = 'a' * x
+            message = b'a' * x
 
             script = op_return_script(hex_data=binascii.hexlify(message))
             print(message)
@@ -80,7 +83,9 @@ class TestTransactionFactory(object):
         for x in range(10000):
             print('')
             random_length = randint(1, 81)
-            random_string = "".join(choice(lowercase) for i in range(random_length))
+            random_string = "".join(choice('abcdefghijklmnopqrstuvwxyz') for i in range(random_length))
+            random_string = from_string_to_bytes(random_string)
+            print('random string: %s' % random_string.decode())
 
             script = op_return_script(hex_data=binascii.hexlify(random_string))
             print(random_string)
