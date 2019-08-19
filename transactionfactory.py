@@ -107,7 +107,7 @@ def make_custom_tx(private_keys, tx_inputs, tx_outputs, tx_fee=0, op_return_data
 def num_to_op_push(x):
     x = int(x)
     if 0 <= x <= 75:
-        pc = ''
+        pc = b''
         num = encode(x, 256, 1)
     elif x < 0xff:
         pc = from_int_to_byte(0x4c)
@@ -130,10 +130,10 @@ def op_return_script(hex_data):
     :param hex_data: The data to add as OP_RETURN in hexadecimal format
     :return: The OP_RETURN script
     """
-    if re.match('^[0-9a-fA-F]*$', hex_data) is None or len(hex_data) % 2 != 0:
+    if re.match(b'^[0-9a-fA-F]*$', hex_data) is None or len(hex_data) % 2 != 0:
         raise Exception('Data to add as OP_RETURN must be in hex format')
 
-    return '6a' + safe_hexlify(num_to_op_push(len(hex_data)/2)) + hex_data
+    return b'6a' + from_string_to_bytes(safe_hexlify(num_to_op_push(len(hex_data)/2))) + hex_data
 
 
 def add_op_return(msg, tx_hex=None):
@@ -441,7 +441,10 @@ def p2wpkh_script(address):
     """
     hrp, data = bech32_decode(address)
     version, decoded = decode_witness_program(hrp=hrp, addr=address)
-    pubkeyhash = ''.join([chr(a) for a in decoded])
+    if is_python2:
+        pubkeyhash = ''.join([chr(a) for a in decoded])
+    else:
+        pubkeyhash = bytes(decoded)
 
     return '0014' + safe_hexlify(pubkeyhash)
 
@@ -463,7 +466,10 @@ def p2wsh_script(address):
     """
     hrp, data = bech32_decode(address)
     version, decoded = decode_witness_program(hrp=hrp, addr=address)
-    scripthash = ''.join([chr(a) for a in decoded])
+    if is_python2:
+        scripthash = ''.join([chr(a) for a in decoded])
+    else:
+        scripthash = bytes(decoded)
 
     return '0020' + safe_hexlify(scripthash)
 
