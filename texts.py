@@ -564,6 +564,22 @@ examples:
 '''
 
 ########################################################################################################
+# get_logs                                                                                           #
+########################################################################################################
+GET_LOGS_DESCRIPTION = 'Get the log messages from the server.'
+GET_LOGS_EPILOG = '''
+examples:
+  - spellbook.py get_logs ERROR
+    -> Get all log messages that contain the word 'ERROR'
+    
+  - spellbook.py get_logs 2019-08-19 21:
+    -> Get all log messages that happened at at certain (partial) time
+
+  - spellbook.py get_logs ... -k=<myapikey> -s=<myapisecret>
+    -> Use given api key and api secret to authenticate with the REST API
+'''
+
+########################################################################################################
 # get_reveal                                                                                           #
 ########################################################################################################
 GET_REVEAL_DESCRIPTION = 'Get the reveal text or link from a RevealSecret action.'

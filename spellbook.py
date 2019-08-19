@@ -492,6 +492,17 @@ get_reveal_parser = subparsers.add_parser(name='get_reveal',
 
 get_reveal_parser.add_argument('action_id', help='The id of the action')
 
+# Create parser for the get_logs subcommand
+get_logs_parser = subparsers.add_parser(name='get_logs',
+                                        help='Get the log messages',
+                                        formatter_class=argparse.RawDescriptionHelpFormatter,
+                                        description=texts.GET_LOGS_DESCRIPTION,
+                                        epilog=texts.GET_LOGS_EPILOG)
+
+get_logs_parser.add_argument('filter_string', help='A filter string for the log messages', nargs='*')
+get_logs_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
+get_logs_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
+
 
 # Create parser for the get_hivemind subcommand
 get_hivemind_parser = subparsers.add_parser(name='get_hivemind',
@@ -938,6 +949,11 @@ def get_reveal():
     do_get_request(url=url)
 
 
+def get_logs():
+    url = 'http://{host}:{port}/spellbook/logs/{filter_string}'.format(host=host, port=port, filter_string=" ".join(args.filter_string))
+    do_get_request(url=url, authenticate=True)
+
+
 def get_hivemind():
     url = 'http://{host}:{port}/spellbook/hiveminds/{hivemind_id}'.format(host=host, port=port, hivemind_id=args.hivemind_id)
     do_get_request(url=url)
@@ -1061,5 +1077,7 @@ elif args.command == 'run_action':
     run_action()
 elif args.command == 'get_reveal':
     get_reveal()
+elif args.command == 'get_logs':
+    get_logs()
 elif args.command == 'get_hivemind':
     get_hivemind()

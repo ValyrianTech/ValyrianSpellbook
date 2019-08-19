@@ -3,6 +3,7 @@
 
 import os
 import sys
+import glob
 import platform
 import logging
 from logging.handlers import RotatingFileHandler
@@ -36,3 +37,26 @@ file_handler.setFormatter(logging.Formatter('%(message)s'))
 REQUESTS_LOG.addHandler(file_handler)
 
 REQUESTS_LOG.setLevel(logging.DEBUG)
+
+
+def get_logs(filter_string=''):
+    """
+    Get the combined log messages from all the logs files at a given time
+
+    :param filter_string: A (partial) timestamp (e.g. 2017-07-14 13:) -> will return all log messages that start with 2017-07-14 13
+    :return: A list containing all relevant log messages
+    """
+    # Get a list of all relevant log files
+    log_files = glob.glob('logs/spellbook.txt*')
+
+    combined_logs = []
+    for log_file in log_files:
+        with open(log_file, 'r') as input_file:
+            for line in input_file.readlines():
+                if filter_string in line:
+                    combined_logs.append(line.strip())
+
+    # Sort the log messages by the timestamps
+    ret = [line for line in sorted(combined_logs, key=lambda x: x)]
+
+    return ret

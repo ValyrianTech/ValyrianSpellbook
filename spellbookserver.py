@@ -21,7 +21,7 @@ from helpers.actionhelpers import get_actions, get_action_config, save_action, d
 from helpers.configurationhelpers import get_host, get_port
 from helpers.hivemindhelpers import get_hivemind_state_hash
 from helpers.hotwallethelpers import get_hot_wallet
-from helpers.loghelpers import LOG, REQUESTS_LOG
+from helpers.loghelpers import LOG, REQUESTS_LOG, get_logs
 from helpers.triggerhelpers import get_triggers, get_trigger_config, save_trigger, delete_trigger, activate_trigger, \
     check_triggers, verify_signed_message, http_get_request, http_post_request, http_delete_request, sign_message
 from inputs.inputs import get_sil, get_profile, get_sul
@@ -129,6 +129,9 @@ class SpellbookRESTAPI(Bottle):
         self.route('/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.save_action)
         self.route('/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.delete_action)
         self.route('/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>/run', method='GET', callback=self.run_action)
+
+        # Routes for retrieving log messages
+        self.route('/spellbook/logs/<filter_string>', method='GET', callback=self.get_logs)
 
         # Routes for RevealSecret actions
         self.route('/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>/reveal', method='GET', callback=self.get_reveal)
@@ -528,6 +531,13 @@ class SpellbookRESTAPI(Bottle):
     def get_reveal(action_id):
         response.content_type = 'application/json'
         return get_reveal(action_id)
+
+    @staticmethod
+    @output_json
+    @authentication_required
+    def get_logs(filter_string):
+        response.content_type = 'application/json'
+        return get_logs(filter_string=filter_string)
 
     @staticmethod
     @output_json
