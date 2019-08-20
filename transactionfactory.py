@@ -14,6 +14,7 @@ from helpers.bech32 import decode as decode_witness_program
 
 from helpers.loghelpers import LOG
 
+
 SIGHASH_ALL = 1
 SIGHASH_NONE = 2
 SIGHASH_SINGLE = 3
@@ -40,6 +41,7 @@ def make_custom_tx(private_keys, tx_inputs, tx_outputs, tx_fee=0, op_return_data
     # Check if the transaction fee is valid
     if not isinstance(tx_fee, int) or tx_fee < 0:
         LOG.error('Invalid transaction fee: %d satoshis' % tx_fee)
+        LOG.error('type: %s' % type(tx_fee))
         return
 
     # Check if the supplied fee is equal to the difference between the total input value and total output value
@@ -65,7 +67,7 @@ def make_custom_tx(private_keys, tx_inputs, tx_outputs, tx_fee=0, op_return_data
             return
 
     # Check if an OP_RETURN message needs to be added and if it is valid
-    if isinstance(op_return_data, (str, unicode)) and len(op_return_data) > 80:
+    if isinstance(op_return_data, string_types) and len(op_return_data) > 80:
         LOG.error('OP_RETURN data is longer than 80 characters')
         return
 
@@ -73,7 +75,7 @@ def make_custom_tx(private_keys, tx_inputs, tx_outputs, tx_fee=0, op_return_data
     tx = mktx(tx_inputs, tx_outputs)
 
     # Add OP_RETURN message if necessary
-    if isinstance(op_return_data, (str, unicode)):
+    if isinstance(op_return_data, string_types):
         tx = add_op_return(op_return_data, tx)
 
     # Now sign each transaction input with the private key
@@ -130,15 +132,18 @@ def op_return_script(hex_data):
     :param hex_data: The data to add as OP_RETURN in hexadecimal format
     :return: The OP_RETURN script
     """
-    if re.match(b'^[0-9a-fA-F]*$', hex_data) is None or len(hex_data) % 2 != 0:
+    if not isinstance(hex_data, str):
+        raise Exception('Data to add as OP_RETURN must be a string containing a hexadecimal number')
+
+    if re.match('^[0-9a-fA-F]*$', hex_data) is None or len(hex_data) % 2 != 0:
         raise Exception('Data to add as OP_RETURN must be in hex format')
 
-    return b'6a' + from_string_to_bytes(safe_hexlify(num_to_op_push(len(hex_data)/2))) + hex_data
+    return '6a' + safe_hexlify(num_to_op_push(len(hex_data)/2)) + hex_data
 
 
 def add_op_return(msg, tx_hex=None):
     """Makes OP_RETURN script from msg, embeds in Tx hex"""
-    hex_data = op_return_script(hex_data=safe_hexlify(msg))
+    hex_data = op_return_script(hex_data=safe_hexlify(msg.encode()))
 
     if tx_hex is None:
         return hex_data

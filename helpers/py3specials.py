@@ -4,6 +4,7 @@ from __future__ import print_function
 import sys, os
 import binascii
 import hashlib
+from functools import reduce
 
 
 if sys.version_info.major == 3:
