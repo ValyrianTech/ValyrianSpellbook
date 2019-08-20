@@ -70,9 +70,9 @@ class TestTransactionFactory(object):
     def test_op_return_script_with_strings_of_various_lengths(self):
 
         for x in range(1, 81):
-            message = b'a' * x
+            message = 'a' * x
 
-            script = op_return_script(hex_data=binascii.hexlify(message))
+            script = op_return_script(hex_data=binascii.hexlify(message.encode()).decode())
             print(message)
             print(script)
 
@@ -84,10 +84,8 @@ class TestTransactionFactory(object):
             print('')
             random_length = randint(1, 81)
             random_string = "".join(choice('abcdefghijklmnopqrstuvwxyz') for i in range(random_length))
-            random_string = from_string_to_bytes(random_string)
-            print('random string: %s' % random_string.decode())
 
-            script = op_return_script(hex_data=binascii.hexlify(random_string))
+            script = op_return_script(hex_data=binascii.hexlify(random_string.encode()).decode())
             print(random_string)
             print(script)
 

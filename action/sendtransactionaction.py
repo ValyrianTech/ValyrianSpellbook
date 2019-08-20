@@ -219,7 +219,7 @@ class SendTransactionAction(Action):
         total_value_in_inputs = int(sum([utxo['value'] for utxo in tx_inputs]))
         LOG.info('Total available value in utxos: %d' % total_value_in_inputs)
 
-        if total_value_in_inputs < self.minimum_amount:
+        if self.minimum_amount is not None and total_value_in_inputs < self.minimum_amount:
             LOG.error('SendTransaction action aborted: Total value is less than minimum amount: %s' % self.minimum_amount)
             return False
 
@@ -284,7 +284,7 @@ class SendTransactionAction(Action):
         LOG.info('%s transaction fee is %s sat/b' % (self.tx_fee_type, satoshis_per_byte))
 
         # Because the transaction is in hexadecimal, to calculate the size in bytes all we need to do is divide the number of characters by 2
-        transaction_size = len(transaction) / 2
+        transaction_size = int(len(transaction) / 2)
         transaction_fee = transaction_size * satoshis_per_byte
         LOG.info('Transaction size is %s bytes, total transaction fee = %s (%s sat/b)' % (transaction_size, transaction_fee, satoshis_per_byte))
 
@@ -295,7 +295,7 @@ class SendTransactionAction(Action):
                 LOG.error('Aborting SendTransaction: The total value of the receiving outputs is less than the transaction fee: %s < %s' % (total_sending_value, transaction_fee))
                 return False
 
-            fee_share = transaction_fee/len(receiving_outputs)
+            fee_share = int(transaction_fee/len(receiving_outputs))
             for receiving_output in receiving_outputs:
                 if receiving_output.value < fee_share:
                     LOG.error('Aborting SendTransaction: The value of at least one receiving output is not enough to subtract its share of the transaction fee: %s < %s' % (receiving_output.value, fee_share))
@@ -304,7 +304,7 @@ class SendTransactionAction(Action):
                     receiving_output.value -= fee_share
 
             # Adjust the transaction fee in case dividing the transaction fee has caused some rounding errors
-            transaction_fee = fee_share * len(receiving_outputs)
+            transaction_fee = int(fee_share * len(receiving_outputs))
 
         # if a specific amount needs to be sent, then the transaction fee should be subtracted from the change output
         elif self.amount > 0 and change_output is not None:
@@ -332,6 +332,7 @@ class SendTransactionAction(Action):
         del private_keys
 
         if transaction is None:
+            LOG.error('No transaction to be sent!')
             return False
 
         LOG.info('Raw transaction: %s' % transaction)
@@ -599,6 +600,7 @@ class SendTransactionAction(Action):
             share = sorted_distribution[i][1]/float(total_shares) if total_shares > 0 else 0  # Calculate the share, this must be a float between 0 and 1
 
             receiving_value = int(share * sending_amount)
+
             if receiving_value < self.minimum_output_value:
                 LOG.info('Excluding %s from distribution because output value is less than minimum output value: %s < %s' % (address, receiving_value, self.minimum_output_value))
                 del sorted_distribution[i]

@@ -131,16 +131,15 @@ class TX(object):
         :param hex_data: The data in hex format
         :return: The decoded data
         """
-        print('hex data: %s %s' % (type(hex_data), hex_data))
         unhex_data = None
-        if hex_data[:2] == b'6a':
-            if hex_data[2:4] == b'4c':
+        if hex_data[:2] == '6a':
+            if hex_data[2:4] == '4c':
                 data = hex_data[6:]
                 check_length = hex_data[4:6]
-            elif hex_data[2:4] == b'4d':
+            elif hex_data[2:4] == '4d':
                 data = hex_data[8:]
                 check_length = hex_data[4:8]
-            elif hex_data[2:4] == b'4e':
+            elif hex_data[2:4] == '4e':
                 data = hex_data[10:]
                 check_length = hex_data[4:10]
             else:
@@ -154,7 +153,7 @@ class TX(object):
                     'OP_RETURN data is not the correct length! {0} -> should be {1}'.format(str(len(unhex_data)),
                                                                                             str(int(check_length,
                                                                                                     16))))
-                unhex_data = b'Unable to decode hex data'
+                unhex_data = 'Unable to decode hex data'
 
         # Sometimes the unhexed data is encoded in another coded than utf-8 which could cause problems when converting to json later
         try:
@@ -164,9 +163,9 @@ class TX(object):
                 unhex_data = unhex_data.decode('cp1252')
             except Exception as ex:
                 LOG.error('Unable to decode OP_RETURN data %s in utf-8 or cp1252: %s' % (hex_data, ex))
-                unhex_data = b'Unable to decode hex data'
+                unhex_data = 'Unable to decode hex data'
 
-        return from_string_to_bytes(unhex_data)
+        return unhex_data
 
     def json_encodable(self):
         return {'txid': self.txid,
