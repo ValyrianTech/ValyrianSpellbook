@@ -6,7 +6,7 @@ import sys
 import requests
 import ipfsapi
 
-from helpers.configurationhelpers import get_ipfs_host, get_ipfs_port
+from helpers.configurationhelpers import get_ipfs_api_host, get_ipfs_api_port
 from helpers.hotwallethelpers import get_private_key_from_wallet, find_address_in_wallet
 from helpers.messagehelpers import sign_message
 from validators.validators import valid_address
@@ -48,7 +48,7 @@ else:
 if len(data['message']) >= 256:
     # Check if IPFS node is running
     try:
-        ipfs = ipfsapi.connect(get_ipfs_host(), get_ipfs_port())
+        ipfs = ipfsapi.connect(get_ipfs_api_host(), get_ipfs_api_port())
     except Exception as ex:
         print('IPFS node is not running: %s' % ex)
         sys.exit(1)

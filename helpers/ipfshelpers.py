@@ -6,7 +6,7 @@ import shutil
 import zipfile
 
 from helpers.loghelpers import LOG
-from helpers.configurationhelpers import get_ipfs_host, get_ipfs_port, get_enable_ipfs
+from helpers.configurationhelpers import get_ipfs_api_host, get_ipfs_api_port, get_enable_ipfs
 from helpers.jsonhelpers import save_to_json_file
 
 from helpers.py2specials import *
@@ -17,7 +17,7 @@ IPFS_CACHE = {}
 
 if get_enable_ipfs() is True:
     # Check if IPFS node is running
-    multi_address = '/ip4/{host}/tcp/{port}/http'.format(host=get_ipfs_host(), port=get_ipfs_port())
+    multi_address = '/ip4/{host}/tcp/{port}/http'.format(host=get_ipfs_api_host(), port=get_ipfs_api_port())
     LOG.info('Trying to connect with IPFS on %s' % multi_address)
     try:
         IPFS_API = ipfshttpclient.connect(multi_address)
@@ -52,7 +52,7 @@ def get_json(multihash):
 
     json = None
     try:
-        json = IPFS_API.get_json(multihash, timeout=1)
+        json = IPFS_API.get_json(multihash)
     except Exception as e:
         LOG.error('Failed to retrieve json data from IPFS hash %s: %s' % (multihash, e))
 
