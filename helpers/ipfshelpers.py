@@ -325,3 +325,18 @@ class IPFSDictChain(IPFSDict):
             depth += 1
 
         return change_log
+
+
+class FileMetaData(IPFSDictChain):
+    def __init__(self, multihash=None):
+        self.file_name = None
+        self.file_ipfs_hash = None
+        self.file_sha256_hash = None
+        self.file_size = None
+        self.txid = None
+        self.publisher_name = None
+        self.publisher_address = None
+        self.publisher_signature = None
+        self.signed_message = None
+
+        super(FileMetaData, self).__init__(multihash=multihash)
