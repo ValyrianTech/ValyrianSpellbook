@@ -98,14 +98,24 @@ def get_enable_ipfs():
     return spellbook_config().getboolean('IPFS', 'enable_ipfs')
 
 
-@verify_config('IPFS', 'host')
-def get_ipfs_host():
-    return spellbook_config().get('IPFS', 'host')
+@verify_config('IPFS', 'api_host')
+def get_ipfs_api_host():
+    return spellbook_config().get('IPFS', 'api_host')
 
 
-@verify_config('IPFS', 'port')
-def get_ipfs_port():
-    return spellbook_config().get('IPFS', 'port')
+@verify_config('IPFS', 'api_port')
+def get_ipfs_api_port():
+    return spellbook_config().get('IPFS', 'api_port')
+
+
+@verify_config('IPFS', 'gateway_host')
+def get_ipfs_gateway_host():
+    return spellbook_config().get('IPFS', 'gateway_host')
+
+
+@verify_config('IPFS', 'gateway_port')
+def get_ipfs_gateway_port():
+    return spellbook_config().get('IPFS', 'gateway_port')
 
 
 @verify_config('APPS', 'app_data_dir')
