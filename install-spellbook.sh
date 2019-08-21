@@ -10,7 +10,7 @@
 cd /
 sudo apt-get update -y
 sudo apt-get upgrade -y
-sudo apt-get install git python2.7 python-dev python-pip -y
+sudo apt-get install git python3.7 python-dev python-pip -y
 
 mkdir spellbook_wallet
 mkdir spellbook_data
