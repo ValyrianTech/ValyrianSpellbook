@@ -14,7 +14,7 @@ PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 def spellbook_call(*args):
     args = [str(arg) for arg in args]
-    spellbook_args = ['python', os.path.join(PROGRAM_DIR, 'spellbook.py')]
+    spellbook_args = ['python3.7', os.path.join(PROGRAM_DIR, 'spellbook.py')]
     spellbook_args.extend(args)
 
     print('\nCALL: %s' % ' '.join(spellbook_args))
@@ -36,7 +36,7 @@ def spellbook_call(*args):
 
 
 def bitcoinwand_call(address, message, url):
-    bitcoinwand_args = [os.path.join(PROGRAM_DIR, 'bitcoinwand.py'), address, message, url]
+    bitcoinwand_args = ['python3.7', os.path.join(PROGRAM_DIR, 'bitcoinwand.py'), address, message, url]
 
     print('\nCALL: %s' % ' '.join(bitcoinwand_args))
     bitcoinwand = Popen(format_args(bitcoinwand_args), stdout=PIPE, stderr=PIPE, shell=True)
