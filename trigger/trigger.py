@@ -198,6 +198,7 @@ class Trigger(object):
                 return
 
             LOG.info('Loading Spellbook Script %s' % script_path)
+            LOG.info('Script module: %s (%s)' % (script_module_name, type(script_module_name)))
             try:
                 script_module = importlib.import_module(script_module_name)
             except Exception as ex:
