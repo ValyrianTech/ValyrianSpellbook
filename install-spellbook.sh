@@ -18,7 +18,7 @@ mkdir spellbook_data
 git clone https://github.com/ValyrianTech/BitcoinSpellbook.git spellbook
 cd /spellbook
 
-pip3 install -r requirements.txt
+python3.7 -m pip install -r requirements.txt
 
 # add the spellbook to the pythonpath so it can correctly import modules
 export PYTHONPATH=$PYTHONPATH:/spellbook
