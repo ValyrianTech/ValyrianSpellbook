@@ -25,15 +25,20 @@ def initialize_explorers_file():
     Initialize the explorers.json file with the default explorers
     """
     first_explorer = Explorer()
-    first_explorer.explorer_type = ExplorerType.BLOCKCHAIN_INFO
+    first_explorer.explorer_type = ExplorerType.BLOCKSTREAM
     first_explorer.priority = 1
 
     second_explorer = Explorer()
     second_explorer.explorer_type = ExplorerType.BTC_COM
     second_explorer.priority = 2
 
-    data = {'blockchain.info': first_explorer.json_encodable(),
-            'btc.com': second_explorer.json_encodable()}
+    third_explorer = Explorer()
+    third_explorer.explorer_type = ExplorerType.BLOCKCHAIN_INFO
+    third_explorer.priority = 3
+
+    data = {'blockstream.info': first_explorer.json_encodable(),
+            'btc.com': second_explorer.json_encodable(),
+            'blockchain.info': third_explorer.json_encodable()}
 
     save_to_json_file(EXPLORERS_JSON_FILE, data)
 
