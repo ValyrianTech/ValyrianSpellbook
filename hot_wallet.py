@@ -154,10 +154,10 @@ def save_wallet(wallet):
         sys.exit(1)
 
     cipher = AESCipher(key=password1)
-    unencrypted_data = simplejson.dumps(wallet, sort_keys=True, indent=4)
+    unencrypted_data = bytes(simplejson.dumps(wallet, sort_keys=True, indent=4), 'utf-8')
 
     with open(os.path.join(WALLET_DIR, '%s.enc' % WALLET_ID), 'w') as output_file:
-        output_file.write(cipher.encrypt(unencrypted_data))
+        output_file.write(str(cipher.encrypt(unencrypted_data), 'utf-8'))
 
 
 def add_key():
