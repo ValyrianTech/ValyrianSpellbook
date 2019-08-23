@@ -21,6 +21,7 @@ class SignedMessageTrigger(Trigger):
         self.message = None
         self.message_address = None
         self.message_signature = None
+        self.message_data = None
 
     def conditions_fulfilled(self):
         # SignedMessage triggers can only be triggered when a verified signed message is received, so always return False
@@ -42,14 +43,17 @@ class SignedMessageTrigger(Trigger):
         ret = super(SignedMessageTrigger, self).json_encodable()
         ret.update({'message': self.message,
                     'address': self.message_address,
-                    'signature': self.message_signature})
+                    'signature': self.message_signature,
+                    'data': self.message_data})
         return ret
 
-    def process_message(self, address, message, signature):
+    def process_message(self, address, message, signature, data=None):
         if not isinstance(message, string_types):
             return
 
         self.message = message
         self.message_address = address
         self.message_signature = signature
+        self.message_data = data
+
 
