@@ -78,6 +78,7 @@ class SpellbookScript(object):
         LOG.info('Retrieving IPFS object')
 
         if self.data is not None:
+            LOG.info('Data given with request, uploading data to local IPFS node to check that hashes are equal')
             local_ipfs_hash = add_json(data=self.data)
             if ipfs_hash != local_ipfs_hash:
                 LOG.error('Supplied data does not correspond to the given IPFS hash: %s != %s' % (ipfs_hash, local_ipfs_hash))
