@@ -5,7 +5,7 @@ import simplejson
 from helpers.loghelpers import LOG
 from abc import abstractmethod, ABCMeta
 from validators.validators import valid_address
-from helpers.ipfshelpers import get_json
+from helpers.ipfshelpers import get_json, add_json
 
 from helpers.py2specials import *
 from helpers.py3specials import *
@@ -76,6 +76,13 @@ class SpellbookScript(object):
 
     def process_ipfs_hash(self, ipfs_hash):
         LOG.info('Retrieving IPFS object')
+
+        if self.data is not None:
+            local_ipfs_hash = add_json(data=self.data)
+            if ipfs_hash != local_ipfs_hash:
+                LOG.error('Supplied data does not correspond to the given IPFS hash: %s != %s' % (ipfs_hash, local_ipfs_hash))
+                return
+
         try:
             data = get_json(multihash=ipfs_hash)
             if isinstance(data, dict):
