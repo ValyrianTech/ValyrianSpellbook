@@ -81,11 +81,12 @@ class BlockstreamAPI(ExplorerAPI):
 
         txs = []
         for transaction in data:
-            txs.append(self.parse_transaction(data=transaction, latest_block_height=latest_block_height).to_dict(address=address))
+            if transaction['status']['confirmed'] is True:
+                txs.append(self.parse_transaction(data=transaction, latest_block_height=latest_block_height).to_dict(address=address))
 
-        while len(data) == 25:
+        while len(data) >= 25:
             sleep(0.5)
-            last_txid = data[24]['txid']
+            last_txid = data[-1]['txid']
             url = self.url + '/address/{address}/txs/chain/{last_txid}'.format(address=address, last_txid=last_txid)
             LOG.info('GET %s' % url)
             try:
@@ -96,7 +97,8 @@ class BlockstreamAPI(ExplorerAPI):
                 return {'error': 'Unable to get address transactions for %s from Blockstream.info' % address}
 
             for transaction in data:
-                txs.append(self.parse_transaction(data=transaction, latest_block_height=latest_block_height).to_dict(address=address))
+                if transaction['status']['confirmed'] is True:
+                    txs.append(self.parse_transaction(data=transaction, latest_block_height=latest_block_height).to_dict(address=address))
 
         LOG.info('Retrieved %s transactions' % len(txs))
         return {'transactions': txs}
