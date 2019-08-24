@@ -52,7 +52,7 @@ def get_json(multihash):
 
     json = None
     try:
-        json = IPFS_API.get_json(multihash)
+        json = IPFS_API.get_json(multihash, timeout=2)
     except Exception as e:
         LOG.error('Failed to retrieve json data from IPFS hash %s: %s' % (multihash, e))
 
