@@ -9,10 +9,13 @@ import os
 import time
 import logging
 from logging.handlers import RotatingFileHandler
-from helpers.runcommandprocess import RunCommandProcess
-import mysql.connector
 
 PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, PROGRAM_DIR)
+
+from helpers.runcommandprocess import RunCommandProcess
+# import mysql.connector  # TODO re-enable mysql functionality
+
 
 LISTENER_LOG = logging.getLogger('transaction_listener_log')
 
@@ -82,24 +85,24 @@ def on_message(ws, message):
                 run_command_process = RunCommandProcess(command=command)
                 run_command_process.start()
 
-    if DATABASE is not None:
-        sql_query = """SELECT Address FROM Addresses 
-                       WHERE Address IN (%s)""" % ", ".join(["'%s'" % output_address for output_address in address_list])
-
-        cursor = DB_CONNECTOR.cursor()
-        cursor.execute(sql_query)
-        result = cursor.fetchall()
-        cursor.close()
-        DB_CONNECTOR.commit()
-
-        if len(result) > 0:
-            LISTENER_LOG.info(result)
-
-        for row in result:
-            curl_command = COMMAND.replace('#address#', row[0])
-            LISTENER_LOG.info('Executing command: %s' % curl_command)
-            run_command_process = RunCommandProcess(command=curl_command)
-            run_command_process.start()
+    # if DATABASE is not None:
+    #     sql_query = """SELECT Address FROM Addresses
+    #                    WHERE Address IN (%s)""" % ", ".join(["'%s'" % output_address for output_address in address_list])
+    #
+    #     cursor = DB_CONNECTOR.cursor()
+    #     cursor.execute(sql_query)
+    #     result = cursor.fetchall()
+    #     cursor.close()
+    #     DB_CONNECTOR.commit()
+    #
+    #     if len(result) > 0:
+    #         LISTENER_LOG.info(result)
+    #
+    #     for row in result:
+    #         curl_command = COMMAND.replace('#address#', row[0])
+    #         LISTENER_LOG.info('Executing command: %s' % curl_command)
+    #         run_command_process = RunCommandProcess(command=curl_command)
+    #         run_command_process.start()
 
     if EXIT_ON_EVENT is True and event_found is True:
         LISTENER_LOG.info('Event found, exiting now')
@@ -192,11 +195,11 @@ if __name__ == "__main__":
         if args.receive is True:
             LISTENER_LOG.info('Receiving addresses are monitored')
 
-        DB_CONNECTOR = mysql.connector.connect(user=args.user,
-                                               password=args.password,
-                                               database=args.database,
-                                               host=args.host,
-                                               port=args.port)
+        # DB_CONNECTOR = mysql.connector.connect(user=args.user,
+        #                                        password=args.password,
+        #                                        database=args.database,
+        #                                        host=args.host,
+        #                                        port=args.port)
 
     elif args.address is not None:
         LISTENER_LOG.info('Single address mode selected')
