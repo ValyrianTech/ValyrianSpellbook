@@ -65,6 +65,9 @@ class SpellbookRESTAPI(Bottle):
         self.route('/', method='GET', callback=self.index)  # on linux this gets requested every minute or so, but not on windows
         self.route('/favicon.ico', method='GET', callback=self.get_favicon)
 
+        # Route for ping, to test if server is online
+        self.route('/spellbook/ping', method='GET', callback=self.ping)
+
         # Routes for managing blockexplorers
         self.route('/spellbook/explorers', method='GET', callback=self.get_explorers)
         self.route('/spellbook/explorers/<explorer_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.save_explorer)
@@ -190,6 +193,12 @@ class SpellbookRESTAPI(Bottle):
                                                                   request.url))
             return actual_response
         return _log_to_logger
+
+    @staticmethod
+    @output_json
+    def ping():
+        response.content_type = 'application/json'
+        return {'success': True}
 
     @staticmethod
     @output_json
