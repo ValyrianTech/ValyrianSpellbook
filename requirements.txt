@@ -8,7 +8,8 @@ ecdsa==0.13
 simplejson==3.11.1
 ipfshttpclient==0.4.12
 pycryptodome==3.8.2
-websocket_client==0.51.0
+websocket_client==0.56.0
+websocket_client_py3==0.15.0
 mysql_connector_repackaged==0.3.1
 numpy==1.15.4
 python-bitcoinlib==0.10.2
