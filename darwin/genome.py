@@ -55,7 +55,7 @@ class Genome(object):
             for j, gene in enumerate(chromosome.genes):
                 data_string += '%s:%s ' % (j, gene.data)
 
-        return binascii.hexlify(hashlib.sha256(simplejson.dumps(data_string, sort_keys=True)).digest())
+        return binascii.hexlify(hashlib.sha256(simplejson.dumps(data_string, sort_keys=True).encode('utf-8')).digest())
 
     def to_dict(self):
         return {'chromosomes': {chromosome_id: chromosome.to_dict() for chromosome_id, chromosome in self.chromosomes.items()},
