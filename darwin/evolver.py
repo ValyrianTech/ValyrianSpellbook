@@ -265,7 +265,7 @@ class Evolver(object):
             # Truncate the population by removing the worst performing genomes so they don't have a chance to be selected for recombination
             population.genomes = population.genomes[:int((len(population.genomes) * self.truncation) / 100)]
 
-            if population.genomes[0].fitness > self.highest_fitness or self.highest_fitness is None:
+            if self.highest_fitness is None or population.genomes[0].fitness > self.highest_fitness:
                 self.highest_fitness = population.genomes[0].fitness
                 champion = population.genomes[0]
                 self.generations_since_new_champion = 0
