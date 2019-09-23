@@ -47,5 +47,8 @@ class RunCommandProcess(multiprocessing.Process):
         for stdout_line in iter(command_process.stdout.readline, ""):
             PROCESS_LOG.info('%s | %s' % (process_id, stdout_line.strip()))
 
+        for stdout_line in iter(command_process.stderr.readline, ""):
+            PROCESS_LOG.error('%s | %s' % (process_id, stdout_line.strip()))
+
         PROCESS_LOG.info('%s | Process finished' % process_id)
 
