@@ -16,7 +16,7 @@ When a trigger is activated, it runs a custom python script and\or predefined ac
 Prerequisites
 -------------
 
-1. Python 2.7  
+1. Python 3.7  
 2. (optional) An [IPFS node](https://ipfs.io/docs/install/ "IPFS") 
 3. (optional) Login credentials for a SMTP server (needed for sending emails)
 4. (optional) A [Blocktrail.com](https://www.blocktrail.com/) account (needed if you want to use blocktrail as blockexplorer)
