@@ -178,6 +178,11 @@ def check_triggers(trigger_id=None):
 
     for trigger_id in triggers:
         trigger = get_trigger(trigger_id=trigger_id)
+        if trigger.status == 'Active':
+            LOG.info('Checking conditions of trigger %s' % trigger_id)
+            if trigger.conditions_fulfilled() is True:
+                trigger.activate()
+
         if trigger.self_destruct is not None:
             if trigger.self_destruct <= int(time.time()):
                 LOG.info('Trigger %s has reached its self-destruct time' % trigger_id)
@@ -191,11 +196,6 @@ def check_triggers(trigger_id=None):
                 LOG.info('Deleting trigger %s' % trigger_id)
                 delete_trigger(trigger_id=trigger_id)
                 continue
-
-        if trigger.status == 'Active':
-            LOG.info('Checking conditions of trigger %s' % trigger_id)
-            if trigger.conditions_fulfilled() is True:
-                trigger.activate()
 
 
 def verify_signed_message(trigger_id, **data):
