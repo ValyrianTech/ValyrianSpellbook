@@ -123,6 +123,7 @@ class SpellbookRESTAPI(Bottle):
         self.route('/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.http_get_request)
         self.route('/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.http_post_request)
         self.route('/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.http_delete_request)
+        self.route('/html/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.html_request)
 
         self.route('/api/sign_message', method='POST', callback=self.sign_message)
 
@@ -476,6 +477,17 @@ class SpellbookRESTAPI(Bottle):
         data.update(query)
 
         return http_delete_request(trigger_id, **data)
+
+    @staticmethod
+    def html_request(trigger_id):
+        response.content_type = 'text/html'
+        data = request.json if request.json is not None else {}
+
+        # Also add parameters passed via the query string to the data, if any parameters have the same name then the query string has priority
+        query = dict(request.query)
+        data.update(query)
+
+        return http_get_request(trigger_id, **data)
 
     @staticmethod
     @output_json
