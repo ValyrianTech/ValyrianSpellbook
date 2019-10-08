@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from chromosome import Chromosome
+from darwin.chromosome import Chromosome
 
 import hashlib
 import binascii

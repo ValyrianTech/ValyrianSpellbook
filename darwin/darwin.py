@@ -7,7 +7,7 @@ import sys
 PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, PROGRAM_DIR)
 
-from evolver import Evolver
+from darwin.evolver import Evolver
 from helpers.jsonhelpers import load_from_json_file
 
 

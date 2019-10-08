@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from random import randint
-from genome import Genome
+from darwin.genome import Genome
 
 from copy import deepcopy
 

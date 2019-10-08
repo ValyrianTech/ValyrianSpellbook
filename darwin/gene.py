@@ -4,7 +4,7 @@
 import random
 import string
 
-from genemutation import BooleanGeneMutation, IntegerGeneMutation, FloatGeneMutation, StringGeneMutation
+from darwin.genemutation import BooleanGeneMutation, IntegerGeneMutation, FloatGeneMutation, StringGeneMutation
 
 
 class Gene(object):

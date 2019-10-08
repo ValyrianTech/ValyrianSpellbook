@@ -3,9 +3,9 @@
 
 import random
 
-from gene import Gene, BooleanGene, IntegerGene, FloatGene, StringGene
-from chromosomemutation import ChromosomeMutation
-from encodingtype import EncodingType
+from darwin.gene import Gene, BooleanGene, IntegerGene, FloatGene, StringGene
+from darwin.chromosomemutation import ChromosomeMutation
+from darwin.encodingtype import EncodingType
 
 
 class Chromosome(object):
