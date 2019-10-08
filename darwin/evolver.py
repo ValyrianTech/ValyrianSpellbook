@@ -7,18 +7,19 @@ import time
 from pprint import pprint
 import random
 
-from fitnessfunction.fitnessfunction import FitnessFunction
-from rosettastone.rosettastone import RosettaStone
-from model.model import Model
+from darwin.fitnessfunction.fitnessfunction import FitnessFunction
+from darwin.rosettastone.rosettastone import RosettaStone
+from darwin.model.model import Model
 
 from helpers.jsonhelpers import load_from_json_file, save_to_json_file
-from mutationchance import BooleanMutationChance, IntegerMutationChance, FloatMutationChance, StringMutationChance, ChromosomeMutationChance
-from parentselection import roulette_wheel_selection, rank_selection, stochastic_universal_sampling, tournament_selection
-from population import Population
-from recombination import recombine
-from encodingtype import EncodingType
+from darwin.mutationchance import BooleanMutationChance, IntegerMutationChance, FloatMutationChance, StringMutationChance, ChromosomeMutationChance
+from darwin.parentselection import roulette_wheel_selection, rank_selection, stochastic_universal_sampling, tournament_selection
+from darwin.population import Population
+from darwin.recombination import recombine
+from darwin.encodingtype import EncodingType
 
 DARWIN_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__)))
+SPELLBOOK_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 
 class Evolver(object):
@@ -186,7 +187,7 @@ class Evolver(object):
         population = Population()
 
         # Load the Model script
-        model = self.load_script(script=os.path.join('model', self.model_script),
+        model = self.load_script(script=self.model_script,
                                  script_class_name=self.model_class)
 
         if not isinstance(model, Model):
@@ -196,14 +197,14 @@ class Evolver(object):
         model.info()
 
         # Load the RosettaStone script
-        rosetta_stone = self.load_script(script=os.path.join('rosettastone', self.rosetta_stone_script),
+        rosetta_stone = self.load_script(script=self.rosetta_stone_script,
                                          script_class_name=self.rosetta_stone_class)
 
         if not isinstance(rosetta_stone, RosettaStone):
             raise Exception('Script %s is not a valid RosettaStone Script, instead it is a %s' % (rosetta_stone, type(rosetta_stone)))
 
         # Load the FitnessFunction script
-        fitness_function = self.load_script(script=os.path.join('fitnessfunction', self.fitness_function_script),
+        fitness_function = self.load_script(script=self.fitness_function_script,
                                             script_class_name=self.fitness_function_class)
 
         fitness_function.darwin_init_actions()
@@ -357,20 +358,26 @@ class Evolver(object):
         script_path = None
         script_module_name = None
 
+        script_path = os.path.join(SPELLBOOK_DIR, script)
+        print(script_path)
+
         # Search for the script in the darwin directory
         if os.path.isfile(os.path.join(DARWIN_DIR, script)):
             script_path = os.path.join(DARWIN_DIR, script)
-            if platform.system() == 'Windows':
-                script_module_name = '%s' % script_name.replace('\\', '.')
-            elif platform.system() == 'Linux':
-                script_module_name = '%s' % script_name.replace('/', '.')
-            else:
-                raise NotImplementedError('Unsupported platform: only windows and linux are supported')
+        elif os.path.isfile(os.path.join(SPELLBOOK_DIR, script)):
+            script_path = os.path.join(SPELLBOOK_DIR, script)
 
         if script_path is None:
             print('Can not find script %s' % script)
             print(os.getcwd())
             return
+
+        if platform.system() == 'Windows':
+            script_module_name = '%s' % script_name.replace('\\', '.')
+        elif platform.system() == 'Linux':
+            script_module_name = '%s' % script_name.replace('/', '.')
+        else:
+            raise NotImplementedError('Unsupported platform: only windows and linux are supported')
 
         print('Loading Script %s' % script_path)
         print('Loading module %s' % script_module_name)
