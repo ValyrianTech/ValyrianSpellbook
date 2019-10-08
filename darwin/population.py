@@ -5,8 +5,8 @@ import glob
 import shutil
 import time
 
-from genome import Genome
-from gene import BooleanGene, IntegerGene, FloatGene, StringGene
+from darwin.genome import Genome
+from darwin.gene import BooleanGene, IntegerGene, FloatGene, StringGene
 
 from helpers.jsonhelpers import save_to_json_file, load_from_json_file
 

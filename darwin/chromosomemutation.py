@@ -3,8 +3,8 @@
 import random
 from copy import deepcopy
 
-from gene import BooleanGene, IntegerGene, FloatGene, StringGene
-from encodingtype import EncodingType
+from darwin.gene import BooleanGene, IntegerGene, FloatGene, StringGene
+from darwin.encodingtype import EncodingType
 
 
 class ChromosomeMutation(object):
