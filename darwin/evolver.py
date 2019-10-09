@@ -355,11 +355,7 @@ class Evolver(object):
 
     def load_script(self, script, script_class_name):
         script_name = script[:-3]  # script name without the .py extension
-        script_path = None
-        script_module_name = None
-
         script_path = os.path.join(SPELLBOOK_DIR, script)
-        print(script_path)
 
         # Search for the script in the darwin directory
         if os.path.isfile(os.path.join(DARWIN_DIR, script)):
