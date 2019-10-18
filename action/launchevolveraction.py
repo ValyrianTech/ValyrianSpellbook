@@ -12,7 +12,7 @@ PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if platform.system() == 'Windows':
     DARWIN_PROGRAM = os.path.join(PROGRAM_DIR, 'darwin', 'darwin.py')
 elif platform.system() == 'Linux':
-    DARWIN_PROGRAM = os.path.join('./darwin', 'darwin.py')
+    DARWIN_PROGRAM = os.path.join(PROGRAM_DIR, 'darwin', 'darwin.py')
 else:
     raise NotImplementedError('Unsupported platform: only windows and linux are supported')
 
