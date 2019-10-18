@@ -46,6 +46,6 @@ class LaunchEvolverAction(SpawnProcessAction):
         return ret
 
     def run(self):
-        self.run_command = '"%s" %s' % (DARWIN_PROGRAM, self.job_config)
+        self.run_command = 'python3.7 "%s" %s' % (DARWIN_PROGRAM, self.job_config)
         LOG.info('Launching evolver with command: %s' % self.run_command)
         super(LaunchEvolverAction, self).run()
