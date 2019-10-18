@@ -3,6 +3,7 @@
 import os
 import platform
 
+from helpers.loghelpers import LOG
 from .actiontype import ActionType
 from .spawnprocessaction import SpawnProcessAction
 
@@ -46,4 +47,5 @@ class LaunchEvolverAction(SpawnProcessAction):
 
     def run(self):
         self.run_command = '"%s" %s' % (DARWIN_PROGRAM, self.job_config)
+        LOG.info('Launching evolver with command: %s' % self.run_command)
         super(LaunchEvolverAction, self).run()
