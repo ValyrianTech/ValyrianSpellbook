@@ -28,6 +28,16 @@ def get_port():
     return int(spellbook_config().get('RESTAPI', 'port'))
 
 
+@verify_config('RESTAPI', 'notification_email')
+def get_notification_email():
+    return spellbook_config().get('RESTAPI', 'notification_email')
+
+
+@verify_config('RESTAPI', 'mail_on_exception')
+def get_mail_on_exception():
+    return spellbook_config().getboolean('RESTAPI', 'mail_on_exception')
+
+
 @verify_config('Authentication', 'key')
 def get_key():
     return spellbook_config().get('Authentication', 'key')

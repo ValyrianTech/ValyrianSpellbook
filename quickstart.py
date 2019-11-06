@@ -28,6 +28,13 @@ current_port = config.get(section='RESTAPI', option='port')
 port = input('Enter the port of the server or press enter to keep the current value (%s) ' % current_port) or current_port
 config.set(section='RESTAPI', option='port', value=port)
 
+current_notification_email = config.get(section='RESTAPI', option='notification_email', fallback='someone@example.com')
+notification_email = input('Enter the email address for notifications (%s) ' % current_notification_email) or current_notification_email
+config.set(section='RESTAPI', option='notification_email', value=notification_email)
+
+current_mail_on_exception = config.get(section='RESTAPI', option='mail_on_exception', fallback='false')
+mail_on_exception = input('Send email to notification email address when exceptions occur (%s) ' % current_mail_on_exception) or current_mail_on_exception
+config.set(section='RESTAPI', option='mail_on_exception', value=mail_on_exception)
 
 # Authentication settings
 api_keys_file = os.path.join(PROGRAM_DIR, 'json', 'private', 'api_keys.json')

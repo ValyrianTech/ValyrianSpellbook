@@ -18,12 +18,13 @@ from data.data import latest_block, block_by_height, block_by_hash, prime_input_
 from data.data import transactions, balance, utxos
 from decorators import authentication_required, use_explorer, output_json
 from helpers.actionhelpers import get_actions, get_action_config, save_action, delete_action, run_action, get_reveal
-from helpers.configurationhelpers import get_host, get_port
+from helpers.configurationhelpers import get_host, get_port, get_notification_email, get_mail_on_exception
 from helpers.hivemindhelpers import get_hivemind_state_hash
 from helpers.hotwallethelpers import get_hot_wallet
 from helpers.loghelpers import LOG, REQUESTS_LOG, get_logs
 from helpers.triggerhelpers import get_triggers, get_trigger_config, save_trigger, delete_trigger, activate_trigger, \
     check_triggers, verify_signed_message, http_get_request, http_post_request, http_delete_request, sign_message
+from helpers.mailhelpers import sendmail
 from inputs.inputs import get_sil, get_profile, get_sul
 from linker.linker import get_lal, get_lbl, get_lrl, get_lsl
 from randomaddress.randomaddress import random_address_from_sil, random_address_from_lbl, random_address_from_lrl, \
@@ -184,6 +185,15 @@ class SpellbookRESTAPI(Bottle):
                 error_traceback = traceback.format_exc()
                 for line in error_traceback.split('\n'):
                     LOG.error(line)
+
+                if get_mail_on_exception() is True:
+                    variables = {'HOST': get_host(),
+                                 'TRACEBACK': error_traceback}
+                    body_template = os.path.join('server_exception')
+                    sendmail(recipients=get_notification_email(),
+                             subject='Exception occurred @ %s' % get_host(),
+                             body_template=body_template,
+                             variables=variables)
 
             else:
                 response_status = response.status
