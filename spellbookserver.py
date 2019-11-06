@@ -181,7 +181,10 @@ class SpellbookRESTAPI(Bottle):
             except Exception as ex:
                 response_status = '500 ' + str(ex)
                 LOG.error('%s caused an exception: %s' % (request.url, ex))
-                traceback.print_exc()
+                error_traceback = traceback.format_exc()
+                for line in error_traceback.split('\n'):
+                    LOG.error(line)
+
             else:
                 response_status = response.status
 
