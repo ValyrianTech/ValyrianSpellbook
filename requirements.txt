@@ -4,7 +4,7 @@ bottle==0.12.13
 pytest==3.2.1
 requests==2.20.0
 deepdiff==3.3.0
-ecdsa==0.13
+ecdsa==0.13.3
 simplejson==3.11.1
 ipfshttpclient==0.4.12
 pycryptodome==3.8.2
