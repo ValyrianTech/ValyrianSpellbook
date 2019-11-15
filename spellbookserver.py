@@ -176,6 +176,21 @@ class SpellbookRESTAPI(Bottle):
         def _log_to_logger(*args, **kwargs):
             start_time = int(round(time.time() * 1000))
             request_time = datetime.now()
+
+            # Log information about the request before it is processed for debugging purposes
+            REQUESTS_LOG.info('%s | %s | %s | %s' % (request_time,
+                                                     request.remote_addr,
+                                                     request.method,
+                                                     request.url))
+
+            if request.headers is not None:
+                for key, value in request.headers.items():
+                    REQUESTS_LOG.info('  HEADERS | %s: %s' % (key, value))
+
+            if request.json is not None:
+                for key, value in request.json.items():
+                    REQUESTS_LOG.info('  BODY | %s: %s' % (key, value))
+
             actual_response = response
             try:
                 actual_response = fn(*args, **kwargs)
@@ -199,12 +214,12 @@ class SpellbookRESTAPI(Bottle):
                 response_status = response.status
 
             end_time = int(round(time.time() * 1000))
-            REQUESTS_LOG.info('%s | %s | %s | %s | %s ms | %s' % (request_time,
+            REQUESTS_LOG.info('%s | %s | %s | %s | %s | %s ms' % (request_time,
                                                                   request.remote_addr,
                                                                   request.method,
+                                                                  request.url,
                                                                   response_status,
-                                                                  end_time - start_time,
-                                                                  request.url))
+                                                                  end_time - start_time))
             return actual_response
         return _log_to_logger
 
