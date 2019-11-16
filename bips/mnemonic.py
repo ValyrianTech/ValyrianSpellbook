@@ -47,8 +47,8 @@ def binary_search(a, x, lo=0, hi=None):                # can't use a to specify 
 class Mnemonic(object):
     def __init__(self, language):
         self.radix = 2048
-        with open('%s/%s.txt' % (self._get_directory(), language), 'r') as f:
-            self.wordlist = [w.strip().decode('utf8') if sys.version < '3' else w.strip() for w in f.readlines()]
+        with open('%s/%s.txt' % (self._get_directory(), language), 'r', encoding='utf-8') as f:
+            self.wordlist = [w.strip() for w in f.readlines()]
         if len(self.wordlist) != self.radix:
             raise ConfigurationError('Wordlist should contain %d words, but it contains %d words.' % (self.radix, len(self.wordlist)))
 
@@ -62,9 +62,9 @@ class Mnemonic(object):
 
     @classmethod
     def normalize_string(cls, txt):
-        if isinstance(txt, str if sys.version < '3' else bytes):
+        if isinstance(txt, bytes):
             utxt = txt.decode('utf8')
-        elif isinstance(txt, unicode if sys.version < '3' else str):  # noqa: F821
+        elif isinstance(txt, str):  # noqa: F821
             utxt = txt
         else:
             raise TypeError("String value expected")
