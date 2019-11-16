@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-
 import hashlib
-
-from helpers.py2specials import *
-from helpers.py3specials import *
 
 
 class TagHash(object):
@@ -22,7 +17,7 @@ class TagHash(object):
         self.taghash = ''
 
         # If tags are given as input it must be a string
-        if isinstance(tags, string_types):
+        if isinstance(tags, str):
             # Convert all tags to unicode
             self.tags = [tag for tag in tags.split()]
             self.calculate()
@@ -98,7 +93,7 @@ class TagHash(object):
 
         :param tag: A string or unicode that contains a single tag
         """
-        if isinstance(tag, string_types):
+        if isinstance(tag, str):
             # Convert to unicode before adding the tag
             self.tags.append(tag.decode('utf-8'))
             self.calculate()
