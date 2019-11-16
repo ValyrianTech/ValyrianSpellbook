@@ -5,6 +5,7 @@ import pytest
 from bips.BIP32 import set_chain_mode
 from helpers.hotwallethelpers import get_address_from_wallet, get_private_key_from_wallet
 from helpers.messagehelpers import verify_message, sign_message
+from helpers.configurationhelpers import get_use_testnet
 
 
 class TestSignMessage(object):
@@ -108,6 +109,10 @@ class TestSignMessage(object):
         assert not verify_message(address=address, message=message, signature=signature)
 
     def test_verify_message_with_testnet_address(self):
+        if get_use_testnet() is False:
+            print('Change configuration to use testnet to test this!!')
+            return
+
         address = 'n2xqSGhqeQqiC6rp34NmPF8xmjQrcxLc6K'
         message = 'This is a test message for verification of n2xq'
         signature = 'H4NTp6Z3RWVndpmapw3sJ/CZd0jDS0evgQxasAN+hn3KGhoMLNvzs1Ms3nvPAqdf04XG3O6A4QmmIi70y14Lh18='
