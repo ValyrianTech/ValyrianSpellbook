@@ -9,9 +9,6 @@ from transactionfactory import p2pkh_script, p2sh_script, p2wpkh_script, p2wsh_s
 from transactionfactory import op_return_script, num_to_op_push
 from data.transaction import TX
 
-from helpers.py2specials import *
-from helpers.py3specials import *
-
 
 class TestTransactionFactory(object):
     @pytest.mark.parametrize('address, expected', [

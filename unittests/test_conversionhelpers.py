@@ -4,8 +4,6 @@ import pytest
 import random
 
 from helpers.conversionhelpers import btc2satoshis
-from helpers.py2specials import *
-from helpers.py3specials import *
 
 
 class TestConversionHelpers(object):
@@ -27,7 +25,7 @@ class TestConversionHelpers(object):
     ])
     def test_btc2satoshis(self, btc, expected):
         assert btc2satoshis(btc=btc) == expected
-        assert type(btc2satoshis(btc=btc)) in int_types
+        assert type(btc2satoshis(btc=btc)) in (int, float)
 
     def test_btc2satoshis_with_random_data(self):
         for _ in range(10000):
