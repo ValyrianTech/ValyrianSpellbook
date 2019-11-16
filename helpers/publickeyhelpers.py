@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from .py2specials import *
 from .py3specials import *
 
 from .jacobianhelpers import fast_add, A, B, P
