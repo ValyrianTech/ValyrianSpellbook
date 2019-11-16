@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from helpers.py2specials import *
-from helpers.py3specials import *
-
 
 def btc2satoshis(btc):
-    if isinstance(btc, string_types):
+    if isinstance(btc, str):
         if '.' in btc:
             parts = btc.split('.')
             if len(parts) == 2:
@@ -18,9 +15,7 @@ def btc2satoshis(btc):
         else:
             return int(int(btc)*1e8)
 
-    elif isinstance(btc, int_types):
-        return int(btc*1e8)
-    elif isinstance(btc, float):
+    elif isinstance(btc, (int, float)):
         return int(btc*1e8)
     else:
         raise Exception('Invalid type for btc: %s' % type(btc))
