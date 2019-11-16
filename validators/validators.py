@@ -6,9 +6,6 @@ import os
 from helpers.bech32 import bech32_decode
 from helpers.loghelpers import LOG
 
-from helpers.py2specials import *
-from helpers.py3specials import *
-
 ALL_CHARACTERS_REGEX = "^[a-zA-Z0-9àáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$"
 YOUTUBE_REGEX = "^(http(s?):\/\/)?(www\.)?youtu(be)?\.([a-z])+\/(watch(.*?)(\?|\&)v=)?(.*?)(&(.)*)?$"
 YOUTUBE_ID_REGEX = "^[a-zA-Z0-9_-]{11}$"
@@ -25,7 +22,7 @@ UPPERCASE_MAINNET_BECH32_ADDRESS_REGEX = '^BC1[AC-HJ-NP-Z02-9]{11,71}$'
 
 
 def valid_address(address):
-    if not isinstance(address, string_types):
+    if not isinstance(address, str):
         return False
 
     from helpers.configurationhelpers import get_use_testnet
@@ -37,30 +34,30 @@ def valid_address(address):
 
 
 def valid_txid(txid):
-    return isinstance(txid, string_types) and re.match(TXID_REGEX, txid) is not None
+    return isinstance(txid, str) and re.match(TXID_REGEX, txid) is not None
 
 
 def valid_xpub(xpub):
     from helpers.configurationhelpers import get_use_testnet
     testnet = get_use_testnet()
     if testnet is True:
-        return isinstance(xpub, string_types) and xpub[:4] == "tpub"
+        return isinstance(xpub, str) and xpub[:4] == "tpub"
     else:
-        return isinstance(xpub, string_types) and xpub[:4] == "xpub"
+        return isinstance(xpub, str) and xpub[:4] == "xpub"
 
 
 def valid_description(description):
-    return isinstance(description, string_types) and len(description) <= 250
+    return isinstance(description, str) and len(description) <= 250
 
 
 def valid_op_return(message):
-    return isinstance(message, string_types) and 0 < len(message) <= 80
+    return isinstance(message, str) and 0 < len(message) <= 80
 
 
 def valid_blockprofile_message(message):
     valid = False
     all_valid = True
-    if isinstance(message, string_types):
+    if isinstance(message, str):
         for message_part in message.split("|"):
             if re.match(BLOCKPROFILE_REGEX, message_part) is not None:
                 valid = True
@@ -71,23 +68,23 @@ def valid_blockprofile_message(message):
 
 
 def valid_text(text):
-    return isinstance(text, string_types)
+    return isinstance(text, str)
 
 
 def valid_url(url):
-    return isinstance(url, string_types) and re.match(URL_REGEX, url) is not None
+    return isinstance(url, str) and re.match(URL_REGEX, url) is not None
 
 
 def valid_creator(creator):
-    return isinstance(creator, string_types) and re.match(ALL_CHARACTERS_REGEX, creator) is not None
+    return isinstance(creator, str) and re.match(ALL_CHARACTERS_REGEX, creator) is not None
 
 
 def valid_email(email):
-    return isinstance(email, string_types) and re.match(EMAIL_REGEX, email) is not None
+    return isinstance(email, str) and re.match(EMAIL_REGEX, email) is not None
 
 
 def valid_amount(amount):
-    return isinstance(amount, int_types) and not isinstance(amount, float) and amount >= 0
+    return isinstance(amount, int) and not isinstance(amount, float) and amount >= 0
 
 
 def valid_block_height(block_height):
@@ -99,11 +96,11 @@ def valid_percentage(percentage):
 
 
 def valid_youtube(youtube):
-    return isinstance(youtube, string_types) and re.match(YOUTUBE_REGEX, youtube) is not None
+    return isinstance(youtube, str) and re.match(YOUTUBE_REGEX, youtube) is not None
 
 
 def valid_youtube_id(youtube):
-    return isinstance(youtube, string_types) and re.match(YOUTUBE_ID_REGEX, youtube) is not None
+    return isinstance(youtube, str) and re.match(YOUTUBE_ID_REGEX, youtube) is not None
 
 
 def valid_status(status):
@@ -115,7 +112,7 @@ def valid_visibility(visibility):
 
 
 def valid_private_key(private_key):  # Todo better validation
-    return isinstance(private_key, string_types) and len(private_key) > 0
+    return isinstance(private_key, str) and len(private_key) > 0
 
 
 def valid_distribution(distribution):
@@ -157,7 +154,7 @@ def valid_transaction_type(transaction_type):
 
 
 def valid_actions(actions):
-    return isinstance(actions, list) and all([isinstance(action_id, string_types) for action_id in actions])
+    return isinstance(actions, list) and all([isinstance(action_id, str) for action_id in actions])
 
 
 def valid_timestamp(timestamp):
@@ -169,7 +166,7 @@ def valid_phase(phase):
 
 
 def valid_script(script):
-    if not isinstance(script, string_types):
+    if not isinstance(script, str):
         return False
 
     if not script.endswith('.py'):
@@ -186,7 +183,7 @@ def valid_script(script):
 
 
 def valid_bech32_address(address):
-    if not isinstance(address, string_types):
+    if not isinstance(address, str):
         return False
 
     hrp, data = bech32_decode(address)
