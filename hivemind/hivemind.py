@@ -1,4 +1,5 @@
-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import re
 import time
 from itertools import combinations
@@ -38,26 +39,26 @@ class HivemindIssue(IPFSDict):
         super(HivemindIssue, self).__init__(multihash=multihash)
 
     def add_question(self, question):
-        if isinstance(question, (str, unicode)) and question not in self.questions:
-            self.questions.append(unicode(question))
+        if isinstance(question, str) and question not in self.questions:
+            self.questions.append(question)
 
     def set_description(self, description):
-        if isinstance(description, (str, unicode)):
-            self.description = unicode(description)
+        if isinstance(description, str):
+            self.description = description
 
     def set_tags(self, tags):
-        if isinstance(tags, (str, unicode)):
-            self.tags = unicode(tags)
+        if isinstance(tags, str):
+            self.tags = tags
 
     def set_answer_type(self, answer_type):
         if answer_type in ['String', 'Bool', 'Integer', 'Float', 'Hivemind', 'Image', 'Video', 'Complex', 'Address']:
-            self.answer_type = unicode(answer_type)
+            self.answer_type = answer_type
         else:
             raise Exception('Invalid answer_type: %s (must be one of the following: "String", "Bool", "Integer", "Float", "Hivemind", "Image", "Video", "Complex", "Address")' % answer_type)
 
     def set_consensus_type(self, consensus_type):
         if consensus_type in ['Single', 'Ranked']:
-            self.consensus_type = unicode(consensus_type)
+            self.consensus_type = consensus_type
         else:
             raise Exception('Consensus_type must be either Single or Ranked, got %s' % consensus_type)
 
@@ -75,11 +76,11 @@ class HivemindIssue(IPFSDict):
                     raise Exception('Spec type must be String or Integer or Float, got %s' % specs[key])
 
         for constraint_type in ['min_length', 'max_length', 'min_value', 'max_value', 'decimals']:
-            if constraint_type in constraints and not isinstance(constraints[constraint_type], (int, float, long)):
+            if constraint_type in constraints and not isinstance(constraints[constraint_type], (int, float)):
                 raise Exception('Value of constraint %s must be a number' % constraint_type)
 
         for constraint_type in ['regex']:
-            if constraint_type in constraints and not isinstance(constraints[constraint_type], (str, unicode)):
+            if constraint_type in constraints and not isinstance(constraints[constraint_type], str):
                 raise Exception('Value of constraint %s must be a string' % constraint_type)
 
         for constraint_type in ['choices']:
@@ -94,7 +95,7 @@ class HivemindIssue(IPFSDict):
             raise Exception('Constraints that include a LAL must also have a xpub specified!')
 
         for constraint_type in ['block_height']:
-            if constraint_type in constraints and not isinstance(constraints[constraint_type], (int, long)):
+            if constraint_type in constraints and not isinstance(constraints[constraint_type], int):
                 raise Exception('Value of constraint %s must be a integer' % constraint_type)
 
         if all([key in ['min_length', 'max_length', 'min_value', 'max_value', 'decimals', 'regex', 'specs', 'choices', 'SIL', 'LAL', 'xpub', 'block_height'] for key in constraints.keys()]):
@@ -128,7 +129,7 @@ class HivemindIssue(IPFSDict):
         if on_selection not in [None, 'Finalize', 'Exclude', 'Reset']:
             raise Exception('Invalid value for on_selection: %s' % on_selection)
 
-        self.on_selection = unicode(on_selection)
+        self.on_selection = on_selection
 
     def id(self):
         taghash = TagHash(tags=self.questions[0])
@@ -136,7 +137,7 @@ class HivemindIssue(IPFSDict):
         if self.tags is not None:
             taghash.add_tag(tag=self.tags)
 
-        self.hivemind_id = unicode(taghash.get())
+        self.hivemind_id = taghash.get()
         return self.hivemind_id
 
     def info(self):
@@ -217,9 +218,9 @@ class HivemindOption(IPFSDict):
             return True
         elif self.answer_type == 'Hivemind' and self.is_valid_hivemind_option():
             return True
-        elif self.answer_type == 'Image' and isinstance(self.value, (str, unicode)):  # todo check for valid ipfs hash
+        elif self.answer_type == 'Image' and isinstance(self.value, str):  # todo check for valid ipfs hash
             return True
-        elif self.answer_type == 'Video' and isinstance(self.value, (str, unicode)):  # todo check for valid ipfs hash
+        elif self.answer_type == 'Video' and isinstance(self.value, str):  # todo check for valid ipfs hash
             return True
         elif self.answer_type == 'Complex' and self.is_valid_complex_option():
             return True
@@ -229,7 +230,7 @@ class HivemindOption(IPFSDict):
             return False
 
     def is_valid_string_option(self):
-        if not isinstance(self.value, (str, unicode)):
+        if not isinstance(self.value, str):
             return False
 
         if self._hivemind_issue.constraints is not None:
@@ -261,7 +262,7 @@ class HivemindOption(IPFSDict):
         return True
 
     def is_valid_integer_option(self):
-        if not isinstance(self.value, (int, long)):
+        if not isinstance(self.value, int):
             LOG.error('Option value %s is not a integer value but instead is a %s' % (self.value, type(self.value)))
             return False
 
@@ -305,9 +306,9 @@ class HivemindOption(IPFSDict):
                     return False
 
             for spec_key, spec_value in self.value.items():
-                if self._hivemind_issue.constraints['specs'][spec_key] == 'String' and not isinstance(spec_value, (str, unicode)):
+                if self._hivemind_issue.constraints['specs'][spec_key] == 'String' and not isinstance(spec_value, str):
                     return False
-                elif self._hivemind_issue.constraints['specs'][spec_key] == 'Integer' and not isinstance(spec_value, (int, long)):
+                elif self._hivemind_issue.constraints['specs'][spec_key] == 'Integer' and not isinstance(spec_value, int):
                     return False
                 elif self._hivemind_issue.constraints['specs'][spec_key] == 'Float' and not isinstance(spec_value, float):
                     return False

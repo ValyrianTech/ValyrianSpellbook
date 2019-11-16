@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-from helpers.loghelpers import LOG
-from compositehivemind import CompositeHivemind
-from hivemind import HivemindState
+from .compositehivemind import CompositeHivemind
+from .hivemind import HivemindState
 from helpers.hivemindhelpers import get_hivemind_state_hash
-
+from helpers.loghelpers import LOG
 
 class DictionaryComposite(CompositeHivemind):
     def get_result(self):
