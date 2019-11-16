@@ -4,10 +4,7 @@
 import os
 import simplejson
 from bottle import request
-try:
-    from ConfigParser import ConfigParser  # Python2.7
-except:
-    from configparser import ConfigParser  # Python 3
+from configparser import ConfigParser
 from functools import wraps
 
 from authentication import check_authentication, AuthenticationStatus
