@@ -7,9 +7,6 @@ import simplejson
 from helpers.setupscripthelpers import spellbook_call, clean_up_triggers
 from helpers.configurationhelpers import get_host, get_port
 
-from helpers.py2specials import *
-from helpers.py3specials import *
-
 
 print('Starting Spellbook integration test: HTTP POST request trigger conditions')
 print('----------------------------------------------\n')
@@ -46,7 +43,7 @@ try:
     print(r.text)
     assert simplejson.loads(r.text) == data
 except Exception as ex:
-    print_to_stderr('POST %s failed: %s' % (url, ex))
+    print('POST %s failed: %s' % (url, ex), file=sys.stderr)
     sys.exit(1)
 
 
@@ -60,5 +57,5 @@ try:
     print(r.text)
     assert r.text == ''
 except Exception as ex:
-    print_to_stderr('POST %s failed: %s' % (url, ex))
+    print('POST %s failed: %s' % (url, ex), file=sys.stderr)
     sys.exit(1)
