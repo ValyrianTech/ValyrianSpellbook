@@ -7,10 +7,7 @@ import getpass
 from helpers.configurationhelpers import get_use_testnet
 from helpers.privatekeyhelpers import privkey_to_address
 from AESCipher import AESCipher
-try:
-    from ConfigParser import ConfigParser  # Python2
-except:
-    from configparser import ConfigParser  # Python3
+from configparser import ConfigParser
 from pprint import pprint
 
 from helpers.py2specials import *

@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
-try:
-    from ConfigParser import ConfigParser
-except:
-    from configparser import ConfigParser
+from configparser import ConfigParser
 from helpers.jsonhelpers import load_from_json_file
 from authentication import initialize_api_keys_file
 
