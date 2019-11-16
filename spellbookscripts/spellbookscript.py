@@ -7,9 +7,6 @@ from abc import abstractmethod, ABCMeta
 from validators.validators import valid_address
 from helpers.ipfshelpers import get_json, add_json
 
-from helpers.py2specials import *
-from helpers.py3specials import *
-
 
 class SpellbookScript(object):
     __metaclass__ = ABCMeta
@@ -88,7 +85,7 @@ class SpellbookScript(object):
             data = get_json(multihash=ipfs_hash)
             if isinstance(data, dict):
                 self.json = data
-            elif isinstance(data, string_types):
+            elif isinstance(data, str):
                 self.json = simplejson.loads(data)
             else:
                 raise Exception('IPFS hash does not contain a dict or a json string: %s -> %s' % (ipfs_hash, data))
