@@ -94,8 +94,7 @@ class TagHash(object):
         :param tag: A string or unicode that contains a single tag
         """
         if isinstance(tag, str):
-            # Convert to unicode before adding the tag
-            self.tags.append(tag.decode('utf-8'))
+            self.tags.append(tag)
             self.calculate()
 
     def remove_tag(self, tag):
