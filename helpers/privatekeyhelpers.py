@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from .py2specials import *
+import re
 from .py3specials import *
 
 from .jacobianhelpers import fast_multiply, N, G
@@ -39,7 +39,7 @@ class PrivateKey(object):
 
 
 def encode_privkey(private_key, formt, vbyte=0):
-    if not isinstance(private_key, int_types):
+    if not isinstance(private_key, (int, float)):
         return encode_privkey(decode_privkey(private_key), formt, vbyte)
 
     if formt == 'decimal':
@@ -83,7 +83,7 @@ def decode_privkey(private_key, formt=None):
 
 
 def get_privkey_format(private_key):
-    if isinstance(private_key, int_types):
+    if isinstance(private_key, (int, float)):
         return 'decimal'
     elif len(private_key) == 32:
         return 'bin'
