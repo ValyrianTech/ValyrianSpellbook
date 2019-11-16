@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import os
+import sys
 import argparse
 import simplejson
 import getpass
@@ -10,8 +12,6 @@ from AESCipher import AESCipher
 from configparser import ConfigParser
 from pprint import pprint
 
-from helpers.py2specials import *
-from helpers.py3specials import *
 
 # Make sure we are in the correct working directory
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -135,10 +135,10 @@ def load_wallet():
             return simplejson.loads(cipher.decrypt(encrypted_data))
 
     except IOError as ex:
-        print_to_stderr('Unable to load encrypted wallet: %s' % ex)
+        print('Unable to load encrypted wallet: %s' % ex, file=sys.stderr)
         sys.exit(1)
     except Exception as ex:
-        print_to_stderr('Unable to decrypt wallet: %s' % ex)
+        print('Unable to decrypt wallet: %s' % ex, file=sys.stderr)
         sys.exit(1)
 
 
@@ -147,7 +147,7 @@ def save_wallet(wallet):
     password2 = getpass.getpass('Re-enter the password to encrypt the hot wallet: ')
 
     if password1 != password2:
-        print_to_stderr('Passwords do not match!')
+        print('Passwords do not match!', file=sys.stderr)
         sys.exit(1)
 
     cipher = AESCipher(key=password1)
@@ -163,7 +163,7 @@ def add_key():
     try:
         address = privkey_to_address(args.private_key, magicbyte=0 if get_use_testnet() is False else 111)
     except AssertionError:
-        print_to_stderr('Invalid private key: %s' % args.private_key)
+        print('Invalid private key: %s' % args.private_key, file=sys.stderr)
         sys.exit(1)
 
     new_key = {address: args.private_key}
@@ -185,7 +185,7 @@ def set_bip44():
     wallet = load_wallet()
 
     if len(args.mnemonic) not in [12, 24]:
-        print_to_stderr('Mnemonic must contain 12 or 24 words!')
+        print('Mnemonic must contain 12 or 24 words!', file=sys.stderr)
         sys.exit(1)
 
     bip44 = {'mnemonic': args.mnemonic,
