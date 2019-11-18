@@ -80,14 +80,14 @@ def get_str(multihash):
 
     string = None
     try:
-        string = IPFS_API.cat(multihash=multihash, timeout=1)
+        string = IPFS_API.cat(cid=multihash, timeout=1)
     except Exception as e:
         LOG.error('Unable to retrieve string from IPFS with multihash %s: %s' % (multihash, e))
 
     if multihash not in IPFS_CACHE:
         IPFS_CACHE[multihash] = string
 
-    return string
+    return string.decode('utf-8')
 
 
 def add_file(filename):
