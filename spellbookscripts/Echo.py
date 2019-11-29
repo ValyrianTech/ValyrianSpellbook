@@ -30,12 +30,13 @@ class Echo(SpellbookScript):
         LOG.info('address: %s' % self.address)
         LOG.info('signature: %s' % self.signature)
         LOG.info('message: %s' % self.message)
+        LOG.info('data: %s' % self.data)
 
-        if self.json is not None:
-            LOG.info('JSON data: %s' % self.json)
+        if self.data is not None:
+            LOG.info('Sending echo: %s' % self.data)
 
             # just echo the json data if there is any
-            self.http_response = self.json
+            self.http_response = self.data
 
     def cleanup(self):
         pass
