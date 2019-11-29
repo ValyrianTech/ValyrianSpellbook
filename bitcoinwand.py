@@ -4,8 +4,8 @@ import argparse
 import os
 import sys
 import requests
-import ipfsapi
 
+from helpers.ipfshelpers import add_json
 from helpers.configurationhelpers import get_ipfs_api_host, get_ipfs_api_port
 from helpers.hotwallethelpers import get_private_key_from_wallet, find_address_in_wallet
 from helpers.messagehelpers import sign_message
@@ -46,19 +46,21 @@ else:
 
 # The Bitcoin Signed Message can not be longer than 256 characters, if it is longer, put the message on IPFS and sign the hash instead
 if len(data['message']) >= 256:
-    # Check if IPFS node is running
-    try:
-        ipfs = ipfsapi.connect(get_ipfs_api_host(), get_ipfs_api_port())
-    except Exception as ex:
-        print('IPFS node is not running: %s' % ex)
-        sys.exit(1)
+    # # Check if IPFS node is running
+    # try:
+    #     ipfs = ipfsapi.connect(get_ipfs_api_host(), get_ipfs_api_port())
+    # except Exception as ex:
+    #     print('IPFS node is not running: %s' % ex)
+    #     sys.exit(1)
 
-    message_hash = ipfs.add_json(data['message'])
+    message_hash = add_json(data['message'])
     data['message'] = '/ipfs/%s' % message_hash
+
 
 
 # Calculate the signature
 data['signature'] = sign_message(message=data['message'], private_key=private_key)
+# data['data'] = 'Hello world!'
 
 # Send the signed message as a POST request to the url
 try:
