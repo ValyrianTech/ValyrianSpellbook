@@ -29,6 +29,7 @@ from inputs.inputs import get_sil, get_profile, get_sul
 from linker.linker import get_lal, get_lbl, get_lrl, get_lsl
 from randomaddress.randomaddress import random_address_from_sil, random_address_from_lbl, random_address_from_lrl, \
     random_address_from_lsl
+from helpers.qrhelpers import generate_qr
 
 # Make sure the current working directory is correct
 PROGRAM_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -127,6 +128,9 @@ class SpellbookRESTAPI(Bottle):
         self.route('/html/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.html_request)
 
         self.route('/api/sign_message', method='POST', callback=self.sign_message)
+
+        # Routes for QR image generation
+        self.route('/api/qr', method='GET', callback=self.qr)
 
         # Routes for Actions
         self.route('/spellbook/actions', method='GET', callback=self.get_actions)
@@ -516,6 +520,17 @@ class SpellbookRESTAPI(Bottle):
         data.update(query)
 
         return http_get_request(trigger_id, **data)
+
+    @staticmethod
+    def qr():
+        response.content_type = 'image/png'
+        data = request.json if request.json is not None else {}
+
+        # Also add parameters passed via the query string to the data, if any parameters have the same name then the query string has priority
+        query = dict(request.query)
+        data.update(query)
+
+        return generate_qr(**data)
 
     @staticmethod
     @output_json
