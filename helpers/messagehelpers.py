@@ -15,7 +15,10 @@ def sign_message(message, private_key):
 
 
 def verify_message(address, message, signature):
-    return VerifyMessage(address=address, message=BitcoinMessage(message), sig=signature)
+    try:
+        return VerifyMessage(address=address, message=BitcoinMessage(message), sig=signature)
+    except Exception as ex:
+        return False
 
 
 def sign_and_verify(private_key, message, address):

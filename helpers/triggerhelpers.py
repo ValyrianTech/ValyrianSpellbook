@@ -220,6 +220,10 @@ def verify_signed_message(trigger_id, **data):
             return trigger.activate()
     else:
         LOG.warning('Trigger %s received a bad signed message' % trigger_id)
+        LOG.warning('message: %s' % data['message'])
+        LOG.warning('address: %s' % data['address'])
+        LOG.warning('signature: %s' % data['signature'])
+        return {'error': 'Signature is invalid!'}
 
 
 def sign_message(**data):
