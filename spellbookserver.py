@@ -19,7 +19,6 @@ from data.data import transactions, balance, utxos
 from decorators import authentication_required, use_explorer, output_json
 from helpers.actionhelpers import get_actions, get_action_config, save_action, delete_action, run_action, get_reveal
 from helpers.configurationhelpers import get_host, get_port, get_notification_email, get_mail_on_exception
-from helpers.hivemindhelpers import get_hivemind_state_hash
 from helpers.hotwallethelpers import get_hot_wallet
 from helpers.loghelpers import LOG, REQUESTS_LOG, get_logs
 from helpers.triggerhelpers import get_triggers, get_trigger_config, save_trigger, delete_trigger, activate_trigger, \
