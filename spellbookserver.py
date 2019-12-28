@@ -145,9 +145,6 @@ class SpellbookRESTAPI(Bottle):
         # Routes for RevealSecret actions
         self.route('/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>/reveal', method='GET', callback=self.get_reveal)
 
-        # Routes for Hiveminds
-        self.route('/spellbook/hiveminds/<hivemind_id:re:[a-fA-F0-9]+>', method='GET', callback=self.get_hivemind)
-
         # Check if there are explorers configured, this will also initialize the default explorers on first startup
         if len(get_explorers()) == 0:
             LOG.warning('No block explorers configured!')
@@ -602,12 +599,6 @@ class SpellbookRESTAPI(Bottle):
     def get_logs(filter_string):
         response.content_type = 'application/json'
         return get_logs(filter_string=filter_string)
-
-    @staticmethod
-    @output_json
-    def get_hivemind(hivemind_id):
-        response.content_type = 'application/json'
-        return get_hivemind_state_hash(hivemind_id)
 
 
 if __name__ == "__main__":
