@@ -589,14 +589,3 @@ examples:
     -> Get the reveal text or link of the action with id 'myaction'
 
 '''
-
-########################################################################################################
-# get_hivemind                                                                                           #
-########################################################################################################
-GET_HIVEMIND_DESCRIPTION = 'Get the latest hivemind state hash of a hivemind'
-GET_HIVEMIND_EPILOG = '''
-examples:
-  - spellbook.py get_hivemind 48383fbf86fbc142cd7b0a070e36867fd84a93a79bdf5a59e9087eb8aa1244a0
-    -> Get the latest hivemind state hash of the hivemind with id '48383fbf86fbc142cd7b0a070e36867fd84a93a79bdf5a59e9087eb8aa1244a0'
-
-'''
