@@ -97,8 +97,7 @@ def pubkey_to_address(pubkey, magicbyte=0):
         pubkey = encode_pubkey(pubkey, 'bin')
 
     if len(pubkey) in [66, 130]:
-        return bin_to_b58check(
-            bin_hash160(binascii.unhexlify(pubkey)), magicbyte)
+        return bin_to_b58check(bin_hash160(binascii.unhexlify(pubkey)), magicbyte)
 
     return bin_to_b58check(bin_hash160(pubkey), magicbyte)
 
