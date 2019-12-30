@@ -125,6 +125,7 @@ class SpellbookRESTAPI(Bottle):
         self.route('/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.http_post_request)
         self.route('/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.http_delete_request)
         self.route('/html/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.html_request)
+        self.route('/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>/message', method='POST', callback=self.verify_signed_message)
 
         self.route('/api/sign_message', method='POST', callback=self.sign_message)
 
