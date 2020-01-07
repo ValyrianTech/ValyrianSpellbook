@@ -150,7 +150,7 @@ class SpellbookRESTAPI(Bottle):
             LOG.warning('No block explorers configured!')
 
         # start the webserver for the REST API
-        self.run(host=self.host, port=self.port)
+        self.run(host=self.host, port=self.port, debug=True)
 
     def index(self):
         return
