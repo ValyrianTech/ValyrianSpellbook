@@ -24,6 +24,17 @@ if get_enable_ipfs() is True:
         LOG.error('IPFS node is not running: %s' % ex)
 
 
+class MultiHash(object):
+    def __init__(self, value):
+        if not isinstance(value, str):
+            raise Exception('Value of a multihash must be a string, got %s instead' % (type(value)))
+
+        self.value = value if value.startswith('/ipfs/') else '/ipfs/%s' % value
+
+    def __str__(self):
+        return self.value
+
+
 def add_json(data):
     global IPFS_API
 
