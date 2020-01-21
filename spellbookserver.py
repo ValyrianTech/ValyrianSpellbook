@@ -149,8 +149,23 @@ class SpellbookRESTAPI(Bottle):
         if len(get_explorers()) == 0:
             LOG.warning('No block explorers configured!')
 
-        # start the webserver for the REST API
-        self.run(host=self.host, port=self.port, debug=True)
+        try:
+            # start the webserver for the REST API
+            self.run(host=self.host, port=self.port, debug=True)
+        except Exception as ex:
+            LOG.error('An exception occurred in the main loop: %s' % ex)
+            error_traceback = traceback.format_exc()
+            for line in error_traceback.split('\n'):
+                LOG.error(line)
+
+            if get_mail_on_exception() is True:
+                variables = {'HOST': get_host(),
+                             'TRACEBACK': error_traceback}
+                body_template = os.path.join('server_exception')
+                sendmail(recipients=get_notification_email(),
+                         subject='Main loop Exception occurred @ %s' % get_host(),
+                         body_template=body_template,
+                         variables=variables)
 
     def index(self):
         return
