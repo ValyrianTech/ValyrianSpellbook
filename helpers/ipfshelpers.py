@@ -24,7 +24,7 @@ if get_enable_ipfs() is True:
         LOG.error('IPFS node is not running: %s' % ex)
 
 
-class MultiHash(object):
+class CID(object):
     def __init__(self, value):
         if not isinstance(value, str):
             raise Exception('Value of a multihash must be a string, got %s instead' % (type(value)))
@@ -50,7 +50,7 @@ def add_json(data):
         except Exception as e:
             raise Exception('Failed to store json data on IPFS: %s' % e)
 
-    return multihash
+    return CID(multihash).__str__()
 
 
 def get_json(multihash):
@@ -80,7 +80,7 @@ def add_str(string):
         LOG.error('Unable to store string on IPFS: %s' % e)
         raise Exception('IPFS failure')
 
-    return multihash
+    return CID(multihash).__str__()
 
 
 def get_str(multihash):
@@ -175,7 +175,7 @@ class IPFSDict(object):
 
         :param multihash: An IPFS multihash
         """
-        self._multihash = multihash
+        self._multihash = CID(multihash).__str__() if multihash is not None else None
 
         if self._multihash is not None:
             self.load(multihash=self._multihash)
@@ -233,7 +233,7 @@ class IPFSDict(object):
             LOG.error('IPFS multihash %s does not contain a dict!' % multihash)
             return
 
-        self._multihash = multihash
+        self._multihash = CID(multihash).__str__()
 
         if self.is_valid(data=data):
             for key, value in data.items():
