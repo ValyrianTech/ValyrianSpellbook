@@ -23,3 +23,9 @@ class Model(object):
 
     def info(self):
         pass
+
+    def pre_generation_actions(self):
+        print('executing pre generation actions')
+
+    def post_generation_actions(self, champion):
+        print('executing post generation actions')
