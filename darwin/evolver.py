@@ -237,6 +237,9 @@ class Evolver(object):
             os.remove(self.progress_file)
 
         while not self.termination():
+            # Run any actions that need to happen before each generation
+            model.pre_generation_actions()
+
             self.current_generation += 1
             generation_start_time = time.time()
             print('\n\n=========================================')
@@ -337,6 +340,9 @@ class Evolver(object):
             population.genomes = next_generation.genomes
 
             self.elapsed_time = time.time() - evolver_start_time
+
+            # Run any actions that need to happen after each generation
+            model.post_generation_actions(champion=rosetta_stone.genome_to_model(champion))
 
         # Print out the best solution
         print('\n\nBest solution:')
