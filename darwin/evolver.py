@@ -248,7 +248,7 @@ class Evolver(object):
                 model_template = rosetta_stone.genome_to_model(genome=genome)
                 model.configure(config=model_template)
 
-                genome.fitness = fitness_function.fitness(model=model)
+                genome.fitness = fitness_function.fitness(model=model).value
 
                 print('Genome %s (%s): %s' % (j, genome.id(), genome.fitness))
 
@@ -258,6 +258,7 @@ class Evolver(object):
 
             # Sort the population by highest fitness
             population.genomes = sorted(population.genomes, key=lambda x: -x.fitness)
+            print('Best in generation: %s : %s' % (population.genomes[0].id(), population.genomes[0].fitness))
 
             # Periodically save the current population as json files
             if self.periodic_save > 0 and self.current_generation % self.periodic_save == 0:
@@ -266,7 +267,7 @@ class Evolver(object):
             # Truncate the population by removing the worst performing genomes so they don't have a chance to be selected for recombination
             population.genomes = population.genomes[:int((len(population.genomes) * self.truncation) / 100)]
 
-            if self.highest_fitness is None or population.genomes[0].fitness > self.highest_fitness:
+            if self.highest_fitness is None or population.genomes[0].fitness > self.highest_fitness or population.genomes[0].id() != champion.id():
                 self.highest_fitness = population.genomes[0].fitness
                 champion = population.genomes[0]
                 self.generations_since_new_champion = 0
