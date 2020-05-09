@@ -18,3 +18,9 @@ class FitnessFunction(object):
 
     def darwin_init_actions(self):
         pass
+
+
+class Fitness(object):
+    def __init__(self, value, data):
+        self.value = value
+        self.data = data
