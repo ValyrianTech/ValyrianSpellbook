@@ -62,6 +62,7 @@ class Evolver(object):
         self.n_parents = 2
         self.recombination_type = 3  # RWS, SUS or tournament
         self.tournament_size = 5
+        self.parameters = None
 
         # Termination
         self.max_generations = 100
@@ -106,6 +107,7 @@ class Evolver(object):
         self.n_parents = config['n_parents']
         self.recombination_type = config['recombination_type']  # RWS, SUS or tournament
         self.tournament_size = config['tournament_size']
+        self.parameters = config['parameters'] if 'parameters' in config else None
 
         # Termination
         self.max_generations = config['max_generations']
@@ -182,6 +184,10 @@ class Evolver(object):
         pprint(self.string_mutation_chance.__dict__)
         pprint('Chromosome')
         pprint(self.chromosome_mutation_chance.__dict__)
+
+        if self.parameters is not None:
+            pprint('PARAMETERS:')
+            pprint(self.parameters)
 
     def start(self):
         population = Population()
@@ -391,7 +397,7 @@ class Evolver(object):
             return
 
         darwin_script = getattr(script_module, script_class_name)
-        kwargs = {}
+        kwargs = self.parameters if self.parameters is not None else {}
 
         loaded_script = darwin_script(**kwargs)
 
