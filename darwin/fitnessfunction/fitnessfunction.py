@@ -6,7 +6,7 @@ from abc import abstractmethod, ABCMeta
 class FitnessFunction(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         self.results_file = None
 
     @abstractmethod

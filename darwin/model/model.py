@@ -3,7 +3,7 @@
 
 
 class Model(object):
-    def __init__(self, name=None):
+    def __init__(self, name=None, **kwargs):
         self.name = name
         self.description = ''
 
