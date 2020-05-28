@@ -41,7 +41,7 @@ def uptime_check(email, reboot=False):
 
                 if reboot is True and platform.system() == 'Linux':
                     LOG.info('Rebooting server because uptime check failed!')
-                    RunCommandProcess(command='reboot').run()
+                    RunCommandProcess(command='sudo reboot').run()
 
             else:
                 LOG.error('Email to %s failed!' % email)
