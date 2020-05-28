@@ -4,13 +4,15 @@
 import os
 import argparse
 import requests
+import platform
 
 from helpers.configurationhelpers import get_host, get_port
 from helpers.loghelpers import LOG, logs_dir
 from helpers.mailhelpers import sendmail
+from helpers.runcommandprocess import RunCommandProcess
 
 
-def uptime_check(email):
+def uptime_check(email, reboot=False):
     LOG.info('Checking if spellbook server is still online')
 
     url = 'http://{host}:{port}/spellbook/ping'.format(host=get_host(), port=get_port())
@@ -36,6 +38,11 @@ def uptime_check(email):
                                variables=variables)
             if success is True:
                 LOG.info('Email sent successfully')
+
+                if reboot is True and platform.system() == 'Linux':
+                    LOG.info('Rebooting server because uptime check failed!')
+                    RunCommandProcess(command='reboot').run()
+
             else:
                 LOG.error('Email to %s failed!' % email)
     else:
@@ -61,8 +68,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Uptime check command line interface',
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('email', help='Send and email to this address if the server is not online', type=str)
+    parser.add_argument('--reboot', help='Immediately reboot the server when ping fails, only works on linux', action='store_true')
 
     # Parse arguments
     args = parser.parse_args()
 
-    uptime_check(email=args.email)
+    uptime_check(email=args.email, reboot=args.reboot)
