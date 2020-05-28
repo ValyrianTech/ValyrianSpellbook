@@ -28,7 +28,7 @@ PROCESS_LOG.addHandler(stream_handler)
 # file_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(message)s'))
 # PROCESS_LOG.addHandler(file_handler)
 
-PROCESS_LOG.setLevel(logging.DEBUG)
+PROCESS_LOG.setLevel(logging.INFO)
 
 
 class RunCommandProcess(multiprocessing.Process):
