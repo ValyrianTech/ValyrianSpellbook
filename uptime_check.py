@@ -6,7 +6,7 @@ import argparse
 import requests
 
 from helpers.configurationhelpers import get_host, get_port
-from helpers.loghelpers import LOG
+from helpers.loghelpers import LOG, logs_dir
 from helpers.mailhelpers import sendmail
 
 
@@ -26,14 +26,34 @@ def uptime_check(email):
     if not online:
         LOG.error('Spellbook server is not online!')
         if email is not None:
-            variables = {'HOST': get_host()}
+            variables = {'HOST': get_host(),
+                         'SPELLBOOK_LOG': get_recent_spellbook_log(),
+                         'REQUESTS_LOG': get_recent_requests_log()}
             body_template = os.path.join('server_offline')
-            sendmail(recipients=email,
-                     subject='Spellbookserver @ %s is offline!' % get_host(),
-                     body_template=body_template,
-                     variables=variables)
+            success = sendmail(recipients=email,
+                               subject='Spellbookserver @ %s is offline!' % get_host(),
+                               body_template=body_template,
+                               variables=variables)
+            if success is True:
+                LOG.info('Email sent successfully')
+            else:
+                LOG.error('Email to %s failed!' % email)
     else:
         LOG.info('Server is online')
+
+
+def get_recent_spellbook_log():
+    with open(os.path.join(logs_dir, 'spellbook.txt'), 'r') as input_file:
+        recent_messages = input_file.readlines()[-100:]
+
+    return '<br>'.join(recent_messages)
+
+
+def get_recent_requests_log():
+    with open(os.path.join(logs_dir, 'requests.txt'), 'r') as input_file:
+        recent_messages = input_file.readlines()[-100:]
+
+    return '<br>'.join(recent_messages)
 
 
 if __name__ == "__main__":
