@@ -23,10 +23,9 @@ stream_handler = logging.StreamHandler(sys.stdout)
 stream_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(message)s'))
 PROCESS_LOG.addHandler(stream_handler)
 
-# TODO fix bug with rollover when log is full
-# file_handler = RotatingFileHandler(os.path.join(PROGRAM_DIR, 'logs', 'process_log.txt'), maxBytes=10000000, backupCount=5)
-# file_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(message)s'))
-# PROCESS_LOG.addHandler(file_handler)
+file_handler = RotatingFileHandler(os.path.join(PROGRAM_DIR, 'logs', 'process_log.txt'), maxBytes=10000000, backupCount=5)
+file_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(message)s'))
+PROCESS_LOG.addHandler(file_handler)
 
 PROCESS_LOG.setLevel(logging.INFO)
 
