@@ -24,6 +24,10 @@ if get_enable_ipfs() is True:
         LOG.error('IPFS node is not running: %s' % ex)
 
 
+def check_ipfs():
+    return IPFS_API is not None
+
+
 class CID(object):
     def __init__(self, value):
         if not isinstance(value, str):
