@@ -173,16 +173,16 @@ class IPFSDict(object):
 
     optionally override the is_valid() method to add validation for the dict
     """
-    def __init__(self, multihash=None):
+    def __init__(self, cid=None):
         """
         Constructor of the IPFSDict class
 
-        :param multihash: An IPFS multihash
+        :param cid: An IPFS cid
         """
-        self._multihash = CID(multihash).__str__() if multihash is not None else None
+        self._cid = CID(cid).__str__() if cid is not None else None
 
-        if self._multihash is not None:
-            self.load(multihash=self._multihash)
+        if self._cid is not None:
+            self.load(cid=self._cid)
 
     def get(self):
         """
@@ -192,59 +192,59 @@ class IPFSDict(object):
         """
         return {key: value for key, value in self.__dict__.items() if key[0] != '_'}
 
-    def multihash(self):
-        return self._multihash
+    def cid(self):
+        return self._cid
 
     def save(self):
         """
         Save the dictionary on IPFS
 
-        :return: The IPFS multihash of the dictionary
+        :return: The IPFS cid of the dictionary
         """
-        self._multihash = add_json(data=self.get())
-        return self._multihash
+        self._cid = add_json(data=self.get())
+        return self._cid
 
     def save_as_json(self, filename):
         """
-        Save the dictionary as a json file and also include the multihash of the data itself in the json file
+        Save the dictionary as a json file and also include the cid of the data itself in the json file
 
         :param filename: The filename of the json file
         """
         self.save()
         data = self.get()
-        data['multihash'] = self._multihash
+        data['cid'] = self._cid
 
         save_to_json_file(filename=filename, data=data)
-        return self._multihash
+        return self._cid
 
-    def load(self, multihash):
+    def load(self, cid):
         """
         Load a dictionary from IPFS
 
-        :param multihash: An IPFS multihash
+        :param cid: An IPFS cid
         """
-        if not isinstance(multihash, str):
-            LOG.error('Can not retrieve IPFS data: multihash must be a string or unicode, got %s instead' % type(multihash))
+        if not isinstance(cid, str):
+            LOG.error('Can not retrieve IPFS data: cid must be a string or unicode, got %s instead' % type(cid))
             return
 
         try:
-            data = get_json(multihash=multihash)
+            data = get_json(multihash=cid)
         except Exception as e:
-            LOG.error('Can not retrieve IPFS data of %s: %s' % (multihash, e))
+            LOG.error('Can not retrieve IPFS data of %s: %s' % (cid, e))
             return
 
         if not isinstance(data, dict):
-            LOG.error('IPFS multihash %s does not contain a dict!' % multihash)
+            LOG.error('IPFS cid %s does not contain a dict!' % cid)
             return
 
-        self._multihash = CID(multihash).__str__()
+        self._cid = CID(cid).__str__()
 
         if self.is_valid(data=data):
             for key, value in data.items():
-                if key != '_multihash':
+                if key != '_cid':
                     self.__setattr__(key, value)
         else:
-            raise Exception('Invalid multihash for IPFSDict object')
+            raise Exception('Invalid cid for IPFSDict object')
 
     def is_valid(self, data):
         """
@@ -258,7 +258,7 @@ class IPFSDict(object):
         required_keys = [key for key in self.__dict__.keys() if key[0] != '_']
         for required_key in required_keys:
             if required_key not in data:
-                LOG.error('%s is not a valid IPFSDict hash: it does not contain the key "%s"' % (self._multihash, required_key))
+                LOG.error('%s is not a valid IPFSDict hash: it does not contain the key "%s"' % (self._cid, required_key))
                 return False
 
         return True
@@ -268,25 +268,25 @@ class IPFSDictChain(IPFSDict):
     """
     An IPFSDict object that also keeps track of changes made to the contents
     """
-    def __init__(self, multihash=None):
+    def __init__(self, cid=None):
         """
         Constructor of the IPFSDictChain class
 
-        :param multihash: An IPFS multihash (optional)
+        :param cid: An IPFS cid (optional)
         """
-        self.previous_multihash = None
+        self.previous_cid = None
 
-        super(IPFSDictChain, self).__init__(multihash=multihash)
+        super(IPFSDictChain, self).__init__(cid=cid)
 
     def save(self):
         """
         Save the dictionary on IPFS with a reference to the previous state
 
-        :return: An IPFS multihash of the dict
+        :return: An IPFS cid of the dict
         """
-        self.previous_multihash = self._multihash
-        self._multihash = add_json(data=self.get())
-        return self._multihash
+        self.previous_cid = self._cid
+        self._cid = add_json(data=self.get())
+        return self._cid
 
     def changes(self):
         """
@@ -295,8 +295,8 @@ class IPFSDictChain(IPFSDict):
         :return: A dict containing the changed values
         """
         changes = {}
-        if self.previous_multihash is not None:
-            old_data = IPFSDictChain(multihash=self.previous_multihash).get()
+        if self.previous_cid is not None:
+            old_data = IPFSDictChain(cid=self.previous_cid).get()
 
             for key in old_data:
                 if old_data[key] != self.__getattribute__(key):
@@ -322,14 +322,14 @@ class IPFSDictChain(IPFSDict):
         depth = 0
         change_log = [self.changes()]
 
-        previous_multihash = self.previous_multihash
-        while previous_multihash is not None:
+        previous_cid = self.previous_cid
+        while previous_cid is not None:
             if max_depth is not None and depth >= max_depth:
                 break
 
-            previous_state = IPFSDictChain(multihash=previous_multihash)
+            previous_state = IPFSDictChain(cid=previous_cid)
             change_log.append(previous_state.changes())
-            previous_multihash = previous_state.previous_multihash
+            previous_cid = previous_state.previous_cid
 
             depth += 1
 
@@ -337,7 +337,7 @@ class IPFSDictChain(IPFSDict):
 
 
 class FileMetaData(IPFSDictChain):
-    def __init__(self, multihash=None):
+    def __init__(self, cid=None):
         self.file_name = None
         self.file_ipfs_hash = None
         self.file_sha256_hash = None
@@ -348,4 +348,4 @@ class FileMetaData(IPFSDictChain):
         self.publisher_signature = None
         self.signed_message = None
 
-        super(FileMetaData, self).__init__(multihash=multihash)
+        super(FileMetaData, self).__init__(cid=cid)
