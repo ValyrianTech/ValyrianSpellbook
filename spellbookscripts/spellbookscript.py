@@ -82,7 +82,7 @@ class SpellbookScript(object):
                 return
 
         try:
-            data = get_json(multihash=ipfs_hash)
+            data = get_json(cid=ipfs_hash)
             if isinstance(data, dict):
                 self.json = data
             elif isinstance(data, str):

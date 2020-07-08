@@ -43,34 +43,34 @@ def add_json(data):
     global IPFS_API
 
     try:
-        multihash = IPFS_API.add_json(data)
+        cid = IPFS_API.add_json(data)
     except Exception as e:
         LOG.error('Failed to store json data on IPFS: %s' % e)
         LOG.error('Data: %s' % data)
         LOG.error('Sleeping 1 second before trying again...')
         time.sleep(1)
         try:
-            multihash = IPFS_API.add_json(data)
+            cid = IPFS_API.add_json(data)
         except Exception as e:
             raise Exception('Failed to store json data on IPFS: %s' % e)
 
-    return CID(multihash).__str__()
+    return CID(cid).__str__()
 
 
-def get_json(multihash):
+def get_json(cid):
     global IPFS_API, IPFS_CACHE
 
-    if multihash in IPFS_CACHE:
-        return IPFS_CACHE[multihash]
+    if cid in IPFS_CACHE:
+        return IPFS_CACHE[cid]
 
     json = None
     try:
-        json = IPFS_API.get_json(multihash, timeout=2)
+        json = IPFS_API.get_json(cid, timeout=2)
     except Exception as e:
-        LOG.error('Failed to retrieve json data from IPFS hash %s: %s' % (multihash, e))
+        LOG.error('Failed to retrieve json data from IPFS hash %s: %s' % (cid, e))
 
-    if multihash not in IPFS_CACHE:
-        IPFS_CACHE[multihash] = json
+    if cid not in IPFS_CACHE:
+        IPFS_CACHE[cid] = json
 
     return json
 
@@ -79,28 +79,28 @@ def add_str(string):
     global IPFS_API
 
     try:
-        multihash = IPFS_API.add_str(string=string)
+        cid = IPFS_API.add_str(string=string)
     except Exception as e:
         LOG.error('Unable to store string on IPFS: %s' % e)
         raise Exception('IPFS failure')
 
-    return CID(multihash).__str__()
+    return CID(cid).__str__()
 
 
-def get_str(multihash):
+def get_str(cid):
     global IPFS_API, IPFS_CACHE
 
-    if multihash in IPFS_CACHE:
-        return IPFS_CACHE[multihash]
+    if cid in IPFS_CACHE:
+        return IPFS_CACHE[cid]
 
     string = None
     try:
-        string = IPFS_API.cat(cid=multihash, timeout=1)
+        string = IPFS_API.cat(cid=cid, timeout=1)
     except Exception as e:
-        LOG.error('Unable to retrieve string from IPFS with multihash %s: %s' % (multihash, e))
+        LOG.error('Unable to retrieve string from IPFS with multihash %s: %s' % (cid, e))
 
-    if multihash not in IPFS_CACHE:
-        IPFS_CACHE[multihash] = string
+    if cid not in IPFS_CACHE:
+        IPFS_CACHE[cid] = string
 
     return string.decode('utf-8')
 
@@ -228,7 +228,7 @@ class IPFSDict(object):
             return
 
         try:
-            data = get_json(multihash=cid)
+            data = get_json(cid=cid)
         except Exception as e:
             LOG.error('Can not retrieve IPFS data of %s: %s' % (cid, e))
             return
