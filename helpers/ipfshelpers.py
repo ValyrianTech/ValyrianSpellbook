@@ -141,27 +141,27 @@ def add_zipped_dir(directory_path, name):
     return ipfs_info
 
 
-def get_zipped_dir(multihash, target_dir):
+def get_zipped_dir(cid, target_dir):
     """
     Get a zipped directory from IPFS and extract it into the target directory
 
-    :param multihash: The IPFS multihash of the directory in zipped format
+    :param cid: The IPFS multihash of the directory in zipped format
     :param target_dir: The target directory where the contents of the zipfile will be extracted
     """
-    IPFS_API.get(multihash)
+    IPFS_API.get(cid)
 
     if not os.path.isdir(target_dir):
         os.makedirs(target_dir)
 
     try:
-        with zipfile.ZipFile(multihash, "r") as z:
+        with zipfile.ZipFile(cid, "r") as z:
             z.extractall(target_dir)
     except Exception as e:
-        LOG.error('Can not extract zipped dir %s: %s' % (multihash, e))
+        LOG.error('Can not extract zipped dir %s: %s' % (cid, e))
     finally:
         # Clean up the temporary zip file
-        if os.path.isfile(multihash):
-            os.remove(multihash)
+        if os.path.isfile(cid):
+            os.remove(cid)
 
 
 class IPFSDict(object):
