@@ -284,11 +284,7 @@ class IPFSDictChain(IPFSDict):
 
         :return: An IPFS multihash of the dict
         """
-        if self._multihash is not None:
-            old_data = IPFSDictChain(multihash=self._multihash).get()
-            if old_data != self.get():
-                self.previous_multihash = self._multihash
-
+        self.previous_multihash = self._multihash
         self._multihash = add_json(data=self.get())
         return self._multihash
 
