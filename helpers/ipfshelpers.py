@@ -31,7 +31,7 @@ def check_ipfs():
 class CID(object):
     def __init__(self, value):
         if not isinstance(value, str):
-            raise Exception('Value of a multihash must be a string, got %s instead' % (type(value)))
+            raise Exception('Value of a cid must be a string, got %s instead' % (type(value)))
 
         self.value = value if value.startswith('/ipfs/') else '/ipfs/%s' % value
 
@@ -97,7 +97,7 @@ def get_str(cid):
     try:
         string = IPFS_API.cat(cid=cid, timeout=1)
     except Exception as e:
-        LOG.error('Unable to retrieve string from IPFS with multihash %s: %s' % (cid, e))
+        LOG.error('Unable to retrieve string from IPFS with cid %s: %s' % (cid, e))
 
     if cid not in IPFS_CACHE:
         IPFS_CACHE[cid] = string
@@ -145,7 +145,7 @@ def get_zipped_dir(cid, target_dir):
     """
     Get a zipped directory from IPFS and extract it into the target directory
 
-    :param cid: The IPFS multihash of the directory in zipped format
+    :param cid: The IPFS cid of the directory in zipped format
     :param target_dir: The target directory where the contents of the zipfile will be extracted
     """
     IPFS_API.get(cid)
