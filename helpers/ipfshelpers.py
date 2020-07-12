@@ -38,6 +38,12 @@ class CID(object):
     def __str__(self):
         return self.value
 
+    def short(self):
+        return self.value[6:]
+
+    def long(self):
+        return self.value
+
 
 def add_json(data):
     global IPFS_API
