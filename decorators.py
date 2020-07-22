@@ -117,5 +117,3 @@ def log_runtime(f):
         return output
 
     return decorated_function
-
-# todo decorator to check ipfs node is connected
