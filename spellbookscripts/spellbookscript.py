@@ -36,6 +36,7 @@ class SpellbookScript(object):
 
         self.json = kwargs['json'] if 'json' in kwargs else None
         self.ipfs_hash = None
+        self.ipfs_object = kwargs['ipfs_object'] if 'ipfs_object' in kwargs else None
         self.text = None
 
         self.http_response = None
@@ -74,11 +75,11 @@ class SpellbookScript(object):
     def process_ipfs_hash(self, ipfs_hash):
         LOG.info('Retrieving IPFS object')
 
-        if self.data is not None:
-            LOG.info('Data given with request, uploading data to local IPFS node to check that hashes are equal')
-            local_ipfs_hash = add_json(data=self.data)
+        if self.ipfs_object is not None:
+            LOG.info('IPFS object given with request, uploading data to local IPFS node to check that hashes are equal')
+            local_ipfs_hash = add_json(data=self.ipfs_object)
             if ipfs_hash != local_ipfs_hash:
-                LOG.error('Supplied data does not correspond to the given IPFS hash: %s != %s' % (ipfs_hash, local_ipfs_hash))
+                LOG.error('Supplied object does not correspond to the given IPFS hash: %s != %s' % (ipfs_hash, local_ipfs_hash))
                 return
 
         try:
