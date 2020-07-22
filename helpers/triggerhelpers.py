@@ -216,7 +216,11 @@ def verify_signed_message(trigger_id, **data):
     if verify_message(address=data['address'], message=data['message'], signature=data['signature']) is True:
         if trigger.status == 'Active':
             LOG.info('Trigger %s received a verified signed message' % trigger_id)
-            trigger.process_message(address=data['address'], message=data['message'], signature=data['signature'], data=data['data'] if 'data' in data else None)
+            trigger.process_message(address=data['address'],
+                                    message=data['message'],
+                                    signature=data['signature'],
+                                    data=data['data'] if 'data' in data else None,
+                                    ipfs_object=data['ipfs_object'] if 'ipfs_object' in data else None)
             return trigger.activate()
     else:
         LOG.warning('Trigger %s received a bad signed message' % trigger_id)
