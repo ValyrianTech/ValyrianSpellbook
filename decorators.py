@@ -3,12 +3,14 @@
 
 import os
 import simplejson
+import time
 from bottle import request
 from configparser import ConfigParser
 from functools import wraps
 
 from authentication import check_authentication, AuthenticationStatus
 from data.data import set_explorer, clear_explorer, get_last_explorer
+from helpers.loghelpers import LOG
 
 
 CONFIGURATION_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "configuration", "spellbook.conf"))
@@ -99,3 +101,21 @@ def verify_config(section, option):
         return wrapper
 
     return decorated_function
+
+
+def log_runtime(f):
+    """
+    Decorator that logs the runtime of a script
+    """
+    def decorated_function(*args, **kwargs):
+        start_time = time.time()
+        output = f(*args, **kwargs)
+        end_time = time.time()
+
+        LOG.info('Script runtime: %s seconds' % (end_time - start_time))
+
+        return output
+
+    return decorated_function
+
+# todo decorator to check ipfs node is connected
