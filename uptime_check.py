@@ -11,8 +11,10 @@ from helpers.loghelpers import LOG, logs_dir
 from helpers.mailhelpers import sendmail
 from helpers.runcommandprocess import RunCommandProcess
 
+from helpers.ipfshelpers import add_str
 
-def uptime_check(email, reboot=False):
+
+def uptime_check(email, ipfs=False, reboot=False):
     LOG.info('Checking if spellbook server is still online')
 
     url = 'http://{host}:{port}/spellbook/ping'.format(host=get_host(), port=get_port())
@@ -48,6 +50,29 @@ def uptime_check(email, reboot=False):
     else:
         LOG.info('Server is online')
 
+    if ipfs is True:
+        try:
+            response = add_str('ping')
+        except Exception as ex:
+            LOG.error('IPFS node is offline: %s' % ex)
+            if email is not None:
+                variables = {'HOST': get_host()}
+                body_template = os.path.join('ipfs_offline')
+                success = sendmail(recipients=email,
+                                   subject='IPFS node @ %s is offline!' % get_host(),
+                                   body_template=body_template,
+                                   variables=variables)
+                if success is True:
+                    LOG.info('Email sent successfully')
+
+                    if reboot is True and platform.system() == 'Linux':
+                        LOG.info('Rebooting server because ipfs node is offline!')
+                        RunCommandProcess(command='sudo reboot').run()
+
+                else:
+                    LOG.error('Email to %s failed!' % email)
+
+
 
 def get_recent_spellbook_log():
     with open(os.path.join(logs_dir, 'spellbook.txt'), 'r') as input_file:
@@ -68,9 +93,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Uptime check command line interface',
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('email', help='Send and email to this address if the server is not online', type=str)
+    parser.add_argument('--ipfs', help='Also check if ipfs node is still online', action='store_true')
     parser.add_argument('--reboot', help='Immediately reboot the server when ping fails, only works on linux', action='store_true')
 
     # Parse arguments
     args = parser.parse_args()
 
-    uptime_check(email=args.email, reboot=args.reboot)
+    uptime_check(email=args.email, ipfs=args.ipfs, reboot=args.reboot)
