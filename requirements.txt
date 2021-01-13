@@ -6,7 +6,7 @@ requests==2.22.0
 deepdiff==4.0.9
 ecdsa==0.13.3
 simplejson==3.16.0
-ipfshttpclient==0.6.0.post1
+ipfshttpclient==0.7.0a1
 pycryptodome==3.9.3
 websocket_client==0.56.0
 websocket_client_py3==0.15.0
