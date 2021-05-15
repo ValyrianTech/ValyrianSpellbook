@@ -13,7 +13,10 @@ from helpers.jsonhelpers import save_to_json_file
 IPFS_API = None
 IPFS_CACHE = {}
 
-if get_enable_ipfs() is True:
+
+def connect_to_ipfs():
+    global IPFS_API
+
     # Check if IPFS node is running
     multi_address = '/ip4/{host}/tcp/{port}/http'.format(host=get_ipfs_api_host(), port=get_ipfs_api_port())
     LOG.info('Trying to connect with IPFS on %s' % multi_address)
@@ -25,6 +28,12 @@ if get_enable_ipfs() is True:
 
 
 def check_ipfs():
+    if IPFS_API is not None:
+        return True
+    else:
+        LOG.warn('Not connected to IPFS, trying to reconnect')
+        connect_to_ipfs()
+
     return IPFS_API is not None
 
 
@@ -355,3 +364,7 @@ class FileMetaData(IPFSDictChain):
         self.signed_message = None
 
         super(FileMetaData, self).__init__(cid=cid)
+
+
+if get_enable_ipfs() is True:
+    connect_to_ipfs()
