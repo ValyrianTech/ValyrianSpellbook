@@ -35,6 +35,19 @@ PROGRAM_DIR = os.path.abspath(os.path.dirname(__file__))
 os.chdir(PROGRAM_DIR)
 
 
+def enable_cors(fn):
+    def _enable_cors(*args, **kwargs):
+        # set CORS headers
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Credentials'] = True
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, OPTIONS, HEAD, authorization'
+        response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
+
+        return fn(*args, **kwargs)
+
+    return _enable_cors
+
+
 class SpellbookRESTAPI(Bottle):
     def __init__(self):
         super(SpellbookRESTAPI, self).__init__()
@@ -122,6 +135,7 @@ class SpellbookRESTAPI(Bottle):
 
         # Additional routes for Rest API endpoints
         self.route('/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.http_get_request)
+        self.route('/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='OPTIONS', callback=self.http_get_request)
         self.route('/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.http_post_request)
         self.route('/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.http_delete_request)
         self.route('/html/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.html_request)
@@ -487,10 +501,10 @@ class SpellbookRESTAPI(Bottle):
         return sign_message(**request.json)
 
     @staticmethod
+    @enable_cors
     @output_json
     def http_get_request(trigger_id):
         response.content_type = 'application/json'
-        response.headers.update({'Access-Control-Allow-Origin': '*'})
         data = request.json if request.json is not None else {}
 
         # Also add parameters passed via the query string to the data, if any parameters have the same name then the query string has priority
