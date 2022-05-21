@@ -490,6 +490,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     def http_get_request(trigger_id):
         response.content_type = 'application/json'
+        response.headers.update({'Access-Control-Allow-Origin': '*'})
         data = request.json if request.json is not None else {}
 
         # Also add parameters passed via the query string to the data, if any parameters have the same name then the query string has priority
