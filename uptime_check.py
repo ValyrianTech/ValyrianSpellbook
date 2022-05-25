@@ -14,10 +14,13 @@ from helpers.runcommandprocess import RunCommandProcess
 from helpers.ipfshelpers import add_str
 
 
-def uptime_check(email, ipfs=False, reboot=False):
+def uptime_check(email, ipfs=False, reboot=False, ssl=False):
     LOG.info('Checking if spellbook server is still online')
 
-    url = 'http://{host}:{port}/spellbook/ping'.format(host=get_host(), port=get_port())
+    if ssl is False:
+        url = 'http://{host}:{port}/spellbook/ping'.format(host=get_host(), port=get_port())
+    else:
+        url = 'https://{host}:{port}/spellbook/ping'.format(host=get_host(), port=get_port())
     try:
         r = requests.get(url=url)
         response = r.json()
@@ -95,8 +98,9 @@ if __name__ == "__main__":
     parser.add_argument('email', help='Send and email to this address if the server is not online', type=str)
     parser.add_argument('--ipfs', help='Also check if ipfs node is still online', action='store_true')
     parser.add_argument('--reboot', help='Immediately reboot the server when ping fails, only works on linux', action='store_true')
+    parser.add_argument('--ssl', help='This server is configured to use SSL', action='store_true')
 
     # Parse arguments
     args = parser.parse_args()
 
-    uptime_check(email=args.email, ipfs=args.ipfs, reboot=args.reboot)
+    uptime_check(email=args.email, ipfs=args.ipfs, reboot=args.reboot, ssl=args.ssl)
