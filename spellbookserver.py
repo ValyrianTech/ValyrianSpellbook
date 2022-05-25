@@ -63,8 +63,8 @@ class SSLWebServer(ServerAdapter):
         server = CherryPyWSGIServer((self.host, self.port), handler)
 
         server.ssl_adapter = BuiltinSSLAdapter(
-            certificate=r"/etc/letsencrypt/crs/0000_csr-certbot.pem",
-            private_key=r"/etc/letsencrypt/keys/0000_key-certbot.pem",
+            certificate="certificate.crt",
+            private_key="privateKey.key",
             # certificate_chain="intermediate_cert.crt"
         )
 
