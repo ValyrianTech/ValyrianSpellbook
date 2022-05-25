@@ -65,7 +65,7 @@ class SSLWebServer(ServerAdapter):
         server.ssl_adapter = BuiltinSSLAdapter(
             certificate="certificate.crt",
             private_key="privateKey.key",
-            # certificate_chain="intermediate_cert.crt"
+            certificate_chain="intermediate_cert.crt"
         )
 
         try:
