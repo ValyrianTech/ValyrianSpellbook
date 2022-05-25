@@ -14,3 +14,4 @@ mysql_connector_repackaged==0.3.1
 numpy==1.17.4
 python-bitcoinlib==0.10.2
 qrcode==6.1
+cheroot==8.6.0
