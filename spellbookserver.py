@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import argparse
 import logging
 import os
 import sys
@@ -10,7 +10,7 @@ from datetime import datetime
 from functools import wraps
 from logging.handlers import RotatingFileHandler
 
-from bottle import Bottle, request, response, static_file
+from bottle import Bottle, request, response, static_file, ServerAdapter, server_names
 
 from authentication import initialize_api_keys_file
 from data.data import get_explorers, get_explorer_config, save_explorer, delete_explorer
@@ -48,13 +48,45 @@ def enable_cors(fn):
     return _enable_cors
 
 
+class SSLWebServer(ServerAdapter):
+    """
+    CherryPy web server with SSL support.
+    """
+
+    def run(self, handler):
+        """
+        Runs a CherryPy Server using the SSL certificate.
+        """
+        from cheroot.wsgi import Server as CherryPyWSGIServer
+        from cheroot.ssl.builtin import BuiltinSSLAdapter
+
+        server = CherryPyWSGIServer((self.host, self.port), handler)
+
+        server.ssl_adapter = BuiltinSSLAdapter(
+            certificate="certificate.crt",
+            private_key="privateKey.key",
+            # certificate_chain="intermediate_cert.crt"
+        )
+
+        try:
+            server.start()
+        except Exception as ex:
+            LOG.error('Unable to start SSL server: %s' % ex)
+            server.stop()
+
+
+server_names['sslwebserver'] = SSLWebServer
+
+
 class SpellbookRESTAPI(Bottle):
-    def __init__(self):
+    def __init__(self, ssl=False):
         super(SpellbookRESTAPI, self).__init__()
 
         # Initialize variables
         self.host = get_host()
         self.port = get_port()
+
+        self.ssl = ssl
 
         # Log the requests to the REST API in a separate file by installing a custom LoggingPlugin
         self.install(self.log_to_logger)
@@ -165,7 +197,11 @@ class SpellbookRESTAPI(Bottle):
 
         try:
             # start the webserver for the REST API
-            self.run(host=self.host, port=self.port, debug=True)
+            if self.ssl is True:
+                self.run(host=self.host, port=self.port, debug=True, server='sslwebserver')
+            else:
+                self.run(host=self.host, port=self.port, debug=True)
+
         except Exception as ex:
             LOG.error('An exception occurred in the main loop: %s' % ex)
             error_traceback = traceback.format_exc()
@@ -632,4 +668,11 @@ class SpellbookRESTAPI(Bottle):
 
 
 if __name__ == "__main__":
-    SpellbookRESTAPI()
+    # Create main parser
+    parser = argparse.ArgumentParser(description='Bitcoin spellbookServer command line interface', formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('-s', '--ssl', help='Run spellbook server with SSL', action='store_true')
+
+    # Parse the command line arguments
+    args = parser.parse_args()
+
+    SpellbookRESTAPI(ssl=args.ssl)
