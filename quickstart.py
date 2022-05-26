@@ -132,6 +132,26 @@ if config.getboolean(section='IPFS', option='enable_ipfs') is True:
     gateway_port = input('Enter the port of the IPFS Gateway or press enter to keep the current value (%s) ' % current_port) or current_port
     config.set(section='IPFS', option='gateway_port', value=gateway_port)
 
+# SSL settings
+current_enable_ssl = config.get(section='SSL', option='enable_ssl')
+enable_ssl = input('Would you like to enable SSL? (current=%s): ' % current_enable_ssl) or current_enable_ssl
+enable_ssl = 'true' if enable_ssl in ['true', 'True', True, 'Yes' 'yes', 'y', 'Y'] else 'false'
+config.set(section='IPFS', option='enable_ipfs', value=enable_ssl)
+
+if config.getboolean(section='SSL', option='enable_ssl') is True:
+    current_certificate = config.get(section='SSL', option='certificate')
+    certificate = input('Enter the certificate filename or press enter to keep the current value (%s) ' % current_certificate) or current_certificate
+    config.set(section='SSL', option='certificate', value=certificate)
+
+    current_private_key = config.get(section='SSL', option='private_key')
+    private_key = input('Enter the private_key filename or press enter to keep the current value (%s) ' % current_private_key) or current_private_key
+    config.set(section='SSL', option='private_key', value=private_key)
+
+    current_certificate_chain = config.get(section='SSL', option='certificate_chain')
+    certificate_chain = input('Enter the certificate_chain filename or press enter to keep the current value (%s) ' % current_certificate_chain) or current_certificate_chain
+    config.set(section='SSL', option='certificate_chain', value=certificate_chain)
+
+
 with open(configuration_file, 'w') as output_file:
     config.write(output_file)
     print('spellbook.conf file updated')
