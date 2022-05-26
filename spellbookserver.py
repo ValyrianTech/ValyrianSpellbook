@@ -19,6 +19,7 @@ from data.data import transactions, balance, utxos
 from decorators import authentication_required, use_explorer, output_json
 from helpers.actionhelpers import get_actions, get_action_config, save_action, delete_action, run_action, get_reveal
 from helpers.configurationhelpers import get_host, get_port, get_notification_email, get_mail_on_exception
+from helpers.configurationhelpers import get_enable_ssl, get_ssl_certificate, get_ssl_private_key, get_ssl_certificate_chain
 from helpers.hotwallethelpers import get_hot_wallet
 from helpers.loghelpers import LOG, REQUESTS_LOG, get_logs
 from helpers.triggerhelpers import get_triggers, get_trigger_config, save_trigger, delete_trigger, activate_trigger, \
@@ -63,9 +64,9 @@ class SSLWebServer(ServerAdapter):
         server = CherryPyWSGIServer((self.host, self.port), handler)
 
         server.ssl_adapter = BuiltinSSLAdapter(
-            certificate="certificate.crt",
-            private_key="privateKey.key",
-            certificate_chain="intermediate_cert.crt"
+            certificate=get_ssl_certificate(),
+            private_key=get_ssl_private_key(),
+            certificate_chain=get_ssl_certificate_chain() if get_ssl_certificate_chain() != "" else None
         )
 
         try:
@@ -79,14 +80,12 @@ server_names['sslwebserver'] = SSLWebServer
 
 
 class SpellbookRESTAPI(Bottle):
-    def __init__(self, ssl=False):
+    def __init__(self):
         super(SpellbookRESTAPI, self).__init__()
 
         # Initialize variables
         self.host = get_host()
         self.port = get_port()
-
-        self.ssl = ssl
 
         # Log the requests to the REST API in a separate file by installing a custom LoggingPlugin
         self.install(self.log_to_logger)
@@ -197,7 +196,7 @@ class SpellbookRESTAPI(Bottle):
 
         try:
             # start the webserver for the REST API
-            if self.ssl is True:
+            if get_enable_ssl() is True:
                 self.run(host=self.host, port=self.port, debug=True, server='sslwebserver')
             else:
                 self.run(host=self.host, port=self.port, debug=True)
@@ -670,9 +669,9 @@ class SpellbookRESTAPI(Bottle):
 if __name__ == "__main__":
     # Create main parser
     parser = argparse.ArgumentParser(description='Bitcoin spellbookServer command line interface', formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('-s', '--ssl', help='Run spellbook server with SSL', action='store_true')
+    # parser.add_argument('-s', '--ssl', help='Run spellbook server with SSL', action='store_true')
 
     # Parse the command line arguments
     args = parser.parse_args()
 
-    SpellbookRESTAPI(ssl=args.ssl)
+    SpellbookRESTAPI()
