@@ -149,3 +149,11 @@ def get_ssl_private_key():
 def get_ssl_certificate_chain():
     return spellbook_config().get('SSL', 'certificate_chain')
 
+
+def get_spellbook_uri():
+    if get_enable_ssl() is True:
+        uri = 'https://{host}:{port}'.format(host=get_host(), port=get_port())
+    else:
+        uri = 'http://{host}:{port}'.format(host=get_host(), port=get_port())
+
+    return uri
