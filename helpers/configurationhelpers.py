@@ -128,3 +128,24 @@ def get_ipfs_gateway_port():
 @verify_config('APPS', 'app_data_dir')
 def get_app_data_dir():
     return spellbook_config().get('APPS', 'app_data_dir')
+
+
+@verify_config('SSL', 'enable_ssl')
+def get_enable_ssl():
+    return spellbook_config().getboolean('SSL', 'enable_ssl')
+
+
+@verify_config('SSL', 'certificate')
+def get_ssl_certificate():
+    return spellbook_config().get('SSL', 'certificate')
+
+
+@verify_config('SSL', 'private_key')
+def get_ssl_private_key():
+    return spellbook_config().get('SSL', 'private_key')
+
+
+@verify_config('SSL', 'certificate_chain')
+def get_ssl_certificate_chain():
+    return spellbook_config().get('SSL', 'certificate_chain')
+
