@@ -549,6 +549,7 @@ class SpellbookRESTAPI(Bottle):
         return http_get_request(trigger_id, **data)
 
     @staticmethod
+    @enable_cors
     @output_json
     def http_post_request(trigger_id):
         response.content_type = 'application/json'
