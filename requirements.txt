@@ -1,6 +1,6 @@
 mock==3.0.5
 pbkdf2==1.3
-bottle==0.12.19
+bottle==0.12.21
 pytest==5.2.3
 requests==2.22.0
 deepdiff==4.0.9
