@@ -5,6 +5,7 @@ import os
 import argparse
 import requests
 import platform
+import psutil
 
 from helpers.configurationhelpers import get_host, get_port
 from helpers.loghelpers import LOG, logs_dir
@@ -15,6 +16,8 @@ from helpers.ipfshelpers import add_str
 
 
 def uptime_check(email, ipfs=False, reboot=False, ssl=None):
+    LOG.info('CPU: %s%%' % psutil.cpu_percent())
+    LOG.info('RAM: %s' % str(psutil.virtual_memory()))
     LOG.info('Checking if spellbook server is still online')
 
     if ssl is None:
