@@ -25,7 +25,7 @@ def uptime_check(email, ipfs=False, reboot=False, ssl=None):
     else:
         url = 'https://{host}:{port}/spellbook/ping'.format(host=ssl, port=get_port())
     try:
-        r = requests.get(url=url)
+        r = requests.get(url=url, timeout=10)
         response = r.json()
     except Exception as ex:
         LOG.error('Unable to ping spellbook server: %s' % ex)
