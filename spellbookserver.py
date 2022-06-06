@@ -197,7 +197,7 @@ class SpellbookRESTAPI(Bottle):
         try:
             # start the webserver for the REST API
             if get_enable_ssl() is True:
-                self.run(host=self.host, port=self.port, debug=True, server='sslwebserver')
+                self.run(host=self.host, port=self.port, debug=False, server='sslwebserver')
             else:
                 self.run(host=self.host, port=self.port, debug=True)
 
