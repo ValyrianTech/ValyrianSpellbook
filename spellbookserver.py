@@ -197,9 +197,9 @@ class SpellbookRESTAPI(Bottle):
         try:
             # start the webserver for the REST API
             if get_enable_ssl() is True:
-                self.run(host=self.host, port=self.port, debug=False, server='sslwebserver', reloader=True)
+                self.run(host=self.host, port=self.port, debug=False, server='sslwebserver')
             else:
-                self.run(host=self.host, port=self.port, debug=True, server='cheroot', reloader=True)
+                self.run(host=self.host, port=self.port, debug=True, server='cheroot')
 
         except Exception as ex:
             LOG.error('An exception occurred in the main loop: %s' % ex)
@@ -291,6 +291,7 @@ class SpellbookRESTAPI(Bottle):
     @staticmethod
     @output_json
     def ping():
+        LOG.info('Pong')
         response.content_type = 'application/json'
         return {'success': True}
 
