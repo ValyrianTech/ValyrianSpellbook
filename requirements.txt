@@ -6,13 +6,13 @@ requests==2.22.0
 deepdiff==4.0.9
 ecdsa==0.13.3
 simplejson==3.16.0
-ipfshttpclient==0.7.0a1
+ipfshttpclient==0.8.0a2
 pycryptodome==3.9.3
 websocket_client==0.56.0
 websocket_client_py3==0.15.0
 mysql_connector_repackaged==0.3.1
-numpy==1.17.4
-python-bitcoinlib==0.10.2
+numpy==1.22.4
+python-bitcoinlib==0.11.0
 qrcode==6.1
 cheroot==8.6.0
 psutil==5.9.1
