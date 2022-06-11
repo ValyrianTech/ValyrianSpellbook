@@ -10,7 +10,7 @@
 cd /
 sudo apt-get update -y
 sudo apt-get upgrade -y
-sudo apt-get install git python3.7 python3.7-dev python3-pip -y
+sudo apt-get install git python3.10 python3.10-dev python3-pip -y
 
 mkdir spellbook_wallet
 mkdir spellbook_data
@@ -18,9 +18,9 @@ mkdir spellbook_data
 git clone https://github.com/ValyrianTech/BitcoinSpellbook.git spellbook
 cd /spellbook
 
-python3.7 -m pip install -r requirements.txt
+python3.10 -m pip install -r requirements.txt
 
 # add the spellbook to the pythonpath so it can correctly import modules
 export PYTHONPATH=$PYTHONPATH:/spellbook
 
-python3.7 ./quickstart.py
+python3.10 ./quickstart.py
