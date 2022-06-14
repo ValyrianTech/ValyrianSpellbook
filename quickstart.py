@@ -136,7 +136,7 @@ if config.getboolean(section='IPFS', option='enable_ipfs') is True:
 current_enable_ssl = config.get(section='SSL', option='enable_ssl')
 enable_ssl = input('Would you like to enable SSL? (current=%s): ' % current_enable_ssl) or current_enable_ssl
 enable_ssl = 'true' if enable_ssl in ['true', 'True', True, 'Yes' 'yes', 'y', 'Y'] else 'false'
-config.set(section='IPFS', option='enable_ipfs', value=enable_ssl)
+config.set(section='SSL', option='enable_ssl', value=enable_ssl)
 
 if config.getboolean(section='SSL', option='enable_ssl') is True:
     current_certificate = config.get(section='SSL', option='certificate')
@@ -151,6 +151,30 @@ if config.getboolean(section='SSL', option='enable_ssl') is True:
     certificate_chain = input('Enter the certificate_chain filename or press enter to keep the current value (%s) ' % current_certificate_chain) or current_certificate_chain
     config.set(section='SSL', option='certificate_chain', value=certificate_chain)
 
+
+# Twitter settings
+current_enable_twitter = config.get(section='Twitter', option='enable_twitter')
+print('\nNote: To use Twitter you need to enable developer access on you twitter account, to actually post tweets you also need to apply for elevated access to the Twitter API.')
+enable_twitter = input('Would you like to enable Twitter? (current=%s): ' % current_enable_twitter) or current_enable_twitter
+enable_twitter = 'true' if enable_twitter in ['true', 'True', True, 'Yes' 'yes', 'y', 'Y'] else 'false'
+config.set(section='Twitter', option='enable_twitter', value=enable_twitter)
+
+if config.getboolean(section='Twitter', option='enable_twitter') is True:
+    current_consumer_key = config.get(section='Twitter', option='consumer_key')
+    consumer_key = input('Enter the consumer key or press enter to keep the current value (%s) ' % current_consumer_key) or current_consumer_key
+    config.set(section='Twitter', option='consumer_key', value=consumer_key)
+
+    current_consumer_secret = config.get(section='Twitter', option='consumer_secret')
+    consumer_secret = input('Enter the consumer secret or press enter to keep the current value (%s) ' % current_consumer_secret) or current_consumer_secret
+    config.set(section='Twitter', option='consumer_secret', value=consumer_secret)
+
+    current_access_token = config.get(section='Twitter', option='access_token')
+    access_token = input('Enter the access token or press enter to keep the current value (%s) ' % current_access_token) or current_access_token
+    config.set(section='Twitter', option='access_token', value=access_token)
+
+    current_access_token_secret = config.get(section='Twitter', option='access_token_secret')
+    access_token_secret = input('Enter the access token secret or press enter to keep the current value (%s) ' % current_access_token_secret) or current_access_token_secret
+    config.set(section='Twitter', option='access_token_secret', value=access_token_secret)
 
 with open(configuration_file, 'w') as output_file:
     config.write(output_file)

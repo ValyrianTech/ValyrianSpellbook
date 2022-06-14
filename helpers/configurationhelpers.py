@@ -157,3 +157,28 @@ def get_spellbook_uri():
         uri = 'http://{host}:{port}'.format(host=get_host(), port=get_port())
 
     return uri
+
+
+@verify_config('Twitter', 'enable_twitter')
+def get_enable_twitter():
+    return spellbook_config().getboolean('Twitter', 'enable_twitter')
+
+
+@verify_config('Twitter', 'consumer_key')
+def get_twitter_consumer_key():
+    return spellbook_config().get('Twitter', 'consumer_key')
+
+
+@verify_config('Twitter', 'consumer_secret')
+def get_twitter_consumer_secret():
+    return spellbook_config().get('Twitter', 'consumer_secret')
+
+
+@verify_config('Twitter', 'access_token')
+def get_twitter_access_token():
+    return spellbook_config().get('Twitter', 'access_token')
+
+
+@verify_config('Twitter', 'access_token_secret')
+def get_twitter_access_token_secret():
+    return spellbook_config().get('Twitter', 'access_token_secret')
