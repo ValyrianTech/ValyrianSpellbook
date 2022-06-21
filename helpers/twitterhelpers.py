@@ -1,6 +1,8 @@
 import tweepy
 from helpers.configurationhelpers import get_twitter_consumer_key, get_twitter_consumer_secret, get_twitter_access_token, get_twitter_access_token_secret
 
+import time
+
 # For Twitter API to work, you need to enable developer portal on your twitter account
 # go to https://developer.twitter.com/
 # To post tweets and follow or unfollow, you also need to apply for elevated access to the API
@@ -35,3 +37,23 @@ def post_tweet(text):
 
     if api is not None:
         api.update_status(status=text)
+
+
+def get_tweets(searchtext, limit=100):
+    client = tweepy.Client("AAAAAAAAAAAAAAAAAAAAAMSSdgEAAAAAvv5dDJ9usoBf0OELOGfTNWBvaSo%3DTcZhCoaeccrh3Ur2QzWqbMI2Jg23NZMRyiY60zKnn0X8VRMbWp")
+
+    tweets = []
+    for i, tweet in enumerate(tweepy.Paginator(client.search_recent_tweets, searchtext, tweet_fields=['author_id', 'public_metrics'], user_fields=['public_metrics'], max_results=100).flatten(limit=limit)):
+        tweets.append(tweet)
+
+    return tweets
+
+
+def get_users(ids):
+    client = tweepy.Client("AAAAAAAAAAAAAAAAAAAAAMSSdgEAAAAAvv5dDJ9usoBf0OELOGfTNWBvaSo%3DTcZhCoaeccrh3Ur2QzWqbMI2Jg23NZMRyiY60zKnn0X8VRMbWp")
+
+    if 1 <= len(ids) <= 100:
+        response = client.get_users(ids=ids, user_fields=['public_metrics'])
+        return response.data
+
+    return []
