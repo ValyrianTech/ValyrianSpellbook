@@ -1,5 +1,7 @@
 import tweepy
 import random
+import requests
+import os
 
 from helpers.configurationhelpers import get_twitter_consumer_key, get_twitter_consumer_secret, get_twitter_access_token, get_twitter_access_token_secret
 
@@ -34,9 +36,30 @@ def get_twitter_api():
     return api
 
 
-def post_tweet(text):
+def update_status(text, url=None):
     if api is not None:
-        api.update_status(status=text)
+        print('\nPosting new tweet:')
+        print('text: %s' % text)
+        print('url: %s' % url)
+
+        api.update_status(status=text, attachment_url=url)
+
+
+def update_status_with_media(url, message):
+    if api is None:
+        return
+
+    filename = 'temp.jpg'
+    request = requests.get(url, stream=True)
+    if request.status_code == 200:
+        with open(filename, 'wb') as image:
+            for chunk in request:
+                image.write(chunk)
+
+        api.update_status_with_media(filename=filename, status=message)
+        os.remove(filename)
+    else:
+        print("Unable to download media")
 
 
 def get_tweets(searchtext, limit=100):
