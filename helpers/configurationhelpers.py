@@ -182,3 +182,8 @@ def get_twitter_access_token():
 @verify_config('Twitter', 'access_token_secret')
 def get_twitter_access_token_secret():
     return spellbook_config().get('Twitter', 'access_token_secret')
+
+
+@verify_config('Twitter', 'bearer_token')
+def get_twitter_bearer_token():
+    return spellbook_config().get('Twitter', 'bearer_token')
