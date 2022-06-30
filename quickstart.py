@@ -176,6 +176,10 @@ if config.getboolean(section='Twitter', option='enable_twitter') is True:
     access_token_secret = input('Enter the access token secret or press enter to keep the current value (%s) ' % current_access_token_secret) or current_access_token_secret
     config.set(section='Twitter', option='access_token_secret', value=access_token_secret)
 
+    current_bearer_token = config.get(section='Twitter', option='bearer_token')
+    bearer_token = input('Enter the bearer token or press enter to keep the current value (%s) ' % current_bearer_token) or current_bearer_token
+    config.set(section='Twitter', option='bearer_token', value=bearer_token)
+
 with open(configuration_file, 'w') as output_file:
     config.write(output_file)
     print('spellbook.conf file updated')
