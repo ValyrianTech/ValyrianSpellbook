@@ -10,7 +10,7 @@ CONFIGURATION_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "..
 
 def spellbook_config():
     # Read the spellbook configuration file
-    config = ConfigParser()
+    config = ConfigParser(interpolation=None)
     config.read(CONFIGURATION_FILE)
     return config
 
