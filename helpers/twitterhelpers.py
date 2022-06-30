@@ -63,7 +63,7 @@ def update_status_with_media(url, message):
 
 
 def get_tweets(searchtext, limit=100):
-    client = tweepy.Client(get_twitter_bearer_token())
+    client = tweepy.Client(bearer_token=get_twitter_bearer_token())
 
     tweets = []
     for i, tweet in enumerate(tweepy.Paginator(client.search_recent_tweets, searchtext, tweet_fields=['author_id', 'public_metrics', 'lang', 'attachments'], user_fields=['public_metrics'], max_results=100).flatten(limit=limit)):
@@ -73,7 +73,7 @@ def get_tweets(searchtext, limit=100):
 
 
 def get_users(ids):
-    client = tweepy.Client(get_twitter_bearer_token())
+    client = tweepy.Client(bearer_token=get_twitter_bearer_token())
 
     if 1 <= len(ids) <= 100:
         response = client.get_users(ids=ids, user_fields=['public_metrics'])
