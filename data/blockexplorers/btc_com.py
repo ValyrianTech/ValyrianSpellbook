@@ -126,7 +126,7 @@ class BTCComAPI(ExplorerAPI):
                 tx_input.address = item['prev_addresses'][0] if len(item['prev_addresses']) > 0 else None
                 tx_input.value = item['prev_value']
                 tx_input.txid = item['prev_tx_hash']
-                tx_input.n = item['prev_position'] if item['prev_position'] is not -1 else None
+                tx_input.n = item['prev_position'] if item['prev_position'] != -1 else None
                 tx_input.script = item['script_hex']
                 tx_input.sequence = item['sequence']
 
@@ -146,7 +146,7 @@ class BTCComAPI(ExplorerAPI):
                 tx.outputs.append(tx_output)
 
             # Only append confirmed transactions
-            if tx.block_height is not -1:
+            if tx.block_height != -1:
                 txs.append(tx.to_dict(address))
             else:
                 # subtract 1 from total txs because it is unconfirmed
@@ -202,7 +202,7 @@ class BTCComAPI(ExplorerAPI):
             tx_input.address = item['prev_addresses'][0] if len(item['prev_addresses']) > 0 else None
             tx_input.value = item['prev_value']
             tx_input.txid = item['prev_tx_hash']
-            tx_input.n = item['prev_position'] if item['prev_position'] is not -1 else None
+            tx_input.n = item['prev_position'] if item['prev_position'] != -1 else None
             tx_input.script = item['script_hex']
             tx_input.sequence = item['sequence']
 

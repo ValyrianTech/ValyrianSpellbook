@@ -118,7 +118,7 @@ class InsightAPI(ExplorerAPI):
                 tx.outputs.append(tx_output)
 
             # Only add confirmed txs
-            if tx.block_height is not -1:
+            if tx.block_height != -1:
                 txs.insert(0, tx.to_dict(address))
             else:
                 # subtract 1 from total txs because it is unconfirmed
