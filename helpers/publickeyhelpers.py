@@ -3,7 +3,7 @@
 from .py3specials import *
 
 from .jacobianhelpers import fast_add, A, B, P
-from py_ripemd160 import ripemd160
+from .py_ripemd160 import ripemd160
 
 
 def get_pubkey_format(pub):
