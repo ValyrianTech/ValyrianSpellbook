@@ -106,7 +106,7 @@ def pubkey_to_address(pubkey, magicbyte=0):
 def bin_hash160(string):
     intermed = hashlib.sha256(string).digest()
     try:
-        digest = ripemd160(hashlib.sha256(intermed).digest())
+        digest = ripemd160(intermed)
     except Exception as ex:
         raise Exception('Unable to get ripemd160 digest: %s' % ex)
     return digest
