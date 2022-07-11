@@ -54,7 +54,7 @@ def on_message(ws, message):
     for tx_input in transaction['payload']['inputs']:
         for input_address in tx_input['addresses']:
             # add input_address if we are monitoring sending addresses
-            if args.send is True and input_address is not '':
+            if args.send is True and input_address != '':
                 address_list.append(input_address)
 
             LISTENER_LOG.info('\t\t%s -> %s' % (input_address, tx_input['value_int']))
@@ -72,7 +72,7 @@ def on_message(ws, message):
     for tx_output in transaction['payload']['outputs']:
         for output_address in tx_output['addresses']:
             # Add output_address to list if we are monitoring receiving addresses
-            if args.receive is True and output_address is not '':
+            if args.receive is True and output_address != '':
                 address_list.append(output_address)
 
             LISTENER_LOG.info('\t\t%s -> %s' % (output_address, tx_output['value_int']))
@@ -230,6 +230,8 @@ if __name__ == "__main__":
         LISTENER_LOG.info('Watchlist:')
         LISTENER_LOG.info(WATCHLIST)
 
+
+    # todo smarbit.com.au is offline, find new websocket provider
     # Set the url for testnet or mainnet
     if args.testnet is True:
         url = "wss://testnet-ws.smartbit.com.au/v1/blockchain"
