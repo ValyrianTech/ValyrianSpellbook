@@ -45,45 +45,47 @@ EXIT_ON_TIMEOUT = None
 def on_message(ws, message):
     event_found = False
     transaction = simplejson.loads(message)
-    if transaction['type'] != 'new-transaction':
+    if transaction['type'] != 'new-transactions':
         return
 
     address_list = []
-    LISTENER_LOG.info('New transaction: %s' % transaction['payload']['txid'])
+    LISTENER_LOG.info('New transaction: %s' % transaction['data']['txid'])
     LISTENER_LOG.info('\tFrom: ')
-    for tx_input in transaction['payload']['inputs']:
-        for input_address in tx_input['addresses']:
-            # add input_address if we are monitoring sending addresses
-            if args.send is True and input_address != '':
-                address_list.append(input_address)
+    for tx_input in transaction['data']['inputs']:
+        input_address = tx_input['address']
 
-            LISTENER_LOG.info('\t\t%s -> %s' % (input_address, tx_input['value_int']))
-            if input_address in WATCHLIST and 'SEND' in WATCHLIST[input_address]:
+        # add input_address if we are monitoring sending addresses
+        if args.send is True and input_address != '':
+            address_list.append(input_address)
 
-                event_found = True
-                command = WATCHLIST[input_address]['SEND']
-                command = command.replace('#txid#', transaction['payload']['txid'])
-                LISTENER_LOG.info('Executing command: %s' % command)
-                run_command_process = RunCommandProcess(command=command)
-                run_command_process.start()
+        LISTENER_LOG.info('\t\t%s -> %s' % (input_address, tx_input['amount']))
+        if input_address in WATCHLIST and 'SEND' in WATCHLIST[input_address]:
+
+            event_found = True
+            command = WATCHLIST[input_address]['SEND']
+            command = command.replace('#txid#', transaction['data']['txid'])
+            LISTENER_LOG.info('Executing command: %s' % command)
+            run_command_process = RunCommandProcess(command=command)
+            run_command_process.start()
 
     LISTENER_LOG.info('\tTo: ')
 
-    for tx_output in transaction['payload']['outputs']:
-        for output_address in tx_output['addresses']:
-            # Add output_address to list if we are monitoring receiving addresses
-            if args.receive is True and output_address != '':
-                address_list.append(output_address)
+    for tx_output in transaction['data']['outputs']:
+        output_address = tx_output['address']
 
-            LISTENER_LOG.info('\t\t%s -> %s' % (output_address, tx_output['value_int']))
-            if output_address in WATCHLIST and 'RECEIVE' in WATCHLIST[output_address]:
+        # Add output_address to list if we are monitoring receiving addresses
+        if args.receive is True and output_address != '':
+            address_list.append(output_address)
 
-                event_found = True
-                command = WATCHLIST[output_address]['RECEIVE']
-                command = command.replace('#txid#', transaction['payload']['txid'])
-                LISTENER_LOG.info('Executing command: %s' % command)
-                run_command_process = RunCommandProcess(command=command)
-                run_command_process.start()
+        LISTENER_LOG.info('\t\t%s -> %s' % (output_address, tx_output['amount']))
+        if output_address in WATCHLIST and 'RECEIVE' in WATCHLIST[output_address]:
+
+            event_found = True
+            command = WATCHLIST[output_address]['RECEIVE']
+            command = command.replace('#txid#', transaction['data']['txid'])
+            LISTENER_LOG.info('Executing command: %s' % command)
+            run_command_process = RunCommandProcess(command=command)
+            run_command_process.start()
 
     # if DATABASE is not None:
     #     sql_query = """SELECT Address FROM Addresses
@@ -106,12 +108,12 @@ def on_message(ws, message):
 
     if EXIT_ON_EVENT is True and event_found is True:
         LISTENER_LOG.info('Event found, exiting now')
-        ws.send('{"type":"new-transaction", "unsubscribe": true}')
+        ws.send('{"type":"new-transactions", "unsubscribe": true}')
         sys.exit()
 
     if EXIT_ON_TIMEOUT is not None and int(time.time()) >= EXIT_ON_TIMEOUT:
         LISTENER_LOG.info('Timeout occurred, exiting now')
-        ws.send('{"type":"new-transaction", "unsubscribe": true}')
+        ws.send('{"type":"new-transactions", "unsubscribe": true}')
         sys.exit()
 
 
@@ -126,7 +128,11 @@ def on_close(ws):
 def on_open(ws):
     LISTENER_LOG.info("### websocket opened ###")
     LISTENER_LOG.info("Subscribing to new transactions")
-    ws.send('{"type":"new-transaction"}')
+    if args.testnet is True:
+        ws.send('{"type":"new-transactions", "network":"BTCTEST"}')
+    else:
+        ws.send('{"type":"new-transactions", "network":"BTC"}')
+
 
 
 if __name__ == "__main__":
@@ -230,13 +236,7 @@ if __name__ == "__main__":
         LISTENER_LOG.info('Watchlist:')
         LISTENER_LOG.info(WATCHLIST)
 
-
-    # todo smarbit.com.au is offline, find new websocket provider
-    # Set the url for testnet or mainnet
-    if args.testnet is True:
-        url = "wss://testnet-ws.smartbit.com.au/v1/blockchain"
-    else:
-        url = "wss://ws.smartbit.com.au/v1/blockchain"
+    url = "wss://ws.block.io"
 
     # Create the websocket
     # websocket.enableTrace(True)
