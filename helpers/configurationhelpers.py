@@ -35,6 +35,11 @@ def get_mail_on_exception():
     return spellbook_config().getboolean('RESTAPI', 'mail_on_exception')
 
 
+@verify_config('RESTAPI', 'python_exe')
+def get_python_exe():
+    return spellbook_config().get('RESTAPI', 'python_exe')
+
+
 @verify_config('Authentication', 'key')
 def get_key():
     return spellbook_config().get('Authentication', 'key')
