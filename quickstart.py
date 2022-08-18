@@ -33,6 +33,10 @@ current_mail_on_exception = config.get(section='RESTAPI', option='mail_on_except
 mail_on_exception = input('Send email to notification email address when exceptions occur (%s) ' % current_mail_on_exception) or current_mail_on_exception
 config.set(section='RESTAPI', option='mail_on_exception', value=mail_on_exception)
 
+current_python_exe = config.get(section='RESTAPI', option='python_exe', fallback='python3.10')
+python_exe = input('Enter the python exe to use (%s) ' % current_python_exe) or current_python_exe
+config.set(section='RESTAPI', option='python_exe', value=python_exe)
+
 # Authentication settings
 api_keys_file = os.path.join(PROGRAM_DIR, 'json', 'private', 'api_keys.json')
 if not os.path.isfile(api_keys_file):
