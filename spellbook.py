@@ -11,7 +11,7 @@ import simplejson
 
 import texts
 from authentication import signature
-from helpers.configurationhelpers import get_host, get_port, get_key, get_secret
+from helpers.configurationhelpers import get_host, get_port, get_key, get_secret, get_spellbook_uri
 from validators.validators import valid_distribution
 
 # Make sure we are in the correct working directory
@@ -531,12 +531,12 @@ def add_authentication_headers(headers=None, data=None):
 
 
 def get_explorers():
-    url = 'http://{host}:{port}/spellbook/explorers'.format(host=host, port=port)
+    url = '{spellbook_uri}/spellbook/explorers'.format(spellbook_uri=get_spellbook_uri())
     do_get_request(url)
 
 
 def get_explorer_config():
-    url = 'http://{host}:{port}/spellbook/explorers/{explorer_id}'.format(host=host, port=port, explorer_id=args.name)
+    url = '{spellbook_uri}/spellbook/explorers/{explorer_id}'.format(spellbook_uri=get_spellbook_uri(), explorer_id=args.name)
     do_get_request(url=url, authenticate=True)
 
 
@@ -547,49 +547,49 @@ def save_explorer():
             'priority': args.priority,
             'testnet': args.testnet}
 
-    url = 'http://{host}:{port}/spellbook/explorers/{explorer_id}'.format(host=host, port=port, explorer_id=args.name)
+    url = '{spellbook_uri}/spellbook/explorers/{explorer_id}'.format(spellbook_uri=get_spellbook_uri(), explorer_id=args.name)
     do_post_request(url=url, authenticate=True, data=data)
 
 
 def delete_explorer():
-    url = 'http://{host}:{port}/spellbook/explorers/{explorer_id}'.format(host=host, port=port, explorer_id=args.name)
+    url = '{spellbook_uri}/spellbook/explorers/{explorer_id}'.format(spellbook_uri=get_spellbook_uri(), explorer_id=args.name)
     do_delete_request(url=url, authenticate=True)
 
 # ----------------------------------------------------------------------------------------------------------------
 
 
 def get_latest_block():
-    url = 'http://{host}:{port}/spellbook/blocks/latest'.format(host=host, port=port)
+    url = '{spellbook_uri}/spellbook/blocks/latest'.format(spellbook_uri=get_spellbook_uri())
     do_get_request(url=url)
 
 
 def get_block():
-    url = 'http://{host}:{port}/spellbook/blocks/{id}'.format(host=host, port=port, id=args.id)
+    url = '{spellbook_uri}/spellbook/blocks/{id}'.format(spellbook_uri=get_spellbook_uri(), id=args.id)
     do_get_request(url=url)
 
 
 def get_prime_input_address():
-    url = 'http://{host}:{port}/spellbook/transactions/{txid}/prime_input'.format(host=host, port=port, txid=args.txid)
+    url = '{spellbook_uri}/spellbook/transactions/{txid}/prime_input'.format(spellbook_uri=get_spellbook_uri(), txid=args.txid)
     do_get_request(url=url)
 
 
 def get_transaction():
-    url = 'http://{host}:{port}/spellbook/transactions/{txid}'.format(host=host, port=port, txid=args.txid)
+    url = '{spellbook_uri}/spellbook/transactions/{txid}'.format(spellbook_uri=get_spellbook_uri(), txid=args.txid)
     do_get_request(url=url)
 
 
 def get_transactions():
-    url = 'http://{host}:{port}/spellbook/addresses/{address}/transactions'.format(host=host, port=port, address=args.address)
+    url = '{spellbook_uri}/spellbook/addresses/{address}/transactions'.format(spellbook_uri=get_spellbook_uri(), address=args.address)
     do_get_request(url=url)
 
 
 def get_balance():
-    url = 'http://{host}:{port}/spellbook/addresses/{address}/balance'.format(host=host, port=port, address=args.address)
+    url = '{spellbook_uri}/spellbook/addresses/{address}/balance'.format(spellbook_uri=get_spellbook_uri(), address=args.address)
     do_get_request(url=url)
 
 
 def get_utxos():
-    url = 'http://{host}:{port}/spellbook/addresses/{address}/utxos?confirmations={confirmations}'.format(host=host,
+    url = '{spellbook_uri}/spellbook/addresses/{address}/utxos?confirmations={confirmations}'.format(host=host,
                                                                                                           port=port,
                                                                                                           address=args.address,
                                                                                                           confirmations=args.confirmations)
@@ -600,19 +600,19 @@ def get_utxos():
 
 def get_sil():
     data = {'block_height': args.block_height}
-    url = 'http://{host}:{port}/spellbook/addresses/{address}/SIL'.format(host=host, port=port, address=args.address)
+    url = '{spellbook_uri}/spellbook/addresses/{address}/SIL'.format(spellbook_uri=get_spellbook_uri(), address=args.address)
     do_get_request(url=url, data=data)
 
 
 def get_profile():
     data = {'block_height': args.block_height}
-    url = 'http://{host}:{port}/spellbook/addresses/{address}/profile'.format(host=host, port=port, address=args.address)
+    url = '{spellbook_uri}/spellbook/addresses/{address}/profile'.format(spellbook_uri=get_spellbook_uri(), address=args.address)
     do_get_request(url=url, data=data)
 
 
 def get_sul():
     data = {'confirmations': args.confirmations}
-    url = 'http://{host}:{port}/spellbook/addresses/{address}/SUL'.format(host=host, port=port, address=args.address)
+    url = '{spellbook_uri}/spellbook/addresses/{address}/SUL'.format(spellbook_uri=get_spellbook_uri(), address=args.address)
     do_get_request(url=url, data=data)
 
 # ----------------------------------------------------------------------------------------------------------------
@@ -621,28 +621,28 @@ def get_sul():
 def get_lal():
     data = {'block_height': args.block_height,
             'xpub': args.xpub}
-    url = 'http://{host}:{port}/spellbook/addresses/{address}/LAL'.format(host=host, port=port, address=args.address)
+    url = '{spellbook_uri}/spellbook/addresses/{address}/LAL'.format(spellbook_uri=get_spellbook_uri(), address=args.address)
     do_get_request(url=url, data=data)
 
 
 def get_lbl():
     data = {'block_height': args.block_height,
             'xpub': args.xpub}
-    url = 'http://{host}:{port}/spellbook/addresses/{address}/LBL'.format(host=host, port=port, address=args.address)
+    url = '{spellbook_uri}/spellbook/addresses/{address}/LBL'.format(spellbook_uri=get_spellbook_uri(), address=args.address)
     do_get_request(url=url, data=data)
 
 
 def get_lrl():
     data = {'block_height': args.block_height,
             'xpub': args.xpub}
-    url = 'http://{host}:{port}/spellbook/addresses/{address}/LRL'.format(host=host, port=port, address=args.address)
+    url = '{spellbook_uri}/spellbook/addresses/{address}/LRL'.format(spellbook_uri=get_spellbook_uri(), address=args.address)
     do_get_request(url=url, data=data)
 
 
 def get_lsl():
     data = {'block_height': args.block_height,
             'xpub': args.xpub}
-    url = 'http://{host}:{port}/spellbook/addresses/{address}/LSL'.format(host=host, port=port, address=args.address)
+    url = '{spellbook_uri}/spellbook/addresses/{address}/LSL'.format(spellbook_uri=get_spellbook_uri(), address=args.address)
     do_get_request(url=url, data=data)
 
 # ----------------------------------------------------------------------------------------------------------------
@@ -652,7 +652,7 @@ def get_random_address():
     data = {'rng_block_height': args.rng_block_height,
             'sil_block_height': args.block_height,
             'xpub': args.xpub}
-    url = 'http://{host}:{port}/spellbook/addresses/{address}/random/{source}'.format(host=host, port=port,
+    url = '{spellbook_uri}/spellbook/addresses/{address}/random/{source}'.format(spellbook_uri=get_spellbook_uri(),
                                                                                       address=args.address,
                                                                                       source=args.source)
     do_get_request(url=url, data=data)
@@ -663,12 +663,12 @@ def get_random_address():
 
 
 def get_triggers():
-    url = 'http://{host}:{port}/spellbook/triggers'.format(host=host, port=port)
+    url = '{spellbook_uri}/spellbook/triggers'.format(spellbook_uri=get_spellbook_uri())
     do_get_request(url=url)
 
 
 def get_trigger():
-    url = 'http://{host}:{port}/spellbook/triggers/{trigger_id}'.format(host=host, port=port, trigger_id=args.trigger_id)
+    url = '{spellbook_uri}/spellbook/triggers/{trigger_id}'.format(spellbook_uri=get_spellbook_uri(), trigger_id=args.trigger_id)
     do_get_request(url=url, authenticate=True)
 
 
@@ -746,17 +746,17 @@ def save_trigger():
     if args.actions is not None:
         data['actions'] = args.actions
 
-    url = 'http://{host}:{port}/spellbook/triggers/{trigger_id}'.format(host=host, port=port, trigger_id=args.trigger_id)
+    url = '{spellbook_uri}/spellbook/triggers/{trigger_id}'.format(spellbook_uri=get_spellbook_uri(), trigger_id=args.trigger_id)
     do_post_request(url=url, authenticate=True, data=data)
 
 
 def delete_trigger():
-    url = 'http://{host}:{port}/spellbook/triggers/{trigger_id}'.format(host=host, port=port, trigger_id=args.trigger_id)
+    url = '{spellbook_uri}/spellbook/triggers/{trigger_id}'.format(spellbook_uri=get_spellbook_uri(), trigger_id=args.trigger_id)
     do_delete_request(url=url, authenticate=True)
 
 
 def activate_trigger():
-    url = 'http://{host}:{port}/spellbook/triggers/{trigger_id}/activate'.format(host=host, port=port, trigger_id=args.trigger_id)
+    url = '{spellbook_uri}/spellbook/triggers/{trigger_id}/activate'.format(spellbook_uri=get_spellbook_uri(), trigger_id=args.trigger_id)
     do_get_request(url=url, authenticate=True)
 
 
@@ -775,7 +775,7 @@ def send_signed_message():
     if args.signature is not None:
         data['signature'] = args.signature
 
-    url = 'http://{host}:{port}/spellbook/triggers/{trigger_id}/message'.format(host=host, port=port, trigger_id=args.trigger_id)
+    url = '{spellbook_uri}/spellbook/triggers/{trigger_id}/message'.format(spellbook_uri=get_spellbook_uri(), trigger_id=args.trigger_id)
     do_post_request(url=url, data=data)
 
 
@@ -796,15 +796,15 @@ def sign_message():
         print('Message is to long: maximum 255 characters!')
         return
 
-    url = 'http://{host}:{port}/api/sign_message'.format(host=host, port=port)
+    url = '{spellbook_uri}/api/sign_message'.format(spellbook_uri=get_spellbook_uri())
     do_post_request(url=url, data=data, authenticate=True)
 
 
 def check_triggers():
     if args.trigger_id is not None:
-        url = 'http://{host}:{port}/spellbook/triggers/{trigger_id}/check'.format(host=host, port=port, trigger_id=args.trigger_id)
+        url = '{spellbook_uri}/spellbook/triggers/{trigger_id}/check'.format(spellbook_uri=get_spellbook_uri(), trigger_id=args.trigger_id)
     else:
-        url = 'http://{host}:{port}/spellbook/check_triggers'.format(host=host, port=port)
+        url = '{spellbook_uri}/spellbook/check_triggers'.format(spellbook_uri=get_spellbook_uri())
 
     do_get_request(url=url, authenticate=True)
 
@@ -814,12 +814,12 @@ def check_triggers():
 
 
 def get_actions():
-    url = 'http://{host}:{port}/spellbook/actions'.format(host=host, port=port)
+    url = '{spellbook_uri}/spellbook/actions'.format(spellbook_uri=get_spellbook_uri())
     do_get_request(url=url)
 
 
 def get_action():
-    url = 'http://{host}:{port}/spellbook/actions/{action_id}'.format(host=host, port=port, action_id=args.action_id)
+    url = '{spellbook_uri}/spellbook/actions/{action_id}'.format(spellbook_uri=get_spellbook_uri(), action_id=args.action_id)
     do_get_request(url=url, authenticate=True)
 
 
@@ -918,32 +918,32 @@ def save_action():
             print('Must be a dict where all keys are a valid address and the value is a integer greater than or equal to zero', file=sys.stderr)
             sys.exit(1)
 
-    url = 'http://{host}:{port}/spellbook/actions/{action_id}'.format(host=host, port=port, action_id=args.action_id)
+    url = '{spellbook_uri}/spellbook/actions/{action_id}'.format(spellbook_uri=get_spellbook_uri(), action_id=args.action_id)
     do_post_request(url=url, authenticate=True, data=data)
 
 
 def delete_action():
-    url = 'http://{host}:{port}/spellbook/actions/{action_id}'.format(host=host, port=port, action_id=args.action_id)
+    url = '{spellbook_uri}/spellbook/actions/{action_id}'.format(spellbook_uri=get_spellbook_uri(), action_id=args.action_id)
     do_delete_request(url=url, authenticate=True)
 
 
 def run_action():
-    url = 'http://{host}:{port}/spellbook/actions/{action_id}/run'.format(host=host, port=port, action_id=args.action_id)
+    url = '{spellbook_uri}/spellbook/actions/{action_id}/run'.format(spellbook_uri=get_spellbook_uri(), action_id=args.action_id)
     do_get_request(url=url, authenticate=True)
 
 
 def get_reveal():
-    url = 'http://{host}:{port}/spellbook/actions/{action_id}/reveal'.format(host=host, port=port, action_id=args.action_id)
+    url = '{spellbook_uri}/spellbook/actions/{action_id}/reveal'.format(spellbook_uri=get_spellbook_uri(), action_id=args.action_id)
     do_get_request(url=url)
 
 
 def get_logs():
-    url = 'http://{host}:{port}/spellbook/logs/{filter_string}'.format(host=host, port=port, filter_string=" ".join(args.filter_string))
+    url = '{spellbook_uri}/spellbook/logs/{filter_string}'.format(spellbook_uri=get_spellbook_uri(), filter_string=" ".join(args.filter_string))
     do_get_request(url=url, authenticate=True)
 
 
 def get_hivemind():
-    url = 'http://{host}:{port}/spellbook/hiveminds/{hivemind_id}'.format(host=host, port=port, hivemind_id=args.hivemind_id)
+    url = '{spellbook_uri}/spellbook/hiveminds/{hivemind_id}'.format(spellbook_uri=get_spellbook_uri(), hivemind_id=args.hivemind_id)
     do_get_request(url=url)
 
 
