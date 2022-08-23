@@ -143,6 +143,10 @@ enable_ssl = 'true' if enable_ssl in ['true', 'True', True, 'Yes' 'yes', 'y', 'Y
 config.set(section='SSL', option='enable_ssl', value=enable_ssl)
 
 if config.getboolean(section='SSL', option='enable_ssl') is True:
+    current_domain_name = config.get(section='SSL', option='domain_name')
+    domain_name = input('Enter the domain name or press enter to keep the current value (%s) ' % current_domain_name) or current_domain_name
+    config.set(section='SSL', option='domain_name', value=domain_name)
+
     current_certificate = config.get(section='SSL', option='certificate')
     certificate = input('Enter the certificate filename or press enter to keep the current value (%s) ' % current_certificate) or current_certificate
     config.set(section='SSL', option='certificate', value=certificate)

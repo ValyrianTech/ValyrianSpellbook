@@ -140,6 +140,11 @@ def get_enable_ssl():
     return spellbook_config().getboolean('SSL', 'enable_ssl')
 
 
+@verify_config('SSL', 'domain_name')
+def get_domain_name():
+    return spellbook_config().get('SSL', 'domain_name')
+
+
 @verify_config('SSL', 'certificate')
 def get_ssl_certificate():
     return spellbook_config().get('SSL', 'certificate')
@@ -157,7 +162,7 @@ def get_ssl_certificate_chain():
 
 def get_spellbook_uri():
     if get_enable_ssl() is True:
-        uri = 'https://{host}:{port}'.format(host=get_host(), port=get_port())
+        uri = 'https://{domain_name}:{port}'.format(domain_name=get_domain_name(), port=get_port())
     else:
         uri = 'http://{host}:{port}'.format(host=get_host(), port=get_port())
 
