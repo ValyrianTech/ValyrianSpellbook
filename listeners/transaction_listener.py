@@ -45,7 +45,7 @@ EXIT_ON_TIMEOUT = None
 def on_message(ws, message):
     event_found = False
     transaction = simplejson.loads(message)
-    if transaction['type'] != 'new-transactions':
+    if 'type' not in transaction or transaction['type'] != 'new-transactions':
         return
 
     address_list = []
