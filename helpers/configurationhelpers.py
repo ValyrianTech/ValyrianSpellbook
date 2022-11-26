@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import requests
 from configparser import ConfigParser
 from decorators import verify_config
 
@@ -13,6 +14,21 @@ def spellbook_config():
     config = ConfigParser(interpolation=None)
     config.read(CONFIGURATION_FILE)
     return config
+
+
+def what_is_my_ip() -> str:
+    """
+    Get my public facing ip address
+
+    :return: String - ip address
+    """
+    try:
+        ip = requests.get("https://api.ipify.org/?format=json").json()['ip']
+    except Exception as ex:
+        print(f'Unable to get ip: {ex}')
+        return ''
+
+    return ip
 
 
 @verify_config('RESTAPI', 'host')
