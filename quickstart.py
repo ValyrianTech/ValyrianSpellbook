@@ -4,6 +4,7 @@ import os
 from configparser import ConfigParser
 from helpers.jsonhelpers import load_from_json_file
 from authentication import initialize_api_keys_file
+from helpers.configurationhelpers import what_is_my_ip
 
 PROGRAM_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -18,6 +19,10 @@ else:
 
 # RESTAPI settings
 current_host = config.get(section='RESTAPI', option='host')
+
+if current_host == '':
+    current_host = what_is_my_ip()
+
 host = input('Enter the IP address of the server or press enter to keep the current value (%s) ' % current_host) or current_host
 config.set(section='RESTAPI', option='host', value=host)
 
