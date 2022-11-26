@@ -16,3 +16,4 @@ python-bitcoinlib==0.11.0
 qrcode==6.1
 cheroot==8.6.0
 psutil==5.9.1
+openai==0.25.0
