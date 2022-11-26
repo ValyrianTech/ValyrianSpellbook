@@ -4,7 +4,6 @@ from configurationhelpers import get_enable_openai, get_openai_api_key, get_open
 
 import openai
 
-
 if get_enable_openai() is True:
     openai.organization = get_openai_organization()
     openai.api_key = get_openai_api_key()
@@ -29,15 +28,15 @@ def get_model_ids() -> List:
     return ids
 
 
-def complete(prompt: Union[str, List[str], None],
-             model: str = 'text-davinci-002',
-             suffix: str = None,
-             max_tokens: int = 64,
-             temperature: int = 1,
-             top_p: int = 1,
-             n: int = 1,
-             stop: Union[str, List[str], None] = None,
-             user: str = '') -> Dict:
+def openai_complete(prompt: Union[str, List[str], None],
+                    model: str = 'text-davinci-002',
+                    suffix: str = None,
+                    max_tokens: int = 64,
+                    temperature: float = 1,
+                    top_p: float = 1,
+                    n: int = 1,
+                    stop: Union[str, List[str], None] = None,
+                    user: str = '') -> Dict:
     """
     Complete a prompt
 
@@ -72,6 +71,44 @@ def complete(prompt: Union[str, List[str], None],
             n=n,
             stop=stop,
             user=user,
+        )
+    except Exception as ex:
+        print(f'Error: {ex}')
+        return {'error': f'Unable to complete text: {ex}'}
+
+    return response
+
+
+def openai_edit(instruction: str,
+                input: str = '',
+                model: str = 'text-davinci-edit-001',
+                n: int = 1,
+                temperature: float = 1,
+                top_p: float = 1, ):
+    """
+    Creates a new edit for the provided input, instruction, and parameters
+
+    :param instruction: The instruction that tells the model how to edit the prompt.
+    :param input: The input text to use as a starting point for the edit.
+    :param model: ID of the model to use.
+    :param n: How many edits to generate for the input and instruction.
+    :param temperature: What sampling temperature to use. Higher values means the model will take more risks. Try 0.9 for more creative applications, and 0 (argmax sampling) for ones with a well-defined answer.
+                        We generally recommend altering this or top_p but not both.
+    :param top_p: An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.
+                  We generally recommend altering this or temperature but not both.
+
+    :return: Dictionary containing the response data
+    """
+    response: Dict
+
+    try:
+        response = openai.Edit.create(
+            model=model,
+            input=input,
+            instruction=instruction,
+            temperature=temperature,
+            top_p=top_p,
+            n=n,
         )
     except Exception as ex:
         print(f'Error: {ex}')
