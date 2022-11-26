@@ -197,3 +197,18 @@ def get_twitter_access_token_secret():
 @verify_config('Twitter', 'bearer_token')
 def get_twitter_bearer_token():
     return spellbook_config().get('Twitter', 'bearer_token')
+
+
+@verify_config('OpenAI', 'enable_openai')
+def get_enable_openai():
+    return spellbook_config().getboolean('OpenAI', 'enable_openai')
+
+
+@verify_config('OpenAI', 'api_key')
+def get_openai_api_key():
+    return spellbook_config().get('OpenAI', 'api_key')
+
+
+@verify_config('OpenAI', 'organization')
+def get_openai_organization():
+    return spellbook_config().get('OpenAI', 'organization')
