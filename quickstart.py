@@ -188,6 +188,23 @@ if config.getboolean(section='Twitter', option='enable_twitter') is True:
     bearer_token = input('Enter the bearer token or press enter to keep the current value (%s) ' % current_bearer_token) or current_bearer_token
     config.set(section='Twitter', option='bearer_token', value=bearer_token)
 
+
+# OpenAI settings
+current_enable_openai = config.get(section='OpenAI', option='enable_openai')
+enable_openai = input('Would you like to enable OpenAI? (current=%s): ' % current_enable_openai) or current_enable_openai
+enable_openai = 'true' if enable_openai in ['true', 'True', True, 'Yes' 'yes', 'y', 'Y'] else 'false'
+config.set(section='OpenAI', option='enable_openai', value=enable_openai)
+
+if config.getboolean(section='OpenAI', option='enable_openai') is True:
+    current_api_key = config.get(section='OpenAI', option='api_key')
+    api_key = input('Enter the API key or press enter to keep the current value (%s) ' % current_api_key) or current_api_key
+    config.set(section='OpenAI', option='api_key', value=api_key)
+
+    current_organization = config.get(section='OpenAI', option='organization')
+    organization = input('Enter the organization or press enter to keep the current value (%s) ' % current_organization) or current_organization
+    config.set(section='OpenAI', option='organization', value=organization)
+
+
 with open(configuration_file, 'w') as output_file:
     config.write(output_file)
     print('spellbook.conf file updated')
