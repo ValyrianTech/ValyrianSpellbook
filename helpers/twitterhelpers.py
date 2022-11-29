@@ -163,6 +163,30 @@ def get_user(user_id: Union[int, str, None] = None,
     return response.data
 
 
+def like_tweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
+    """
+    Like a tweet on Twitter
+
+    :param tweet_id: Int | String - The ID of the Tweet that you would like to Like.
+    :param user_auth: bool - Whether or not to use OAuth 1.0a User Context to authenticate (default=True)
+    :return: Dict - a dict with key 'Liked' (boolean)
+    """
+    response = client.like(tweet_id=tweet_id, user_auth=user_auth)
+    return response.data
+
+
+def unlike_tweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
+    """
+    Unlike a tweet on Twitter
+
+    :param tweet_id: Int | String - The ID of the Tweet that you would like to unlike.
+    :param user_auth: bool - Whether or not to use OAuth 1.0a User Context to authenticate (default=True)
+    :return: Dict - a dict with key 'Liked' (boolean)
+    """
+    response = client.unlike(tweet_id=tweet_id, user_auth=user_auth)
+    return response.data
+
+
 api = get_twitter_api()
 client = tweepy.Client(bearer_token=get_twitter_bearer_token(),
                        access_token=get_twitter_access_token(),
