@@ -118,8 +118,16 @@ def get_extended_status(status_id):
     return status
 
 
-def follow_user(username):
-    api.create_friendship(screen_name=username)
+def follow_user(target_user_id: Union[int, str], user_auth: bool = True) -> dict:
+    """
+    Follow a user on Twitter
+
+    :param target_user_id: Int | String - The user ID of the user that you would like to follow. (without the @)
+    :param user_auth: bool - Whether or not to use OAuth 1.0a User Context to authenticate (default=True)
+    :return: Dict - a dict with keys 'following' and 'pending_follow', both booleans
+    """
+    response = client.follow_user(target_user_id=target_user_id, user_auth=user_auth)
+    return response.data
 
 
 def get_user(user_id: Union[int, str, None] = None,
@@ -148,8 +156,6 @@ def get_user(user_id: Union[int, str, None] = None,
     if user_id is None and user_name is None:
         raise Exception('Must supply either user_id or user_name')
 
-    client = tweepy.Client(bearer_token=get_twitter_bearer_token())
-
     response = client.get_user(id=user_id,
                                username=user_name,
                                user_fields=['created_at', 'description', 'entities', 'location', 'pinned_tweet_id', 'profile_image_url', 'protected', 'public_metrics', 'url', 'verified', 'withheld'])
@@ -158,3 +164,8 @@ def get_user(user_id: Union[int, str, None] = None,
 
 
 api = get_twitter_api()
+client = tweepy.Client(bearer_token=get_twitter_bearer_token(),
+                       access_token=get_twitter_access_token(),
+                       access_token_secret=get_twitter_access_token_secret(),
+                       consumer_key=get_twitter_consumer_key(),
+                       consumer_secret=get_twitter_consumer_secret())
