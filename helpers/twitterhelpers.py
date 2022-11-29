@@ -1,3 +1,5 @@
+from typing import Union, List
+
 import tweepy
 import random
 import requests
@@ -62,7 +64,7 @@ def update_status_with_media(url, message):
         print("Unable to download media")
 
 
-def get_tweets(searchtext, limit=100):
+def get_tweets(searchtext, limit=100) -> List[tweepy.tweet.Tweet]:
     """
     Get most recent tweets about given search text
 
@@ -118,6 +120,41 @@ def get_extended_status(status_id):
 
 def follow_user(username):
     api.create_friendship(screen_name=username)
+
+
+def get_user(user_id: Union[int, str, None] = None,
+             user_name: Union[str, None] = None) -> tweepy.user.User:
+    """
+    Get information about a specific user by giving either a user_id or user_name
+
+    :param user_id: The user id
+    :param user_name: The user name
+    :return: A User object containing the following attributes:
+        - id
+        - username
+        - name
+        - created_at
+        - description
+        - entities
+        - location
+        - pinned_tweet_id
+        - profile_image_url
+        - protected
+        - public_metrics
+        - url
+        - verified
+        - withheld
+    """
+    if user_id is None and user_name is None:
+        raise Exception('Must supply either user_id or user_name')
+
+    client = tweepy.Client(bearer_token=get_twitter_bearer_token())
+
+    response = client.get_user(id=user_id,
+                               username=user_name,
+                               user_fields=['created_at', 'description', 'entities', 'location', 'pinned_tweet_id', 'profile_image_url', 'protected', 'public_metrics', 'url', 'verified', 'withheld'])
+
+    return response.data
 
 
 api = get_twitter_api()
