@@ -187,6 +187,30 @@ def unlike_tweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
     return response.data
 
 
+def retweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
+    """
+    Causes the user ID to Retweet the target Tweet.
+
+    :param tweet_id: Int | String - The ID of the Tweet that you would like to Retweet.
+    :param user_auth: bool - Whether or not to use OAuth 1.0a User Context to authenticate (default=True)
+    :return: Dict - a dict with key 'retweeted' (boolean)
+    """
+    response = client.retweet(tweet_id=tweet_id, user_auth=user_auth)
+    return response.data
+
+
+def unretweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
+    """
+    Allows an authenticated user ID to remove the Retweet of a Tweet.
+
+    :param tweet_id: Int | String - he ID of the Tweet that you would like to remove the Retweet of.
+    :param user_auth: bool - Whether or not to use OAuth 1.0a User Context to authenticate (default=True)
+    :return: Dict - a dict with key 'retweeted' (boolean)
+    """
+    response = client.unretweet(source_tweet_id=tweet_id, user_auth=user_auth)
+    return response.data
+
+
 api = get_twitter_api()
 client = tweepy.Client(bearer_token=get_twitter_bearer_token(),
                        access_token=get_twitter_access_token(),
