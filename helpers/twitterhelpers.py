@@ -63,10 +63,26 @@ def update_status_with_media(url, message):
 
 
 def get_tweets(searchtext, limit=100):
+    """
+    Get most recent tweets about given search text
+
+    :param searchtext: String - text to search twitter
+    :param limit: Int - number of tweets to retrieve (default=100)
+    :return: a list of Tweet objects, each with following attributes:
+        - id
+        - text
+        - author_id
+        - public_metrics
+        - lang
+        - attachments
+        - conversation_id
+        - entities
+        - in_reply_to_user_id
+    """
     client = tweepy.Client(bearer_token=get_twitter_bearer_token())
 
     tweets = []
-    for i, tweet in enumerate(tweepy.Paginator(client.search_recent_tweets, searchtext, tweet_fields=['author_id', 'public_metrics', 'lang', 'attachments'], user_fields=['public_metrics'], max_results=100).flatten(limit=limit)):
+    for i, tweet in enumerate(tweepy.Paginator(client.search_recent_tweets, searchtext, tweet_fields=['author_id', 'public_metrics', 'lang', 'attachments', 'conversation_id', 'entities', 'in_reply_to_user_id'], user_fields=['public_metrics'], max_results=100).flatten(limit=limit)):
         tweets.append(tweet)
 
     return tweets
