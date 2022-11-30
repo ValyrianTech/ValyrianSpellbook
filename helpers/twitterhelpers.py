@@ -240,7 +240,7 @@ def create_tweet(text: Union[str, None] = None,
     :param for_super_followers_only: Allows you to Tweet exclusively for Super Followers.
     :param direct_message_deep_link: Tweets a link directly to a Direct Message conversation with an account.
     :param user_auth: Whether or not to use OAuth 1.0a User Context to authenticate
-    :return:
+    :return: dict with keys 'id' and 'text'
     """
     response = client.create_tweet(text=text,
                                    in_reply_to_tweet_id=in_reply_to_tweet_id,
