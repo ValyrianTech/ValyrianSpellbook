@@ -259,6 +259,51 @@ def create_tweet(text: Union[str, None] = None,
     return response.data
 
 
+def get_direct_message_events(dm_conversation_id: Union[str, None] = None,
+                              participant_id: Union[int, str, None] = None,
+                              dm_event_fields: Union[List[str], str, None] = None,
+                              event_types: Union[str, None] = None,
+                              expansions: Union[List[str], str, None] = None,
+                              max_results: Union[int, None] = None,
+                              media_fields: Union[List[str], str, None] = None,
+                              pagination_token: Union[str, None] = None,
+                              tweet_fields: Union[List[str], str, None] = None,
+                              user_fields: Union[List[str], str, None] = None,
+                              user_auth: bool = True) -> Union[List[tweepy.direct_message_event.DirectMessageEvent], None]:
+    """
+    If dm_conversation_id is passed, returns a list of Direct Messages within the conversation specified. Messages are returned in reverse chronological order.
+
+    If participant_id is passed, returns a list of Direct Messages (DM) events within a 1-1 conversation with the user specified. Messages are returned in reverse chronological order.
+
+    If neither is passed, returns a list of Direct Messages for the authenticated user, both sent and received. Direct Message events are returned in reverse chronological order. Supports retrieving events from the previous 30 days.
+
+    :param dm_conversation_id: The id of the Direct Message conversation for which events are being retrieved.
+    :param participant_id: The participant_id of the user that the authenicating user is having a 1-1 conversation with.
+    :param dm_event_fields: Extra fields to include in the event payload. id, text, and event_type are returned by default.
+    :param event_types: The type of Direct Message event to returm. If not included, all types are returned.
+    :param expansions: expansions
+    :param max_results: The maximum number of results to be returned in a page. Must be between 1 and 100. The default is 100.
+    :param media_fields: media_fields
+    :param pagination_token: Contains either the next_token or previous_token value.
+    :param tweet_fields: tweet_fields
+    :param user_fields: user_fields
+    :param user_auth: Whether or not to use OAuth 1.0a User Context to authenticate
+    :return: List of DirectMessageEvent objects
+    """
+    response = client.get_direct_message_events(dm_conversation_id=dm_conversation_id,
+                                                participant_id=participant_id,
+                                                dm_event_fields=dm_event_fields,
+                                                event_types=event_types,
+                                                expansions=expansions,
+                                                max_results=max_results,
+                                                media_fields=media_fields,
+                                                pagination_token=pagination_token,
+                                                tweet_fields=tweet_fields,
+                                                user_fields=user_fields,
+                                                user_auth=user_auth)
+    return response.data
+
+
 api = get_twitter_api()
 client = tweepy.Client(bearer_token=get_twitter_bearer_token(),
                        access_token=get_twitter_access_token(),
