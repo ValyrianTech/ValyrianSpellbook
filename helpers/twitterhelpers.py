@@ -304,6 +304,31 @@ def get_direct_message_events(dm_conversation_id: Union[str, None] = None,
     return response.data
 
 
+def create_direct_message(dm_conversation_id: Union[str, None] = None,
+                          participant_id: Union[int, str, None] = None,
+                          media_id: Union[int, str, None] = None,
+                          text: Union[str, None] = None,
+                          user_auth: bool = True) -> dict:
+    """
+    If dm_conversation_id is passed, creates a Direct Message on behalf of the authenticated user, and adds it to the specified conversation.
+
+    If participant_id is passed, creates a one-to-one Direct Message and adds it to the one-to-one conversation. This method either creates a new one-to-one conversation or retrieves the current conversation and adds the Direct Message to it.
+
+    :param dm_conversation_id: The dm_conversation_id of the conversation to add the Direct Message to. Supports both 1-1 and group conversations.
+    :param participant_id: The User ID of the account this one-to-one Direct Message is to be sent to.
+    :param media_id: A single Media ID being attached to the Direct Message. This field is required if text is not present. For this launch, only 1 attachment is supported.
+    :param text: Text of the Direct Message being created. This field is required if media_id is not present. Text messages support up to 10,000 characters.
+    :param user_auth: Whether or not to use OAuth 1.0a User Context to authenticate
+    :return: Dict
+    """
+    response = client.create_direct_message(dm_conversation_id=dm_conversation_id,
+                                            participant_id=participant_id,
+                                            media_id=media_id,
+                                            text=text,
+                                            user_auth=user_auth)
+    return response.data
+
+
 api = get_twitter_api()
 client = tweepy.Client(bearer_token=get_twitter_bearer_token(),
                        access_token=get_twitter_access_token(),
