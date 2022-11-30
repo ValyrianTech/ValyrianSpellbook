@@ -211,6 +211,54 @@ def unretweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
     return response.data
 
 
+def create_tweet(text: Union[str, None] = None,
+                 in_reply_to_tweet_id: Union[int, str, None] = None,
+                 reply_settings: Union[str, None] = None,
+                 exclude_reply_user_ids: Union[List[Union[int, str]], None] = None,
+                 quote_tweet_id: Union[int, str, None] = None,
+                 poll_options: Union[List[str], None] = None,
+                 poll_duration_minutes: Union[int, None] = None,
+                 media_tagged_user_ids: Union[List[Union[int, str]], None] = None,
+                 media_ids: Union[List[Union[int, str]], None] = None,
+                 place_id: Union[str, None] = None,
+                 for_super_followers_only: Union[bool, None] = None,
+                 direct_message_deep_link: Union[str, None] = None,
+                 user_auth: bool = True) -> dict:
+    """
+    Creates a Tweet on behalf of an authenticated user.
+
+    :param text: Text of the Tweet being created. This field is required if media.media_ids is not present.
+    :param in_reply_to_tweet_id: Tweet ID of the Tweet being replied to. Please note that in_reply_to_tweet_id needs to be in the request if exclude_reply_user_ids is present.
+    :param reply_settings: Settings to indicate who can reply to the Tweet. Limited to “mentionedUsers” and “following”. If the field isn’t specified, it will default to everyone.
+    :param exclude_reply_user_ids:  A list of User IDs to be excluded from the reply Tweet thus removing a user from a thread.
+    :param quote_tweet_id: Link to the Tweet being quoted.
+    :param poll_options: A list of poll options for a Tweet with a poll.
+    :param poll_duration_minutes: Duration of the poll in minutes for a Tweet with a poll. This is only required if the request includes poll.options.
+    :param media_tagged_user_ids: A list of User IDs being tagged in the Tweet with Media. If the user you’re tagging doesn’t have photo-tagging enabled, their names won’t show up in the list of tagged users even though the Tweet is successfully created.
+    :param media_ids: A list of Media IDs being attached to the Tweet. This is only required if the request includes the tagged_user_ids.
+    :param place_id: Place ID being attached to the Tweet for geo location.
+    :param for_super_followers_only: Allows you to Tweet exclusively for Super Followers.
+    :param direct_message_deep_link: Tweets a link directly to a Direct Message conversation with an account.
+    :param user_auth: Whether or not to use OAuth 1.0a User Context to authenticate
+    :return:
+    """
+    response = client.create_tweet(text=text,
+                                   in_reply_to_tweet_id=in_reply_to_tweet_id,
+                                   reply_settings=reply_settings,
+                                   exclude_reply_user_ids=exclude_reply_user_ids,
+                                   quote_tweet_id=quote_tweet_id,
+                                   poll_options=poll_options,
+                                   poll_duration_minutes=poll_duration_minutes,
+                                   media_tagged_user_ids=media_tagged_user_ids,
+                                   media_ids=media_ids,
+                                   place_id=place_id,
+                                   for_super_followers_only=for_super_followers_only,
+                                   direct_message_deep_link=direct_message_deep_link,
+                                   user_auth=user_auth)
+
+    return response.data
+
+
 api = get_twitter_api()
 client = tweepy.Client(bearer_token=get_twitter_bearer_token(),
                        access_token=get_twitter_access_token(),
