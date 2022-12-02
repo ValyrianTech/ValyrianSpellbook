@@ -130,6 +130,18 @@ def follow_user(target_user_id: Union[int, str], user_auth: bool = True) -> dict
     return response.data
 
 
+def unfollow_user(target_user_id: Union[int, str], user_auth: bool = True) -> dict:
+    """
+    Unfollow a user on Twitter
+
+    :param target_user_id: Int | String - The user ID of the user that you would like to unfollow. (without the @)
+    :param user_auth: bool - Whether or not to use OAuth 1.0a User Context to authenticate (default=True)
+    :return: Dict - a dict with keys 'following' and 'pending_follow', both booleans
+    """
+    response = client.unfollow_user(target_user_id=target_user_id, user_auth=user_auth)
+    return response.data
+
+
 def get_user(user_id: Union[int, str, None] = None,
              user_name: Union[str, None] = None) -> tweepy.user.User:
     """
