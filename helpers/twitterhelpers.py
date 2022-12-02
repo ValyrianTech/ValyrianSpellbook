@@ -199,6 +199,18 @@ def unlike_tweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
     return response.data
 
 
+def delete_tweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
+    """
+    Delete a tweet on Twitter
+
+    :param tweet_id: Int | String - The ID of the Tweet that you would like to delete.
+    :param user_auth: bool - Whether or not to use OAuth 1.0a User Context to authenticate (default=True)
+    :return: Dict
+    """
+    response = client.delete_tweet(id=tweet_id, user_auth=user_auth)
+    return response.data
+
+
 def retweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
     """
     Causes the user ID to Retweet the target Tweet.
