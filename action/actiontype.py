@@ -18,7 +18,6 @@ class ActionType(object):
     RETWEET = 'Retweet'
     UNRETWEET = 'Unretweet'
     CREATE_TWEET = 'Create tweet'
-    REPLY_TO_TWEET = 'Reply to tweet'
     DELETE_TWEET = 'Delete tweet'
     SEND_DM_TWITTER = 'Send direct message on twitter'
     FOLLOW_ON_TWITTER = 'Follow on twitter'
