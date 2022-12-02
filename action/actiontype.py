@@ -11,4 +11,15 @@ class ActionType(object):
     SENDTRANSACTION = 'SendTransaction'
     DELETETRIGGER = 'DeleteTrigger'
     LAUNCHEVOLVER = 'LaunchEvolver'
-    # Todo SendTweetAction
+
+    # Twitter
+    LIKE_TWEET = 'Like tweet'
+    UNLIKE_TWEET = 'Unlike tweet'
+    RETWEET = 'Retweet'
+    UNRETWEET = 'Unretweet'
+    CREATE_TWEET = 'Create tweet'
+    REPLY_TO_TWEET = 'Reply to tweet'
+    DELETE_TWEET = 'Delete tweet'
+    SEND_DM_TWITTER = 'Send direct message on twitter'
+    FOLLOW_ON_TWITTER = 'Follow on twitter'
+    UNFOLLOW_ON_TWITTER = 'Unfollow on twitter'
