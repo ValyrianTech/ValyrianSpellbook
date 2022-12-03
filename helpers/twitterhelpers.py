@@ -1,4 +1,4 @@
-from typing import Union, List
+from typing import Union, List, Dict
 
 import tweepy
 import random
@@ -106,6 +106,31 @@ def get_users(ids):
         return response.data
 
     return []
+
+
+def get_country_woeids() -> Dict:
+    """
+    Get a Dict containing all available woeids of countries
+
+    :return: Dict containing all available woeids of countries
+    """
+    woeids = {trend['country']: trend['woeid'] for trend in api.available_trends() if trend['placeType']['name'] == 'Country'}
+    return woeids
+
+
+def get_country_woeid(country: str) -> int:
+    """
+    Get the woeid of a specific country
+
+    :param country: String - name of the country
+    :return: int - the woeid
+    """
+    woeids = get_country_woeids()
+
+    if country in woeids:
+        return woeids[country]
+    else:
+        return 0
 
 
 def get_trending_topics(woeid=None):
