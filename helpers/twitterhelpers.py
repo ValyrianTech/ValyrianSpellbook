@@ -159,25 +159,25 @@ def get_most_retweeted_tweet_ids(searchtext: str, limit: int = 100) -> List:
     return tweet_ids
 
 
-def get_popular_tweet_ids(searchtext: str, type: str, limit: int = 100) -> List:
+def get_popular_tweet_ids(searchtext: str, sort_by: str, limit: int = 100) -> List:
     """
     Get a sorted list of tweet_ids on given searchtext in descending order on a given type ('Liked', 'Quoted', 'Replied' or 'Retweeted')
 
     :param searchtext: String - the text to search for
-    :param type: String - 'Liked', 'Quoted', 'Replied' or 'Retweeted'
+    :param sort_by: String - 'Liked', 'Quoted', 'Replied' or 'Retweeted'
     :param limit: Int - the number of items
     :return: List
     """
-    if type == 'Liked':
+    if sort_by == 'Liked':
         return get_most_liked_tweet_ids(searchtext=searchtext, limit=limit)
-    elif type == 'Quoted':
+    elif sort_by == 'Quoted':
         return get_most_quoted_tweet_ids(searchtext=searchtext, limit=limit)
-    elif type == 'Replied':
+    elif sort_by == 'Replied':
         return get_most_replied_tweet_ids(searchtext=searchtext, limit=limit)
-    elif type == 'Retweeted':
+    elif sort_by == 'Retweeted':
         return get_most_retweeted_tweet_ids(searchtext=searchtext, limit=limit)
     else:
-        raise NotImplementedError(f'Unknown sort type: {type}')
+        raise NotImplementedError(f'Unknown sort type: {sort_by}')
 
 
 def get_users(ids):
