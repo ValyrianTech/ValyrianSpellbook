@@ -39,6 +39,7 @@ def get_twitter_api():
 
 
 def update_status(text, url=None):
+    """Deprecated: use create_tweet instead"""
     if api is not None:
         print('\nPosting new tweet:')
         print('text: %s' % text)
@@ -48,6 +49,13 @@ def update_status(text, url=None):
 
 
 def update_status_with_media(url, message):
+    """
+    Create a tweet with an image file, must use V1 because not implemented in V2 yet
+
+    :param url: the url of the image
+    :param message: the text of the tweet
+    :return:
+    """
     if api is None:
         return
 
