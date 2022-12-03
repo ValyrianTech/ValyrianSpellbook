@@ -99,6 +99,87 @@ def get_tweets(searchtext, limit=100) -> List[tweepy.tweet.Tweet]:
     return tweets
 
 
+def get_most_liked_tweet_ids(searchtext: str, limit: int = 100) -> List:
+    """
+    Get a sorted list of tweet_ids on given searchtext (most liked first)
+
+    :param searchtext: String - the text to search for
+    :param limit: Int - the number of items
+    :return: List
+    """
+    tweets = get_tweets(searchtext=searchtext, limit=limit)
+
+    tweet_ids = [(tweet.id, tweet.text, tweet.public_metrics['like_count']) for tweet in tweets]
+    tweet_ids.sort(key=lambda x: -x[2])
+    return tweet_ids
+
+
+def get_most_quoted_tweet_ids(searchtext: str, limit: int = 100) -> List:
+    """
+    Get a sorted list of tweet_ids on given searchtext (most quoted first)
+
+    :param searchtext: String - the text to search for
+    :param limit: Int - the number of items
+    :return: List
+    """
+    tweets = get_tweets(searchtext=searchtext, limit=limit)
+
+    tweet_ids = [(tweet.id, tweet.text, tweet.public_metrics['quote_count']) for tweet in tweets]
+    tweet_ids.sort(key=lambda x: -x[2])
+    return tweet_ids
+
+
+def get_most_replied_tweet_ids(searchtext: str, limit: int = 100) -> List:
+    """
+    Get a sorted list of tweet_ids on given searchtext (most replied first)
+
+    :param searchtext: String - the text to search for
+    :param limit: Int - the number of items
+    :return: List
+    """
+    tweets = get_tweets(searchtext=searchtext, limit=limit)
+
+    tweet_ids = [(tweet.id, tweet.text, tweet.public_metrics['reply_count']) for tweet in tweets]
+    tweet_ids.sort(key=lambda x: -x[2])
+    return tweet_ids
+
+
+def get_most_retweeted_tweet_ids(searchtext: str, limit: int = 100) -> List:
+    """
+    Get a sorted list of tweet_ids on given searchtext (most retweeted first)
+
+    :param searchtext: String - the text to search for
+    :param limit: Int - the number of items
+    :return: List
+    """
+    tweets = get_tweets(searchtext=searchtext, limit=limit)
+
+    tweet_ids = [(tweet.id, tweet.text, tweet.public_metrics['retweet_count']) for tweet in tweets]
+    tweet_ids.sort(key=lambda x: -x[2])
+    return tweet_ids
+
+
+def get_popular_tweet_ids(searchtext: str, type: str, limit: int = 100) -> List:
+    """
+    Get a sorted list of tweet_ids on given searchtext (most retweeted first)
+
+    :param searchtext: String - the text to search for
+    :param type: String - 'Liked', 'Quoted', 'Replied' or 'Retweeted'
+    :param limit: Int - the number of items
+    :return: List
+    """
+    if type == 'Liked':
+        return get_most_liked_tweet_ids(searchtext=searchtext, limit=limit)
+    elif type == 'Quoted':
+        return get_most_quoted_tweet_ids(searchtext=searchtext, limit=limit)
+    elif type == 'Replied':
+        return get_most_replied_tweet_ids(searchtext=searchtext, limit=limit)
+    elif type == 'Retweeted':
+        return get_most_retweeted_tweet_ids(searchtext=searchtext, limit=limit)
+    else:
+        raise NotImplementedError(f'Unknown sort type: {type}')
+
+
 def get_users(ids):
     client = tweepy.Client(bearer_token=get_twitter_bearer_token())
 
