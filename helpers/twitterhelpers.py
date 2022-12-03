@@ -161,7 +161,7 @@ def get_most_retweeted_tweet_ids(searchtext: str, limit: int = 100) -> List:
 
 def get_popular_tweet_ids(searchtext: str, type: str, limit: int = 100) -> List:
     """
-    Get a sorted list of tweet_ids on given searchtext (most retweeted first)
+    Get a sorted list of tweet_ids on given searchtext in descending order on a given type ('Liked', 'Quoted', 'Replied' or 'Retweeted')
 
     :param searchtext: String - the text to search for
     :param type: String - 'Liked', 'Quoted', 'Replied' or 'Retweeted'
