@@ -157,6 +157,32 @@ def get_popular_tweet_ids(searchtext: str, sort_by: str, limit: int = 100) -> Li
     return popular_tweet_ids
 
 
+def get_tweets_by_id(tweet_ids: List[int]) -> List:
+
+    tweets = client.get_tweets(ids=tweet_ids, tweet_fields=['author_id', 'public_metrics', 'lang', 'attachments', 'conversation_id', 'entities', 'in_reply_to_user_id', 'referenced_tweets'], user_fields=['public_metrics'])
+    serialized = []
+
+    for tweet in tweets.data:
+
+        serialized_tweet = {'tweet_id': tweet.id,
+                            'text': tweet.text,
+                            'Liked': tweet.public_metrics['like_count'],
+                            'Quoted': tweet.public_metrics['quote_count'],
+                            'Retweeted': tweet.public_metrics['retweet_count'],
+                            'Replied': tweet.public_metrics['reply_count']}
+
+        references = {}
+        if tweet.referenced_tweets is not None:
+
+            for referenced_tweet in tweet.referenced_tweets:
+                references[referenced_tweet.type] = referenced_tweet.id
+
+        serialized_tweet['references'] = references
+        serialized.append(serialized_tweet)
+
+    return serialized
+
+
 def get_users(ids):
     client = tweepy.Client(bearer_token=get_twitter_bearer_token())
 
