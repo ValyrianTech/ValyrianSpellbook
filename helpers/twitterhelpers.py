@@ -98,9 +98,9 @@ def get_tweets(searchtext, limit=100) -> List[tweepy.tweet.Tweet]:
     return tweets
 
 
-def get_popular_tweet_ids(searchtext: str, sort_by: str, limit: int = 100) -> List:
+def get_recent_tweets(searchtext: str, sort_by: str, limit: int = 100) -> List:
     """
-    Get a sorted list of tweet_ids on given searchtext in descending order on a given type ('Liked', 'Quoted', 'Replied' or 'Retweeted')
+    Get a sorted list of tweets on given searchtext in descending order on a given type ('Liked', 'Quoted', 'Replied' or 'Retweeted')
 
     :param searchtext: String - the text to search for
     :param sort_by: String - 'Liked', 'Quoted', 'Replied' or 'Retweeted'
@@ -112,7 +112,7 @@ def get_popular_tweet_ids(searchtext: str, sort_by: str, limit: int = 100) -> Li
 
     tweets = get_tweets(searchtext=searchtext, limit=limit)
 
-    tweet_ids = []
+    recent_tweets = []
 
     for tweet in tweets:
         tweet_data = {'tweet_id': tweet.id,
@@ -129,10 +129,32 @@ def get_popular_tweet_ids(searchtext: str, sort_by: str, limit: int = 100) -> Li
 
             tweet_data['references'] = references
 
-        tweet_ids.append(tweet_data)
+        recent_tweets.append(tweet_data)
 
-    tweet_ids.sort(key=lambda x: -x[sort_by])
-    return tweet_ids
+    recent_tweets.sort(key=lambda x: -x[sort_by])
+    print(recent_tweets)
+    return recent_tweets
+
+
+def get_popular_tweet_ids(searchtext: str, sort_by: str, limit: int = 100) -> List:
+    """
+    Get a sorted list of tweets on given searchtext in descending order on a given type ('Liked', 'Quoted', 'Replied' or 'Retweeted')
+
+    :param searchtext: String - the text to search for
+    :param sort_by: String - 'Liked', 'Quoted', 'Replied' or 'Retweeted'
+    :param limit: Int - the number of items
+    :return: List
+    """
+    recent_tweets = get_recent_tweets(searchtext=searchtext, sort_by=sort_by, limit=limit)
+    popular_tweet_ids = []
+    for tweet in recent_tweets:
+        if 'references' in tweet:
+            for referenced_tweet_type in tweet['references']:
+                if referenced_tweet_type == 'retweeted' and tweet['references']['retweeted'] not in popular_tweet_ids:
+                    popular_tweet_ids.append(tweet['references']['retweeted'])
+
+    print(f'Popular tweets: {popular_tweet_ids}')
+    return popular_tweet_ids
 
 
 def get_users(ids):
