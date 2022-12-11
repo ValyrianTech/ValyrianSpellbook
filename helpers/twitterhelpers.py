@@ -186,15 +186,15 @@ def get_tweet(tweet_id: str) -> dict:
 
                                                         ], user_fields=['public_metrics'])
 
-    return {'id': tweet.data['id'],
+    return {'id': str(tweet.data['id']),
             'text': tweet.data['text'],
             'public_metrics': tweet.data['public_metrics'],
-            'author_id': tweet.data['author_id'],
+            'author_id': str(tweet.data['author_id']),
             'lang': tweet.data['lang'],
             'attachments': tweet.data['attachments'],
-            'conversation_id': tweet.data['conversation_id'],
+            'conversation_id': str(tweet.data['conversation_id']),
             'entities': tweet.data['entities'],
-            'in_reply_to_user_id': tweet.data['in_reply_to_user_id'],
+            'in_reply_to_user_id': str(tweet.data['in_reply_to_user_id']) if tweet.data['in_reply_to_user_id'] is not None else None,
             'referenced_tweets': tweet.data['referenced_tweets'],
             'created_at': tweet.data['created_at'].timestamp(),
             'edit_history_tweet_ids': tweet.data['referenced_tweets'],
