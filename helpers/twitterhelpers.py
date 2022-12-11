@@ -1,4 +1,5 @@
 from typing import Union, List, Dict
+from datetime import datetime
 
 import tweepy
 import random
@@ -98,6 +99,115 @@ def get_tweets(searchtext, limit=100) -> List[tweepy.tweet.Tweet]:
     return tweets
 
 
+def get_tweet(tweet_id: str) -> dict:
+    """
+    Get all data about a specific tweet as a dict
+
+    :param tweet_id: String - the tweet id
+    :return: a dict with following attributes:
+
+    id : int
+        The unique identifier of the requested Tweet.
+    text : str
+        The actual UTF-8 text of the Tweet. See `twitter-text`_ for details on
+        what characters are currently considered valid.
+    edit_history_tweet_ids : list[int]
+        Unique identifiers indicating all versions of a Tweet. For Tweets with
+        no edits, there will be one ID. For Tweets with an edit history, there
+        will be multiple IDs, arranged in ascending order reflecting the order
+        of edits. The most recent version is the last position of the array.
+    attachments : dict | None
+        Specifies the type of attachments (if any) present in this Tweet.
+    author_id : int | None
+        The unique identifier of the User who posted this Tweet.
+    context_annotations : list
+        Contains context annotations for the Tweet.
+    conversation_id : int | None
+        The Tweet ID of the original Tweet of the conversation (which includes
+        direct replies, replies of replies).
+    created_at : datetime.datetime | None
+        Creation time of the Tweet.
+    edit_controls : dict | None
+        When present, this indicates how much longer the Tweet can be edited
+        and the number of remaining edits. Tweets are only editable for the
+        first 30 minutes after creation and can be edited up to five times.
+    entities : dict | None
+        Entities which have been parsed out of the text of the Tweet.
+        Additionally see entities in Twitter Objects.
+    geo : dict | None
+        Contains details about the location tagged by the user in this Tweet,
+        if they specified one.
+    in_reply_to_user_id : int | None
+        If the represented Tweet is a reply, this field will contain the
+        original Tweet’s author ID. This will not necessarily always be the
+        user directly mentioned in the Tweet.
+    lang : str | None
+        Language of the Tweet, if detected by Twitter. Returned as a BCP47
+        language tag.
+
+    possibly_sensitive : bool | None
+        This field only surfaces when a Tweet contains a link. The meaning of
+        the field doesn’t pertain to the Tweet content itself, but instead it
+        is an indicator that the URL contained in the Tweet may contain content
+        or media identified as sensitive content.
+
+    public_metrics : dict | None
+        Public engagement metrics for the Tweet at the time of the request.
+    referenced_tweets : list[ReferencedTweet] | None
+        A list of Tweets this Tweet refers to. For example, if the parent Tweet
+        is a Retweet, a Retweet with comment (also known as Quoted Tweet) or a
+        Reply, it will include the related Tweet referenced to by its parent.
+    reply_settings : str | None
+        Shows you who can reply to a given Tweet. Fields returned are
+        "everyone", "mentioned_users", and "followers".
+    source : str | None
+        The name of the app the user Tweeted from.
+    withheld : dict | None
+        When present, contains withholding details for `withheld content`_.
+
+
+    """
+    tweet = client.get_tweet(id=tweet_id, tweet_fields=['author_id',
+                                                        'public_metrics',
+                                                        'lang',
+                                                        'attachments',
+                                                        'conversation_id',
+                                                        'entities',
+                                                        'in_reply_to_user_id',
+                                                        'referenced_tweets',
+                                                        'created_at',
+                                                        'context_annotations',
+                                                        'edit_controls',
+                                                        'geo',
+                                                        'possibly_sensitive',
+                                                        'reply_settings',
+                                                        'source',
+                                                        'withheld'
+
+                                                        ], user_fields=['public_metrics'])
+
+    return {'id': tweet.data['id'],
+            'text': tweet.data['text'],
+            'public_metrics': tweet.data['public_metrics'],
+            'author_id': tweet.data['author_id'],
+            'lang': tweet.data['lang'],
+            'attachments': tweet.data['attachments'],
+            'conversation_id': tweet.data['conversation_id'],
+            'entities': tweet.data['entities'],
+            'in_reply_to_user_id': tweet.data['in_reply_to_user_id'],
+            'referenced_tweets': tweet.data['referenced_tweets'],
+            'created_at': tweet.data['created_at'].timestamp(),
+            'edit_history_tweet_ids': tweet.data['referenced_tweets'],
+            'context_annotations': tweet.data['referenced_tweets'],
+            'edit_controls': tweet.data['edit_controls'],
+            'geo': tweet.data['geo'],
+            'possibly_sensitive': tweet.data['possibly_sensitive'],
+            'reply_settings': tweet.data['reply_settings'],
+            'source': tweet.data['source'],
+            'withheld': tweet.data['withheld'],
+            }
+
+
 def get_recent_tweets(searchtext: str, sort_by: str, limit: int = 100) -> List:
     """
     Get a sorted list of tweets on given searchtext in descending order on a given type ('Liked', 'Quoted', 'Replied' or 'Retweeted')
@@ -158,7 +268,6 @@ def get_popular_tweet_ids(searchtext: str, sort_by: str, limit: int = 100) -> Li
 
 
 def get_tweets_by_id(tweet_ids: List[int]) -> List:
-
     tweets = client.get_tweets(ids=tweet_ids, tweet_fields=['author_id', 'public_metrics', 'lang', 'attachments', 'conversation_id', 'entities', 'in_reply_to_user_id', 'referenced_tweets'], user_fields=['public_metrics'])
     serialized = []
 
