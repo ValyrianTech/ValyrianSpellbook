@@ -377,7 +377,7 @@ def unfollow_user(target_user_id: Union[int, str], user_auth: bool = True) -> di
 
 
 def get_user(user_id: Union[int, str, None] = None,
-             user_name: Union[str, None] = None) -> tweepy.user.User:
+             user_name: Union[str, None] = None) -> dict:
     """
     Get information about a specific user by giving either a user_id or user_name
 
@@ -406,7 +406,20 @@ def get_user(user_id: Union[int, str, None] = None,
                                username=user_name,
                                user_fields=['created_at', 'description', 'entities', 'location', 'pinned_tweet_id', 'profile_image_url', 'protected', 'public_metrics', 'url', 'verified', 'withheld'])
 
-    return response.data
+    return {'id': response.data['id'],
+            'username': response.data['username'],
+            'name': response.data['name'],
+            'created_at': response.data['created_at'],
+            'description': response.data['description'],
+            'entities': response.data['entities'],
+            'location': response.data['location'],
+            'pinned_tweet_id': response.data['pinned_tweet_id'],
+            'profile_image_url': response.data['profile_image_url'],
+            'protected': response.data['protected'],
+            'public_metrics': response.data['public_metrics'],
+            'url': response.data['url'],
+            'verified': response.data['verified'],
+            'withheld': response.data['withheld']}
 
 
 def like_tweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
