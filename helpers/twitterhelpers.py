@@ -244,7 +244,7 @@ def get_recent_tweets(searchtext: str, sort_by: str, limit: int = 100) -> List:
         recent_tweets.append(tweet_data)
 
     recent_tweets.sort(key=lambda x: -x[sort_by])
-    print(recent_tweets)
+    # print(recent_tweets)
     return recent_tweets
 
 
@@ -265,17 +265,15 @@ def get_popular_tweet_ids(searchtext: str, sort_by: str, limit: int = 100) -> Li
                 if referenced_tweet_type == 'retweeted' and tweet['references']['retweeted'] not in popular_tweet_ids:
                     popular_tweet_ids.append(tweet['references']['retweeted'])
 
-    print(f'Popular tweets: {popular_tweet_ids}')
     return popular_tweet_ids
 
 
-def get_tweets_by_id(tweet_ids: List[int]) -> List:
+def get_tweets_by_id(tweet_ids: List[str]) -> List:
     tweets = client.get_tweets(ids=tweet_ids, tweet_fields=['author_id', 'public_metrics', 'lang', 'attachments', 'conversation_id', 'entities', 'in_reply_to_user_id', 'referenced_tweets'], user_fields=['public_metrics'])
     serialized = []
 
     for tweet in tweets.data:
-
-        serialized_tweet = {'tweet_id': tweet.id,
+        serialized_tweet = {'tweet_id': str(tweet.id),
                             'text': tweet.text,
                             'Liked': tweet.public_metrics['like_count'],
                             'Quoted': tweet.public_metrics['quote_count'],
@@ -286,7 +284,7 @@ def get_tweets_by_id(tweet_ids: List[int]) -> List:
         if tweet.referenced_tweets is not None:
 
             for referenced_tweet in tweet.referenced_tweets:
-                references[referenced_tweet.type] = referenced_tweet.id
+                references[referenced_tweet.type] = str(referenced_tweet.id)
 
         serialized_tweet['references'] = references
         serialized.append(serialized_tweet)
