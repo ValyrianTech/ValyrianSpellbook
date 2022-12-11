@@ -1,6 +1,6 @@
 # Helper functions for Large Language Models like GPT-3
 from typing import List, Dict, Union
-from configurationhelpers import get_enable_openai, get_openai_api_key, get_openai_organization
+from helpers.configurationhelpers import get_enable_openai, get_openai_api_key, get_openai_organization
 
 import openai
 
@@ -29,7 +29,7 @@ def get_model_ids() -> List:
 
 
 def openai_complete(prompt: Union[str, List[str], None],
-                    model: str = 'text-davinci-002',
+                    model: str = 'text-davinci-003',
                     suffix: str = None,
                     max_tokens: int = 64,
                     temperature: float = 1,
