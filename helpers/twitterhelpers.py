@@ -195,7 +195,7 @@ def get_tweet(tweet_id: str) -> dict:
             'conversation_id': str(tweet.data['conversation_id']),
             'entities': tweet.data['entities'],
             'in_reply_to_user_id': str(tweet.data['in_reply_to_user_id']) if tweet.data['in_reply_to_user_id'] is not None else None,
-            'referenced_tweets': [{referencedTweet['type']: str(referencedTweet['id'])} for referencedTweet in tweet.data['referenced_tweets']],
+            'referenced_tweets': [{referencedTweet['type']: str(referencedTweet['id'])} for referencedTweet in tweet.data['referenced_tweets']] if tweet.data['referenced_tweets'] is not None else None,
             'created_at': tweet.data['created_at'].timestamp(),
             'edit_history_tweet_ids': [str(referencedTweet) for referencedTweet in tweet.data['edit_history_tweet_ids']],
             'context_annotations': tweet.data['context_annotations'],
