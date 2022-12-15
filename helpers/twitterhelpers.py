@@ -165,7 +165,7 @@ def get_tweet(tweet_id: str) -> dict:
 
     """
     tweet = client.get_tweet(id=tweet_id,
-                             expansions='author_id',
+                             expansions=['author_id', 'attachments.media_keys'],
                              tweet_fields=['author_id',
                                            'public_metrics',
                                            'lang',
@@ -183,7 +183,8 @@ def get_tweet(tweet_id: str) -> dict:
                                            'source',
                                            'withheld'
                                            ],
-                             user_fields=['username', 'name', 'public_metrics'],
+                             user_fields=['created_at', 'description', 'entities', 'location', 'pinned_tweet_id', 'profile_image_url', 'protected', 'public_metrics', 'url', 'verified', 'withheld'],
+                             media_fields=['url', 'duration_ms', 'height', 'preview_image_url', 'public_metrics', 'width', 'alt_text', 'variants']
                              )
 
     return tweet
