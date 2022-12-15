@@ -454,7 +454,7 @@ def create_tweet(text: Union[str, None] = None,
                                    direct_message_deep_link=direct_message_deep_link,
                                    user_auth=user_auth)
 
-    return response.data
+    return response
 
 
 def get_direct_message_events(dm_conversation_id: Union[str, None] = None,
