@@ -1,5 +1,4 @@
 from typing import Union, List, Dict
-from datetime import datetime
 
 import tweepy
 import random
@@ -7,8 +6,6 @@ import requests
 import os
 
 from helpers.configurationhelpers import get_twitter_consumer_key, get_twitter_consumer_secret, get_twitter_access_token, get_twitter_access_token_secret, get_twitter_bearer_token
-
-import time
 
 
 # For Twitter API to work, you need to enable developer portal on your twitter account
@@ -155,7 +152,7 @@ def get_tweet(tweet_id: str) -> dict:
         Public engagement metrics for the Tweet at the time of the request.
     referenced_tweets : list[ReferencedTweet] | None
         A list of Tweets this Tweet refers to. For example, if the parent Tweet
-        is a Retweet, a Retweet with comment (also known as Quoted Tweet) or a
+        is a Retweet, a Retweet with comment (also known as quote_count Tweet) or a
         Reply, it will include the related Tweet referenced to by its parent.
     reply_settings : str | None
         Shows you who can reply to a given Tweet. Fields returned are
@@ -167,129 +164,72 @@ def get_tweet(tweet_id: str) -> dict:
 
 
     """
-    tweet = client.get_tweet(id=tweet_id, tweet_fields=['author_id',
-                                                        'public_metrics',
-                                                        'lang',
-                                                        'attachments',
-                                                        'conversation_id',
-                                                        'entities',
-                                                        'in_reply_to_user_id',
-                                                        'referenced_tweets',
-                                                        'created_at',
-                                                        'context_annotations',
-                                                        'edit_controls',
-                                                        'geo',
-                                                        'possibly_sensitive',
-                                                        'reply_settings',
-                                                        'source',
-                                                        'withheld'
+    tweet = client.get_tweet(id=tweet_id,
+                             expansions='author_id',
+                             tweet_fields=['author_id',
+                                           'public_metrics',
+                                           'lang',
+                                           'attachments',
+                                           'conversation_id',
+                                           'entities',
+                                           'in_reply_to_user_id',
+                                           'referenced_tweets',
+                                           'created_at',
+                                           'context_annotations',
+                                           'edit_controls',
+                                           'geo',
+                                           'possibly_sensitive',
+                                           'reply_settings',
+                                           'source',
+                                           'withheld'
+                                           ],
+                             user_fields=['username', 'name', 'public_metrics'],
+                             )
 
-                                                        ], user_fields=['public_metrics'])
-
-    return {'id': str(tweet.data['id']),
-            'text': tweet.data['text'],
-            'public_metrics': tweet.data['public_metrics'],
-            'author_id': str(tweet.data['author_id']),
-            'lang': tweet.data['lang'],
-            'attachments': tweet.data['attachments'],
-            'conversation_id': str(tweet.data['conversation_id']),
-            'entities': tweet.data['entities'],
-            'in_reply_to_user_id': str(tweet.data['in_reply_to_user_id']) if tweet.data['in_reply_to_user_id'] is not None else None,
-            'referenced_tweets': [{referencedTweet['type']: str(referencedTweet['id'])} for referencedTweet in tweet.data['referenced_tweets']] if tweet.data['referenced_tweets'] is not None else None,
-            'created_at': tweet.data['created_at'].timestamp(),
-            'edit_history_tweet_ids': [str(referencedTweet) for referencedTweet in tweet.data['edit_history_tweet_ids']],
-            'context_annotations': tweet.data['context_annotations'],
-            'edit_controls': {'edits_remaining': tweet.data['edit_controls']['edits_remaining'],
-                              'is_edit_eligible': tweet.data['edit_controls']['is_edit_eligible'],
-                              'editable_until': tweet.data['edit_controls']['editable_until'].timestamp()},
-            'geo': tweet.data['geo'],
-            'possibly_sensitive': tweet.data['possibly_sensitive'],
-            'reply_settings': tweet.data['reply_settings'],
-            'source': tweet.data['source'],
-            'withheld': tweet.data['withheld'],
-            }
+    return tweet
 
 
 def get_recent_tweets(searchtext: str, sort_by: str, limit: int = 100) -> List:
     """
-    Get a sorted list of tweets on given searchtext in descending order on a given type ('Liked', 'Quoted', 'Replied' or 'Retweeted')
+    Get a sorted list of tweets on given searchtext in descending order on a given type ('like_count', 'quote_count', 'reply_count' or 'retweet_count')
 
     :param searchtext: String - the text to search for
-    :param sort_by: String - 'Liked', 'Quoted', 'Replied' or 'Retweeted'
+    :param sort_by: String - 'like_count', 'quote_count', 'reply_count' or 'retweet_count'
     :param limit: Int - the number of items
     :return: List
     """
-    if sort_by not in ['Liked', 'Quoted', 'Replied', 'Retweeted']:
+    if sort_by not in ['like_count', 'quote_count', 'reply_count', 'retweet_count']:
         raise Exception(f'Invalid sort_by value: {sort_by}')
 
     tweets = get_tweets(searchtext=searchtext, limit=limit)
-
-    recent_tweets = []
-
-    for tweet in tweets:
-        tweet_data = {'tweet_id': tweet.id,
-                      'text': tweet.text,
-                      'Liked': tweet.public_metrics['like_count'],
-                      'Quoted': tweet.public_metrics['quote_count'],
-                      'Retweeted': tweet.public_metrics['retweet_count'],
-                      'Replied': tweet.public_metrics['reply_count']}
-
-        if tweet.referenced_tweets is not None:
-            references = {}
-            for referenced_tweet in tweet.referenced_tweets:
-                references[referenced_tweet.type] = referenced_tweet.id
-
-            tweet_data['references'] = references
-
-        recent_tweets.append(tweet_data)
-
-    recent_tweets.sort(key=lambda x: -x[sort_by])
-    # print(recent_tweets)
-    return recent_tweets
+    tweets.sort(key=lambda x: -x['public_metrics'][sort_by])
+    return tweets
 
 
 def get_popular_tweet_ids(searchtext: str, sort_by: str, limit: int = 100) -> List:
     """
-    Get a sorted list of tweets on given searchtext in descending order on a given type ('Liked', 'Quoted', 'Replied' or 'Retweeted')
+    Get a sorted list of tweets on given searchtext in descending order on a given type ('like_count', 'quote_count', 'reply_count' or 'retweet_count')
 
     :param searchtext: String - the text to search for
-    :param sort_by: String - 'Liked', 'Quoted', 'Replied' or 'Retweeted'
+    :param sort_by: String - 'like_count', 'quote_count', 'reply_count' or 'retweet_count'
     :param limit: Int - the number of items
     :return: List
     """
     recent_tweets = get_recent_tweets(searchtext=searchtext, sort_by=sort_by, limit=limit)
+
     popular_tweet_ids = []
     for tweet in recent_tweets:
-        if 'references' in tweet:
-            for referenced_tweet_type in tweet['references']:
-                if referenced_tweet_type == 'retweeted' and tweet['references']['retweeted'] not in popular_tweet_ids:
-                    popular_tweet_ids.append(tweet['references']['retweeted'])
+        if 'referenced_tweets' in tweet:
+            for referenced_tweet in tweet['referenced_tweets']:
+                if referenced_tweet['type'] == 'retweeted' and referenced_tweet['id'] not in popular_tweet_ids:
+                    popular_tweet_ids.append(referenced_tweet['id'])
 
     return popular_tweet_ids
 
 
-def get_tweets_by_id(tweet_ids: List[str]) -> List:
+def get_tweets_by_id(tweet_ids: List[str]) -> Dict:
     tweets = client.get_tweets(ids=tweet_ids, tweet_fields=['author_id', 'public_metrics', 'lang', 'attachments', 'conversation_id', 'entities', 'in_reply_to_user_id', 'referenced_tweets'], user_fields=['public_metrics'])
-    serialized = []
-
-    for tweet in tweets.data:
-        serialized_tweet = {'tweet_id': str(tweet.id),
-                            'text': tweet.text,
-                            'Liked': tweet.public_metrics['like_count'],
-                            'Quoted': tweet.public_metrics['quote_count'],
-                            'Retweeted': tweet.public_metrics['retweet_count'],
-                            'Replied': tweet.public_metrics['reply_count']}
-
-        references = {}
-        if tweet.referenced_tweets is not None:
-
-            for referenced_tweet in tweet.referenced_tweets:
-                references[referenced_tweet.type] = str(referenced_tweet.id)
-
-        serialized_tweet['references'] = references
-        serialized.append(serialized_tweet)
-
-    return serialized
+    return tweets
 
 
 def get_users(ids):
@@ -405,21 +345,7 @@ def get_user(user_id: Union[int, str, None] = None,
     response = client.get_user(id=user_id,
                                username=user_name,
                                user_fields=['created_at', 'description', 'entities', 'location', 'pinned_tweet_id', 'profile_image_url', 'protected', 'public_metrics', 'url', 'verified', 'withheld'])
-
-    return {'id': str(response.data['id']),
-            'username': response.data['username'],
-            'name': response.data['name'],
-            'created_at': response.data['created_at'].timestamp(),
-            'description': response.data['description'],
-            'entities': response.data['entities'],
-            'location': response.data['location'],
-            'pinned_tweet_id': str(response.data['pinned_tweet_id']),
-            'profile_image_url': response.data['profile_image_url'],
-            'protected': response.data['protected'],
-            'public_metrics': response.data['public_metrics'],
-            'url': response.data['url'],
-            'verified': response.data['verified'],
-            'withheld': response.data['withheld']}
+    return response
 
 
 def like_tweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
@@ -428,7 +354,7 @@ def like_tweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
 
     :param tweet_id: Int | String - The ID of the Tweet that you would like to Like.
     :param user_auth: bool - Whether or not to use OAuth 1.0a User Context to authenticate (default=True)
-    :return: Dict - a dict with key 'Liked' (boolean)
+    :return: Dict - a dict with key 'like_count' (boolean)
     """
     response = client.like(tweet_id=tweet_id, user_auth=user_auth)
     return response.data
@@ -440,7 +366,7 @@ def unlike_tweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
 
     :param tweet_id: Int | String - The ID of the Tweet that you would like to unlike.
     :param user_auth: bool - Whether or not to use OAuth 1.0a User Context to authenticate (default=True)
-    :return: Dict - a dict with key 'Liked' (boolean)
+    :return: Dict - a dict with key 'like_count' (boolean)
     """
     response = client.unlike(tweet_id=tweet_id, user_auth=user_auth)
     return response.data
@@ -502,7 +428,7 @@ def create_tweet(text: Union[str, None] = None,
     :param in_reply_to_tweet_id: Tweet ID of the Tweet being replied to. Please note that in_reply_to_tweet_id needs to be in the request if exclude_reply_user_ids is present.
     :param reply_settings: Settings to indicate who can reply to the Tweet. Limited to “mentionedUsers” and “following”. If the field isn’t specified, it will default to everyone.
     :param exclude_reply_user_ids:  A list of User IDs to be excluded from the reply Tweet thus removing a user from a thread.
-    :param quote_tweet_id: Link to the Tweet being quoted.
+    :param quote_tweet_id: Link to the Tweet being quote_count.
     :param poll_options: A list of poll options for a Tweet with a poll.
     :param poll_duration_minutes: Duration of the poll in minutes for a Tweet with a poll. This is only required if the request includes poll.options.
     :param media_tagged_user_ids: A list of User IDs being tagged in the Tweet with Media. If the user you’re tagging doesn’t have photo-tagging enabled, their names won’t show up in the list of tagged users even though the Tweet is successfully created.
@@ -605,4 +531,5 @@ client = tweepy.Client(bearer_token=get_twitter_bearer_token(),
                        access_token=get_twitter_access_token(),
                        access_token_secret=get_twitter_access_token_secret(),
                        consumer_key=get_twitter_consumer_key(),
-                       consumer_secret=get_twitter_consumer_secret())
+                       consumer_secret=get_twitter_consumer_secret(),
+                       return_type=dict)
