@@ -229,6 +229,9 @@ def get_popular_tweet_ids(searchtext: str, sort_by: str, limit: int = 100) -> Li
 
 
 def get_tweets_by_id(tweet_ids: List[str]) -> Dict:
+    if not tweet_ids:
+        return {}
+
     tweets = client.get_tweets(ids=tweet_ids, tweet_fields=['author_id', 'public_metrics', 'lang', 'attachments', 'conversation_id', 'entities', 'in_reply_to_user_id', 'referenced_tweets'], user_fields=['public_metrics'])
     return tweets
 
