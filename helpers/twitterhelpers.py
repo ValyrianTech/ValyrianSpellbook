@@ -273,7 +273,7 @@ def get_trending_topics(woeid: Union[int, None] = None) -> List[tuple]:
     Get trending topics of a location
 
     :param woeid: Int - the woeid of the location
-    :return: A sorted List of tuples (<topic>, <tweet_count>) in descending order
+    :return: A sorted List of tuples (<topic>, <tweet_count>, <query>, <url>) in descending order by tweet count
     """
     # WOEID 1 = worldwide, see api.available_trends()
     if woeid is None:
@@ -282,7 +282,7 @@ def get_trending_topics(woeid: Union[int, None] = None) -> List[tuple]:
 
     trends = api.get_place_trends(id=woeid)
 
-    topics = [(trend['name'], trend['tweet_volume'] if trend['tweet_volume'] is not None else 0) for trend in trends[0]['trends']]
+    topics = [(trend['name'], trend['tweet_volume'] if trend['tweet_volume'] is not None else 0, trend['query'], trend['url']) for trend in trends[0]['trends']]
 
     topics.sort(key=lambda x: -x[1])
     return topics
