@@ -250,11 +250,11 @@ class SpellbookRESTAPI(Bottle):
 
             if request.headers is not None:
                 for key, value in request.headers.items():
-                    REQUESTS_LOG.info('  HEADERS | %s: %s' % (key, value))
+                    REQUESTS_LOG.info('  HEADERS | %s: %s' % (key, str(value).encode('utf-8')))
 
             if request.json is not None:
                 for key, value in request.json.items():
-                    REQUESTS_LOG.info('  BODY | %s: %s' % (key, value))
+                    REQUESTS_LOG.info('  BODY | %s: %s' % (key, str(value).encode('utf-8')))
 
             actual_response = response
             try:
