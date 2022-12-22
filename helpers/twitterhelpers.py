@@ -232,7 +232,11 @@ def get_tweets_by_id(tweet_ids: List[str]) -> Dict:
     if not tweet_ids:
         return {}
 
-    tweets = client.get_tweets(ids=tweet_ids, tweet_fields=['author_id', 'public_metrics', 'lang', 'attachments', 'conversation_id', 'entities', 'in_reply_to_user_id', 'referenced_tweets'], user_fields=['public_metrics'])
+    tweets = client.get_tweets(ids=tweet_ids,
+                               expansions=['author_id', 'attachments.media_keys'],
+                               tweet_fields=['author_id', 'public_metrics', 'lang', 'attachments', 'conversation_id', 'entities', 'in_reply_to_user_id', 'referenced_tweets'],
+                               user_fields=['created_at', 'description', 'entities', 'location', 'pinned_tweet_id', 'profile_image_url', 'protected', 'public_metrics', 'url', 'verified', 'withheld'],
+                               media_fields=['url', 'duration_ms', 'height', 'preview_image_url', 'public_metrics', 'width', 'alt_text', 'variants'])
     return tweets
 
 
