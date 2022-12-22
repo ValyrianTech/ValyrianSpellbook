@@ -90,7 +90,7 @@ def get_tweets(searchtext, limit=100) -> List[tweepy.tweet.Tweet]:
         - referenced_tweets
     """
     tweets = []
-    for i, tweet in enumerate(tweepy.Paginator(client.search_recent_tweets, searchtext, tweet_fields=['author_id', 'public_metrics', 'lang', 'attachments', 'conversation_id', 'entities', 'in_reply_to_user_id', 'referenced_tweets'], user_fields=['public_metrics'], max_results=100).flatten(limit=limit)):
+    for i, tweet in enumerate(tweepy.Paginator(client.search_recent_tweets, searchtext, tweet_fields=['author_id', 'public_metrics', 'lang', 'attachments', 'conversation_id', 'entities', 'in_reply_to_user_id', 'referenced_tweets', 'possibly_sensitive'], user_fields=['public_metrics'], max_results=100).flatten(limit=limit)):
         tweets.append(tweet)
 
     return tweets
@@ -220,6 +220,9 @@ def get_popular_tweet_ids(searchtext: str, sort_by: str, limit: int = 100) -> Li
 
     popular_tweet_ids = []
     for tweet in recent_tweets:
+        if tweet['possibly_sensitive'] is True:
+            continue
+
         if 'referenced_tweets' in tweet:
             for referenced_tweet in tweet['referenced_tweets']:
                 if referenced_tweet['type'] == 'retweeted' and referenced_tweet['id'] not in popular_tweet_ids:
@@ -234,7 +237,7 @@ def get_tweets_by_id(tweet_ids: List[str]) -> Dict:
 
     tweets = client.get_tweets(ids=tweet_ids,
                                expansions=['author_id', 'attachments.media_keys'],
-                               tweet_fields=['author_id', 'public_metrics', 'lang', 'attachments', 'conversation_id', 'entities', 'in_reply_to_user_id', 'referenced_tweets'],
+                               tweet_fields=['author_id', 'public_metrics', 'lang', 'attachments', 'conversation_id', 'entities', 'in_reply_to_user_id', 'referenced_tweets', 'possibly_sensitive'],
                                user_fields=['created_at', 'description', 'entities', 'location', 'pinned_tweet_id', 'profile_image_url', 'protected', 'public_metrics', 'url', 'verified', 'withheld'],
                                media_fields=['url', 'duration_ms', 'height', 'preview_image_url', 'public_metrics', 'width', 'alt_text', 'variants'])
     return tweets
