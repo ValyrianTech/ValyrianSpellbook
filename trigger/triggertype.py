@@ -17,4 +17,5 @@ class TriggerType(object):
     HTTPGETREQUEST = 'HTTPGetRequest'  # Triggers when a HTTP GET request is made
     HTTPPOSTREQUEST = 'HTTPPostRequest'  # Triggers when a HTTP POST request is made
     HTTPDELETEREQUEST = 'HTTPDeleteRequest'  # Triggers when a HTTP DELETE request is made
+    HTTPOPTIONSREQUEST = 'HTTPOptionsRequest' # Triggers when a HTTP OPTIONS request is made
     # todo add utxotrigger
