@@ -23,7 +23,7 @@ from helpers.configurationhelpers import get_enable_ssl, get_ssl_certificate, ge
 from helpers.hotwallethelpers import get_hot_wallet
 from helpers.loghelpers import LOG, REQUESTS_LOG, get_logs
 from helpers.triggerhelpers import get_triggers, get_trigger_config, save_trigger, delete_trigger, activate_trigger, \
-    check_triggers, verify_signed_message, http_get_request, http_post_request, http_delete_request, sign_message
+    check_triggers, verify_signed_message, http_get_request, http_post_request, http_delete_request, http_options_request, sign_message
 from helpers.mailhelpers import sendmail
 from inputs.inputs import get_sil, get_profile, get_sul
 from linker.linker import get_lal, get_lbl, get_lrl, get_lsl
@@ -166,7 +166,7 @@ class SpellbookRESTAPI(Bottle):
 
         # Additional routes for Rest API endpoints
         self.route('/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.http_get_request)
-        self.route('/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='OPTIONS', callback=self.http_get_request)
+        self.route('/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='OPTIONS', callback=self.http_options_request)
         self.route('/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.http_post_request)
         self.route('/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.http_delete_request)
         self.route('/html/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.html_request)
@@ -535,6 +535,19 @@ class SpellbookRESTAPI(Bottle):
     def sign_message():
         response.content_type = 'application/json'
         return sign_message(**request.json)
+
+    @staticmethod
+    @enable_cors
+    @output_json
+    def http_options_request(trigger_id):
+        response.content_type = 'application/json'
+        data = request.json if request.json is not None else {}
+
+        # Also add parameters passed via the query string to the data, if any parameters have the same name then the query string has priority
+        query = dict(request.query)
+        data.update(query)
+
+        return http_options_request(trigger_id, **data)
 
     @staticmethod
     @enable_cors

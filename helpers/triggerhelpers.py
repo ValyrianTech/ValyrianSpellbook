@@ -263,6 +263,22 @@ def sign_message(**data):
             'message': message}
 
 
+def http_options_request(trigger_id, **data):
+    triggers = get_triggers()
+    if trigger_id not in triggers:
+        return {'error': 'Unknown trigger id: %s' % trigger_id}
+
+    trigger = get_trigger(trigger_id)
+    if trigger.trigger_type != TriggerType.HTTPOPTIONSREQUEST:
+        return {'error': 'Trigger %s is not a HTTP OPTIONS request trigger but a %s trigger' % (trigger_id, trigger.trigger_type)}
+
+    if trigger.status == 'Active':
+        LOG.info('Trigger %s received a HTTP OPTIONS request' % trigger_id)
+        if len(data) > 0:
+            trigger.set_json_data(data=data)
+        return trigger.activate()
+
+
 def http_get_request(trigger_id, **data):
     triggers = get_triggers()
     if trigger_id not in triggers:
