@@ -312,7 +312,7 @@ def follow_user(target_user_id: Union[int, str], user_auth: bool = True) -> dict
     :return: Dict - a dict with keys 'following' and 'pending_follow', both booleans
     """
     response = client.follow_user(target_user_id=target_user_id, user_auth=user_auth)
-    return response.data
+    return response
 
 
 def unfollow_user(target_user_id: Union[int, str], user_auth: bool = True) -> dict:
@@ -324,7 +324,7 @@ def unfollow_user(target_user_id: Union[int, str], user_auth: bool = True) -> di
     :return: Dict - a dict with keys 'following' and 'pending_follow', both booleans
     """
     response = client.unfollow_user(target_user_id=target_user_id, user_auth=user_auth)
-    return response.data
+    return response
 
 
 def get_user(user_id: Union[int, str, None] = None,
@@ -368,7 +368,7 @@ def like_tweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
     :return: Dict - a dict with key 'like_count' (boolean)
     """
     response = client.like(tweet_id=tweet_id, user_auth=user_auth)
-    return response.data
+    return response
 
 
 def unlike_tweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
@@ -380,7 +380,7 @@ def unlike_tweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
     :return: Dict - a dict with key 'like_count' (boolean)
     """
     response = client.unlike(tweet_id=tweet_id, user_auth=user_auth)
-    return response.data
+    return response
 
 
 def delete_tweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
@@ -392,7 +392,7 @@ def delete_tweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
     :return: Dict
     """
     response = client.delete_tweet(id=tweet_id, user_auth=user_auth)
-    return response.data
+    return response
 
 
 def retweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
@@ -404,7 +404,7 @@ def retweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
     :return: Dict - a dict with key 'retweeted' (boolean)
     """
     response = client.retweet(tweet_id=tweet_id, user_auth=user_auth)
-    return response.data
+    return response
 
 
 def unretweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
@@ -416,7 +416,7 @@ def unretweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
     :return: Dict - a dict with key 'retweeted' (boolean)
     """
     response = client.unretweet(source_tweet_id=tweet_id, user_auth=user_auth)
-    return response.data
+    return response
 
 
 def create_tweet(text: Union[str, None] = None,
@@ -509,7 +509,7 @@ def get_direct_message_events(dm_conversation_id: Union[str, None] = None,
                                                 tweet_fields=tweet_fields,
                                                 user_fields=user_fields,
                                                 user_auth=user_auth)
-    return response.data
+    return response
 
 
 def create_direct_message(dm_conversation_id: Union[str, None] = None,
@@ -534,7 +534,7 @@ def create_direct_message(dm_conversation_id: Union[str, None] = None,
                                             media_id=media_id,
                                             text=text,
                                             user_auth=user_auth)
-    return response.data
+    return response
 
 
 api = get_twitter_api()
