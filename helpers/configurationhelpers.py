@@ -228,3 +228,28 @@ def get_openai_api_key():
 @verify_config('OpenAI', 'organization')
 def get_openai_organization():
     return spellbook_config().get('OpenAI', 'organization')
+
+
+@verify_config('Mastodon', 'enable_mastodon')
+def get_enable_mastodon():
+    return spellbook_config().getboolean('Mastodon', 'enable_mastodon')
+
+
+@verify_config('Mastodon', 'client_id')
+def get_mastodon_client_id():
+    return spellbook_config().get('Mastodon', 'client_id')
+
+
+@verify_config('Mastodon', 'client_secret')
+def get_mastodon_client_secret():
+    return spellbook_config().get('Mastodon', 'client_secret')
+
+
+@verify_config('Mastodon', 'access_token')
+def get_mastodon_access_token():
+    return spellbook_config().get('Mastodon', 'access_token')
+
+
+@verify_config('Mastodon', 'api_base_url')
+def get_mastodon_api_base_url():
+    return spellbook_config().get('Mastodon', 'api_base_url')
