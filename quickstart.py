@@ -210,6 +210,31 @@ if config.getboolean(section='OpenAI', option='enable_openai') is True:
     config.set(section='OpenAI', option='organization', value=organization)
 
 
+# Mastodon settings
+current_enable_mastodon = config.get(section='Mastodon', option='enable_mastodon')
+print('\nNote: To use Mastodon you need to enable developer access on you mastodon account, to actually post tweets you also need to apply for elevated access to the Mastodon API.')
+enable_mastodon = input('Would you like to enable Mastodon? (current=%s): ' % current_enable_mastodon) or current_enable_mastodon
+enable_mastodon = 'true' if enable_mastodon in ['true', 'True', True, 'Yes' 'yes', 'y', 'Y'] else 'false'
+config.set(section='Mastodon', option='enable_mastodon', value=enable_mastodon)
+
+if config.getboolean(section='Mastodon', option='enable_mastodon') is True:
+    current_client_id = config.get(section='Mastodon', option='client_id')
+    client_id = input('Enter the client_id or press enter to keep the current value (%s) ' % current_client_id) or current_client_id
+    config.set(section='Mastodon', option='client_id', value=client_id)
+
+    current_client_secret = config.get(section='Mastodon', option='client_secret')
+    client_secret = input('Enter the client_secret or press enter to keep the current value (%s) ' % current_client_secret) or current_client_secret
+    config.set(section='Mastodon', option='client_secret', value=client_secret)
+
+    current_access_token = config.get(section='Mastodon', option='access_token')
+    access_token = input('Enter the access token or press enter to keep the current value (%s) ' % current_access_token) or current_access_token
+    config.set(section='Mastodon', option='access_token', value=access_token)
+
+    current_api_base_url = config.get(section='Mastodon', option='api_base_url')
+    api_base_url = input('Enter the api_base_url or press enter to keep the current value (%s) ' % current_api_base_url) or current_api_base_url
+    config.set(section='Mastodon', option='api_base_url', value=api_base_url)
+
+
 with open(configuration_file, 'w') as output_file:
     config.write(output_file)
     print('spellbook.conf file updated')
