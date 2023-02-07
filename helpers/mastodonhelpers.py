@@ -1,10 +1,9 @@
-from pprint import pprint
 from typing import Union, List
 from helpers.configurationhelpers import get_enable_mastodon, get_mastodon_client_id, get_mastodon_client_secret, get_mastodon_access_token, get_mastodon_api_base_url
 
 import mastodon
 
-api = None
+from helpers.loghelpers import LOG
 
 
 def get_mastodon_api():
@@ -50,7 +49,9 @@ def get_popular_toot_ids(topic: str, limit: int = 1000) -> List:
     toot_ids = []
 
     timeline = api.timeline_hashtag(topic, limit=40)
+
     items = len(timeline)
+    LOG.debug(f'Got {items}/{limit} toots for topic {topic}')
 
     for status in timeline:
         if status['in_reply_to_id'] is not None:
@@ -59,6 +60,7 @@ def get_popular_toot_ids(topic: str, limit: int = 1000) -> List:
     while items < limit and len(timeline) != 0:
         timeline = api.fetch_next(timeline)
         items += len(timeline)
+        LOG.debug(f'Got {items}/{limit} toots for topic {topic}')
         for status in timeline:
 
             if status['in_reply_to_id'] is not None:
