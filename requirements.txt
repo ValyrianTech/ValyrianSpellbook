@@ -20,3 +20,4 @@ openai==0.25.0
 tweepy==4.12.1
 transformers~=4.26.0
 mastodon.py==1.8.0
+beautifulsoup4==4.11.2
