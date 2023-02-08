@@ -81,4 +81,18 @@ def get_toots_by_id(toot_ids: List) -> dict:
     return {'data': toots}
 
 
+def post_toot(text: str, media_ids: List = None, sensitive: bool = False, spoiler_text: str = None, visibility: str = 'public'):
+    """
+    Post a toot
+
+    :param text: String - the text of the toot
+    :param media_ids: List - a list of media IDs to attach to the toot
+    :param sensitive: Bool - whether the toot is sensitive
+    :param spoiler_text: String - the text to show before the toot
+    :param visibility: String - the visibility of the toot
+    :return: None
+    """
+    api.status_post(text, media_ids=media_ids, sensitive=sensitive, spoiler_text=spoiler_text, visibility=visibility)
+
+
 api = get_mastodon_api()
