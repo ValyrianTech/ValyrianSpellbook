@@ -79,7 +79,7 @@ def openai_complete(prompt: Union[str, List[str], None],
     return response
 
 
-def openai_chat_complete(messages: Union[str, List[str], None],
+def openai_chat_complete(messages: List[Dict[str: str], None],
                          model: str = 'gpt-3.5-turbo',
                          max_tokens: int = 64,
                          temperature: float = 1,
