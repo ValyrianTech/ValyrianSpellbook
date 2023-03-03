@@ -17,7 +17,7 @@ def sign_message(message, private_key):
 def verify_message(address, message, signature):
     print(f'Verifying message: {message} with signature: {signature} for address: {address}')
     tmp = BitcoinMessage(message)
-    print(f'BitcoinMessage: {tmp}')
+    print(f'BitcoinMessage: {tmp.GetHash()}')
     try:
         return VerifyMessage(address=address, message=BitcoinMessage(message), sig=signature)
     except Exception as ex:
