@@ -8,6 +8,32 @@ from helpers.messagehelpers import verify_message, sign_message
 from helpers.configurationhelpers import get_use_testnet
 
 
+# Note if this test fails, check if openssl and ripemd160 are installed
+# see: https://stackoverflow.com/questions/72409563/unsupported-hash-type-ripemd160-with-hashlib-in-python
+# To quickly enable it, find the directory that holds your OpenSSL config file or a symlink to it, by running the below command:
+#
+# openssl version -d
+# You can now go to the directory and edit the config file (it may be necessary to use sudo):
+#
+# nano openssl.cnf
+# Make sure that the config file contains following lines (you might need to add the legacy bits):
+#
+# openssl_conf = openssl_init
+#
+# [openssl_init]
+# providers = provider_sect
+#
+# [provider_sect]
+# default = default_sect
+# legacy = legacy_sect
+#
+# [default_sect]
+# activate = 1
+#
+# [legacy_sect]
+# activate = 1
+
+
 class TestSignMessage(object):
     # For some reason there are multiple possible valid signatures, testing both the signatures found on the
     # https://github.com/stequald/bitcoin-sign-message readme as the ones that are actually calculated
