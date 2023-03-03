@@ -8,7 +8,9 @@ from helpers.messagehelpers import verify_message, sign_message
 from helpers.configurationhelpers import get_use_testnet
 
 
-# Note if this test fails, check if openssl and ripemd160 are installed
+# Note: if this test fails, check if openssl and ripemd160 are installed
+# Also the configuration must be set to use mainnet and not testnet
+
 # see: https://stackoverflow.com/questions/72409563/unsupported-hash-type-ripemd160-with-hashlib-in-python
 # To quickly enable it, find the directory that holds your OpenSSL config file or a symlink to it, by running the below command:
 #
