@@ -73,6 +73,10 @@ class SpellbookScript(object):
                 return self.process_text(self.message)
 
     def process_ipfs_hash(self, ipfs_hash):
+        # if ipfs_hash does not start with '/ipfs/' add it
+        if ipfs_hash[:6] != '/ipfs/':
+            ipfs_hash = '/ipfs/' + ipfs_hash
+
         LOG.info('Retrieving IPFS object')
 
         if self.ipfs_object is not None:
