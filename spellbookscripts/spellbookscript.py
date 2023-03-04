@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import hashlib
+
 import simplejson
 
 from helpers.loghelpers import LOG
@@ -38,6 +40,7 @@ class SpellbookScript(object):
         self.ipfs_hash = None
         self.ipfs_object = kwargs['ipfs_object'] if 'ipfs_object' in kwargs else None
         self.text = None
+        self.sha256_hash = None
 
         self.http_response = None
         self.new_actions = []
@@ -58,6 +61,12 @@ class SpellbookScript(object):
             self.ipfs_hash = self.message[6:]
             LOG.info('Message contains a IPFS hash: %s' % self.ipfs_hash)
             return self.process_ipfs_hash(ipfs_hash=self.ipfs_hash)
+
+        elif self.message[:8] == '/sha256/':
+            self.sha256_hash = self.message[8:]
+            LOG.info('Message contains a SHA256 hash: %s' % self.sha256_hash)
+            return self.process_sha256_hash(sha256_hash=self.sha256_hash)
+
         else:
             try:
                 json_data = simplejson.loads(self.message)
@@ -98,6 +107,23 @@ class SpellbookScript(object):
         except Exception as ex:
             LOG.error('IPFS hash does not contain valid json data: %s' % ex)
             return
+
+    def process_sha256_hash(self, sha256_hash):
+        if self.data is None:
+            LOG.error('SHA256 hash given, but no data to check against')
+            return False
+
+        # check if sha256_hash is valid and corresponds with the data in self.data
+        control_hash = hashlib.sha256(simplejson.dumps(self.data, sort_keys=True).encode('utf-8')).hexdigest()
+        if sha256_hash != control_hash:
+            LOG.error('SHA256 hash does not correspond with the data given: %s != %s' % (sha256_hash, control_hash))
+            return False
+
+        self.json = self.data
+
+        return True
+
+
 
     def process_json_data(self, json_data):
         LOG.info('Processing JSON data')
