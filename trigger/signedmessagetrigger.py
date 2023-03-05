@@ -15,6 +15,7 @@ class SignedMessageTrigger(Trigger):
         self.message_signature = None
         self.message_data = None
         self.ipfs_object = None
+        self.json = None
 
     def conditions_fulfilled(self):
         # SignedMessage triggers can only be triggered when a verified signed message is received, so always return False
@@ -38,7 +39,8 @@ class SignedMessageTrigger(Trigger):
                     'address': self.message_address,
                     'signature': self.message_signature,
                     'data': self.message_data,
-                    'ipfs_object': self.ipfs_object})
+                    'ipfs_object': self.ipfs_object,
+                    'json': self.json})
         return ret
 
     def process_message(self, address, message, signature, data=None, ipfs_object=None):
@@ -50,5 +52,11 @@ class SignedMessageTrigger(Trigger):
         self.message_signature = signature
         self.message_data = data
         self.ipfs_object = ipfs_object
+
+    def set_json_data(self, data):
+        self.json = data
+
+    def set_message_data(self, data):
+        self.message_data = data
 
 
