@@ -110,7 +110,7 @@ class SpellbookScript(object):
 
     def process_sha256_hash(self, sha256_hash):
         if self.data is None:
-            LOG.error('SHA256 hash given, but no data to check against')
+            LOG.warning('SHA256 hash given, but no data to check against')  # This can happen when the trigger is created by another trigger
             return False
 
         # check if sha256_hash is valid and corresponds with the data in self.data
