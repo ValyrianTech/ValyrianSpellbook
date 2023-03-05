@@ -55,8 +55,6 @@ def sign_data(message_data: dict, account: int, index: int):
     message = '/sha256/%s' % sha256_hash
 
     signature = sign_message(message=message, private_key=private_key)
-    LOG.info('Signed message %s with private key %s of address %s to get signature %s' % (message, private_key, address, signature))
-
     assert verify_message(address=address, message=message, signature=signature)
 
     data = {'address': address,
