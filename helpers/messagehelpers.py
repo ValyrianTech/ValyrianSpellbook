@@ -7,6 +7,7 @@ from bitcoin.wallet import CBitcoinSecret
 from bitcoin.signmessage import BitcoinMessage, VerifyMessage, SignMessage
 from helpers.hotwallethelpers import get_address_from_wallet, get_private_key_from_wallet
 from helpers.configurationhelpers import get_use_testnet
+from helpers.loghelpers import LOG
 
 bitcoin.SelectParams(name='testnet' if get_use_testnet() is True else 'mainnet')
 
@@ -54,6 +55,8 @@ def sign_data(message_data: dict, account: int, index: int):
     message = '/sha256/%s' % sha256_hash
 
     signature = sign_message(message=message, private_key=private_key)
+    LOG.info('Signed message %s with private key %s of address %s to get signature %s' % (message, private_key, address, signature))
+
     assert verify_message(address=address, message=message, signature=signature)
 
     data = {'address': address,
