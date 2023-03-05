@@ -43,7 +43,7 @@ def enable_cors(fn):
         response.headers['Access-Control-Allow-Credentials'] = True
         response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, OPTIONS, HEAD, authorization'
         response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
-
+        LOG.info(f'Adding CORS headers: {response.headers.__dict__}')
         return fn(*args, **kwargs)
 
     return _enable_cors
@@ -524,10 +524,18 @@ class SpellbookRESTAPI(Bottle):
         return activate_trigger(trigger_id)
 
     @staticmethod
+    @enable_cors
     @output_json
     def verify_signed_message(trigger_id):
         response.content_type = 'application/json'
-        return verify_signed_message(trigger_id, **request.json)
+        data = request.json if request.json is not None else {}
+
+        # Also add parameters passed via the query string to the data, if any parameters have the same name then the query string has priority
+        query = dict(request.query)
+        data.update(query)
+
+        return verify_signed_message(trigger_id, **data)
+
 
     @staticmethod
     @output_json
