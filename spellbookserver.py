@@ -43,7 +43,7 @@ def enable_cors(fn):
         response.headers['Access-Control-Allow-Credentials'] = True
         response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, OPTIONS, HEAD, authorization'
         response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
-        LOG.info(f'Adding CORS headers: {response.headers.__dict__}')
+
         return fn(*args, **kwargs)
 
     return _enable_cors
