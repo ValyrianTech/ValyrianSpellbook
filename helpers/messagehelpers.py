@@ -51,7 +51,7 @@ def sign_data(message_data: dict, account: int, index: int):
     private_key = get_private_key_from_wallet(account=account, index=index)[address]
 
     # calculate the sha256 hash of the ipfs_object
-    sha256_hash = hashlib.sha256(simplejson.dumps(message_data, sort_keys=True).encode('utf-8')).hexdigest()
+    sha256_hash = hashlib.sha256(simplejson.dumps(message_data, sort_keys=True, indent=2).encode('utf-8')).hexdigest()
     message = '/sha256/%s' % sha256_hash
 
     signature = sign_message(message=message, private_key=private_key)

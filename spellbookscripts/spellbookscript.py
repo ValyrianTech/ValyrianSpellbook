@@ -114,9 +114,11 @@ class SpellbookScript(object):
             return False
 
         # check if sha256_hash is valid and corresponds with the data in self.data
-        control_hash = hashlib.sha256(simplejson.dumps(self.data, sort_keys=True).encode('utf-8')).hexdigest()
+        control_hash = hashlib.sha256(simplejson.dumps(self.data, sort_keys=True, indent=2).encode('utf-8')).hexdigest()
         if sha256_hash != control_hash:
             LOG.error('SHA256 hash does not correspond with the data given: %s != %s' % (sha256_hash, control_hash))
+            LOG.error('Data given: %s' % self.data)
+
             return False
 
         self.json = self.data
