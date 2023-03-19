@@ -6,6 +6,15 @@ from helpers.jsonhelpers import load_from_json_file
 from authentication import initialize_api_keys_file
 from helpers.configurationhelpers import what_is_my_ip
 
+
+def update_config(config, section, option, prompt, current_value=None, fallback=None):
+    if current_value is None:
+        current_value = config.get(section=section, option=option, fallback=fallback)
+
+    new_value = input(prompt % current_value) or current_value
+    config.set(section=section, option=option, value=new_value)
+
+
 PROGRAM_DIR = os.path.abspath(os.path.dirname(__file__))
 
 configuration_file = os.path.join(PROGRAM_DIR, 'configuration', 'spellbook.conf')
@@ -16,31 +25,15 @@ if not os.path.isfile(configuration_file):
 else:
     config.read(os.path.join(PROGRAM_DIR, 'configuration', 'spellbook.conf'))
 
-
 # RESTAPI settings
-current_host = config.get(section='RESTAPI', option='host')
+update_config(config, 'RESTAPI', 'host', 'Enter the IP address of the server or press enter to keep the current value (%s) ')
+if config.get(section='RESTAPI', option='host') == '':
+    config.set(section='RESTAPI', option='host', value=what_is_my_ip())
 
-if current_host == '':
-    current_host = what_is_my_ip()
-
-host = input('Enter the IP address of the server or press enter to keep the current value (%s) ' % current_host) or current_host
-config.set(section='RESTAPI', option='host', value=host)
-
-current_port = config.get(section='RESTAPI', option='port')
-port = input('Enter the port of the server or press enter to keep the current value (%s) ' % current_port) or current_port
-config.set(section='RESTAPI', option='port', value=port)
-
-current_notification_email = config.get(section='RESTAPI', option='notification_email', fallback='someone@example.com')
-notification_email = input('Enter the email address for notifications (%s) ' % current_notification_email) or current_notification_email
-config.set(section='RESTAPI', option='notification_email', value=notification_email)
-
-current_mail_on_exception = config.get(section='RESTAPI', option='mail_on_exception', fallback='false')
-mail_on_exception = input('Send email to notification email address when exceptions occur (%s) ' % current_mail_on_exception) or current_mail_on_exception
-config.set(section='RESTAPI', option='mail_on_exception', value=mail_on_exception)
-
-current_python_exe = config.get(section='RESTAPI', option='python_exe', fallback='python3.10')
-python_exe = input('Enter the python exe to use (%s) ' % current_python_exe) or current_python_exe
-config.set(section='RESTAPI', option='python_exe', value=python_exe)
+update_config(config, 'RESTAPI', 'port', 'Enter the port of the server or press enter to keep the current value (%s) ')
+update_config(config, 'RESTAPI', 'notification_email', 'Enter the email address for notifications (%s) ', fallback='someone@example.com')
+update_config(config, 'RESTAPI', 'mail_on_exception', 'Send email to notification email address when exceptions occur (%s) ', fallback='false')
+update_config(config, 'RESTAPI', 'python_exe', 'Enter the python exe to use (%s) ', fallback='python3.10')
 
 # Authentication settings
 api_keys_file = os.path.join(PROGRAM_DIR, 'json', 'private', 'api_keys.json')
@@ -50,190 +43,74 @@ if not os.path.isfile(api_keys_file):
 
 api_keys = load_from_json_file(filename=api_keys_file)
 
-current_key = list(api_keys.keys())[0]
-key = input('Enter the API key or press enter to keep the current value (%s) ' % current_key) or current_key
-config.set(section='Authentication', option='key', value=key)
-
-current_secret = api_keys[key]['secret']
-secret = input('Enter the API secret or press enter to keep the current value (%s) ' % current_secret) or current_secret
-config.set(section='Authentication', option='secret', value=secret)
-
+update_config(config, 'Authentication', 'key', 'Enter the API key or press enter to keep the current value (%s) ')
+update_config(config, 'Authentication', 'secret', 'Enter the API secret or press enter to keep the current value (%s) ')
 
 # Wallet settings
-current_wallet_dir = config.get(section='Wallet', option='wallet_dir')
-wallet_dir = input('Enter the directory for the hot wallet or press enter to keep the current value (%s) ' % current_wallet_dir) or current_wallet_dir
-config.set(section='Wallet', option='wallet_dir', value=wallet_dir)
-
-current_default_wallet = config.get(section='Wallet', option='default_wallet')
-default_wallet = input('Enter the name of the hot wallet or press enter to keep the current value (%s) ' % current_default_wallet) or current_default_wallet
-config.set(section='Wallet', option='default_wallet', value=default_wallet)
-
-current_use_testnet = config.get(section='Wallet', option='use_testnet')
-use_testnet = input('Enter if the wallet should use testnet or press enter to keep the current value (%s) ' % current_use_testnet) or current_use_testnet
-config.set(section='Wallet', option='use_testnet', value=use_testnet)
-
+update_config(config, 'Wallet', 'wallet_dir', 'Enter the directory for the hot wallet or press enter to keep the current value (%s) ')
+update_config(config, 'Wallet', 'default_wallet', 'Enter the name of the hot wallet or press enter to keep the current value (%s) ')
+update_config(config, 'Wallet', 'use_testnet', 'Enter if the wallet should use testnet or press enter to keep the current value (%s) ')
 
 # Transactions settings
-current_minimum_output_value = config.get(section='Transactions', option='minimum_output_value')
-minimum_output_value = input('Enter the minimum output value or press enter to keep the current value (%s) ' % current_minimum_output_value) or current_minimum_output_value
-config.set(section='Transactions', option='minimum_output_value', value=minimum_output_value)
-
-current_max_tx_fee_percentage = config.get(section='Transactions', option='max_tx_fee_percentage')
-max_tx_fee_percentage = input('Enter the maximum tx fee percentage or press enter to keep the current value (%s) ' % current_max_tx_fee_percentage) or current_max_tx_fee_percentage
-config.set(section='Transactions', option='max_tx_fee_percentage', value=max_tx_fee_percentage)
-
+update_config(config, 'Transactions', 'minimum_output_value', 'Enter the minimum output value or press enter to keep the current value (%s) ')
+update_config(config, 'Transactions', 'max_tx_fee_percentage', 'Enter the maximum tx fee percentage or press enter to keep the current value (%s) ')
 
 # Apps settings
-current_app_data_dir = config.get(section='APPS', option='app_data_dir')
-app_data_dir = input('Enter the directory for the app data or press enter to keep the current value (%s) ' % current_app_data_dir) or current_app_data_dir
-config.set(section='APPS', option='app_data_dir', value=app_data_dir)
-
+update_config(config, 'APPS', 'app_data_dir', 'Enter the directory for the app data or press enter to keep the current value (%s) ')
 
 # SMTP settings
-current_enable_smtp = config.get(section='SMTP', option='enable_smtp')
-enable_smtp = input('Would you like to enable SMTP? (current=%s): ' % current_enable_smtp) or current_enable_smtp
-enable_smtp = 'true' if enable_smtp in ['true', 'True', True, 'Yes' 'yes', 'y', 'Y'] else 'false'
-config.set(section='SMTP', option='enable_smtp', value=enable_smtp)
-
+update_config(config, 'SMTP', 'enable_smtp', 'Would you like to enable SMTP? (current=%s): ')
 
 if config.getboolean(section='SMTP', option='enable_smtp') is True:
-    current_from_address = config.get(section='SMTP', option='from_address')
-    from_address = input('Enter the FROM address for sending emails or press enter to keep the current value (%s) ' % current_from_address) or current_from_address
-    config.set(section='SMTP', option='from_address', value=from_address)
-
-    current_host = config.get(section='SMTP', option='host')
-    host = input('Enter the host address of the SMTP server or press enter to keep the current value (%s) ' % current_host) or current_host
-    config.set(section='SMTP', option='host', value=host)
-
-    current_port = config.get(section='SMTP', option='port')
-    port = input('Enter the port of the SMTP server or press enter to keep the current value (%s) ' % current_port) or current_port
-    config.set(section='SMTP', option='port', value=port)
-
-    current_user = config.get(section='SMTP', option='user')
-    user = input('Enter the username for the SMTP server or press enter to keep the current value (%s) ' % current_user) or current_user
-    config.set(section='SMTP', option='user', value=user)
-
-    current_password = config.get(section='SMTP', option='password')
-    password = input('Enter the password for the SMTP server or press enter to keep the current value (%s) ' % current_password) or current_password
-    config.set(section='SMTP', option='password', value=password)
-
+    update_config(config, 'SMTP', 'from_address', 'Enter the FROM address for sending emails or press enter to keep the current value (%s) ')
+    update_config(config, 'SMTP', 'host', 'Enter the host address of the SMTP server or press enter to keep the current value (%s) ')
+    update_config(config, 'SMTP', 'port', 'Enter the port of the SMTP server or press enter to keep the current value (%s) ')
+    update_config(config, 'SMTP', 'user', 'Enter the username for the SMTP server or press enter to keep the current value (%s) ')
+    update_config(config, 'SMTP', 'password', 'Enter the password for the SMTP server or press enter to keep the current value (%s) ')
 
 # IPFS settings
-current_enable_ipfs = config.get(section='IPFS', option='enable_ipfs')
-enable_ipfs = input('Would you like to enable IPFS? (current=%s): ' % current_enable_ipfs) or current_enable_ipfs
-enable_ipfs = 'true' if enable_ipfs in ['true', 'True', True, 'Yes' 'yes', 'y', 'Y'] else 'false'
-config.set(section='IPFS', option='enable_ipfs', value=enable_ipfs)
+update_config(config, 'IPFS', 'enable_ipfs', 'Would you like to enable IPFS? (current=%s): ')
 
 if config.getboolean(section='IPFS', option='enable_ipfs') is True:
-    current_host = config.get(section='IPFS', option='api_host')
-    api_host = input('Enter the IP address of the IPFS API or press enter to keep the current value (%s) ' % current_host) or current_host
-    config.set(section='IPFS', option='api_host', value=api_host)
-
-    current_port = config.get(section='IPFS', option='api_port')
-    api_port = input('Enter the port of the IPFS API or press enter to keep the current value (%s) ' % current_port) or current_port
-    config.set(section='IPFS', option='api_port', value=api_port)
-
-    current_host = config.get(section='IPFS', option='gateway_host')
-    gateway_host = input('Enter the IP address of the IPFS Gateway or press enter to keep the current value (%s) ' % current_host) or current_host
-    config.set(section='IPFS', option='gateway_host', value=gateway_host)
-
-    current_port = config.get(section='IPFS', option='gateway_port')
-    gateway_port = input('Enter the port of the IPFS Gateway or press enter to keep the current value (%s) ' % current_port) or current_port
-    config.set(section='IPFS', option='gateway_port', value=gateway_port)
+    update_config(config, 'IPFS', 'api_host', 'Enter the IP address of the IPFS API or press enter to keep the current value (%s) ')
+    update_config(config, 'IPFS', 'api_port', 'Enter the port of the IPFS API or press enter to keep the current value (%s) ')
+    update_config(config, 'IPFS', 'gateway_host', 'Enter the IP address of the IPFS Gateway or press enter to keep the current value (%s) ')
+    update_config(config, 'IPFS', 'gateway_port', 'Enter the port of the IPFS Gateway or press enter to keep the current value (%s) ')
 
 # SSL settings
-current_enable_ssl = config.get(section='SSL', option='enable_ssl')
-enable_ssl = input('Would you like to enable SSL? (current=%s): ' % current_enable_ssl) or current_enable_ssl
-enable_ssl = 'true' if enable_ssl in ['true', 'True', True, 'Yes' 'yes', 'y', 'Y'] else 'false'
-config.set(section='SSL', option='enable_ssl', value=enable_ssl)
+update_config(config, 'SSL', 'enable_ssl', 'Would you like to enable SSL? (current=%s): ')
 
 if config.getboolean(section='SSL', option='enable_ssl') is True:
-    current_domain_name = config.get(section='SSL', option='domain_name')
-    domain_name = input('Enter the domain name or press enter to keep the current value (%s) ' % current_domain_name) or current_domain_name
-    config.set(section='SSL', option='domain_name', value=domain_name)
-
-    current_certificate = config.get(section='SSL', option='certificate')
-    certificate = input('Enter the certificate filename or press enter to keep the current value (%s) ' % current_certificate) or current_certificate
-    config.set(section='SSL', option='certificate', value=certificate)
-
-    current_private_key = config.get(section='SSL', option='private_key')
-    private_key = input('Enter the private_key filename or press enter to keep the current value (%s) ' % current_private_key) or current_private_key
-    config.set(section='SSL', option='private_key', value=private_key)
-
-    current_certificate_chain = config.get(section='SSL', option='certificate_chain')
-    certificate_chain = input('Enter the certificate_chain filename or press enter to keep the current value (%s) ' % current_certificate_chain) or current_certificate_chain
-    config.set(section='SSL', option='certificate_chain', value=certificate_chain)
-
+    update_config(config, 'SSL', 'domain_name', 'Enter the domain name or press enter to keep the current value (%s) ')
+    update_config(config, 'SSL', 'certificate', 'Enter the certificate filename or press enter to keep the current value (%s) ')
+    update_config(config, 'SSL', 'private_key', 'Enter the private_key filename or press enter to keep the current value (%s) ')
+    update_config(config, 'SSL', 'certificate_chain', 'Enter the certificate_chain filename or press enter to keep the current value (%s) ')
 
 # Twitter settings
-current_enable_twitter = config.get(section='Twitter', option='enable_twitter')
-print('\nNote: To use Twitter you need to enable developer access on you twitter account, to actually post tweets you also need to apply for elevated access to the Twitter API.')
-enable_twitter = input('Would you like to enable Twitter? (current=%s): ' % current_enable_twitter) or current_enable_twitter
-enable_twitter = 'true' if enable_twitter in ['true', 'True', True, 'Yes' 'yes', 'y', 'Y'] else 'false'
-config.set(section='Twitter', option='enable_twitter', value=enable_twitter)
+update_config(config, 'Twitter', 'enable_twitter', 'Would you like to enable Twitter? (current=%s): ')
 
 if config.getboolean(section='Twitter', option='enable_twitter') is True:
-    current_consumer_key = config.get(section='Twitter', option='consumer_key')
-    consumer_key = input('Enter the consumer key or press enter to keep the current value (%s) ' % current_consumer_key) or current_consumer_key
-    config.set(section='Twitter', option='consumer_key', value=consumer_key)
-
-    current_consumer_secret = config.get(section='Twitter', option='consumer_secret')
-    consumer_secret = input('Enter the consumer secret or press enter to keep the current value (%s) ' % current_consumer_secret) or current_consumer_secret
-    config.set(section='Twitter', option='consumer_secret', value=consumer_secret)
-
-    current_access_token = config.get(section='Twitter', option='access_token')
-    access_token = input('Enter the access token or press enter to keep the current value (%s) ' % current_access_token) or current_access_token
-    config.set(section='Twitter', option='access_token', value=access_token)
-
-    current_access_token_secret = config.get(section='Twitter', option='access_token_secret')
-    access_token_secret = input('Enter the access token secret or press enter to keep the current value (%s) ' % current_access_token_secret) or current_access_token_secret
-    config.set(section='Twitter', option='access_token_secret', value=access_token_secret)
-
-    current_bearer_token = config.get(section='Twitter', option='bearer_token')
-    bearer_token = input('Enter the bearer token or press enter to keep the current value (%s) ' % current_bearer_token) or current_bearer_token
-    config.set(section='Twitter', option='bearer_token', value=bearer_token)
-
+    update_config(config, 'Twitter', 'consumer_key', 'Enter the consumer key or press enter to keep the current value (%s) ')
+    update_config(config, 'Twitter', 'consumer_secret', 'Enter the consumer secret or press enter to keep the current value (%s) ')
+    update_config(config, 'Twitter', 'access_token', 'Enter the access token or press enter to keep the current value (%s) ')
+    update_config(config, 'Twitter', 'access_token_secret', 'Enter the access token secret or press enter to keep the current value (%s) ')
+    update_config(config, 'Twitter', 'bearer_token', 'Enter the bearer token or press enter to keep the current value (%s) ')
 
 # OpenAI settings
-current_enable_openai = config.get(section='OpenAI', option='enable_openai')
-enable_openai = input('Would you like to enable OpenAI? (current=%s): ' % current_enable_openai) or current_enable_openai
-enable_openai = 'true' if enable_openai in ['true', 'True', True, 'Yes' 'yes', 'y', 'Y'] else 'false'
-config.set(section='OpenAI', option='enable_openai', value=enable_openai)
+update_config(config, 'OpenAI', 'enable_openai', 'Would you like to enable OpenAI? (current=%s): ')
 
 if config.getboolean(section='OpenAI', option='enable_openai') is True:
-    current_api_key = config.get(section='OpenAI', option='api_key')
-    api_key = input('Enter the API key or press enter to keep the current value (%s) ' % current_api_key) or current_api_key
-    config.set(section='OpenAI', option='api_key', value=api_key)
-
-    current_organization = config.get(section='OpenAI', option='organization')
-    organization = input('Enter the organization or press enter to keep the current value (%s) ' % current_organization) or current_organization
-    config.set(section='OpenAI', option='organization', value=organization)
-
+    update_config(config, 'OpenAI', 'api_key', 'Enter the API key or press enter to keep the current value (%s) ')
+    update_config(config, 'OpenAI', 'organization', 'Enter the organization or press enter to keep the current value (%s) ')
 
 # Mastodon settings
-current_enable_mastodon = config.get(section='Mastodon', option='enable_mastodon')
-print('\nNote: To use Mastodon you need to enable developer access on you mastodon account, to actually post tweets you also need to apply for elevated access to the Mastodon API.')
-enable_mastodon = input('Would you like to enable Mastodon? (current=%s): ' % current_enable_mastodon) or current_enable_mastodon
-enable_mastodon = 'true' if enable_mastodon in ['true', 'True', True, 'Yes' 'yes', 'y', 'Y'] else 'false'
-config.set(section='Mastodon', option='enable_mastodon', value=enable_mastodon)
+update_config(config, 'Mastodon', 'enable_mastodon', 'Would you like to enable Mastodon? (current=%s): ')
 
 if config.getboolean(section='Mastodon', option='enable_mastodon') is True:
-    current_client_id = config.get(section='Mastodon', option='client_id')
-    client_id = input('Enter the client_id or press enter to keep the current value (%s) ' % current_client_id) or current_client_id
-    config.set(section='Mastodon', option='client_id', value=client_id)
-
-    current_client_secret = config.get(section='Mastodon', option='client_secret')
-    client_secret = input('Enter the client_secret or press enter to keep the current value (%s) ' % current_client_secret) or current_client_secret
-    config.set(section='Mastodon', option='client_secret', value=client_secret)
-
-    current_access_token = config.get(section='Mastodon', option='access_token')
-    access_token = input('Enter the access token or press enter to keep the current value (%s) ' % current_access_token) or current_access_token
-    config.set(section='Mastodon', option='access_token', value=access_token)
-
-    current_api_base_url = config.get(section='Mastodon', option='api_base_url')
-    api_base_url = input('Enter the api_base_url or press enter to keep the current value (%s) ' % current_api_base_url) or current_api_base_url
-    config.set(section='Mastodon', option='api_base_url', value=api_base_url)
-
+    update_config(config, 'Mastodon', 'client_id', 'Enter the client_id or press enter to keep the current value (%s) ')
+    update_config(config, 'Mastodon', 'client_secret', 'Enter the client_secret or press enter to keep the current value (%s) ')
+    update_config(config, 'Mastodon', 'access_token', 'Enter the access token or press enter to keep the current value (%s) ')
+    update_config(config, 'Mastodon', 'api_base_url', 'Enter the api_base_url or press enter to keep the current value (%s) ')
 
 with open(configuration_file, 'w') as output_file:
     config.write(output_file)
@@ -245,4 +122,3 @@ print("use command: ./hot_wallet.py set_bip44 <your 12 or 24 mnemonic words>")
 print("")
 print("To start the server, use command: ./spellbookserver.py")
 print("")
-
