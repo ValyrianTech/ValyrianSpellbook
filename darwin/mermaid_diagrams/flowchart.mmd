@@ -1,0 +1,9 @@
+flowchart TD
+    A[Start Evolver] --> B[Initialize Population]
+    B --> C[Calculate Fitness for Each Genome]
+    C --> D{Termination Conditions Met?}
+    D -- Yes --> E[Stop Evolution and Output Best Solution]
+    D -- No --> F[Select Parents and Recombine]
+    F --> G[Mutate Offspring]
+    G --> H[Elitism: Copy Best Genomes to Next Generation]
+    H --> C
