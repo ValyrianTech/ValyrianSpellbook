@@ -1,0 +1,26 @@
+sequenceDiagram
+    participant E as Evolver
+    participant P as Population
+    participant M as Model
+    participant RS as RosettaStone
+    participant FF as FitnessFunction
+
+    E->>P: Initialize population
+    loop For each genome in population
+        E->>RS: genome_to_model(genome)
+        E->>M: Configure model with template
+        E->>FF: fitness(model)
+        E->>P: Update genome fitness
+    end
+    E->>P: Sort genomes by fitness
+    loop Until termination conditions met
+        E->>P: Select parents
+        E->>E: Recombine parents
+        E->>E: Mutate offspring
+        E->>P: Add offspring to next generation
+        E->>P: Copy best genomes (elitism)
+        E->>P: Update current generation
+    end
+    E->>RS: genome_to_model(champion)
+    E->>M: Configure model with champion template
+    E->>M: Perform champion actions

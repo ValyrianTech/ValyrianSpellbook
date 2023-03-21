@@ -1,0 +1,48 @@
+classDiagram
+    class Evolver {
+        +title: str
+        +description: str
+        +dir: str
+        +save_dir: str
+        +load_last_save: bool
+        +champions_dir: str
+        +load_champions: bool
+        +job_dir: str
+        +progress_file: str
+        +current_generation: int
+        +elapsed_time: float
+        +generations_since_new_champion: int
+        +highest_fitness: float
+        +scripts_dir: str
+        +model_script: str
+        +model_class: str
+        +rosetta_stone_script: str
+        +rosetta_stone_class: str
+        +fitness_function_script: str
+        +fitness_function_class: str
+        +periodic_save: int
+        +population_size: int
+        +target_fitness: float
+        +truncation: int
+        +truncation_normalization: int
+        +elitism: int
+        +n_parents: int
+        +recombination_type: int
+        +tournament_size: int
+        +parameters: dict
+        +max_generations: int
+        +max_time_total: int
+        +max_time_generation: int
+        +stagnation: int
+        +boolean_mutation_chance: BooleanMutationChance
+        +integer_mutation_chance: IntegerMutationChance
+        +float_mutation_chance: FloatMutationChance
+        +string_mutation_chance: StringMutationChance
+        +chromosome_mutation_chance: ChromosomeMutationChance
+        -load_config(config: dict)
+        -save_config(filename: str)
+        -print_settings()
+        -start() : float
+        -load_script(script: str, script_class_name: str)
+        -termination() : bool
+    }
