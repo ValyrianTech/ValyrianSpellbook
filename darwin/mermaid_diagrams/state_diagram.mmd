@@ -1,0 +1,11 @@
+stateDiagram
+    [*] --> InitializingPopulation: Start Evolver
+    InitializingPopulation --> CalculatingFitness: Initialize Population
+    CalculatingFitness --> CheckingTermination: Calculate Fitness for Each Genome
+    CheckingTermination --> StoppingEvolution: Termination Conditions Met
+    StoppingEvolution --> [*]: Output Best Solution
+    CheckingTermination --> SelectingParents: Continue Evolution
+    SelectingParents --> Recombining: Select Parents
+    Recombining --> Mutating: Recombine Parents
+    Mutating --> ApplyingElitism: Mutate Offspring
+    ApplyingElitism --> CalculatingFitness: Copy Best Genomes to Next Generation
