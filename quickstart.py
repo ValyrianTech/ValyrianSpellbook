@@ -112,6 +112,10 @@ if config.getboolean(section='Mastodon', option='enable_mastodon') is True:
     update_config(config, 'Mastodon', 'access_token', 'Enter the access token or press enter to keep the current value (%s) ')
     update_config(config, 'Mastodon', 'api_base_url', 'Enter the api_base_url or press enter to keep the current value (%s) ')
 
+# Nostr settings
+if config.getboolean(section='Nostr', option='enable_nostr') is True:
+    update_config(config, 'Nostr', 'nsec', 'Enter the nsec key or press enter to keep the current value (%s) ')
+
 with open(configuration_file, 'w') as output_file:
     config.write(output_file)
     print('spellbook.conf file updated')
