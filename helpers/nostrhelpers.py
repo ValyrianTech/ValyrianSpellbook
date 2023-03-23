@@ -44,6 +44,3 @@ def post_note(text: str) -> None:
         event_msg = relay_manager.message_pool.get_event()
         print(event_msg.event.to_dict())
 
-
-if __name__ == "__main__":
-    post_note(text='Hello, Nostr!')
