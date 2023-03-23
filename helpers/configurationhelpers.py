@@ -253,3 +253,13 @@ def get_mastodon_access_token():
 @verify_config('Mastodon', 'api_base_url')
 def get_mastodon_api_base_url():
     return spellbook_config().get('Mastodon', 'api_base_url')
+
+
+@verify_config('Nostr', 'enable_nostr')
+def get_enable_nostr():
+    return spellbook_config().getboolean('Nostr', 'enable_nostr')
+
+
+@verify_config('Nostr', 'nsec')
+def get_nostr_nsec():
+    return spellbook_config().get('Nostr', 'nsec')
