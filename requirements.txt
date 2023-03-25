@@ -18,6 +18,6 @@ cheroot==8.6.0
 psutil==5.9.1
 openai==0.27.0
 tweepy==4.12.1
-transformers~=4.26.0
+transformers~=4.27.3
 mastodon.py==1.8.0
 beautifulsoup4==4.11.2
