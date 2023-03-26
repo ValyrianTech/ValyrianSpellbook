@@ -33,6 +33,11 @@ def get_role(message: BaseMessage):
 
 
 class LLM(object):
+
+    llm = None
+    model_name: str = None
+    temperature: float = 0.0
+
     def __init__(self, model_name: str, temperature: float = 0.0):
         self.model_name = model_name
         self.temperature = temperature
