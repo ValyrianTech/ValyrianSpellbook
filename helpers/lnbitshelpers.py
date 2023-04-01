@@ -24,11 +24,11 @@ def get_wallet_details(api_key: str) -> dict:
         print(f'Request failed with status {response.status_code}')
 
 
-def create_invoice(api_key: str, amount: float, memo: str, expiry: int, unit: str = 'btc', webhook: str = None, internal: bool = False) -> dict:
+def create_invoice(api_key: str, amount: int, memo: str, expiry: int, unit: str = 'btc', webhook: str = None, internal: bool = False) -> dict:
     """Create invoice
 
     :param api_key: <string> API key of the wallet
-    :param amount: <float> Amount in BTC (not satoshis)
+    :param amount: <float> Amount in satoshis
     :param memo: <string> Memo for the invoice
     :param expiry: <int> Expiry time in seconds
     :param unit: <string> Unit of the amount (default: btc)
@@ -42,7 +42,7 @@ def create_invoice(api_key: str, amount: float, memo: str, expiry: int, unit: st
     headers = {'X-Api-Key': api_key}
     data = {
         'out': False,
-        'amount': amount,
+        'amount': amount * 1e-8,
         'memo': memo,
         'expiry': expiry,
         'unit': unit,
