@@ -9,9 +9,9 @@ from langchain.schema import HumanMessage, AIMessage, SystemMessage, ChatMessage
 def get_llm(model_name: str = 'gpt-3.5-turbo', temperature: float = 0.0):
     if get_enable_openai() is True:
         if model_name == 'text-davinci-003':
-            llm = OpenAI(model_name=model_name, temperature=temperature, openai_api_key=get_openai_api_key())
+            llm = OpenAI(model_name=model_name, temperature=temperature, openai_api_key=get_openai_api_key(), request_timeout=300)
         else:
-            llm = ChatOpenAI(model_name=model_name, temperature=temperature, openai_api_key=get_openai_api_key())
+            llm = ChatOpenAI(model_name=model_name, temperature=temperature, openai_api_key=get_openai_api_key(), request_timeout=300)
 
     else:
         raise Exception("OpenAI is not enabled")
