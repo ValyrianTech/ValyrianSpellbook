@@ -43,6 +43,7 @@ class Action(object):
         """
         Save the action as a json file
         """
+        print('save action to json file: %s' % os.path.join(ACTIONS_DIR, '%s.json' % self.id))
         save_to_json_file(os.path.join(ACTIONS_DIR, '%s.json' % self.id), self.json_encodable())
 
     def json_encodable(self):
@@ -51,6 +52,9 @@ class Action(object):
 
         :return: A dict containing the configuration settings
         """
+        if self.created is None:
+            self.created = datetime.now()
+
         return {'id': self.id,
                 'action_type': self.action_type,
                 'created': int(time.mktime(self.created.timetuple()))}
