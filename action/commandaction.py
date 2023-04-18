@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import os
 from subprocess import Popen, PIPE
 
 from helpers.loghelpers import LOG
@@ -33,7 +33,10 @@ class CommandAction(Action):
         if len(stripped_error):
             LOG.error('Command error: %s' % stripped_error)
 
-        return True if command_process.returncode == 0 else False
+        if command_process.returncode == 0:
+            return True, stripped_output
+        else:
+            return False, stripped_error
 
     def configure(self, **config):
         """
