@@ -34,9 +34,9 @@ class CommandAction(Action):
             LOG.error('Command error: %s' % stripped_error)
 
         if command_process.returncode == 0:
-            return True, stripped_output
+            return True, stripped_output, stripped_error
         else:
-            return False, stripped_error
+            return False, stripped_output, stripped_error
 
     def configure(self, **config):
         """
