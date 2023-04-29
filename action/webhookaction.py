@@ -14,6 +14,8 @@ class WebhookAction(Action):
         super(WebhookAction, self).__init__(action_id=action_id)
         self.action_type = ActionType.WEBHOOK
         self.webhook = None
+        self.body = None
+        self.request_type = 'GET'
 
     def run(self):
         """
@@ -26,17 +28,24 @@ class WebhookAction(Action):
 
         LOG.info('executing webhook: %s' % self.webhook)
         try:
-            r = requests.get(self.webhook)
+            if self.request_type == 'GET':
+                r = requests.get(self.webhook)
+            elif self.request_type == 'POST':
+                r = requests.post(self.webhook, data=self.body)
+            else:
+                LOG.error('Webhook failed: unsupported request type: %s' % self.request_type)
+                return False
+
         except Exception as ex:
             LOG.error('Webhook failed: %s' % ex)
             return False
         else:
             if r.status_code == 200:
                 LOG.info('status code webhook: %s' % r.status_code)
-                return True
+                return True, r.text
             else:
                 LOG.error('Webhook failed: status code webhook: %s' % r.status_code)
-                return False
+                return False, r.text
 
     def configure(self, **config):
         """
@@ -49,6 +58,9 @@ class WebhookAction(Action):
         if 'webhook' in config and valid_url(config['webhook']):
             self.webhook = config['webhook']
 
+        self.body = config.get('body', None)
+        self.request_type = config.get('request_type', 'GET')
+
     def json_encodable(self):
         """
         Get the action config in a json encodable format
@@ -56,5 +68,7 @@ class WebhookAction(Action):
         :return: A dict containing the configuration settings
         """
         ret = super(WebhookAction, self).json_encodable()
-        ret.update({'webhook': self.webhook})
+        ret.update({'webhook': self.webhook,
+                    'body': self.body,
+                    'request_type': self.request_type})
         return ret
