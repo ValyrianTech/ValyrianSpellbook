@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import functools
 import os
 import simplejson
 import time
@@ -11,7 +11,6 @@ from functools import wraps
 from authentication import check_authentication, AuthenticationStatus
 from data.data import set_explorer, clear_explorer, get_last_explorer
 from helpers.loghelpers import LOG
-
 
 CONFIGURATION_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "configuration", "spellbook.conf"))
 
@@ -30,6 +29,7 @@ def authentication_required(f):
             return f(*args, **kwargs)
         else:
             return {'error': authentication_status}
+
     return decorated_function
 
 
@@ -81,6 +81,7 @@ def verify_config(section, option):
     :param option: The option that needs to be present in the section of the configfile
     :return: The result of the function
     """
+
     def decorated_function(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
@@ -107,6 +108,7 @@ def log_runtime(f):
     """
     Decorator that logs the runtime of a script
     """
+
     def decorated_function(*args, **kwargs):
         start_time = time.time()
         output = f(*args, **kwargs)
@@ -117,3 +119,21 @@ def log_runtime(f):
         return output
 
     return decorated_function
+
+
+def retry(retries=3):
+    def decorator_retry(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            for attempt in range(retries):
+                try:
+                    result = func(*args, **kwargs)
+                    return result
+                except Exception as e:
+                    LOG.error(f"Error: {e}. Retrying... ({attempt + 1}/{retries})")
+                    time.sleep(1)  # Wait for 1 second before retrying
+            return None  # If all retries fail, return None or handle accordingly
+
+        return wrapper
+
+    return decorator_retry
