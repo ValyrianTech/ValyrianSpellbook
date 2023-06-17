@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import os
 
 from .action import Action
 from .actiontype import ActionType
@@ -12,6 +13,7 @@ class SpawnProcessAction(Action):
         super(SpawnProcessAction, self).__init__(action_id=action_id)
         self.action_type = ActionType.SPAWNPROCESS
         self.run_command = None
+        self.working_dir = None
 
     def run(self):
         """
@@ -23,7 +25,7 @@ class SpawnProcessAction(Action):
             return False
 
         try:
-            process = RunCommandProcess(command=self.run_command)
+            process = RunCommandProcess(command=self.run_command, working_dir=self.working_dir)
             process.start()
         except Exception as ex:
             LOG.error('Spawning process failed: %s' % ex)
@@ -41,6 +43,8 @@ class SpawnProcessAction(Action):
         super(SpawnProcessAction, self).configure(**config)
         if 'run_command' in config:
             self.run_command = config['run_command']
+        if 'working_dir' in config:
+            self.working_dir = config['working_dir']
 
     def json_encodable(self):
         """
@@ -49,5 +53,5 @@ class SpawnProcessAction(Action):
         :return: A dict containing the configuration settings
         """
         ret = super(SpawnProcessAction, self).json_encodable()
-        ret.update({'run_command': self.run_command})
+        ret.update({'run_command': self.run_command, 'working_dir': self.working_dir})
         return ret
