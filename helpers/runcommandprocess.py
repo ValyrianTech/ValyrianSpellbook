@@ -31,12 +31,18 @@ PROCESS_LOG.setLevel(logging.INFO)
 
 
 class RunCommandProcess(multiprocessing.Process):
-    def __init__(self, command):
+    def __init__(self, command, working_dir=None):
         multiprocessing.Process.__init__(self)
 
         self.command = command
+        self.working_dir = working_dir
 
     def run(self):
+        current_run_dir = os.getcwd()
+        if self.working_dir is not None and current_run_dir != self.working_dir:
+            os.chdir(self.working_dir)
+            PROCESS_LOG.info('Switched to working dir: %s' % os.getcwd())
+
         process_id = multiprocessing.current_process().name
         PROCESS_LOG.info('%s | Spawned new process to run command: %s' % (process_id, self.command))
         PROCESS_LOG.info('%s | Process starting...' % process_id)
@@ -51,3 +57,6 @@ class RunCommandProcess(multiprocessing.Process):
 
         PROCESS_LOG.info('%s | Process finished' % process_id)
 
+        if current_run_dir != os.getcwd():
+            os.chdir(current_run_dir)
+            PROCESS_LOG.info('Switched back to: %s' % os.getcwd())
