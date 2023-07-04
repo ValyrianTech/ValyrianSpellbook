@@ -12,7 +12,7 @@ from helpers.loghelpers import LOG, logs_dir
 from helpers.mailhelpers import sendmail
 from helpers.runcommandprocess import RunCommandProcess
 
-from helpers.ipfshelpers import add_str
+from helpers.ipfshelpers import check_ipfs
 
 
 def uptime_check(email, ipfs=False, reboot=False, ssl=None):
@@ -58,7 +58,7 @@ def uptime_check(email, ipfs=False, reboot=False, ssl=None):
 
     if ipfs is True:
         try:
-            response = add_str('ping')
+            response = check_ipfs()
         except Exception as ex:
             LOG.error('IPFS node is offline: %s' % ex)
             if email is not None:
@@ -77,7 +77,6 @@ def uptime_check(email, ipfs=False, reboot=False, ssl=None):
 
                 else:
                     LOG.error('Email to %s failed!' % email)
-
 
 
 def get_recent_spellbook_log():
