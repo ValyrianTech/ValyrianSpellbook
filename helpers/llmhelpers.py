@@ -5,8 +5,18 @@ from langchain.llms import OpenAI
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage, AIMessage, SystemMessage, ChatMessage, BaseMessage
 
+CLIENTS = {}
+
 
 def get_llm(model_name: str = 'gpt-3.5-turbo', temperature: float = 0.0):
+    global CLIENTS
+
+    if model_name in CLIENTS:
+        llm = CLIENTS[model_name]
+        llm.model_name = model_name
+        llm.temperature = temperature
+        return llm
+
     if get_enable_openai() is True:
         if model_name == 'text-davinci-003':
             llm = OpenAI(model_name=model_name, temperature=temperature, openai_api_key=get_openai_api_key(), request_timeout=300)
@@ -15,6 +25,8 @@ def get_llm(model_name: str = 'gpt-3.5-turbo', temperature: float = 0.0):
 
     else:
         raise Exception("OpenAI is not enabled")
+
+    CLIENTS[model_name] = llm
 
     return llm
 
