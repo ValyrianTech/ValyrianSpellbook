@@ -1,5 +1,2 @@
-#!/bin/sh
-sleep 10
 source /spellbook/venv/bin/activate
-export OPENSSL_CONF=${pkgs.openssl.dev}/etc/ssl/openssl.cnf
-python /spellbook/spellbookserver.py
+nix-shell -p openssl --run "python /spellbook/spellbookserver.py > /tmp/spellbookserver.log 2>&1 || echo $? > /tmp/spellbookserver_exit_status"
