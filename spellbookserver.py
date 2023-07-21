@@ -6,6 +6,7 @@ import os
 import sys
 import time
 import traceback
+from configparser import ConfigParser
 from datetime import datetime
 from functools import wraps
 from logging.handlers import RotatingFileHandler
@@ -18,7 +19,7 @@ from data.data import latest_block, block_by_height, block_by_hash, prime_input_
 from data.data import transactions, balance, utxos
 from decorators import authentication_required, use_explorer, output_json
 from helpers.actionhelpers import get_actions, get_action_config, save_action, delete_action, run_action, get_reveal
-from helpers.configurationhelpers import get_host, get_port, get_notification_email, get_mail_on_exception
+from helpers.configurationhelpers import get_host, get_port, get_notification_email, get_mail_on_exception, what_is_my_ip
 from helpers.configurationhelpers import get_enable_ssl, get_ssl_certificate, get_ssl_private_key, get_ssl_certificate_chain
 from helpers.hotwallethelpers import get_hot_wallet
 from helpers.loghelpers import LOG, REQUESTS_LOG, get_logs
@@ -691,6 +692,17 @@ class SpellbookRESTAPI(Bottle):
 
 
 if __name__ == "__main__":
+    # Check if the IP address in the configuration file is set, if not then set it
+    configuration_file = os.path.join(PROGRAM_DIR, 'configuration', 'spellbook.conf')
+    config = ConfigParser()
+    config.read(os.path.join(PROGRAM_DIR, 'configuration', 'spellbook.conf'))
+    if config.get(section='RESTAPI', option='host') == '':
+        my_ip = what_is_my_ip()
+        config.set(section='RESTAPI', option='host', value=my_ip)
+        with open(configuration_file, 'w') as output_file:
+            config.write(output_file)
+            LOG.info(f'spellbook.conf file updated with host IP address: {my_ip}')
+
     # Create main parser
     parser = argparse.ArgumentParser(description='Bitcoin spellbookServer command line interface', formatter_class=argparse.RawDescriptionHelpFormatter)
     # parser.add_argument('-s', '--ssl', help='Run spellbook server with SSL', action='store_true')
