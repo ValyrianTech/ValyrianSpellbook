@@ -12,7 +12,7 @@ class TestAuthentication(object):
     headers = None
     data = None
 
-    def setup(self):
+    def setup_method(self):
         global NONCE
 
         authentication.load_from_json_file = mock.MagicMock(return_value={'foo': {'secret': 'bar1'}})
