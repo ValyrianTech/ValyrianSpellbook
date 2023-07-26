@@ -80,5 +80,8 @@ EXPOSE 42069
 # Define environment variable
 ENV NAME ValyrianSpellbook
 
-# Run spellbookserver.py when the container launches
-CMD ["python3.10", "/spellbook/spellbookserver.py"]
+# Copy the startup script into the container
+COPY start.sh /start.sh
+
+# Run start.sh when the container launches
+CMD ["/bin/bash", "/start.sh"]
