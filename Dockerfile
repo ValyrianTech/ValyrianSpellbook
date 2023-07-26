@@ -25,5 +25,8 @@ EXPOSE 42069
 # Define environment variable
 ENV NAME ValyrianSpellbook
 
+# Copy the configuration file
+COPY /spellbook/configuration/example_configuration_file.conf /spellbook/configuration/spellbook.conf
+
 # Run spellbookserver.py when the container launches
 CMD ["python3.10", "/spellbook/spellbookserver.py"]
