@@ -1,4 +1,5 @@
 import configparser
+import os
 
 # Define the configuration parameters
 config_params = {
@@ -79,9 +80,11 @@ config = configparser.ConfigParser()
 config.read('/spellbook/configuration/spellbook.conf')
 
 # Replace the placeholders with the actual values
-for section, params in config_params.items():
-    for param, value in params.items():
-        config.set(section, param, value)
+for section in config.sections():
+    for key in config[section]:
+        env_var_value = os.environ.get(key.upper())
+        if env_var_value is not None:
+            config.set(section, key, env_var_value)
 
 # Write the updated configuration back to the file
 with open('/spellbook/configuration/spellbook.conf', 'w') as configfile:
