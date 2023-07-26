@@ -83,10 +83,8 @@ config.read('/spellbook/configuration/spellbook.conf')
 for section in config.sections():
     for key in config[section]:
         env_var_name = (section + '_' + key).upper()
-        print("Replacing {} with {}".format(key, config_params[section][key]))
         env_var_value = os.environ.get(env_var_name)
         if env_var_value is not None:
-            print("Updated {} with {}".format(key, env_var_value))
             config.set(section, key, env_var_value)
 
 # Write the updated configuration back to the file
