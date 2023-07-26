@@ -82,6 +82,7 @@ config.read('/spellbook/configuration/spellbook.conf')
 # Replace the placeholders with the actual values
 for section in config.sections():
     for key in config[section]:
+        print("Replacing {} with {}".format(key, config_params[section][key]))
         env_var_value = os.environ.get(key.upper())
         if env_var_value is not None:
             print("Replacing {} with {}".format(key, env_var_value))
