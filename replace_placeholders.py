@@ -85,7 +85,7 @@ for section in config.sections():
         print("Replacing {} with {}".format(key, config_params[section][key]))
         env_var_value = os.environ.get(key.upper())
         if env_var_value is not None:
-            print("Replacing {} with {}".format(key, env_var_value))
+            print("Updated {} with {}".format(key, env_var_value))
             config.set(section, key, env_var_value)
 
 # Write the updated configuration back to the file
