@@ -22,3 +22,4 @@ mastodon.py==1.8.1
 beautifulsoup4==4.12.2
 langchain==0.0.225
 tiktoken==0.4.0
+ipfs-dict-chain==1.0.6
