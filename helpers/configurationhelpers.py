@@ -66,6 +66,11 @@ def get_secret():
     return spellbook_config().get('Authentication', 'secret')
 
 
+@verify_config('Wallet', 'enable_wallet')
+def get_enable_wallet():
+    return spellbook_config().get('Wallet', 'enable_wallet')
+
+
 @verify_config('Wallet', 'wallet_dir')
 def get_wallet_dir():
     return spellbook_config().get('Wallet', 'wallet_dir')

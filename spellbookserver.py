@@ -20,7 +20,7 @@ from data.data import transactions, balance, utxos
 from decorators import authentication_required, use_explorer, output_json
 from helpers.actionhelpers import get_actions, get_action_config, save_action, delete_action, run_action, get_reveal
 from helpers.configurationhelpers import get_host, get_port, get_notification_email, get_mail_on_exception, what_is_my_ip
-from helpers.configurationhelpers import get_enable_ssl, get_ssl_certificate, get_ssl_private_key, get_ssl_certificate_chain
+from helpers.configurationhelpers import get_enable_ssl, get_ssl_certificate, get_ssl_private_key, get_ssl_certificate_chain, get_enable_wallet
 from helpers.hotwallethelpers import get_hot_wallet
 from helpers.loghelpers import LOG, REQUESTS_LOG, get_logs
 from helpers.triggerhelpers import get_triggers, get_trigger_config, save_trigger, delete_trigger, activate_trigger, \
@@ -100,7 +100,8 @@ class SpellbookRESTAPI(Bottle):
         LOG.info('Starting Bitcoin Spellbook')
 
         try:
-            get_hot_wallet()
+            if get_enable_wallet() is True:
+                get_hot_wallet()
         except Exception as ex:
             LOG.error('Unable to decrypt hot wallet: %s' % ex)
             sys.exit(1)
