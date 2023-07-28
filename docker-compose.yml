@@ -13,6 +13,9 @@ services:
     environment:
       - IPFS_STAGING=/mnt/ipfs_staging/
       - IPFS_DATA=/mnt/ipfs_data/
+    networks:
+      my_network:
+        ipv4_address: 172.28.5.1
 
   spellbook:
     image: spellbook:latest
@@ -21,6 +24,12 @@ services:
     env_file:
       - docker_env.env
     environment:
-      - IPFS_API=http://ipfs_host:5001
+      - IPFS_API=http://172.28.5.1:5001
     ports:
       - 42069:42069
+    networks:
+      - my_network
+
+networks:
+  my_network:
+    external: true
