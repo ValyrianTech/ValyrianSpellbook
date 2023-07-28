@@ -10,11 +10,16 @@ services:
       - 4001:4001/udp
       - 8080:8080
       - 5001:5001
+    environment:
+      - IPFS_STAGING=/mnt/ipfs_staging/
+      - IPFS_DATA=/mnt/ipfs_data/
 
   spellbook:
     image: spellbook:latest
     depends_on:
       - ipfs_host
+    env_file:
+      - docker_env.env
     environment:
       - IPFS_API=http://ipfs_host:5001
     ports:
