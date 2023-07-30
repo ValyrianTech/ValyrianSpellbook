@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import configparser
 import os
 import base64
 import hashlib
@@ -43,6 +44,17 @@ def initialize_api_keys_file():
 
     save_to_json_file(API_KEYS_FILE, data)
 
+    # Load the configuration file
+    config = configparser.ConfigParser()
+    config.read('/spellbook/configuration/spellbook.conf')
+
+    # Set the api key and secret in the configuration file
+    config.set('Authentication', 'key', api_key)
+    config.set('Authentication', 'secret', api_secret)
+
+    # Write the updated configuration back to the file
+    with open('/spellbook/configuration/spellbook.conf', 'w') as configfile:
+        config.write(configfile)
 
 def hash_message(data, nonce):
     """
