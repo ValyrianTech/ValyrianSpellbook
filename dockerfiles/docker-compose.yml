@@ -3,8 +3,8 @@ services:
   ipfs_host:
     image: ipfs/kubo:latest
     volumes:
-      - IPFS_STAGING:/export
-      - IPFS_DATA:/data/ipfs
+      - $IPFS_STAGING:/export
+      - $IPFS_DATA:/data/ipfs
     ports:
       - 4001:4001
       - 4001:4001/udp
