@@ -56,6 +56,7 @@ def initialize_api_keys_file():
     with open('/spellbook/configuration/spellbook.conf', 'w') as configfile:
         config.write(configfile)
 
+
 def hash_message(data, nonce):
     """
     Get the SHA512 hash of the nonce and the data in json format (sorted keys and 2 spaces indentation)
