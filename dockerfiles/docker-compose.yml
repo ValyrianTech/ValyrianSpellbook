@@ -18,7 +18,7 @@ services:
         ipv4_address: 172.28.5.1
 
   spellbook:
-    image: spellbook:latest
+    image: valyriantech/spellbook:latest
     depends_on:
       - ipfs_host
     env_file:
