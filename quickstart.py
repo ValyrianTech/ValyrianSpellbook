@@ -116,6 +116,11 @@ if config.getboolean(section='Mastodon', option='enable_mastodon') is True:
 if config.getboolean(section='Nostr', option='enable_nostr') is True:
     update_config(config, 'Nostr', 'nsec', 'Enter the nsec key or press enter to keep the current value (%s) ')
 
+# Oobabooga settings
+if config.getboolean(section='Oobabooga', option='enable_oobabooga') is True:
+    update_config(config, 'Oobabooga', 'host', 'Enter the ip address of the Oobabooga server or press enter to keep the current value (%s) ')
+    update_config(config, 'Oobabooga', 'port', 'Enter the port of the Oobabooga server or press enter to keep the current value (%s) ')
+
 with open(configuration_file, 'w') as output_file:
     config.write(output_file)
     print('spellbook.conf file updated')

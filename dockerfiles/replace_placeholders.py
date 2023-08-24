@@ -72,6 +72,11 @@ config_params = {
     "Nostr": {
         "enable_nostr": "<enable_nostr>",
         "nsec": "<nsec>"
+    },
+    "Oobabooga": {
+        "enable_oobabooga": "<enable_oobabooga>",
+        "host": "<oobabooga_host>",
+        "port": "<oobabooga_port>"
     }
 }
 
