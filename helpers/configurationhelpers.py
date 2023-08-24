@@ -275,11 +275,11 @@ def get_enable_oobabooga():
     return spellbook_config().getboolean('Oobabooga', 'enable_oobabooga')
 
 
-@verify_config('Oobabooga', 'oobabooga_host')
+@verify_config('Oobabooga', 'host')
 def get_oobabooga_host():
-    return spellbook_config().get('Oobabooga', 'oobabooga_host')
+    return spellbook_config().get('Oobabooga', 'host')
 
 
-@verify_config('Oobabooga', 'oobabooga_port')
+@verify_config('Oobabooga', 'port')
 def get_oobabooga_port():
-    return spellbook_config().get('Oobabooga', 'oobabooga_port')
+    return spellbook_config().get('Oobabooga', 'port')
