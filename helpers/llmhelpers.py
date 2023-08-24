@@ -4,6 +4,7 @@ from .configurationhelpers import get_enable_openai, get_openai_api_key
 from langchain.llms import OpenAI
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage, AIMessage, SystemMessage, ChatMessage, BaseMessage
+from .self_hosted_LLM import SelfHostedLLM
 
 CLIENTS = {}
 
@@ -15,6 +16,11 @@ def get_llm(model_name: str = 'gpt-3.5-turbo', temperature: float = 0.0):
         llm = CLIENTS[model_name]
         llm.model_name = model_name
         llm.temperature = temperature
+        return llm
+
+    if model_name == 'self-hosted':
+        llm = SelfHostedLLM()
+        CLIENTS[model_name] = llm
         return llm
 
     if get_enable_openai() is True:
