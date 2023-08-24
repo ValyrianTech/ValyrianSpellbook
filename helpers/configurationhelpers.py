@@ -268,3 +268,18 @@ def get_enable_nostr():
 @verify_config('Nostr', 'nsec')
 def get_nostr_nsec():
     return spellbook_config().get('Nostr', 'nsec')
+
+
+@verify_config('Oobabooga', 'enable_oobabooga')
+def get_enable_oobabooga():
+    return spellbook_config().getboolean('Oobabooga', 'enable_oobabooga')
+
+
+@verify_config('Oobabooga', 'oobabooga_host')
+def get_oobabooga_host():
+    return spellbook_config().get('Oobabooga', 'oobabooga_host')
+
+
+@verify_config('Oobabooga', 'oobabooga_port')
+def get_oobabooga_port():
+    return spellbook_config().get('Oobabooga', 'oobabooga_port')
