@@ -9,7 +9,7 @@ from .self_hosted_LLM import SelfHostedLLM
 CLIENTS = {}
 
 
-def get_llm(model_name: str = 'gpt-3.5-turbo', temperature: float = 0.0):
+def get_llm(model_name: str = 'self-hosted', temperature: float = 0.0):
     global CLIENTS
 
     if model_name in CLIENTS:
