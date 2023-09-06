@@ -1,6 +1,7 @@
-from typing import List
-
+import re
 import simplejson
+
+from typing import List, Union
 
 from .configurationhelpers import get_enable_openai, get_openai_api_key
 from langchain.llms import OpenAI
@@ -11,6 +12,33 @@ from .loghelpers import LOG
 from .self_hosted_LLM import SelfHostedLLM
 
 CLIENTS = {}
+
+
+class BaseGeneration:
+    def __init__(self, content: str):
+        self.content = content
+
+
+class TextGeneration(BaseGeneration):
+    pass
+
+
+class CodeGeneration(BaseGeneration):
+    def __init__(self, content: str, language: str):
+        super().__init__(content)
+        self.language = language
+
+
+def parse_generation(input_string: str) -> List[Union[TextGeneration, CodeGeneration]]:
+    pattern = r"(?s)(```(?P<language>\w+)?\n(?P<code>.*?)```)|(?P<text>.*?(?=```|\Z))"
+    matches = re.finditer(pattern, input_string)
+    results = []
+    for match in matches:
+        if match.group('code'):
+            results.append(CodeGeneration(match.group('code'), match.group('language')))
+        elif match.group('text').strip():
+            results.append(TextGeneration(match.group('text').strip()))
+    return results
 
 
 def get_llm(model_name: str = 'self-hosted', temperature: float = 0.0):
@@ -63,7 +91,7 @@ def comparison_prompt(messages: List[BaseMessage], generations: List[LLMResult])
     for i, generation in enumerate(generations):
         all_generations += f'{i}: {generation.generations[0][0].text}\n'
 
-    comparison_prompt = f"""Your task is to compare multiple generations from a LLM model to eachother and choose the one that satisfies the original prompt the best.
+    comparison_prompt = f"""Your task is to compare multiple generations from a LLM model to each other and choose the one that satisfies the original prompt the best.
 
 ## Original prompt for the LLM
 {original_prompt}
@@ -73,10 +101,19 @@ def comparison_prompt(messages: List[BaseMessage], generations: List[LLMResult])
 {all_generations}
 
 
-Reply with the number of the generation you think satisfies the original prompt the best.
-Please respond with only a valid JSON dict with the key 'best_n' and the value being the index of the best generation (must be an integer).
+## Instructions
+Your answer should be formatted as a markdown code block containing a valid json object with the key 'best_n'.
+The value of 'best_n' should be the index number of the best generation from the list of generations (index starts at 0).
+for example:
+```json
+{{
+  "best_n": 2
+}}
+```
 
+Please respond with only the json object inside a markdown code block, and nothing else.
 ## Answer
+
 """
 
     return comparison_prompt
@@ -104,7 +141,7 @@ class LLM(object):
         else:
             return self.llm.generate([messages], stop=stop)
 
-    def run(self, messages: List[BaseMessage], stop=None, best_of: int = 3):
+    def run(self, messages: List[BaseMessage], stop=None, best_of: int = 1):
         """Run the LLM and return the completion text, the LLM output, and the generation info.
         Note: generation info is only available for text-davinci-003.
         llm_output = {'token_usage': {'prompt_tokens': 0, 'completion_tokens': 0, 'total_tokens': 0}}
@@ -137,15 +174,25 @@ class LLM(object):
             result = self.llm.generate([[HumanMessage(content=comparison_prompt(messages, generations))]])
 
         try:
-            parsed = simplejson.loads(result.generations[0][0].text)
+            parsed = parse_generation(result.generations[0][0].text)
         except Exception as e:
-            LOG.error(f"Unable to choose best generation, defaulting to first generation, invalid JSON: {e}")
+            LOG.error(f"Unable to parse generation, defaulting to first generation, invalid JSON: {e}")
             return 0
 
-        if 'best_n' not in parsed:
-            LOG.error(f"Unable to choose best generation, defaulting to first generation, invalid JSON: best_n not in response")
-            return 0
+        as_json = {}
+        for generation in parsed:
+            if isinstance(generation, CodeGeneration):
+                try:
+                    as_json = simplejson.loads(generation.content)
+                except Exception as e:
+                    LOG.info(f"Unable to parse generation section as json: {e}")
+                else:
+                    break
 
-        best_n = int(parsed['best_n'])
+        best_n = int(as_json.get('best_n', 0))
+
+        if best_n >= len(generations):
+            LOG.error(f"best_n is greater than the number of generations, defaulting to first generation")
+            return 0
 
         return best_n
