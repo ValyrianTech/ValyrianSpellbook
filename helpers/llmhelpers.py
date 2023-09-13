@@ -1,3 +1,4 @@
+import os
 import re
 import simplejson
 
@@ -9,6 +10,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage, AIMessage, SystemMessage, ChatMessage, BaseMessage, LLMResult
 
 from .loghelpers import LOG
+from .jsonhelpers import load_from_json_file
 from .self_hosted_LLM import SelfHostedLLM
 
 CLIENTS = {}
@@ -50,8 +52,23 @@ def get_llm(model_name: str = 'self-hosted', temperature: float = 0.0):
         llm.temperature = temperature
         return llm
 
-    if model_name == 'self-hosted':
-        llm = SelfHostedLLM()
+    if model_name.startswith('self-hosted'):
+        models_file = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")), 'configuration', 'LLMs.json')
+        self_hosted_models = load_from_json_file(filename=models_file)
+
+        model_names = []
+        for model in self_hosted_models:
+            model_names.append(f'self-hosted:{model}')
+
+        if model_name in model_names:
+            host = self_hosted_models[model_name.split(':')[1]]['host']
+            port = self_hosted_models[model_name.split(':')[1]]['port']
+            LOG.info(f'Initializing {model_name} LLM at {host}:{port}')
+            llm = SelfHostedLLM(host=host, port=port)
+        else:
+            LOG.info(f'Initializing {model_name} LLM with default settings')
+            llm = SelfHostedLLM()
+
         CLIENTS[model_name] = llm
         return llm
 
