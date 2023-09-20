@@ -60,14 +60,18 @@ def get_llm(model_name: str = 'self-hosted', temperature: float = 0.0):
         for model in self_hosted_models:
             model_names.append(f'self-hosted:{model}')
 
-        if model_name in model_names:
+        if model_name == 'self-hosted:MoE':
+            LOG.info(f'Initializing {model_name} LLM with default settings')
+            llm = SelfHostedLLM(mixture_of_experts=True)
+
+        elif model_name in model_names:
             host = self_hosted_models[model_name.split(':')[1]]['host']
             port = self_hosted_models[model_name.split(':')[1]]['port']
             LOG.info(f'Initializing {model_name} LLM at {host}:{port}')
-            llm = SelfHostedLLM(host=host, port=port)
+            llm = SelfHostedLLM(host=host, port=port, mixture_of_experts=False)
         else:
             LOG.info(f'Initializing {model_name} LLM with default settings')
-            llm = SelfHostedLLM()
+            llm = SelfHostedLLM(mixture_of_experts=False)
 
         CLIENTS[model_name] = llm
         return llm
