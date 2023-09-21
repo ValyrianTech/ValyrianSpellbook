@@ -2,7 +2,7 @@ import asyncio
 import websockets
 import threading
 
-from loghelpers import LOG
+from helpers.loghelpers import LOG
 
 
 class WebSocketHandler:
@@ -39,10 +39,10 @@ class WebSocketHandler:
             LOG.debug(f'Connection closed: {websocket.remote_address}')
 
     async def broadcast(self, message, channel='general'):
-        LOG.info(f'Broadcasting {message}')
         async with self.lock:
             if self.connected:  # asyncio.wait doesn't accept an empty list
-                await asyncio.wait([user.send(message) for user in self.connected if channel in self.subscriptions[user]])
+                tasks = [asyncio.create_task(user.send(message)) for user in self.connected if channel in self.subscriptions[user]]
+                await asyncio.wait(tasks)
 
 
 WEBSOCKET_HANDLER = WebSocketHandler()
