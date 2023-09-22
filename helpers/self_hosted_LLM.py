@@ -20,6 +20,7 @@ encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
 
 OOBABOOGA_HOST = ''
 BROADCAST_CHANNEL = 'general'
+BROADCAST_SENDER = 'stream'
 
 if get_enable_oobabooga():
     OOBABOOGA_HOST = get_oobabooga_host() + ':' + get_oobabooga_port()
@@ -104,7 +105,7 @@ class SelfHostedLLM:
             else:
                 completion_only = completion
 
-            data = {'message': completion_only.lstrip(), 'channel': BROADCAST_CHANNEL}
+            data = {'message': completion_only.lstrip(), 'channel': BROADCAST_CHANNEL, 'sender': BROADCAST_SENDER}
             broadcast_message(message=simplejson.dumps(data), channel=BROADCAST_CHANNEL)
         print('')
         completion = completion.encode("utf-8").decode("utf-8")
@@ -190,9 +191,10 @@ class SelfHostedLLM:
         LOG.info(f'URI set to {self.URI}')
 
 
-def set_broadcast_channel(channel: str):
-    global BROADCAST_CHANNEL
+def set_broadcast_channel(channel: str, sender: str):
+    global BROADCAST_CHANNEL, BROADCAST_SENDER
     BROADCAST_CHANNEL = channel
+    BROADCAST_SENDER = sender
 
 
 class LLMResult(object):
