@@ -34,6 +34,7 @@ update_config(config, 'RESTAPI', 'port', 'Enter the port of the server or press 
 update_config(config, 'RESTAPI', 'notification_email', 'Enter the email address for notifications (%s) ', fallback='someone@example.com')
 update_config(config, 'RESTAPI', 'mail_on_exception', 'Send email to notification email address when exceptions occur (%s) ', fallback='false')
 update_config(config, 'RESTAPI', 'python_exe', 'Enter the python exe to use (%s) ', fallback='python3.10')
+update_config(config, 'RESTAPI', 'websocket_port', 'Enter the websocket port to use (%s) ', fallback='8765')
 
 # Authentication settings
 api_keys_file = os.path.join(PROGRAM_DIR, 'json', 'private', 'api_keys.json')

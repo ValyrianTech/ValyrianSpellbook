@@ -56,6 +56,11 @@ def get_python_exe():
     return spellbook_config().get('RESTAPI', 'python_exe')
 
 
+@verify_config('RESTAPI', 'websocket_port')
+def get_websocket_port():
+    return spellbook_config().get('RESTAPI', 'websocket_port')
+
+
 @verify_config('Authentication', 'key')
 def get_key():
     return spellbook_config().get('Authentication', 'key')
