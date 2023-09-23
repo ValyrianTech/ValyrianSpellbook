@@ -64,8 +64,9 @@ def start_websocket_server(host: str, port: int):
     LOG.info('Websocket server stopped.')
 
 
-# Create a separate thread for the websocket server
-websocket_thread = threading.Thread(target=start_websocket_server, args=('localhost', 8765))
+def init_websocket_server(host: str = 'localhost', port: int = 8765):
+    # Create a separate thread for the websocket server
+    websocket_thread = threading.Thread(target=start_websocket_server, args=(host, port))
 
-# Start the thread
-websocket_thread.start()
+    # Start the thread
+    websocket_thread.start()

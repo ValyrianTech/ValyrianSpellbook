@@ -11,10 +11,10 @@ import tiktoken
 from langchain.schema import AIMessage, ChatGeneration
 from typing import List, Union
 
-from helpers.configurationhelpers import get_enable_oobabooga, get_oobabooga_host, get_oobabooga_port
+from helpers.configurationhelpers import get_enable_oobabooga, get_oobabooga_host, get_oobabooga_port, get_host, get_websocket_port
 from helpers.jsonhelpers import load_from_json_file
 from helpers.loghelpers import LOG
-from helpers.websockethelpers import broadcast_message
+from helpers.websockethelpers import broadcast_message, init_websocket_server
 
 encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
 
@@ -24,6 +24,8 @@ BROADCAST_SENDER = 'stream'
 
 if get_enable_oobabooga():
     OOBABOOGA_HOST = get_oobabooga_host() + ':' + get_oobabooga_port()
+
+init_websocket_server(host=get_host(), port=get_websocket_port())
 
 
 class SelfHostedLLM:
