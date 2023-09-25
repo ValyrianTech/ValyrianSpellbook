@@ -4,6 +4,23 @@ import threading
 
 from helpers.loghelpers import LOG
 
+BROADCAST_CHANNEL = 'general'
+BROADCAST_SENDER = 'stream'
+
+
+def set_broadcast_channel(channel: str, sender: str):
+    global BROADCAST_CHANNEL, BROADCAST_SENDER
+    BROADCAST_CHANNEL = channel
+    BROADCAST_SENDER = sender
+
+
+def get_broadcast_channel():
+    return BROADCAST_CHANNEL
+
+
+def get_broadcast_sender():
+    return BROADCAST_SENDER
+
 
 class WebSocketHandler:
     def __init__(self):

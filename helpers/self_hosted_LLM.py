@@ -14,13 +14,11 @@ from typing import List, Union
 from helpers.configurationhelpers import get_enable_oobabooga, get_oobabooga_host, get_oobabooga_port, get_host, get_websocket_port
 from helpers.jsonhelpers import load_from_json_file
 from helpers.loghelpers import LOG
-from helpers.websockethelpers import broadcast_message, init_websocket_server
+from helpers.websockethelpers import broadcast_message, init_websocket_server, get_broadcast_channel, get_broadcast_sender
 
 encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
 
 OOBABOOGA_HOST = ''
-BROADCAST_CHANNEL = 'general'
-BROADCAST_SENDER = 'stream'
 
 if get_enable_oobabooga():
     OOBABOOGA_HOST = get_oobabooga_host() + ':' + get_oobabooga_port()
@@ -107,8 +105,8 @@ class SelfHostedLLM:
             else:
                 completion_only = completion
 
-            data = {'message': completion_only.lstrip(), 'channel': BROADCAST_CHANNEL, 'sender': BROADCAST_SENDER}
-            broadcast_message(message=simplejson.dumps(data), channel=BROADCAST_CHANNEL)
+            data = {'message': completion_only.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender()}
+            broadcast_message(message=simplejson.dumps(data), channel=get_broadcast_channel())
         print('')
         completion = completion.encode("utf-8").decode("utf-8")
         return completion
@@ -191,12 +189,6 @@ class SelfHostedLLM:
         self.URI = f'ws://{self.HOST}:{self.PORT}/api/v1/stream'
         LOG.info(f'Expert LLM set to {available_llms[1][expert_llm]}')
         LOG.info(f'URI set to {self.URI}')
-
-
-def set_broadcast_channel(channel: str, sender: str):
-    global BROADCAST_CHANNEL, BROADCAST_SENDER
-    BROADCAST_CHANNEL = channel
-    BROADCAST_SENDER = sender
 
 
 class LLMResult(object):
