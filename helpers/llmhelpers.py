@@ -1,17 +1,21 @@
 import os
 import re
+import sys
+
 import simplejson
 
-from typing import List, Union
+from typing import List, Union, Any, Dict
 
 from .configurationhelpers import get_enable_openai, get_openai_api_key
 from langchain.llms import OpenAI
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage, AIMessage, SystemMessage, ChatMessage, BaseMessage, LLMResult
+from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
 from .loghelpers import LOG
 from .jsonhelpers import load_from_json_file
 from .self_hosted_LLM import SelfHostedLLM
+from helpers.websockethelpers import broadcast_message, get_broadcast_channel, get_broadcast_sender
 
 CLIENTS = {}
 
@@ -80,7 +84,7 @@ def get_llm(model_name: str = 'self-hosted', temperature: float = 0.0):
         if model_name == 'text-davinci-003':
             llm = OpenAI(model_name=model_name, temperature=temperature, openai_api_key=get_openai_api_key(), request_timeout=300)
         else:
-            llm = ChatOpenAI(model_name=model_name, temperature=temperature, openai_api_key=get_openai_api_key(), request_timeout=300)
+            llm = ChatOpenAI(model_name=model_name, temperature=temperature, openai_api_key=get_openai_api_key(), request_timeout=300, streaming=True, callbacks=[CustomStreamingCallbackHandler()])
 
     else:
         raise Exception("OpenAI is not enabled")
@@ -217,3 +221,24 @@ class LLM(object):
             return 0
 
         return best_n
+
+
+class CustomStreamingCallbackHandler(StreamingStdOutCallbackHandler):
+    """Custom callback handler for streaming. Only works with LLMs that support streaming."""
+    def __init__(self):
+        self.full_completion = ""
+
+    def on_llm_start(
+        self, serialized: Dict[str, Any], prompts: List[str], **kwargs: Any
+    ) -> None:
+        """Run when LLM starts running."""
+        self.full_completion = ""
+
+    def on_llm_new_token(self, token: str, **kwargs: Any) -> None:
+        """Run on new LLM token. Only available when streaming is enabled."""
+        token = token.replace('\r', '')
+        self.full_completion += token
+        data = {'message': self.full_completion.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender()}
+        broadcast_message(message=simplejson.dumps(data), channel=get_broadcast_channel())
+        sys.stdout.write(token)
+        sys.stdout.flush()
