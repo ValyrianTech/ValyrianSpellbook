@@ -2,6 +2,7 @@ import asyncio
 import websockets
 import threading
 
+from helpers.configurationhelpers import what_is_my_ip
 from helpers.loghelpers import LOG
 
 BROADCAST_CHANNEL = 'general'
@@ -71,6 +72,9 @@ def broadcast_message(message: str, channel: str = 'general'):
 
 
 def start_websocket_server(host: str, port: int):
+    if host == '0.0.0.0':
+        host = what_is_my_ip()
+
     LOG.info(f'Starting websocket server on {host}:{port} ...')
     asyncio.set_event_loop(LOOP)
     start_server = websockets.serve(WEBSOCKET_HANDLER.handler, host, port)
