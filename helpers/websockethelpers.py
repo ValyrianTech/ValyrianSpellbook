@@ -72,8 +72,6 @@ def broadcast_message(message: str, channel: str = 'general'):
 
 
 def start_websocket_server(host: str, port: int):
-    if host == '0.0.0.0':
-        host = what_is_my_ip()
 
     LOG.info(f'Starting websocket server on {host}:{port} ...')
     asyncio.set_event_loop(LOOP)
