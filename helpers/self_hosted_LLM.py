@@ -89,6 +89,7 @@ class SelfHostedLLM:
                         case 'stream_end':
                             return
         except Exception as e:
+            LOG.error(f'Error connecting to LLM at {self.URI}: {e}')
             yield 'Error: Self-hosted LLM is not running.\n'
 
     async def print_response_stream(self, prompt, stop=None, **kwargs):
