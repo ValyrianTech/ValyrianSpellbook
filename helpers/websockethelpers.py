@@ -1,10 +1,11 @@
 import asyncio
 import websockets
 import threading
+import ssl
 
 from helpers.configurationhelpers import what_is_my_ip
 from helpers.loghelpers import LOG
-
+from helpers.configurationhelpers import get_enable_ssl, get_ssl_certificate, get_ssl_private_key
 BROADCAST_CHANNEL = 'general'
 BROADCAST_SENDER = 'stream'
 
@@ -75,7 +76,14 @@ def start_websocket_server(host: str, port: int):
 
     LOG.info(f'Starting websocket server on {host}:{port} ...')
     asyncio.set_event_loop(LOOP)
-    start_server = websockets.serve(WEBSOCKET_HANDLER.handler, host, port)
+
+    if get_enable_ssl():
+        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        ssl_context.load_cert_chain(get_ssl_certificate(), get_ssl_private_key())
+        start_server = websockets.serve(WEBSOCKET_HANDLER.handler, host, port, ssl=ssl_context)
+    else:
+        start_server = websockets.serve(WEBSOCKET_HANDLER.handler, host, port)
+
     LOG.info('Initializing websocket server.')
     LOOP.run_until_complete(start_server)
     LOG.info('Websocket server running.')
