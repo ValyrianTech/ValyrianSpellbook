@@ -176,6 +176,7 @@ class LLM(object):
         :param best_of: int - number of completions to generate and return the best of
         :return: Tuple - completion text, LLM output, generation info
         """
+        LOG.info(f'Running LLM {self.model_name}')
 
         results = [self.generate(messages, stop=stop) for _ in range(best_of)]
 
