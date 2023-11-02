@@ -24,9 +24,16 @@ class BaseGeneration:
     def __init__(self, content: str):
         self.content = content
 
+    def to_json(self) -> dict[str, str]:
+        return {'content': self.content}
+
 
 class TextGeneration(BaseGeneration):
-    pass
+    def __init__(self, content: str):
+        super().__init__(content)
+
+    def to_json(self) -> dict[str, str]:
+        return {'content': self.content, 'type': 'text'}
 
 
 class CodeGeneration(BaseGeneration):
@@ -34,16 +41,19 @@ class CodeGeneration(BaseGeneration):
         super().__init__(content)
         self.language = language
 
+    def to_json(self) -> dict[str, str]:
+        return {'content': self.content, 'language': self.language, 'type': 'code'}
 
-def parse_generation(input_string: str) -> List[Union[TextGeneration, CodeGeneration]]:
+
+def parse_generation(input_string: str) -> list[dict[str, str]]:
     pattern = r"(?s)(```(?P<language>\w+)?\n(?P<code>.*?)```)|(?P<text>.*?(?=```|\Z))"
     matches = re.finditer(pattern, input_string)
     results = []
     for match in matches:
         if match.group('code'):
-            results.append(CodeGeneration(match.group('code'), match.group('language')))
+            results.append(CodeGeneration(match.group('code'), match.group('language')).to_json())
         elif match.group('text').strip():
-            results.append(TextGeneration(match.group('text').strip()))
+            results.append(TextGeneration(match.group('text').strip()).to_json())
     return results
 
 
@@ -226,11 +236,12 @@ class LLM(object):
 
 class CustomStreamingCallbackHandler(StreamingStdOutCallbackHandler):
     """Custom callback handler for streaming. Only works with LLMs that support streaming."""
+
     def __init__(self):
         self.full_completion = ""
 
     def on_llm_start(
-        self, serialized: Dict[str, Any], prompts: List[str], **kwargs: Any
+            self, serialized: Dict[str, Any], prompts: List[str], **kwargs: Any
     ) -> None:
         """Run when LLM starts running."""
         self.full_completion = ""
