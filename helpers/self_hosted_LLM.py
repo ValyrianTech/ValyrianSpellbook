@@ -1,9 +1,11 @@
 import asyncio
 import os
 import re
+from pprint import pprint
 
+import requests
 import simplejson
-import websockets
+import sseclient
 import json
 import sys
 import tiktoken
@@ -33,81 +35,109 @@ class SelfHostedLLM:
         self.URI = f'ws://{self.HOST}:{self.PORT}/api/v1/stream'
         self.mixture_of_experts = mixture_of_experts
 
-    async def stream(self, context, stop=None, **kwargs):
-        if stop is None:
-            stop = []
+    # async def stream(self, context, stop=None, **kwargs):
+    #     if stop is None:
+    #         stop = []
+    #
+    #     request = {
+    #         'prompt': context,
+    #         'max_new_tokens': kwargs.get('max_new_tokens', 200),
+    #         'auto_max_new_tokens': kwargs.get('auto_max_new_tokens', True),
+    #         'preset': kwargs.get('preset', 'None'),
+    #         'do_sample': kwargs.get('do_sample', True),
+    #         'temperature': kwargs.get('temperature', 0.7),
+    #         'top_p': kwargs.get('top_p', 0.9),
+    #         'typical_p': kwargs.get('typical_p', 1),
+    #         'epsilon_cutoff': kwargs.get('epsilon_cutoff', 0),
+    #         'eta_cutoff': kwargs.get('eta_cutoff', 0),
+    #         'tfs': kwargs.get('tfs', 1),
+    #         'top_a': kwargs.get('top_a', 0),
+    #         'repetition_penalty': kwargs.get('repetition_penalty', 1.15),
+    #         'repetition_penalty_range': kwargs.get('repetition_penalty_range', 0),
+    #         'top_k': kwargs.get('top_k', 40),
+    #         'min_length': kwargs.get('min_length', 0),
+    #         'no_repeat_ngram_size': kwargs.get('no_repeat_ngram_size', 0),
+    #         'num_beams': kwargs.get('num_beams', 1),
+    #         'penalty_alpha': kwargs.get('penalty_alpha', 0),
+    #         'length_penalty': kwargs.get('length_penalty', 1),
+    #         'early_stopping': kwargs.get('early_stopping', False),
+    #         'mirostat_mode': kwargs.get('mirostat_mode', 0),
+    #         'mirostat_tau': kwargs.get('mirostat_tau', 5),
+    #         'mirostat_eta': kwargs.get('mirostat_eta', 0.1),
+    #         'guidance_scale': kwargs.get('guidance_scale', 1),
+    #         'negative_prompt': kwargs.get('negative_prompt', ''),
+    #         'seed': kwargs.get('seed', -1),
+    #         'add_bos_token': kwargs.get('add_bos_token', True),
+    #         'truncation_length': kwargs.get('truncation_length', 4096),
+    #         'ban_eos_token': kwargs.get('ban_eos_token', False),
+    #         'skip_special_tokens': kwargs.get('skip_special_tokens', True),
+    #         'stopping_strings': kwargs.get('stopping_strings', stop)
+    #     }
+    #
+    #     try:
+    #         LOG.debug(f'Connecting to LLM at {self.URI}')
+    #         async with websockets.connect(self.URI, ping_interval=None) as websocket:
+    #             await websocket.send(json.dumps(request))
+    #
+    #             yield context
+    #
+    #             while True:
+    #                 incoming_data = await websocket.recv()
+    #                 incoming_data = json.loads(incoming_data)
+    #
+    #                 match incoming_data['event']:
+    #                     case 'text_stream':
+    #                         yield incoming_data['text']
+    #                     case 'stream_end':
+    #                         return
+    #     except Exception as e:
+    #         LOG.error(f'Error connecting to LLM at {self.URI}: {e}')
+    #         yield 'Error: Self-hosted LLM is not running.\n'
 
-        request = {
-            'prompt': context,
-            'max_new_tokens': kwargs.get('max_new_tokens', 200),
-            'auto_max_new_tokens': kwargs.get('auto_max_new_tokens', True),
-            'preset': kwargs.get('preset', 'None'),
-            'do_sample': kwargs.get('do_sample', True),
-            'temperature': kwargs.get('temperature', 0.7),
-            'top_p': kwargs.get('top_p', 0.9),
-            'typical_p': kwargs.get('typical_p', 1),
-            'epsilon_cutoff': kwargs.get('epsilon_cutoff', 0),
-            'eta_cutoff': kwargs.get('eta_cutoff', 0),
-            'tfs': kwargs.get('tfs', 1),
-            'top_a': kwargs.get('top_a', 0),
-            'repetition_penalty': kwargs.get('repetition_penalty', 1.15),
-            'repetition_penalty_range': kwargs.get('repetition_penalty_range', 0),
-            'top_k': kwargs.get('top_k', 40),
-            'min_length': kwargs.get('min_length', 0),
-            'no_repeat_ngram_size': kwargs.get('no_repeat_ngram_size', 0),
-            'num_beams': kwargs.get('num_beams', 1),
-            'penalty_alpha': kwargs.get('penalty_alpha', 0),
-            'length_penalty': kwargs.get('length_penalty', 1),
-            'early_stopping': kwargs.get('early_stopping', False),
-            'mirostat_mode': kwargs.get('mirostat_mode', 0),
-            'mirostat_tau': kwargs.get('mirostat_tau', 5),
-            'mirostat_eta': kwargs.get('mirostat_eta', 0.1),
-            'guidance_scale': kwargs.get('guidance_scale', 1),
-            'negative_prompt': kwargs.get('negative_prompt', ''),
-            'seed': kwargs.get('seed', -1),
-            'add_bos_token': kwargs.get('add_bos_token', True),
-            'truncation_length': kwargs.get('truncation_length', 4096),
-            'ban_eos_token': kwargs.get('ban_eos_token', False),
-            'skip_special_tokens': kwargs.get('skip_special_tokens', True),
-            'stopping_strings': kwargs.get('stopping_strings', stop)
+    def print_response_stream(self, prompt, stop=None, **kwargs):
+        completion = ''
+        print('')
+
+        print('kwargs:')
+        pprint(kwargs)
+        url = f"https://{get_oobabooga_host()}/v1/completions"
+        LOG.info(f'Generating with Oobabooga at api url: {url}')
+        headers = {
+            "Content-Type": "application/json"
+        }
+        data = {
+            "stream": True,
+            "prompt": prompt,
+            "max_tokens": 200,
+            "temperature": kwargs.get('temperature', 0.7),
+            "top_p": kwargs.get('top_p', 0.9),
+            'stop': kwargs.get('stop', stop)
         }
 
         try:
-            LOG.debug(f'Connecting to LLM at {self.URI}')
-            async with websockets.connect(self.URI, ping_interval=None) as websocket:
-                await websocket.send(json.dumps(request))
+            stream_response = requests.post(url, headers=headers, json=data, verify=False, stream=True)
+            client = sseclient.SSEClient(stream_response)
 
-                yield context
+            for event in client.events():
+                payload = json.loads(event.data)
+                response = payload['choices'][0]['text']
+                response = response.replace('\r', '')
+                completion += response
+                print(response, end='')
+                sys.stdout.flush()
+                # remove the original prompt from the completion
+                if completion.startswith(prompt):
+                    completion_only = completion[len(prompt):]
+                else:
+                    completion_only = completion
 
-                while True:
-                    incoming_data = await websocket.recv()
-                    incoming_data = json.loads(incoming_data)
+                data = {'message': completion_only.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender()}
+                broadcast_message(message=simplejson.dumps(data), channel=get_broadcast_channel())
 
-                    match incoming_data['event']:
-                        case 'text_stream':
-                            yield incoming_data['text']
-                        case 'stream_end':
-                            return
         except Exception as e:
-            LOG.error(f'Error connecting to LLM at {self.URI}: {e}')
-            yield 'Error: Self-hosted LLM is not running.\n'
+            LOG.error(f'Error connecting to LLM at {url}: {e}')
+            return 'Error: Self-hosted LLM is not running.\n'
 
-    async def print_response_stream(self, prompt, stop=None, **kwargs):
-        completion = ''
-        print('')
-        async for response in self.stream(prompt, stop, **kwargs):
-            response = response.replace('\r', '')
-            completion += response
-            print(response, end='')
-            sys.stdout.flush()
-            # remove the original prompt from the completion
-            if completion.startswith(prompt):
-                completion_only = completion[len(prompt):]
-            else:
-                completion_only = completion
-
-            data = {'message': completion_only.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender()}
-            broadcast_message(message=simplejson.dumps(data), channel=get_broadcast_channel())
         print('')
         completion = completion.encode("utf-8").decode("utf-8")
         return completion
@@ -127,7 +157,7 @@ class SelfHostedLLM:
         if stop is None:
             stop = []
 
-        completion_text = asyncio.run(self.print_response_stream(prompt, stop, **kwargs))
+        completion_text = self.print_response_stream(prompt, stop, **kwargs)
         if completion_text.startswith(prompt):
             completion_text = completion_text[len(prompt):]
             completion_tokens = len(encoding.encode(completion_text))
@@ -164,7 +194,7 @@ class SelfHostedLLM:
     def set_expert_model(self, prompt: str):
         available_llms = get_available_llms()
         find_expert_prompt = find_expert_llm_prompt(prompt=prompt, available_llms=available_llms[0])
-        completion_text = asyncio.run(self.print_response_stream(find_expert_prompt))
+        completion_text = self.print_response_stream(find_expert_prompt)
         if completion_text.startswith(find_expert_prompt):
             completion_text = completion_text[len(find_expert_prompt):]
 
@@ -187,7 +217,7 @@ class SelfHostedLLM:
         llms_data = load_llms()
         self.HOST = llms_data[available_llms[1][expert_llm]]['host']
         self.PORT = llms_data[available_llms[1][expert_llm]]['port']
-        self.URI = f'ws://{self.HOST}:{self.PORT}/api/v1/stream'
+        self.URI = f'https://{self.HOST}/v1'
         LOG.info(f'Expert LLM set to {available_llms[1][expert_llm]}')
         LOG.info(f'URI set to {self.URI}')
 
