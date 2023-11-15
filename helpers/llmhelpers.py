@@ -165,6 +165,7 @@ class LLM(object):
         self.llm = get_llm(model_name, temperature)
 
     def generate(self, messages: List[BaseMessage], stop=None):
+        kwargs = {'temperature': self.temperature}
         if self.model_name == 'text-davinci-003':
             prompts = []
             prompt = ''
@@ -172,9 +173,9 @@ class LLM(object):
                 prompt += message.content + '\n'
 
             prompts.append(prompt)
-            return self.llm.generate(prompts, stop=stop)
+            return self.llm.generate(prompts, stop=stop, **kwargs)
         else:
-            return self.llm.generate([messages], stop=stop)
+            return self.llm.generate([messages], stop=stop, **kwargs)
 
     def run(self, messages: List[BaseMessage], stop=None, best_of: int = 1):
         """Run the LLM and return the completion text, the LLM output, and the generation info.

@@ -94,13 +94,16 @@ class SelfHostedLLM:
     #         LOG.error(f'Error connecting to LLM at {self.URI}: {e}')
     #         yield 'Error: Self-hosted LLM is not running.\n'
 
-    def print_response_stream(self, prompt, stop=None, **kwargs):
+    def get_completion_text(self, prompt, stop=None, **kwargs):
         completion = ''
         print('')
 
         print('kwargs:')
         pprint(kwargs)
-        url = f"https://{get_oobabooga_host()}/v1/completions"
+        if get_oobabooga_port() in ['', None]:
+            url = f"{get_oobabooga_host()}/v1/completions"
+        else:
+            url = f"{get_oobabooga_host()}:{get_oobabooga_port()}/v1/completions"
         LOG.info(f'Generating with Oobabooga at api url: {url}')
         headers = {
             "Content-Type": "application/json"
@@ -108,10 +111,12 @@ class SelfHostedLLM:
         data = {
             "stream": True,
             "prompt": prompt,
-            "max_tokens": 200,
-            "temperature": kwargs.get('temperature', 0.7),
-            "top_p": kwargs.get('top_p', 0.9),
-            'stop': kwargs.get('stop', stop)
+            "max_tokens": 2000,  # todo add max_tokens to the UI
+            "temperature": kwargs.get('temperature', 1),
+            "top_p": kwargs.get('top_p', 0.9),  # todo add top_p to the UI
+            'stop': kwargs.get('stop', stop),
+            "frequency_penalty": 0,
+            "presence_penalty": 0
         }
 
         try:
@@ -157,7 +162,7 @@ class SelfHostedLLM:
         if stop is None:
             stop = []
 
-        completion_text = self.print_response_stream(prompt, stop, **kwargs)
+        completion_text = self.get_completion_text(prompt, stop, **kwargs)
         if completion_text.startswith(prompt):
             completion_text = completion_text[len(prompt):]
             completion_tokens = len(encoding.encode(completion_text))
@@ -191,10 +196,10 @@ class SelfHostedLLM:
         llm_result.run = run_info
         return llm_result
 
-    def set_expert_model(self, prompt: str):
+    def set_expert_model(self, prompt: str):  # TODO fix this
         available_llms = get_available_llms()
         find_expert_prompt = find_expert_llm_prompt(prompt=prompt, available_llms=available_llms[0])
-        completion_text = self.print_response_stream(find_expert_prompt)
+        completion_text = self.get_completion_text(find_expert_prompt)
         if completion_text.startswith(find_expert_prompt):
             completion_text = completion_text[len(find_expert_prompt):]
 
