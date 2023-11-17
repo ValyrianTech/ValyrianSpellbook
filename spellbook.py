@@ -25,9 +25,51 @@ key, secret = get_key(), get_secret()
 # ----------------------------------------------------------------------------------------------------------------
 
 # Create main parser
-parser = argparse.ArgumentParser(description='Bitcoin spellbook command line interface', formatter_class=argparse.RawDescriptionHelpFormatter)
+parser = argparse.ArgumentParser(description='Valyrian spellbook command line interface', formatter_class=argparse.RawDescriptionHelpFormatter)
 subparsers = parser.add_subparsers(title='Spellbook subcommands', metavar='', dest='command')
 
+# Create parser for the get_llms subcommand
+get_llms_parser = subparsers.add_parser(name='get_llms',
+                                        help='Get list of configured LLMs',
+                                        formatter_class=argparse.RawDescriptionHelpFormatter,
+                                        description=texts.GET_LLMS_DESCRIPTION,
+                                        epilog=texts.GET_LLMS_EPILOG)
+
+# Create parser for the get_llm_config subcommand
+get_llm_config_parser = subparsers.add_parser(name='get_llm_config',
+                                              help='Get configuration info about a specific LLM',
+                                              formatter_class=argparse.RawDescriptionHelpFormatter,
+                                              description=texts.GET_LLM_CONFIG_DESCRIPTION,
+                                              epilog=texts.GET_LLM_CONFIG_EPILOG)
+
+get_llm_config_parser.add_argument('id', help='id of the LLM')
+
+# Create parser for the save_llm_config subcommand
+save_llm_config_parser = subparsers.add_parser(name='save_llm_config',
+                                               help='Save or update an LLM in the spellbook',
+                                               formatter_class=argparse.RawDescriptionHelpFormatter,
+                                               description=texts.SAVE_LLM_CONFIG_DESCRIPTION,
+                                               epilog=texts.SAVE_LLM_CONFIG_EPILOG)
+
+save_llm_config_parser.add_argument('id', help='id of the LLM')
+save_llm_config_parser.add_argument('host', help='host of the server that runs the LLM')
+save_llm_config_parser.add_argument('-p', '--port', help='port of the server that runs the LLM', default=None)
+save_llm_config_parser.add_argument('-t', '--server_type', help='server type that runs the LLM', default='Oobabooga')
+save_llm_config_parser.add_argument('-m', '--model_name', help='name of the model', default=None)
+save_llm_config_parser.add_argument('-d', '--description', help='description of the model', default='')
+save_llm_config_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
+save_llm_config_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
+
+# Create parser for the delete_llm subcommand
+delete_llm_parser = subparsers.add_parser(name='delete_llm',
+                                          help='Delete a specific LLM',
+                                          formatter_class=argparse.RawDescriptionHelpFormatter,
+                                          description=texts.DELETE_LLM_DESCRIPTION,
+                                          epilog=texts.DELETE_LLM_EPILOG)
+
+delete_llm_parser.add_argument('id', help='id of the LLM')
+delete_llm_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
+delete_llm_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
 
 # Create parser for the get_explorers subcommand
 get_explorers_parser = subparsers.add_parser(name='get_explorers',
@@ -63,7 +105,6 @@ get_explorer_config_parser.add_argument('name', help='Name of the explorer')
 get_explorer_config_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
 get_explorer_config_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
 
-
 # Create parser for the delete_explorer subcommand
 delete_explorer_parser = subparsers.add_parser(name='delete_explorer',
                                                help='Delete a specific explorer',
@@ -96,7 +137,6 @@ get_block_parser = subparsers.add_parser(name='get_block',
 get_block_parser.add_argument('id', help='The height OR the hash of the block')
 get_block_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
 
-
 # Create parser for the get_prime_input_address subcommand
 get_prime_input_address_parser = subparsers.add_parser(name='get_prime_input_address',
                                                        help='Get the prime input address of a transaction',
@@ -106,7 +146,6 @@ get_prime_input_address_parser = subparsers.add_parser(name='get_prime_input_add
 
 get_prime_input_address_parser.add_argument('txid', help='The txid of the transaction')
 get_prime_input_address_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
-
 
 # Create parser for the get_transaction subcommand
 get_transaction_parser = subparsers.add_parser(name='get_transaction',
@@ -118,7 +157,6 @@ get_transaction_parser = subparsers.add_parser(name='get_transaction',
 get_transaction_parser.add_argument('txid', help='The txid of the transaction')
 get_transaction_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
 
-
 # Create parser for the get_transactions subcommand
 get_transactions_parser = subparsers.add_parser(name='get_transactions',
                                                 help='Get all transactions that a specific address has received or sent',
@@ -129,7 +167,6 @@ get_transactions_parser = subparsers.add_parser(name='get_transactions',
 get_transactions_parser.add_argument('address', help='The address')
 get_transactions_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
 
-
 # Create parser for the get_balance subcommand
 get_balance_parser = subparsers.add_parser(name='get_balance',
                                            help='Get the current balance of an address',
@@ -139,7 +176,6 @@ get_balance_parser = subparsers.add_parser(name='get_balance',
 
 get_balance_parser.add_argument('address', help='The address')
 get_balance_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
-
 
 # Create parser for the get_utxos subcommand
 get_utxos_parser = subparsers.add_parser(name='get_utxos',
@@ -165,7 +201,6 @@ get_sil_parser.add_argument('address', help='The address')
 get_sil_parser.add_argument('-b', '--block_height', help='The block height for the SIL (optional, default=latest block)', default=0)
 get_sil_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
 
-
 # Create parser for the get_profile subcommand
 get_profile_parser = subparsers.add_parser(name='get_profile',
                                            help='Get the profile of an address',
@@ -176,7 +211,6 @@ get_profile_parser = subparsers.add_parser(name='get_profile',
 get_profile_parser.add_argument('address', help='The address')
 get_profile_parser.add_argument('-b', '--block_height', help='The block height for the profile (optional, default=latest block)', default=0)
 get_profile_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
-
 
 # Create parser for the get_sul subcommand
 get_sul_parser = subparsers.add_parser(name='get_sul',
@@ -203,7 +237,6 @@ get_lal_parser.add_argument('xpub', help='The xpub key')
 get_lal_parser.add_argument('-b', '--block_height', help='The block height for the SIL to link with the corresponding address from the xpub (optional, default=latest block)', default=0)
 get_lal_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
 
-
 # Create parser for the get_lbl subcommand
 get_lbl_parser = subparsers.add_parser(name='get_lbl',
                                        help='Get the Linked Balance List (LBL) of an address and an xpub key',
@@ -215,7 +248,6 @@ get_lbl_parser.add_argument('address', help='The address')
 get_lbl_parser.add_argument('xpub', help='The xpub key')
 get_lbl_parser.add_argument('-b', '--block_height', help='The block height for the SIL to link with the corresponding address from the xpub (optional, default=latest block)', default=0)
 get_lbl_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
-
 
 # Create parser for the get_lrl subcommand
 get_lrl_parser = subparsers.add_parser(name='get_lrl',
@@ -229,7 +261,6 @@ get_lrl_parser.add_argument('xpub', help='The xpub key')
 get_lrl_parser.add_argument('-b', '--block_height', help='The block height for the SIL to link with the corresponding address from the xpub (optional, default=latest block)', default=0)
 get_lrl_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
 
-
 # Create parser for the get_lsl subcommand
 get_lsl_parser = subparsers.add_parser(name='get_lsl',
                                        help='Get the Linked Sent List (LSL) of an address and an xpub key',
@@ -241,7 +272,6 @@ get_lsl_parser.add_argument('address', help='The address')
 get_lsl_parser.add_argument('xpub', help='The xpub key')
 get_lsl_parser.add_argument('-b', '--block_height', help='The block height for the SIL to link with the corresponding address from the xpub (optional, default=latest block)', default=0)
 get_lsl_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
-
 
 # ----------------------------------------------------------------------------------------------------------------
 
@@ -258,7 +288,6 @@ get_random_address_parser.add_argument('rng_block_height', help='The block heigh
 get_random_address_parser.add_argument('-x', '--xpub', help='The xpub key (needed for LBL, LRL and LSL)')
 get_random_address_parser.add_argument('-b', '--block_height', help='The block height for the SIL to link with the corresponding address from the xpub (optional, default=latest block)', default=0)
 get_random_address_parser.add_argument('-e', '--explorer', help='Use specified explorer to retrieve data from the blockchain')
-
 
 # ----------------------------------------------------------------------------------------------------------------
 
@@ -281,7 +310,6 @@ get_trigger_config_parser = subparsers.add_parser(name='get_trigger_config',
 get_trigger_config_parser.add_argument('trigger_id', help='The id of the trigger')
 get_trigger_config_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
 get_trigger_config_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
-
 
 # Create parser for the save_trigger subcommand
 save_trigger_parser = subparsers.add_parser(name='save_trigger',
@@ -319,7 +347,6 @@ save_trigger_parser.add_argument('-ac', '--actions', help='The action ids to run
 save_trigger_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
 save_trigger_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
 
-
 # Create parser for the delete_trigger subcommand
 delete_trigger_parser = subparsers.add_parser(name='delete_trigger',
                                               help='Delete a specified trigger',
@@ -331,7 +358,6 @@ delete_trigger_parser.add_argument('trigger_id', help='The id of the trigger to 
 delete_trigger_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
 delete_trigger_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
 
-
 # Create parser for the activate_trigger subcommand
 activate_trigger_parser = subparsers.add_parser(name='activate_trigger',
                                                 help='Activate a specified manual trigger',
@@ -342,7 +368,6 @@ activate_trigger_parser = subparsers.add_parser(name='activate_trigger',
 activate_trigger_parser.add_argument('trigger_id', help='The id of the trigger to activate')
 activate_trigger_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
 activate_trigger_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
-
 
 # Create parser for the send_signed_message subcommand
 send_signed_message_parser = subparsers.add_parser(name='send_signed_message',
@@ -356,7 +381,6 @@ send_signed_message_parser.add_argument('address', help='The address that signed
 send_signed_message_parser.add_argument('message', help='The message that was signed OR a filename containing the message')
 send_signed_message_parser.add_argument('signature', help='The signature of the message')
 
-
 # Create parser for the sign_message subcommand
 sign_message_parser = subparsers.add_parser(name='sign_message',
                                             help='Sign a message with the private key of an address in the hot wallet',
@@ -368,7 +392,6 @@ sign_message_parser.add_argument('address', help='The address to the message (mu
 sign_message_parser.add_argument('message', help='The message to sign OR a filename containing the message (max 255 characters)', nargs='*')
 sign_message_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
 sign_message_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
-
 
 # Create parser for the check_triggers subcommand
 check_triggers_parser = subparsers.add_parser(name='check_triggers',
@@ -393,7 +416,6 @@ get_actions_parser = subparsers.add_parser(name='get_actions',
 
 get_actions_parser.add_argument('-i', '--trigger_id', help='The id of the trigger')
 
-
 # Create parser for the get_action_config subcommand
 get_action_config_parser = subparsers.add_parser(name='get_action_config',
                                                  help='Get the configuration of specified action',
@@ -404,7 +426,6 @@ get_action_config_parser = subparsers.add_parser(name='get_action_config',
 get_action_config_parser.add_argument('action_id', help='The id of the action')
 get_action_config_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
 get_action_config_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
-
 
 # Create parser for the save_action subcommand
 save_action_parser = subparsers.add_parser(name='save_action',
@@ -467,7 +488,6 @@ delete_action_parser.add_argument('action_id', help='The id of the action')
 delete_action_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
 delete_action_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
 
-
 # Create parser for the run_action subcommand
 run_action_parser = subparsers.add_parser(name='run_action',
                                           help='Run a specified action',
@@ -478,7 +498,6 @@ run_action_parser = subparsers.add_parser(name='run_action',
 run_action_parser.add_argument('action_id', help='The id of the action')
 run_action_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
 run_action_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
-
 
 # Create parser for the get_reveal subcommand
 get_reveal_parser = subparsers.add_parser(name='get_reveal',
@@ -499,7 +518,6 @@ get_logs_parser = subparsers.add_parser(name='get_logs',
 get_logs_parser.add_argument('filter_string', help='A filter string for the log messages', nargs='*')
 get_logs_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
 get_logs_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
-
 
 
 def add_authentication_headers(headers=None, data=None):
@@ -526,7 +544,36 @@ def add_authentication_headers(headers=None, data=None):
 
 
 #############################################
-# Bitcoin Spellbook Commands : explorers    #
+# Valyrian Spellbook Commands : LLMs        #
+#############################################
+def get_llms():
+    url = '{spellbook_uri}/spellbook/llms'.format(spellbook_uri=get_spellbook_uri())
+    do_get_request(url)
+
+
+def get_llm_config():
+    url = '{spellbook_uri}/spellbook/llms/{llm_id}'.format(spellbook_uri=get_spellbook_uri(), llm_id=args.id)
+    do_get_request(url=url)
+
+
+def save_llm_config():
+    data = {'host': args.host,
+            'port': args.port,
+            'server_type': args.server_type,
+            'model_name': args.model_name,
+            'description': args.description}
+
+    url = '{spellbook_uri}/spellbook/llms/{llm_id}'.format(spellbook_uri=get_spellbook_uri(), llm_id=args.id)
+    do_post_request(url=url, data=data, authenticate=True)
+
+
+def delete_llm():
+    url = '{spellbook_uri}/spellbook/llms/{llm_id}'.format(spellbook_uri=get_spellbook_uri(), llm_id=args.id)
+    do_delete_request(url=url, authenticate=True)
+
+
+#############################################
+# Valyrian Spellbook Commands : explorers   #
 #############################################
 
 
@@ -554,6 +601,7 @@ def save_explorer():
 def delete_explorer():
     url = '{spellbook_uri}/spellbook/explorers/{explorer_id}'.format(spellbook_uri=get_spellbook_uri(), explorer_id=args.name)
     do_delete_request(url=url, authenticate=True)
+
 
 # ----------------------------------------------------------------------------------------------------------------
 
@@ -589,11 +637,13 @@ def get_balance():
 
 
 def get_utxos():
-    url = '{spellbook_uri}/spellbook/addresses/{address}/utxos?confirmations={confirmations}'.format(host=host,
-                                                                                                          port=port,
-                                                                                                          address=args.address,
-                                                                                                          confirmations=args.confirmations)
+    url = '{spellbook_uri}/spellbook/addresses/{address}/utxos?confirmations={confirmations}'.format(spellbook_uri=get_spellbook_uri(),
+                                                                                                     host=host,
+                                                                                                     port=port,
+                                                                                                     address=args.address,
+                                                                                                     confirmations=args.confirmations)
     do_get_request(url=url)
+
 
 # ----------------------------------------------------------------------------------------------------------------
 
@@ -614,6 +664,7 @@ def get_sul():
     data = {'confirmations': args.confirmations}
     url = '{spellbook_uri}/spellbook/addresses/{address}/SUL'.format(spellbook_uri=get_spellbook_uri(), address=args.address)
     do_get_request(url=url, data=data)
+
 
 # ----------------------------------------------------------------------------------------------------------------
 
@@ -645,6 +696,7 @@ def get_lsl():
     url = '{spellbook_uri}/spellbook/addresses/{address}/LSL'.format(spellbook_uri=get_spellbook_uri(), address=args.address)
     do_get_request(url=url, data=data)
 
+
 # ----------------------------------------------------------------------------------------------------------------
 
 
@@ -653,9 +705,10 @@ def get_random_address():
             'sil_block_height': args.block_height,
             'xpub': args.xpub}
     url = '{spellbook_uri}/spellbook/addresses/{address}/random/{source}'.format(spellbook_uri=get_spellbook_uri(),
-                                                                                      address=args.address,
-                                                                                      source=args.source)
+                                                                                 address=args.address,
+                                                                                 source=args.source)
     do_get_request(url=url, data=data)
+
 
 # ----------------------------------------------------------------------------------------------------------------
 # Triggers
@@ -807,6 +860,7 @@ def check_triggers():
         url = '{spellbook_uri}/spellbook/check_triggers'.format(spellbook_uri=get_spellbook_uri())
 
     do_get_request(url=url, authenticate=True)
+
 
 # ----------------------------------------------------------------------------------------------------------------
 # Actions
@@ -1069,3 +1123,11 @@ elif args.command == 'get_logs':
     get_logs()
 elif args.command == 'get_hivemind':
     get_hivemind()
+elif args.command == 'get_llms':
+    get_llms()
+elif args.command == 'get_llm_config':
+    get_llm_config()
+elif args.command == 'save_llm_config':
+    save_llm_config()
+elif args.command == 'delete_llm':
+    delete_llm()

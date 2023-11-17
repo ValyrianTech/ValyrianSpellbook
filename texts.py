@@ -589,3 +589,43 @@ examples:
     -> Get the reveal text or link of the action with id 'myaction'
 
 '''
+
+########################################################################################################
+# get_llms                                                                                             #
+########################################################################################################
+GET_LLMS_DESCRIPTION = 'Get the list of configured LLMs.'
+GET_LLMS_EPILOG = '''
+examples:
+    - spellbook.py get_llms
+        -> Get the list of all configured large language models
+'''
+
+########################################################################################################
+# get_llm_config                                                                                       #
+########################################################################################################
+GET_LLM_CONFIG_DESCRIPTION = 'Get the configuration of specified LLM.'
+GET_LLM_CONFIG_EPILOG = '''
+examples:
+    - spellbook.py get_llm_config chat
+        -> Get the configuration of the LLM 'chat'
+'''
+
+########################################################################################################
+# save_llm_config                                                                                      #
+########################################################################################################
+SAVE_LLM_CONFIG_DESCRIPTION = 'Save or update the configuration of an LLM.'
+SAVE_LLM_CONFIG_EPILOG = '''
+examples:
+    - spellbook.py save_llm_config chat --host=https://xxx.runpod.net
+        -> Save an LLM with id 'chat'
+'''
+
+########################################################################################################
+# delete_llm                                                                                           #
+########################################################################################################
+DELETE_LLM_DESCRIPTION = 'Delete a specified LLM.'
+DELETE_LLM_EPILOG = '''
+examples:
+    - spellbook.py delete_llm chat
+        -> Delete the LLM with id 'chat'
+'''
