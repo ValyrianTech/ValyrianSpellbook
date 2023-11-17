@@ -31,6 +31,7 @@ from linker.linker import get_lal, get_lbl, get_lrl, get_lsl
 from randomaddress.randomaddress import random_address_from_sil, random_address_from_lbl, random_address_from_lrl, \
     random_address_from_lsl
 from helpers.qrhelpers import generate_qr
+from helpers.llmhelpers import load_llms, get_llm_config, save_llm_config, delete_llm
 
 # Make sure the current working directory is correct
 PROGRAM_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -120,6 +121,12 @@ class SpellbookRESTAPI(Bottle):
         self.route('/spellbook/explorers/<explorer_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.save_explorer)
         self.route('/spellbook/explorers/<explorer_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.get_explorer_config)
         self.route('/spellbook/explorers/<explorer_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.delete_explorer)
+
+        # Routes for managing LLMs
+        self.route('/spellbook/llms', method='GET', callback=self.get_llms)
+        self.route('/spellbook/llms/<llm_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.save_llm_config)
+        self.route('/spellbook/llms/<llm_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.get_llm_config)
+        self.route('/spellbook/llms/<llm_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.delete_llm)
 
         # Routes for retrieving data from the blockchain
         self.route('/spellbook/blocks/latest', method='GET', callback=self.get_latest_block)
@@ -289,6 +296,7 @@ class SpellbookRESTAPI(Bottle):
                                                                   response_status,
                                                                   end_time - start_time))
             return actual_response
+
         return _log_to_logger
 
     @staticmethod
@@ -297,6 +305,38 @@ class SpellbookRESTAPI(Bottle):
         LOG.info('Pong')
         response.content_type = 'application/json'
         return {'success': True}
+
+    @staticmethod
+    @output_json
+    def get_llms():
+        response.content_type = 'application/json'
+        llms = load_llms()
+        if llms is not None:
+            return [k for k, v in llms.items()]
+        else:
+            return {'error': 'Unable to retrieve LLMs'}
+
+    @staticmethod
+    @output_json
+    def get_llm_config(llm_id):
+        response.content_type = 'application/json'
+        llm_config = get_llm_config(llm_id)
+        if llm_config is not None:
+            return llm_config
+        else:
+            return {'error': 'No LLM configured with id: %s' % llm_id}
+
+    @staticmethod
+    @output_json
+    @authentication_required
+    def save_llm_config(llm_id):
+        save_llm_config(llm_id, request.json)
+
+    @staticmethod
+    @output_json
+    @authentication_required
+    def delete_llm(llm_id):
+        delete_llm(llm_id)
 
     @staticmethod
     @output_json
@@ -538,7 +578,6 @@ class SpellbookRESTAPI(Bottle):
         data.update(query)
 
         return verify_signed_message(trigger_id, **data)
-
 
     @staticmethod
     @output_json

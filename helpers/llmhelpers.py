@@ -13,7 +13,7 @@ from langchain.schema import HumanMessage, AIMessage, SystemMessage, ChatMessage
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
 from .loghelpers import LOG
-from .jsonhelpers import load_from_json_file
+from .jsonhelpers import load_from_json_file, save_to_json_file
 from .self_hosted_LLM import SelfHostedLLM
 from helpers.websockethelpers import broadcast_message, get_broadcast_channel, get_broadcast_sender
 
@@ -255,3 +255,28 @@ class CustomStreamingCallbackHandler(StreamingStdOutCallbackHandler):
         broadcast_message(message=simplejson.dumps(data), channel=get_broadcast_channel())
         sys.stdout.write(token)
         sys.stdout.flush()
+
+
+def load_llms():
+    llms_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'configuration', 'LLMs.json')
+    llms_data = load_from_json_file(filename=llms_file) if os.path.exists(llms_file) else {}
+
+    return llms_data
+
+
+def get_llm_config(llm_name: str):
+    llms_data = load_llms()
+    return llms_data.get(llm_name, {})
+
+
+def delete_llm(llm_name: str):
+    llms_data = load_llms()
+    if llm_name in llms_data:
+        del llms_data[llm_name]
+        save_to_json_file(data=llms_data, filename=os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'configuration', 'LLMs.json'))
+
+
+def save_llm_config(llm_name: str, llm_config: dict):
+    llms_data = load_llms()
+    llms_data[llm_name] = llm_config
+    save_to_json_file(data=llms_data, filename=os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'configuration', 'LLMs.json'))
