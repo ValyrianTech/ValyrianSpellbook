@@ -2,6 +2,7 @@ import os
 import re
 import sys
 
+import requests
 import simplejson
 
 from typing import List, Union, Any, Dict
@@ -278,5 +279,35 @@ def delete_llm(llm_name: str):
 
 def save_llm_config(llm_name: str, llm_config: dict):
     llms_data = load_llms()
+
+    if llm_config['server_type'] == 'Oobabooga':
+        if llm_config['model_name'] is None and llm_config['host'] is not None:
+            url = f"{llm_config['host']}/v1/models"
+            headers = {
+                "Content-Type": "application/json"
+            }
+            try:
+                response = requests.get(url=url, headers=headers)
+            except Exception as e:
+                LOG.error(f"Unable to connect to {url}: {e}")
+                return
+
+            if response.status_code == 200:
+                models = response.json()['data']
+                for model in models:
+                    if model['id'] not in ['gpt-3.5-turbo', 'text-embedding-ada-002']:  # these come with the server, ignore them
+                        llm_config['model_name'] = model['id']
+                        break
+
+    if llm_config['model_name'] is None:
+        LOG.error('No model name provided and unable to determine model name from server')
+        return
+
+    if llm_config['description'] is None:
+        if llm_name.startswith('chat'):
+            llm_config['description'] = 'Optimized for chat'
+        elif llm_name.startswith('code'):
+            llm_config['description'] = 'Optimized for code'
+
     llms_data[llm_name] = llm_config
     save_to_json_file(data=llms_data, filename=os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'configuration', 'LLMs.json'))

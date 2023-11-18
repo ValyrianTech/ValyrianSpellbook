@@ -56,7 +56,7 @@ save_llm_config_parser.add_argument('host', help='host of the server that runs t
 save_llm_config_parser.add_argument('-p', '--port', help='port of the server that runs the LLM', default=None)
 save_llm_config_parser.add_argument('-t', '--server_type', help='server type that runs the LLM', default='Oobabooga')
 save_llm_config_parser.add_argument('-m', '--model_name', help='name of the model', default=None)
-save_llm_config_parser.add_argument('-d', '--description', help='description of the model', default='')
+save_llm_config_parser.add_argument('-d', '--description', help='description of the model', default=None)
 save_llm_config_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
 save_llm_config_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
 
