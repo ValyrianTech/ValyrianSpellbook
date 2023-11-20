@@ -283,13 +283,3 @@ def get_enable_oobabooga():
 @verify_config('Oobabooga', 'default_model')
 def get_oobabooga_default_model():
     return spellbook_config().get('Oobabooga', 'default_model')
-
-
-@verify_config('Oobabooga', 'host')
-def get_oobabooga_host():
-    return spellbook_config().get('Oobabooga', 'host')
-
-
-@verify_config('Oobabooga', 'port')
-def get_oobabooga_port():
-    return spellbook_config().get('Oobabooga', 'port')

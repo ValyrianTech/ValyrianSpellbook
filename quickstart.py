@@ -119,8 +119,7 @@ if config.getboolean(section='Nostr', option='enable_nostr') is True:
 
 # Oobabooga settings
 if config.getboolean(section='Oobabooga', option='enable_oobabooga') is True:
-    update_config(config, 'Oobabooga', 'host', 'Enter the ip address of the Oobabooga server or press enter to keep the current value (%s) ')
-    update_config(config, 'Oobabooga', 'port', 'Enter the port of the Oobabooga server or press enter to keep the current value (%s) ')
+    update_config(config, 'Oobabooga', 'default_model', 'Enter the id of the default expert model (e.g. chat) or press enter to keep the current value (%s) ')
 
 with open(configuration_file, 'w') as output_file:
     config.write(output_file)
