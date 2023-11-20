@@ -280,6 +280,11 @@ def get_enable_oobabooga():
     return spellbook_config().getboolean('Oobabooga', 'enable_oobabooga')
 
 
+@verify_config('Oobabooga', 'default_model')
+def get_oobabooga_default_model():
+    return spellbook_config().get('Oobabooga', 'default_model')
+
+
 @verify_config('Oobabooga', 'host')
 def get_oobabooga_host():
     return spellbook_config().get('Oobabooga', 'host')

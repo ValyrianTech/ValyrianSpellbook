@@ -1,4 +1,3 @@
-import asyncio
 import os
 import re
 from pprint import pprint
@@ -13,27 +12,43 @@ import tiktoken
 from langchain.schema import AIMessage, ChatGeneration
 from typing import List, Union
 
-from helpers.configurationhelpers import get_enable_oobabooga, get_oobabooga_host, get_oobabooga_port, get_host, get_websocket_port
+from helpers.configurationhelpers import get_enable_oobabooga, get_oobabooga_default_model, get_host, get_websocket_port
 from helpers.jsonhelpers import load_from_json_file
 from helpers.loghelpers import LOG
 from helpers.websockethelpers import broadcast_message, init_websocket_server, get_broadcast_channel, get_broadcast_sender
 
 encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
 
-OOBABOOGA_HOST = ''
-
-if get_enable_oobabooga():
-    OOBABOOGA_HOST = get_oobabooga_host() + ':' + get_oobabooga_port()
-
 init_websocket_server(host=get_host(), port=get_websocket_port())
+
+DEFAULT_HOST = ''
+
+
+def load_llms():
+    llms_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'configuration', 'LLMs.json')
+    llms_data = load_from_json_file(filename=llms_file)
+
+    return llms_data
+
+
+def get_default_oobabooga_host():
+    global DEFAULT_HOST
+
+    if get_enable_oobabooga():
+        llms = load_llms()
+        default_model = get_oobabooga_default_model()
+        if default_model in llms:
+            DEFAULT_HOST = llms[default_model].get('host', DEFAULT_HOST)
+            LOG.info(f'Oobabooga default model at {DEFAULT_HOST}')
+            return DEFAULT_HOST
 
 
 class SelfHostedLLM:
-    def __init__(self, host=get_oobabooga_host(), port=get_oobabooga_port(), mixture_of_experts=False):
-        self.HOST = host
-        self.PORT = port
-        self.URI = f'ws://{self.HOST}:{self.PORT}/api/v1/stream'
+    def __init__(self, host: str = get_default_oobabooga_host(), port: int = None, mixture_of_experts=False):
+        self.host = host
+        self.port = port
         self.mixture_of_experts = mixture_of_experts
+        LOG.info(f'Self hosted LLM initialized at {self.host}')
 
     # async def stream(self, context, stop=None, **kwargs):
     #     if stop is None:
@@ -100,10 +115,11 @@ class SelfHostedLLM:
 
         print('kwargs:')
         pprint(kwargs)
-        if get_oobabooga_port() in ['', None]:
-            url = f"{get_oobabooga_host()}/v1/completions"
+        print(f'stop: {stop}')
+        if self.port in ['', None]:
+            url = f"{self.host}/v1/completions"
         else:
-            url = f"{get_oobabooga_host()}:{get_oobabooga_port()}/v1/completions"
+            url = f"{self.host}:{self.port}/v1/completions"
         LOG.info(f'Generating with Oobabooga at api url: {url}')
         headers = {
             "Content-Type": "application/json"
@@ -199,6 +215,7 @@ class SelfHostedLLM:
     def set_expert_model(self, prompt: str):  # TODO fix this
         available_llms = get_available_llms()
         find_expert_prompt = find_expert_llm_prompt(prompt=prompt, available_llms=available_llms[0])
+        print(f'find_expert_prompt: {find_expert_prompt}')
         completion_text = self.get_completion_text(find_expert_prompt)
         if completion_text.startswith(find_expert_prompt):
             completion_text = completion_text[len(find_expert_prompt):]
@@ -220,22 +237,14 @@ class SelfHostedLLM:
                 expert_llm = 0
 
         llms_data = load_llms()
-        self.HOST = llms_data[available_llms[1][expert_llm]]['host']
-        self.PORT = llms_data[available_llms[1][expert_llm]]['port']
-        self.URI = f'https://{self.HOST}/v1'
+        self.host = llms_data[available_llms[1][expert_llm]]['host']
+        self.port = llms_data[available_llms[1][expert_llm]]['port']
         LOG.info(f'Expert LLM set to {available_llms[1][expert_llm]}')
-        LOG.info(f'URI set to {self.URI}')
+        LOG.info(f'LLM host set to {self.host}')
 
 
 class LLMResult(object):
     generations: list[list[ChatGeneration]]
-
-
-def load_llms():
-    llms_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'configuration', 'LLMs.json')
-    llms_data = load_from_json_file(filename=llms_file)
-
-    return llms_data
 
 
 def get_available_llms():
