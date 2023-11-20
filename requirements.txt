@@ -26,3 +26,4 @@ ipfs-dict-chain==1.0.6
 chromadb==0.3.26
 torch==2.0.0
 websockets==11.0.3
+sseclient-py==1.8.0
