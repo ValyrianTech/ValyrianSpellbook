@@ -294,10 +294,13 @@ def save_llm_config(llm_name: str, llm_config: dict):
 
             if response.status_code == 200:
                 models = response.json()['data']
+                print(models)
                 for model in models:
                     if model['id'] not in ['gpt-3.5-turbo', 'text-embedding-ada-002']:  # these come with the server, ignore them
                         llm_config['model_name'] = model['id']
                         break
+                    else:
+                        llm_config['model_name'] = 'Unknown'
 
     if llm_config['model_name'] is None:
         LOG.error('No model name provided and unable to determine model name from server')
