@@ -26,7 +26,7 @@ DEFAULT_HOST = ''
 
 def load_llms():
     llms_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'configuration', 'LLMs.json')
-    llms_data = load_from_json_file(filename=llms_file)
+    llms_data = load_from_json_file(filename=llms_file) if os.path.exists(llms_file) else {}
 
     return llms_data
 
