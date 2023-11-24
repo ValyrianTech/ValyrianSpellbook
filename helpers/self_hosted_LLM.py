@@ -44,7 +44,10 @@ def get_default_oobabooga_host():
 
 
 class SelfHostedLLM:
-    def __init__(self, host: str = get_default_oobabooga_host(), port: int = None, mixture_of_experts=False):
+    def __init__(self, host: str = None, port: int = None, mixture_of_experts=False):
+        if host is None:
+            host = get_default_oobabooga_host()
+
         self.host = host
         self.port = port
         self.mixture_of_experts = mixture_of_experts
