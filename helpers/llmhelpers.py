@@ -313,4 +313,9 @@ def save_llm_config(llm_name: str, llm_config: dict):
             llm_config['description'] = 'Optimized for code'
 
     llms_data[llm_name] = llm_config
+
+    # if host ends with a trailing /, remove it
+    if llm_config['host'] is not None and llm_config['host'].endswith('/'):
+        llm_config['host'] = llm_config['host'][:-1]
+
     save_to_json_file(data=llms_data, filename=os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'configuration', 'LLMs.json'))
