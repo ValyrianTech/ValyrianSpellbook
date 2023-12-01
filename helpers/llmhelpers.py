@@ -5,7 +5,7 @@ import sys
 import requests
 import simplejson
 
-from typing import List, Union, Any, Dict
+from typing import List, Any, Dict
 
 from .configurationhelpers import get_enable_openai, get_openai_api_key
 from langchain.llms import OpenAI
@@ -247,6 +247,13 @@ class CustomStreamingCallbackHandler(StreamingStdOutCallbackHandler):
     ) -> None:
         """Run when LLM starts running."""
         self.full_completion = ""
+        LOG.info('streaming started again')
+
+    def on_llm_end(self, response: LLMResult, **kwargs: Any) -> None:
+        LOG.info('streaming ended')
+        self.full_completion = ""
+        data = {'message': '', 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': []}
+        broadcast_message(message=simplejson.dumps(data), channel=get_broadcast_channel())
 
     def on_llm_new_token(self, token: str, **kwargs: Any) -> None:
         """Run on new LLM token. Only available when streaming is enabled."""
