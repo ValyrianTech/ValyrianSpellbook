@@ -124,8 +124,10 @@ class SpellbookRESTAPI(Bottle):
 
         # Routes for managing LLMs
         self.route('/spellbook/llms', method='GET', callback=self.get_llms)
+        self.route('/spellbook/llms', method='OPTIONS', callback=self.get_llms)
         self.route('/spellbook/llms/<llm_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.save_llm_config)
         self.route('/spellbook/llms/<llm_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.get_llm_config)
+        self.route('/spellbook/llms/<llm_id:re:[a-zA-Z0-9_\-.]+>', method='OPTIONS', callback=self.get_llm_config)
         self.route('/spellbook/llms/<llm_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.delete_llm)
 
         # Routes for retrieving data from the blockchain
@@ -307,6 +309,7 @@ class SpellbookRESTAPI(Bottle):
         return {'success': True}
 
     @staticmethod
+    @enable_cors
     @output_json
     def get_llms():
         response.content_type = 'application/json'
@@ -317,6 +320,7 @@ class SpellbookRESTAPI(Bottle):
             return {'error': 'Unable to retrieve LLMs'}
 
     @staticmethod
+    @enable_cors
     @output_json
     def get_llm_config(llm_id):
         response.content_type = 'application/json'
@@ -327,6 +331,7 @@ class SpellbookRESTAPI(Bottle):
             return {'error': 'No LLM configured with id: %s' % llm_id}
 
     @staticmethod
+    @enable_cors
     @output_json
     @authentication_required
     def save_llm_config(llm_id):
