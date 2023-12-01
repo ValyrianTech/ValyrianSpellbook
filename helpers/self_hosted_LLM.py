@@ -155,7 +155,7 @@ class SelfHostedLLM:
                 else:
                     completion_only = completion
 
-                data = {'message': completion_only.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender()}
+                data = {'message': completion_only.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion_only)}
                 broadcast_message(message=simplejson.dumps(data), channel=get_broadcast_channel())
 
         except Exception as e:
