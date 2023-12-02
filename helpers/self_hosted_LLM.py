@@ -10,7 +10,6 @@ import sys
 import tiktoken
 
 from langchain.schema import AIMessage, ChatGeneration
-from typing import List, Union
 
 from helpers.configurationhelpers import get_enable_oobabooga, get_oobabooga_default_model, get_host, get_websocket_port
 from helpers.jsonhelpers import load_from_json_file
@@ -155,7 +154,7 @@ class SelfHostedLLM:
                 else:
                     completion_only = completion
 
-                data = {'message': completion_only.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender()}  #todo add parts
+                data = {'message': completion_only.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion_only.lstrip())}
                 broadcast_message(message=simplejson.dumps(data), channel=get_broadcast_channel())
 
         except Exception as e:
@@ -293,9 +292,15 @@ class BaseGeneration:
     def __init__(self, content: str):
         self.content = content
 
+    def to_json(self) -> dict[str, str]:
+        return {'content': self.content}
 
 class TextGeneration(BaseGeneration):
-    pass
+    def __init__(self, content: str):
+        super().__init__(content)
+
+    def to_json(self) -> dict[str, str]:
+        return {'content': self.content, 'type': 'text'}
 
 
 class CodeGeneration(BaseGeneration):
@@ -303,14 +308,17 @@ class CodeGeneration(BaseGeneration):
         super().__init__(content)
         self.language = language
 
+    def to_json(self) -> dict[str, str]:
+        return {'content': self.content, 'language': self.language, 'type': 'code'}
 
-def parse_generation(input_string: str) -> List[Union[TextGeneration, CodeGeneration]]:
+
+def parse_generation(input_string: str) -> list[dict[str, str]]:
     pattern = r"(?s)(```(?P<language>\w+)?\n(?P<code>.*?)```)|(?P<text>.*?(?=```|\Z))"
     matches = re.finditer(pattern, input_string)
     results = []
     for match in matches:
         if match.group('code'):
-            results.append(CodeGeneration(match.group('code'), match.group('language')))
+            results.append(CodeGeneration(match.group('code'), match.group('language')).to_json())
         elif match.group('text').strip():
-            results.append(TextGeneration(match.group('text').strip()))
+            results.append(TextGeneration(match.group('text').strip()).to_json())
     return results
