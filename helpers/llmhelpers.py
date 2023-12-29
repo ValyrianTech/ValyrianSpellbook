@@ -53,7 +53,7 @@ def parse_generation(input_string: str) -> list[dict[str, str]]:
     for match in matches:
         if match.group('code'):
             results.append(CodeGeneration(match.group('code'), match.group('language')).to_json())
-        elif match.group('text').strip():
+        elif match.group('text') is not None and match.group('text').strip():
             results.append(TextGeneration(match.group('text').strip()).to_json())
     return results
 
