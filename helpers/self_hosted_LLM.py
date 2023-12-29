@@ -162,6 +162,11 @@ class SelfHostedLLM:
             return 'Error: Self-hosted LLM is not running.\n'
 
         print('')
+
+        # Broadcast empty message to clear the streaming widget in the UI
+        data = {'message': '', 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation('')}
+        broadcast_message(message=simplejson.dumps(data), channel=get_broadcast_channel())
+
         completion = completion.encode("utf-8").decode("utf-8")
         return completion
 
