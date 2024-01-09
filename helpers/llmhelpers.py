@@ -1,5 +1,4 @@
 import os
-import re
 import sys
 
 import requests
@@ -17,45 +16,47 @@ from .loghelpers import LOG
 from .jsonhelpers import load_from_json_file, save_to_json_file
 from .self_hosted_LLM import SelfHostedLLM
 from helpers.websockethelpers import broadcast_message, get_broadcast_channel, get_broadcast_sender
+from .textgenerationhelpers import parse_generation, CodeGeneration
+from .together_ai_LLM import TogetherAILLM
 
 CLIENTS = {}
 
 
-class BaseGeneration:
-    def __init__(self, content: str):
-        self.content = content
-
-    def to_json(self) -> dict[str, str]:
-        return {'content': self.content}
-
-
-class TextGeneration(BaseGeneration):
-    def __init__(self, content: str):
-        super().__init__(content)
-
-    def to_json(self) -> dict[str, str]:
-        return {'content': self.content, 'type': 'text'}
-
-
-class CodeGeneration(BaseGeneration):
-    def __init__(self, content: str, language: str):
-        super().__init__(content)
-        self.language = language
-
-    def to_json(self) -> dict[str, str]:
-        return {'content': self.content, 'language': self.language, 'type': 'code'}
-
-
-def parse_generation(input_string: str) -> list[dict[str, str]]:
-    pattern = r"(?s)(```(?P<language>\w+)?\n(?P<code>.*?)```)|(?P<text>.*?(?=```|\Z))"
-    matches = re.finditer(pattern, input_string)
-    results = []
-    for match in matches:
-        if match.group('code'):
-            results.append(CodeGeneration(match.group('code'), match.group('language')).to_json())
-        elif match.group('text') is not None and match.group('text').strip():
-            results.append(TextGeneration(match.group('text').strip()).to_json())
-    return results
+# class BaseGeneration:
+#     def __init__(self, content: str):
+#         self.content = content
+#
+#     def to_json(self) -> dict[str, str]:
+#         return {'content': self.content}
+#
+#
+# class TextGeneration(BaseGeneration):
+#     def __init__(self, content: str):
+#         super().__init__(content)
+#
+#     def to_json(self) -> dict[str, str]:
+#         return {'content': self.content, 'type': 'text'}
+#
+#
+# class CodeGeneration(BaseGeneration):
+#     def __init__(self, content: str, language: str):
+#         super().__init__(content)
+#         self.language = language
+#
+#     def to_json(self) -> dict[str, str]:
+#         return {'content': self.content, 'language': self.language, 'type': 'code'}
+#
+#
+# def parse_generation(input_string: str) -> list[dict[str, str]]:
+#     pattern = r"(?s)(```(?P<language>\w+)?\n(?P<code>.*?)```)|(?P<text>.*?(?=```|\Z))"
+#     matches = re.finditer(pattern, input_string)
+#     results = []
+#     for match in matches:
+#         if match.group('code'):
+#             results.append(CodeGeneration(match.group('code'), match.group('language')).to_json())
+#         elif match.group('text') is not None and match.group('text').strip():
+#             results.append(TextGeneration(match.group('text').strip()).to_json())
+#     return results
 
 
 def get_llm(model_name: str = 'self-hosted', temperature: float = 0.0):
@@ -89,6 +90,13 @@ def get_llm(model_name: str = 'self-hosted', temperature: float = 0.0):
             llm = SelfHostedLLM(mixture_of_experts=False)
 
         CLIENTS[model_name] = llm
+        return llm
+
+    if model_name.startswith('together-ai'):
+        LOG.info(f'Initializing {model_name} LLM at Together.ai')
+        llm = TogetherAILLM(model_name=model_name.split(':')[1])
+
+        # CLIENTS[model_name] = llm
         return llm
 
     if get_enable_openai() is True:
