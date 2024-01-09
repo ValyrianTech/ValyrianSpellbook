@@ -1,5 +1,4 @@
 import os
-import re
 from pprint import pprint
 
 import requests
@@ -14,6 +13,7 @@ from langchain.schema import AIMessage, ChatGeneration
 from helpers.configurationhelpers import get_enable_oobabooga, get_oobabooga_default_model, get_host, get_websocket_port
 from helpers.jsonhelpers import load_from_json_file
 from helpers.loghelpers import LOG
+from helpers.textgenerationhelpers import LLMResult, parse_generation
 from helpers.websockethelpers import broadcast_message, init_websocket_server, get_broadcast_channel, get_broadcast_sender
 
 encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
@@ -250,8 +250,8 @@ class SelfHostedLLM:
         LOG.info(f'LLM host set to {self.host}')
 
 
-class LLMResult(object):
-    generations: list[list[ChatGeneration]]
+# class LLMResult(object):
+#     generations: list[list[ChatGeneration]]
 
 
 def get_available_llms():
@@ -293,37 +293,37 @@ The output must be only the json object inside a markdown code block, and nothin
     return find_expert_prompt
 
 
-class BaseGeneration:
-    def __init__(self, content: str):
-        self.content = content
-
-    def to_json(self) -> dict[str, str]:
-        return {'content': self.content}
-
-class TextGeneration(BaseGeneration):
-    def __init__(self, content: str):
-        super().__init__(content)
-
-    def to_json(self) -> dict[str, str]:
-        return {'content': self.content, 'type': 'text'}
-
-
-class CodeGeneration(BaseGeneration):
-    def __init__(self, content: str, language: str):
-        super().__init__(content)
-        self.language = language
-
-    def to_json(self) -> dict[str, str]:
-        return {'content': self.content, 'language': self.language, 'type': 'code'}
-
-
-def parse_generation(input_string: str) -> list[dict[str, str]]:
-    pattern = r"(?s)(```(?P<language>\w+)?\n(?P<code>.*?)```)|(?P<text>.*?(?=```|\Z))"
-    matches = re.finditer(pattern, input_string)
-    results = []
-    for match in matches:
-        if match.group('code'):
-            results.append(CodeGeneration(match.group('code'), match.group('language')).to_json())
-        elif match.group('text').strip():
-            results.append(TextGeneration(match.group('text').strip()).to_json())
-    return results
+# class BaseGeneration:
+#     def __init__(self, content: str):
+#         self.content = content
+#
+#     def to_json(self) -> dict[str, str]:
+#         return {'content': self.content}
+#
+# class TextGeneration(BaseGeneration):
+#     def __init__(self, content: str):
+#         super().__init__(content)
+#
+#     def to_json(self) -> dict[str, str]:
+#         return {'content': self.content, 'type': 'text'}
+#
+#
+# class CodeGeneration(BaseGeneration):
+#     def __init__(self, content: str, language: str):
+#         super().__init__(content)
+#         self.language = language
+#
+#     def to_json(self) -> dict[str, str]:
+#         return {'content': self.content, 'language': self.language, 'type': 'code'}
+#
+#
+# def parse_generation(input_string: str) -> list[dict[str, str]]:
+#     pattern = r"(?s)(```(?P<language>\w+)?\n(?P<code>.*?)```)|(?P<text>.*?(?=```|\Z))"
+#     matches = re.finditer(pattern, input_string)
+#     results = []
+#     for match in matches:
+#         if match.group('code'):
+#             results.append(CodeGeneration(match.group('code'), match.group('language')).to_json())
+#         elif match.group('text').strip():
+#             results.append(TextGeneration(match.group('text').strip()).to_json())
+#     return results
