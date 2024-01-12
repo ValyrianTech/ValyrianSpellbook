@@ -31,7 +31,7 @@ class CodeGeneration(BaseGeneration):
 
 
 def parse_generation(input_string: str) -> list[dict[str, str]]:
-    pattern = r"(?s)(```(?P<language>\w+)?\n(?P<code>.*?)```)|(?P<text>.*?(?=```|\Z))"
+    pattern = r"(?s)(```(?P<language>[\w:]+)?\n?(?P<code>.*?)(?<=\n)```(?=\n|$))|(?P<text>[^`]*?(?=```|\Z))"
     matches = re.finditer(pattern, input_string)
     results = []
     for match in matches:
