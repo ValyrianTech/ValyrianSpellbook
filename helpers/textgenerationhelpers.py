@@ -45,7 +45,7 @@ def parse_generation(input_string) -> list[dict[str, str]]:
         # parse the code block
         code_block = code_block.split('\n', 1)
         language = code_block[0]
-        code = code_block[1]
+        code = code_block[1] if len(code_block) > 1 else ''
 
         # if there is text before the code block, add it to the parsed list
         if start > 0:
@@ -58,7 +58,7 @@ def parse_generation(input_string) -> list[dict[str, str]]:
         input_string = input_string[end + 3:]
 
     # if there is text after the last code block, add it to the parsed list
-    if input_string:
+    if input_string and input_string != '`':
         parsed.append({'type': 'text', 'content': input_string})
 
     return parsed
