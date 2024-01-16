@@ -32,14 +32,30 @@ class CodeGeneration(BaseGeneration):
 
 
 def parse_generation(input_string) -> list[dict[str, str]]:
-
     parsed = []
 
-    # while there are still code blocks, parse them
     while '```' in input_string:
-        # find the first code block
         start = input_string.find('```')
         end = input_string.find('```', start + 3)
+
+        # Check if the closing '```' was found
+        if end == -1:
+            # If the code block is not closed, add the part before the opening '```' to the parsed list as text and the rest as code
+
+            # if there is text before the code block, add it to the parsed list
+            if start > 0:
+                parsed.append({'type': 'text', 'content': input_string[:start]})
+
+            # if there is text after the last code block, add it to the parsed list
+            if input_string[start + 3:]:
+                # the language should be the text after the opening '```' but before a newline
+                language = input_string[start + 3:].split('\n', 1)[0]
+                parsed.append({'type': 'code', 'content': input_string[start + 3:], 'language': language})
+
+            # remove the code block from the input string
+            input_string = ''
+            break
+
         code_block = input_string[start + 3:end]
 
         # parse the code block
@@ -62,6 +78,7 @@ def parse_generation(input_string) -> list[dict[str, str]]:
         parsed.append({'type': 'text', 'content': input_string})
 
     return parsed
+
 
     #
     #
