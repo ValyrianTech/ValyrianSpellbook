@@ -63,9 +63,10 @@ ENV MASTODON_ACCESS_TOKEN=<access_token>
 ENV MASTODON_API_BASE_URL=<api_base_url>
 ENV NOSTR_ENABLE_NOSTR=<enable_nostr>
 ENV NOSTR_NSEC=<nsec>
-ENV OOBABOOGA_ENABLE_OOBABOOGA=<enable_oobabooga>
-ENV OOBABOOGA_HOST=<oobabooga_host>
-ENV OOBABOOGA_PORT=<oobabooga_port>
+ENV LLMS_ENABLE_OOBABOOGA=<enable_oobabooga>
+ENV LLMS_DEFAULT_MODEL=<default_model>
+ENV LLMS_ENABLE_TOGETHER_AI=<enable_together_ai>
+ENV LLMS_TOGETHER_AI_BEARER_TOKEN=<together_ai_bearer_token>
 
 # Run the Python script to replace the placeholders in the configuration file
 COPY replace_placeholders.py /replace_placeholders.py
