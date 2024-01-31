@@ -223,7 +223,7 @@ class CustomStreamingCallbackHandler(StreamingStdOutCallbackHandler):
     def on_llm_end(self, response: LLMResult, **kwargs: Any) -> None:
         LOG.info('streaming ended')
         self.full_completion = ""
-        data = {'message': '', 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': []}
+        data = {'message': '<|end of message|>', 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': []}
         broadcast_message(message=simplejson.dumps(data), channel=get_broadcast_channel())
 
     def on_llm_new_token(self, token: str, **kwargs: Any) -> None:
