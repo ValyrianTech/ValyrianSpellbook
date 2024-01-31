@@ -73,10 +73,11 @@ config_params = {
         "enable_nostr": "<enable_nostr>",
         "nsec": "<nsec>"
     },
-    "Oobabooga": {
+    "LLMs": {
         "enable_oobabooga": "<enable_oobabooga>",
-        "host": "<oobabooga_host>",
-        "port": "<oobabooga_port>"
+        "default_model": "<default_model>",
+        "enable_together_ai": "<enable_together_ai>",
+        "together_ai_bearer_token": "<together_ai_bearer_token>",
     }
 }
 
