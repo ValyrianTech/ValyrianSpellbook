@@ -275,11 +275,19 @@ def get_nostr_nsec():
     return spellbook_config().get('Nostr', 'nsec')
 
 
-@verify_config('Oobabooga', 'enable_oobabooga')
+@verify_config('LLMs', 'enable_oobabooga')
 def get_enable_oobabooga():
-    return spellbook_config().getboolean('Oobabooga', 'enable_oobabooga')
+    return spellbook_config().getboolean('LLMs', 'enable_oobabooga')
 
 
-@verify_config('Oobabooga', 'default_model')
-def get_oobabooga_default_model():
-    return spellbook_config().get('Oobabooga', 'default_model')
+@verify_config('LLMs', 'default_model')
+def get_llms_default_model():
+    return spellbook_config().get('LLMs', 'default_model')
+
+@verify_config('LLMs', 'enable_together_ai')
+def get_enable_together_ai():
+    return spellbook_config().getboolean('LLMs', 'enable_together_ai')
+
+@verify_config('LLMs', 'together_ai_bearer_token')
+def get_together_ai_bearer_token():
+    return spellbook_config().get('LLMs', 'together_ai_bearer_token')

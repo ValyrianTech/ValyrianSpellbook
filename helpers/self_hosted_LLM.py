@@ -10,7 +10,7 @@ import tiktoken
 
 from langchain.schema import AIMessage, ChatGeneration
 
-from helpers.configurationhelpers import get_enable_oobabooga, get_oobabooga_default_model, get_host, get_websocket_port
+from helpers.configurationhelpers import get_enable_oobabooga, get_llms_default_model, get_host, get_websocket_port
 from helpers.jsonhelpers import load_from_json_file
 from helpers.loghelpers import LOG
 from helpers.textgenerationhelpers import LLMResult, parse_generation
@@ -30,22 +30,26 @@ def load_llms():
     return llms_data
 
 
-def get_default_oobabooga_host():
+def get_default_llm_host():
     global DEFAULT_HOST
 
     if get_enable_oobabooga():
         llms = load_llms()
-        default_model = get_oobabooga_default_model()
+        default_model = get_llms_default_model()
+
+        if default_model.startswith('self-hosted:'):
+            default_model = default_model.split(':')[1]
+
         if default_model in llms:
             DEFAULT_HOST = llms[default_model].get('host', DEFAULT_HOST)
-            LOG.info(f'Oobabooga default model at {DEFAULT_HOST}')
+            LOG.info(f'LLM default model at {DEFAULT_HOST}')
             return DEFAULT_HOST
 
 
 class SelfHostedLLM:
     def __init__(self, host: str = None, port: int = None, mixture_of_experts=False):
         if host is None:
-            host = get_default_oobabooga_host()
+            host = get_default_llm_host()
 
         self.host = host
         self.port = port
@@ -129,12 +133,14 @@ class SelfHostedLLM:
         data = {
             "stream": True,
             "prompt": prompt,
-            "max_tokens": 2000,  # todo add max_tokens to the UI
-            "temperature": kwargs.get('temperature', 1),
-            "top_p": kwargs.get('top_p', 0.9),  # todo add top_p to the UI
+            "max_tokens": 1000,  # todo add max_tokens to the UI
+            "temperature": kwargs.get('temperature', 0.7),
+            "top_p": kwargs.get('top_p', 0.7),  # todo add top_p to the UI
+            "top_k": kwargs.get('top_k', 50),  # todo add top_k to the UI
             'stop': kwargs.get('stop', stop),
             "frequency_penalty": 0,
-            "presence_penalty": 0
+            "presence_penalty": 0,
+            "repetition_penalty": 1,
         }
 
         try:
@@ -163,8 +169,8 @@ class SelfHostedLLM:
 
         print('')
 
-        # Broadcast empty message to clear the streaming widget in the UI
-        data = {'message': '', 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation('')}
+        # Broadcast end of message to clear the streaming widget in the UI
+        data = {'message': '<|end of message|>', 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation('')}
         broadcast_message(message=simplejson.dumps(data), channel=get_broadcast_channel())
 
         completion = completion.encode("utf-8").decode("utf-8")
