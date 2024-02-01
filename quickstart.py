@@ -117,9 +117,11 @@ if config.getboolean(section='Mastodon', option='enable_mastodon') is True:
 if config.getboolean(section='Nostr', option='enable_nostr') is True:
     update_config(config, 'Nostr', 'nsec', 'Enter the nsec key or press enter to keep the current value (%s) ')
 
-# Oobabooga settings
-if config.getboolean(section='Oobabooga', option='enable_oobabooga') is True:
-    update_config(config, 'Oobabooga', 'default_model', 'Enter the id of the default expert model (e.g. chat) or press enter to keep the current value (%s) ')
+# LLMs settings
+update_config(config, 'LLMs', 'enable_oobabooga', 'Would you like to enable Oobabooga or press enter to keep the current value (%s) ')
+update_config(config, 'LLMs', 'default_model', 'Enter the id of the default LLM model (e.g. chat) or press enter to keep the current value (%s) ')
+update_config(config, 'LLMs', 'enable_together_ai', 'Would you like to enable Together.ai or press enter to keep the current value (%s) ')
+update_config(config, 'LLMs', 'together_ai_bearer_token', 'Enter the bearer token for Together.ai or press enter to keep the current value (%s) ')
 
 with open(configuration_file, 'w') as output_file:
     config.write(output_file)
