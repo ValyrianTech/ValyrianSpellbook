@@ -20,8 +20,6 @@ encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
 
 init_websocket_server(host=get_host(), port=get_websocket_port())
 
-DEFAULT_HOST = ''
-
 
 def load_llms():
     llms_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'configuration', 'LLMs.json')
@@ -31,19 +29,17 @@ def load_llms():
 
 
 def get_default_llm_host():
-    global DEFAULT_HOST
 
-    if get_enable_oobabooga():
-        llms = load_llms()
-        default_model = get_llms_default_model()
+    llms = load_llms()
+    default_model = get_llms_default_model()
 
-        if default_model.startswith('self-hosted:'):
-            default_model = default_model.split(':')[1]
+    if default_model.startswith('self-hosted:'):
+        default_model = default_model.split(':')[1]
 
-        if default_model in llms:
-            DEFAULT_HOST = llms[default_model].get('host', DEFAULT_HOST)
-            LOG.info(f'LLM default model at {DEFAULT_HOST}')
-            return DEFAULT_HOST
+    if default_model in llms:
+        default_model_host = llms[default_model].get('host', 'localhost:7860')
+        LOG.info(f'LLM default model host at {default_model_host}')
+        return default_model_host
 
 
 class SelfHostedLLM:

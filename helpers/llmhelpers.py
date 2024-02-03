@@ -256,6 +256,8 @@ def delete_llm(llm_name: str):
 
 
 def save_llm_config(llm_name: str, llm_config: dict):
+    global CLIENTS
+
     llms_data = load_llms()
 
     if llm_config['server_type'] == 'Oobabooga':
@@ -279,10 +281,12 @@ def save_llm_config(llm_name: str, llm_config: dict):
                         break
                     else:
                         llm_config['model_name'] = 'Unknown'
+            else:
+                LOG.error(f"Unable to connect to {url}: {response.status_code} {response.text}")
 
     if llm_config['model_name'] is None:
-        LOG.error('No model name provided and unable to determine model name from server')
-        return
+        llm_config['model_name'] = 'Unknown'
+
 
     if llm_config['description'] is None:
         if llm_name.startswith('chat'):
@@ -297,3 +301,6 @@ def save_llm_config(llm_name: str, llm_config: dict):
         llm_config['host'] = llm_config['host'][:-1]
 
     save_to_json_file(data=llms_data, filename=os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'configuration', 'LLMs.json'))
+
+    # Remove existing clients for self-hosted LLMs from the cache so they can be reloaded
+    CLIENTS = {k: v for k, v in CLIENTS.items() if not k.startswith('self-hosted')}
