@@ -6,7 +6,7 @@ import simplejson
 
 from typing import List, Any, Dict
 
-from .configurationhelpers import get_enable_openai, get_openai_api_key
+from .configurationhelpers import get_enable_openai, get_openai_api_key, spellbook_config, CONFIGURATION_FILE
 from langchain.llms import OpenAI
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage, AIMessage, SystemMessage, ChatMessage, BaseMessage, LLMResult
@@ -304,3 +304,9 @@ def save_llm_config(llm_name: str, llm_config: dict):
 
     # Remove existing clients for self-hosted LLMs from the cache so they can be reloaded
     CLIENTS = {k: v for k, v in CLIENTS.items() if not k.startswith('self-hosted')}
+
+def set_default_llm(llm_name: str):
+    config = spellbook_config()
+    config.set(section='LLMs', option='default_model', value=llm_name)
+    with open(CONFIGURATION_FILE, 'w') as configfile:
+        config.write(configfile)
