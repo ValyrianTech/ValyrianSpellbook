@@ -6,7 +6,7 @@ import simplejson
 
 from typing import List, Any, Dict
 
-from .configurationhelpers import get_enable_openai, get_openai_api_key, spellbook_config, CONFIGURATION_FILE
+from .configurationhelpers import get_enable_openai, get_openai_api_key, spellbook_config, CONFIGURATION_FILE, get_llms_default_model
 from langchain.llms import OpenAI
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage, AIMessage, SystemMessage, ChatMessage, BaseMessage, LLMResult
@@ -22,8 +22,11 @@ from .together_ai_LLM import TogetherAILLM
 CLIENTS = {}
 
 
-def get_llm(model_name: str = 'self-hosted', temperature: float = 0.0):
+def get_llm(model_name: str = 'default_model', temperature: float = 0.0):
     global CLIENTS
+
+    if model_name == 'default_model':
+        model_name = get_llms_default_model()
 
     if model_name in CLIENTS:
         llm = CLIENTS[model_name]
@@ -39,7 +42,7 @@ def get_llm(model_name: str = 'self-hosted', temperature: float = 0.0):
         for model in self_hosted_models:
             model_names.append(f'self-hosted:{model}')
 
-        if model_name == 'self-hosted:MoE':
+        if model_name == 'self-hosted:auto':
             LOG.info(f'Initializing {model_name} LLM with default settings')
             llm = SelfHostedLLM(mixture_of_experts=True)
 
@@ -244,6 +247,9 @@ def load_llms():
 
 
 def get_llm_config(llm_name: str):
+    if llm_name.startswith('self-hosted:'):
+        llm_name = llm_name.split(':')[1]
+
     llms_data = load_llms()
     return llms_data.get(llm_name, {})
 
