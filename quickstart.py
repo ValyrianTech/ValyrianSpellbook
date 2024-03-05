@@ -123,6 +123,13 @@ update_config(config, 'LLMs', 'default_model', 'Enter the id of the default LLM 
 update_config(config, 'LLMs', 'enable_together_ai', 'Would you like to enable Together.ai or press enter to keep the current value (%s) ')
 update_config(config, 'LLMs', 'together_ai_bearer_token', 'Enter the bearer token for Together.ai or press enter to keep the current value (%s) ')
 
+# Uploads settings
+update_config(config, 'Uploads', 'enable_uploads', 'Would you like to enable uploads? (current=%s): ')
+update_config(config, 'Uploads', 'uploads_dir', 'Enter the directory for uploads or press enter to keep the current value (%s) ')
+update_config(config, 'Uploads', 'max_file_size', 'Enter the max file size or press enter to keep the current value (%s) ')
+update_config(config, 'Uploads', 'allowed_extensions', 'Enter the allowed extensions separated with commas or press enter to keep the current value (%s) ')
+
+
 with open(configuration_file, 'w') as output_file:
     config.write(output_file)
     print('spellbook.conf file updated')
