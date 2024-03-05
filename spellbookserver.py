@@ -769,7 +769,6 @@ class SpellbookRESTAPI(Bottle):
         if file_type.split('/')[1] not in allowed_extensions:
             return HTTPResponse(status=403, body={"error": f"File type {file_type} is not allowed"})
 
-
         max_file_size = get_max_file_size()
         if len(file_content) > max_file_size:
             return HTTPResponse(status=413, body={"error": f"File size exceeds maximum allowed size of {max_file_size} bytes, file size is {len(file_content)} bytes"})
@@ -783,8 +782,9 @@ class SpellbookRESTAPI(Bottle):
         try:
             uploaded_file.save(file_path)
             return HTTPResponse(status=200,
-                                body={"file_id": unique_id,
-                                      "file_name": uploaded_file.filename
+                                body={
+                                        "file_id": unique_id,
+                                        "file_name": uploaded_file.filename
                                       }
                                 )
 
