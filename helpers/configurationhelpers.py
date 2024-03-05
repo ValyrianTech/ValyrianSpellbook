@@ -291,3 +291,19 @@ def get_enable_together_ai():
 @verify_config('LLMs', 'together_ai_bearer_token')
 def get_together_ai_bearer_token():
     return spellbook_config().get('LLMs', 'together_ai_bearer_token')
+
+@verify_config('Uploads', 'enable_uploads')
+def get_enable_uploads():
+    return spellbook_config().getboolean('Uploads', 'enable_uploads')
+
+@verify_config('Uploads', 'uploads_dir')
+def get_uploads_dir():
+    return spellbook_config().get('Uploads', 'uploads_dir')
+
+@verify_config('Uploads', 'max_file_size')
+def get_max_file_size():
+    return spellbook_config().getint('Uploads', 'max_file_size')
+
+@verify_config('Uploads', 'allowed_extensions')
+def get_allowed_extensions():
+    return spellbook_config().get('Uploads', 'allowed_extensions')
