@@ -6,12 +6,13 @@ import os
 import sys
 import time
 import traceback
+import uuid
 from configparser import ConfigParser
 from datetime import datetime
 from functools import wraps
 from logging.handlers import RotatingFileHandler
 
-from bottle import Bottle, request, response, static_file, ServerAdapter, server_names
+from bottle import Bottle, request, response, static_file, ServerAdapter, server_names, abort
 
 from authentication import initialize_api_keys_file
 from data.data import get_explorers, get_explorer_config, save_explorer, delete_explorer
@@ -19,7 +20,7 @@ from data.data import latest_block, block_by_height, block_by_hash, prime_input_
 from data.data import transactions, balance, utxos
 from decorators import authentication_required, use_explorer, output_json
 from helpers.actionhelpers import get_actions, get_action_config, save_action, delete_action, run_action, get_reveal
-from helpers.configurationhelpers import get_host, get_port, get_notification_email, get_mail_on_exception, what_is_my_ip
+from helpers.configurationhelpers import get_host, get_port, get_notification_email, get_mail_on_exception, what_is_my_ip, get_enable_uploads, get_uploads_dir, get_allowed_extensions, get_max_file_size
 from helpers.configurationhelpers import get_enable_ssl, get_ssl_certificate, get_ssl_private_key, get_ssl_certificate_chain, get_enable_wallet
 from helpers.hotwallethelpers import get_hot_wallet
 from helpers.loghelpers import LOG, REQUESTS_LOG, get_logs
@@ -201,6 +202,9 @@ class SpellbookRESTAPI(Bottle):
 
         # Routes for RevealSecret actions
         self.route('/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>/reveal', method='GET', callback=self.get_reveal)
+
+        # Routes for uploading files
+        self.route('/spellbook/upload', method='POST', callback=self.upload_file)
 
         # Check if there are explorers configured, this will also initialize the default explorers on first startup
         if len(get_explorers()) == 0:
@@ -735,6 +739,47 @@ class SpellbookRESTAPI(Bottle):
         response.content_type = 'application/json'
         return get_logs(filter_string=filter_string)
 
+    @staticmethod
+    @output_json
+    def upload_file():
+        if get_enable_uploads() is False:
+            return {"error": "File uploads are not enabled"}
+
+        uploads_dir = get_uploads_dir()
+        if not os.path.exists(uploads_dir):
+            os.makedirs(uploads_dir)
+
+        uploaded_file = request.files.get('file')
+
+        if not uploaded_file:
+            abort(400, "No file uploaded")
+
+        allowed_extensions = get_allowed_extensions().split(',')
+        file_extension = os.path.splitext(uploaded_file.filename)[1]
+
+        if file_extension[1:] not in allowed_extensions:
+            return {"error": f"File extension {file_extension} is not allowed"}
+
+        max_file_size = get_max_file_size()
+        if uploaded_file.content_length > max_file_size:
+            return {"error": f"File size exceeds maximum allowed size of {max_file_size} bytes"}
+
+        unique_id = str(uuid.uuid4())
+        file_path = os.path.join(uploads_dir, f"{unique_id}{file_extension}")
+
+        try:
+            with open(file_path, 'wb') as f:
+                while True:
+                    data = uploaded_file.file.read(8192)
+                    if not data:
+                        break
+                    f.write(data)
+
+            return {"file_id": unique_id,
+                    "file_name": uploaded_file.filename
+                    }
+        except Exception as e:
+            return {"error": str(e)}
 
 if __name__ == "__main__":
     # Check if the IP address in the configuration file is set, if not then set it
