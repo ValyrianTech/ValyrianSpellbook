@@ -1,3 +1,4 @@
+import base64
 import os
 import sys
 
@@ -139,8 +140,8 @@ class LLM(object):
         self.temperature = temperature
         self.llm = get_llm(model_name, temperature)
 
-    def generate(self, messages: List[BaseMessage], stop=None):
-        kwargs = {'temperature': self.temperature}
+    def generate(self, messages: List[BaseMessage], stop=None, max_tokens: int = 1000):
+        kwargs = {'temperature': self.temperature, 'max_tokens': max_tokens}
         if self.model_name == 'text-davinci-003':
             prompts = []
             prompt = ''
@@ -316,3 +317,34 @@ def set_default_llm(llm_name: str):
     config.set(section='LLMs', option='default_model', value=llm_name)
     with open(CONFIGURATION_FILE, 'w') as configfile:
         config.write(configfile)
+
+
+def encode_image(image_path):
+    """Encode an image as a base64 string."""
+    with open(image_path, "rb") as image_file:
+        return base64.b64encode(image_file.read()).decode('utf-8')
+
+
+def construct_human_messages(text: str, image_paths: List[str] = None):
+    if image_paths is None:
+        image_paths = []
+
+    # Construct the text message
+    text_message = {
+        "type": "text",
+        "text": text
+    }
+    content = [text_message]
+
+    # Add image messages if image_paths is not empty
+    for image_path in image_paths:
+        base64_image = encode_image(image_path)
+        image_message = {
+            "type": "image_url",
+            "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}
+        }
+        content.append(image_message)
+
+    messages = [HumanMessage(content=content)]
+
+    return messages
