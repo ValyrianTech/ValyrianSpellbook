@@ -741,6 +741,7 @@ class SpellbookRESTAPI(Bottle):
         return get_logs(filter_string=filter_string)
 
     @staticmethod
+    @enable_cors
     def upload_file():
         if get_enable_uploads() is False:
             return HTTPResponse(status=403, body={"error": "File uploads are not enabled"})
@@ -781,12 +782,7 @@ class SpellbookRESTAPI(Bottle):
 
         try:
             uploaded_file.save(file_path)
-            return HTTPResponse(status=200,
-                                body={
-                                        "file_id": unique_id,
-                                        "file_name": uploaded_file.filename
-                                      }
-                                )
+            return {"file_id": f"{unique_id}{file_extension}", "file_name": uploaded_file.filename}
 
         except Exception as e:
             return HTTPResponse(status=500, body={"error": str(e)})
