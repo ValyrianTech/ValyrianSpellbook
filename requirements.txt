@@ -28,4 +28,4 @@ torch==2.0.0
 websockets==11.0.3
 sseclient-py==1.8.0
 pydantic==2.5.2
-python-magic==0.4.27
+python-magic-bin==0.4.14
