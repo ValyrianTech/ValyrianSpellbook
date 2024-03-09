@@ -8,7 +8,7 @@ WORKDIR /
 RUN apt-get update -y && apt-get upgrade -y
 
 # Install any needed packages specified in requirements.txt
-RUN apt-get install git python3.10 python3.10-dev python3-pip libssl-dev -y
+RUN apt-get install git python3.10 python3.10-dev python3-pip libssl-dev libmagic-dev -y
 
 # Clone the Valyrian Spellbook repository
 RUN git clone https://github.com/ValyrianTech/ValyrianSpellbook.git spellbook
@@ -67,6 +67,10 @@ ENV LLMS_ENABLE_OOBABOOGA=<enable_oobabooga>
 ENV LLMS_DEFAULT_MODEL=<default_model>
 ENV LLMS_ENABLE_TOGETHER_AI=<enable_together_ai>
 ENV LLMS_TOGETHER_AI_BEARER_TOKEN=<together_ai_bearer_token>
+ENV UPLOADS_ENABLE_UPLOADS=<enable_uploads>
+ENV UPLOADS_UPLOADS_DIR=<uploads_dir>
+ENV UPLOADS_MAX_FILE_SIZE=<max_file_size>
+ENV UPLOADS_ALLOWED_EXTENSIONS=<allowed_extensions>
 
 # Run the Python script to replace the placeholders in the configuration file
 COPY replace_placeholders.py /replace_placeholders.py
