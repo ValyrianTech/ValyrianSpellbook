@@ -78,6 +78,12 @@ config_params = {
         "default_model": "<default_model>",
         "enable_together_ai": "<enable_together_ai>",
         "together_ai_bearer_token": "<together_ai_bearer_token>",
+    },
+    "Uploads": {
+        "enable_uploads": "<enable_uploads>",
+        "uploads_dir": "<uploads_dir>",
+        "max_file_size": "<max_file_size>",
+        "allowed_extensions": "<allowed_extensions>"
     }
 }
 
