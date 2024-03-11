@@ -39,6 +39,10 @@ from helpers.llmhelpers import load_llms, get_llm_config, save_llm_config, delet
 PROGRAM_DIR = os.path.abspath(os.path.dirname(__file__))
 os.chdir(PROGRAM_DIR)
 
+# Only load the WhisperModel if uploads are enabled
+if get_enable_uploads() is True:
+    from faster_whisper import WhisperModel
+    WHISPER_MODEL = WhisperModel(model_size_or_path="tiny", device="cpu", compute_type="int8")
 
 def enable_cors(fn):
     def _enable_cors(*args, **kwargs):
@@ -206,6 +210,7 @@ class SpellbookRESTAPI(Bottle):
 
         # Routes for uploading files
         self.route('/spellbook/upload', method='POST', callback=self.upload_file)
+        self.route('/spellbook/transcribe', method='POST', callback=self.transcribe)
 
         # Check if there are explorers configured, this will also initialize the default explorers on first startup
         if len(get_explorers()) == 0:
@@ -786,6 +791,50 @@ class SpellbookRESTAPI(Bottle):
 
         except Exception as e:
             return HTTPResponse(status=500, body={"error": str(e)})
+
+    @staticmethod
+    @enable_cors
+    def transcribe():
+        start = time.time()
+        if get_enable_uploads() is False:
+            return HTTPResponse(status=403, body={"error": "File uploads are not enabled"})
+
+        uploaded_file = request.files.get('file')
+
+        if not uploaded_file:
+            return HTTPResponse(status=400, body={"error": "No file uploaded"})
+
+        allowed_extensions = ['mp3']
+        file_extension = os.path.splitext(uploaded_file.filename)[1]
+
+        if file_extension[1:] not in allowed_extensions:
+            return HTTPResponse(status=403, body={"error": f"File extension {file_extension} is not allowed"})
+
+        # Read file content into a variable
+        file_content = uploaded_file.file.read()
+
+        # Validate file type with python-magic
+        mime = magic.Magic(mime=True)
+        file_type = mime.from_buffer(file_content)
+        if file_type != 'audio/mpeg':
+            return HTTPResponse(status=403, body={"error": f"File type {file_type} is not allowed"})
+
+        max_file_size = get_max_file_size()
+        if len(file_content) > max_file_size:
+            return HTTPResponse(status=413, body={"error": f"File size exceeds maximum allowed size of {max_file_size} bytes, file size is {len(file_content)} bytes"})
+
+        # Reset the file pointer to the beginning
+        uploaded_file.file.seek(0)
+
+        segments, info = WHISPER_MODEL.transcribe(uploaded_file.file, beam_size=5, language="en", max_new_tokens=128, condition_on_previous_text=False)
+
+        transcription = {'segments': []}
+        for segment in segments:
+            transcription['segments'].append({"start": segment.start, "end": segment.end, "text": segment.text})
+
+        end = time.time()
+        transcription['calculation_time'] = end - start
+        return transcription
 
 
 if __name__ == "__main__":
