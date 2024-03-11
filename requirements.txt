@@ -29,3 +29,4 @@ websockets==11.0.3
 sseclient-py==1.8.0
 pydantic==2.5.2
 python-magic==0.4.27
+faster-whisper==1.0.1
