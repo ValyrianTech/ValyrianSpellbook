@@ -129,6 +129,12 @@ update_config(config, 'Uploads', 'uploads_dir', 'Enter the directory for uploads
 update_config(config, 'Uploads', 'max_file_size', 'Enter the max file size or press enter to keep the current value (%s) ')
 update_config(config, 'Uploads', 'allowed_extensions', 'Enter the allowed extensions separated with commas or press enter to keep the current value (%s) ')
 
+# Transcribe settings
+update_config(config, 'Transcribe', 'enable_transcribe', 'Would you like to enable the transcribe api endpoint? (current=%s): ')
+update_config(config, 'Transcribe', 'model_size', 'Enter the model_size or press enter to keep the current value (%s) ')
+update_config(config, 'Transcribe', 'max_file_size', 'Enter the max file size or press enter to keep the current value (%s) ')
+update_config(config, 'Transcribe', 'allowed_extensions', 'Enter the allowed extensions separated with commas or press enter to keep the current value (%s) ')
+
 
 with open(configuration_file, 'w') as output_file:
     config.write(output_file)
