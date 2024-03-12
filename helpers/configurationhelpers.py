@@ -307,3 +307,19 @@ def get_max_file_size():
 @verify_config('Uploads', 'allowed_extensions')
 def get_allowed_extensions():
     return spellbook_config().get('Uploads', 'allowed_extensions')
+
+@verify_config('Transcribe', 'enable_transcribe')
+def get_enable_transcribe():
+    return spellbook_config().getboolean('Transcribe', 'enable_transcribe')
+
+@verify_config('Transcribe', 'model_size')
+def get_model_size_transcribe():
+    return spellbook_config().get('Transcribe', 'model_size')
+
+@verify_config('Transcribe', 'max_file_size')
+def get_max_file_size_transcribe():
+    return spellbook_config().getint('Transcribe', 'max_file_size')
+
+@verify_config('Transcribe', 'allowed_extensions')
+def get_allowed_extensions_transcribe():
+    return spellbook_config().get('Transcribe', 'allowed_extensions')
