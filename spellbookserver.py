@@ -21,7 +21,9 @@ from data.data import latest_block, block_by_height, block_by_hash, prime_input_
 from data.data import transactions, balance, utxos
 from decorators import authentication_required, use_explorer, output_json
 from helpers.actionhelpers import get_actions, get_action_config, save_action, delete_action, run_action, get_reveal
-from helpers.configurationhelpers import get_host, get_port, get_notification_email, get_mail_on_exception, what_is_my_ip, get_enable_uploads, get_uploads_dir, get_allowed_extensions, get_max_file_size
+from helpers.configurationhelpers import get_host, get_port, get_notification_email, get_mail_on_exception, what_is_my_ip
+from helpers.configurationhelpers import get_enable_uploads, get_uploads_dir, get_allowed_extensions, get_max_file_size
+from helpers.configurationhelpers import get_enable_transcribe, get_allowed_extensions_transcribe, get_max_file_size_transcribe, get_model_size_transcribe
 from helpers.configurationhelpers import get_enable_ssl, get_ssl_certificate, get_ssl_private_key, get_ssl_certificate_chain, get_enable_wallet
 from helpers.hotwallethelpers import get_hot_wallet
 from helpers.loghelpers import LOG, REQUESTS_LOG, get_logs
@@ -39,10 +41,10 @@ from helpers.llmhelpers import load_llms, get_llm_config, save_llm_config, delet
 PROGRAM_DIR = os.path.abspath(os.path.dirname(__file__))
 os.chdir(PROGRAM_DIR)
 
-# Only load the WhisperModel if uploads are enabled
-if get_enable_uploads() is True:
+# Only load the WhisperModel if transcribe endpoint is enabled
+if get_enable_transcribe() is True:
     from faster_whisper import WhisperModel
-    WHISPER_MODEL = WhisperModel(model_size_or_path="tiny", device="cpu", compute_type="int8")
+    WHISPER_MODEL = WhisperModel(model_size_or_path=get_model_size_transcribe(), device="cpu", compute_type="int8")
 
 def enable_cors(fn):
     def _enable_cors(*args, **kwargs):
@@ -798,15 +800,15 @@ class SpellbookRESTAPI(Bottle):
     @enable_cors
     def transcribe():
         start = time.time()
-        if get_enable_uploads() is False:
-            return HTTPResponse(status=403, body={"error": "File uploads are not enabled"})
+        if get_enable_transcribe() is False:
+            return HTTPResponse(status=403, body={"error": "Transcribe endpoint is not enabled"})
 
         uploaded_file = request.files.get('file')
 
         if not uploaded_file:
             return HTTPResponse(status=400, body={"error": "No file uploaded"})
 
-        allowed_extensions = ['mp3']
+        allowed_extensions = get_allowed_extensions_transcribe().split(',')
         file_extension = os.path.splitext(uploaded_file.filename)[1]
 
         if file_extension[1:] not in allowed_extensions:
@@ -821,7 +823,7 @@ class SpellbookRESTAPI(Bottle):
         if file_type not in ['audio/mpeg', 'video/webm']:
             return HTTPResponse(status=403, body={"error": f"File type {file_type} is not allowed"})
 
-        max_file_size = get_max_file_size()
+        max_file_size = get_max_file_size_transcribe()
         if len(file_content) > max_file_size:
             return HTTPResponse(status=413, body={"error": f"File size exceeds maximum allowed size of {max_file_size} bytes, file size is {len(file_content)} bytes"})
 
