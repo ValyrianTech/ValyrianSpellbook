@@ -71,6 +71,10 @@ ENV UPLOADS_ENABLE_UPLOADS=<enable_uploads>
 ENV UPLOADS_UPLOADS_DIR=<uploads_dir>
 ENV UPLOADS_MAX_FILE_SIZE=<max_file_size>
 ENV UPLOADS_ALLOWED_EXTENSIONS=<allowed_extensions>
+ENV TRANSCRIBE_ENABLE_TRANSCRIBE=<enable_transcribe>
+ENV TRANSCRIBE_MODEL_SIZE=<model_size>
+ENV TRANSCRIBE_MAX_FILE_SIZE=<max_file_size>
+ENV TRANSCRIBE_ALLOWED_EXTENSIONS=<allowed_extensions>
 
 # Run the Python script to replace the placeholders in the configuration file
 COPY replace_placeholders.py /replace_placeholders.py

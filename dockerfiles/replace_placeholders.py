@@ -84,6 +84,12 @@ config_params = {
         "uploads_dir": "<uploads_dir>",
         "max_file_size": "<max_file_size>",
         "allowed_extensions": "<allowed_extensions>"
+    },
+    "Transcribe": {
+        "enable_transcribe": "<enable_transcribe>",
+        "model_size": "<model_size>",
+        "max_file_size": "<max_file_size>",
+        "allowed_extensions": "<allowed_extensions>"
     }
 }
 
