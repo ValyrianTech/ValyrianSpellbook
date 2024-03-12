@@ -210,7 +210,9 @@ class SpellbookRESTAPI(Bottle):
 
         # Routes for uploading files
         self.route('/spellbook/upload', method='POST', callback=self.upload_file)
+        self.route('/spellbook/upload', method='OPTIONS', callback=self.upload_file)
         self.route('/spellbook/transcribe', method='POST', callback=self.transcribe)
+        self.route('/spellbook/transcribe', method='OPTIONS', callback=self.transcribe)
 
         # Check if there are explorers configured, this will also initialize the default explorers on first startup
         if len(get_explorers()) == 0:
@@ -816,7 +818,7 @@ class SpellbookRESTAPI(Bottle):
         # Validate file type with python-magic
         mime = magic.Magic(mime=True)
         file_type = mime.from_buffer(file_content)
-        if file_type != 'audio/mpeg':
+        if file_type not in ['audio/mpeg', 'video/webm']:
             return HTTPResponse(status=403, body={"error": f"File type {file_type} is not allowed"})
 
         max_file_size = get_max_file_size()
@@ -829,8 +831,12 @@ class SpellbookRESTAPI(Bottle):
         segments, info = WHISPER_MODEL.transcribe(uploaded_file.file, beam_size=5, language="en", max_new_tokens=128, condition_on_previous_text=False)
 
         transcription = {'segments': []}
+        full_text = ""
         for segment in segments:
             transcription['segments'].append({"start": segment.start, "end": segment.end, "text": segment.text})
+            full_text += segment.text + " "
+
+        transcription['full_text'] = full_text.rstrip()
 
         end = time.time()
         transcription['calculation_time'] = end - start
