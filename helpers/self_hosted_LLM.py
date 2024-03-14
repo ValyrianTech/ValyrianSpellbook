@@ -177,7 +177,13 @@ class SelfHostedLLM:
             LOG.warning('Self-hosted LLM is not enabled. Please enable it in the config file.')
             return
 
-        prompt = messages[0][0].content
+        # Maintain backward compatibility with non-multimodal llms, old llms had only a single string as content, multimodal llms have a list of dicts, each dict has a 'type' and 'text' key
+        content = messages[0][0].content
+        if isinstance(content, list):
+            prompt = content[0].get('text', '')
+        elif isinstance(content, str):
+            prompt = content
+
         prompt_tokens = len(encoding.encode(prompt))
         completion_tokens = 0
 
