@@ -111,7 +111,22 @@ class SelfHostedLLM:
     #         LOG.error(f'Error connecting to LLM at {self.URI}: {e}')
     #         yield 'Error: Self-hosted LLM is not running.\n'
 
-    def get_completion_text(self, prompt, stop=None, **kwargs):
+    def get_completion_text(self, content, stop=None, **kwargs):
+
+        img_str = ''
+        if isinstance(content, list):
+            prompt = content[0].get('text', '')
+
+            if len(content) == 2 and content[1].get('type', None) == 'image_url':
+                img_str = content[1].get('image_url', {}).get('url', '')
+                print(f'len img_str: {len(img_str)}')
+
+                pre_prompt = f'### <<AGENTNAME>>\'s vision input: \n<img src="{img_str}">\n### Assistant:\n'
+                prompt = pre_prompt + prompt
+
+        elif isinstance(content, str):
+            prompt = content
+
         completion = ''
         print('')
 
@@ -193,7 +208,7 @@ class SelfHostedLLM:
         if stop is None:
             stop = []
 
-        completion_text = self.get_completion_text(prompt, stop, **kwargs)
+        completion_text = self.get_completion_text(messages[0][0].content, stop, **kwargs)
         if completion_text.startswith(prompt):
             completion_text = completion_text[len(prompt):]
             completion_tokens = len(encoding.encode(completion_text))
