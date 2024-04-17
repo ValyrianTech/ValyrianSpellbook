@@ -833,7 +833,10 @@ class SpellbookRESTAPI(Bottle):
         LOG.info("Transcribing audio file")
         segments, info = WHISPER_MODEL.transcribe(uploaded_file.file, beam_size=5, language="en", max_new_tokens=128, condition_on_previous_text=False)
 
-        # save the uploaded file to disk
+        # save the uploaded file to disk, remove the old file if it exists
+        if os.path.exists(os.path.join(get_uploads_dir(), uploaded_file.filename)):
+            os.remove(os.path.join(get_uploads_dir(), uploaded_file.filename))
+
         uploaded_file.save(os.path.join(get_uploads_dir(), uploaded_file.filename))
         LOG.info(f"Saved uploaded file to disk: {uploaded_file.filename}")
 
