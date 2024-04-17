@@ -820,7 +820,7 @@ class SpellbookRESTAPI(Bottle):
         # Validate file type with python-magic
         mime = magic.Magic(mime=True)
         file_type = mime.from_buffer(file_content)
-        if file_type not in ['audio/mpeg', 'video/webm']:
+        if file_type not in ['audio/mpeg', 'video/webm', 'video/mp4']:
             return HTTPResponse(status=403, body={"error": f"File type {file_type} is not allowed"})
 
         max_file_size = get_max_file_size_transcribe()
