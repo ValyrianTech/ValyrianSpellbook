@@ -3,6 +3,7 @@
 import argparse
 import logging
 import os
+import subprocess
 import sys
 import time
 import traceback
@@ -820,8 +821,30 @@ class SpellbookRESTAPI(Bottle):
         # Validate file type with python-magic
         mime = magic.Magic(mime=True)
         file_type = mime.from_buffer(file_content)
-        if file_type not in ['audio/mpeg', 'video/webm', 'video/mp4']:
+        LOG.info(f'Transcribing audio, detected file type: {file_type}')
+        if file_type not in ['audio/mpeg', 'video/webm', 'video/mp4', 'audio/ogg']:
             return HTTPResponse(status=403, body={"error": f"File type {file_type} is not allowed"})
+
+        if file_type == 'video/mp4':
+            # Audio file comes from FlutterFlow, which uses a different codec that is incompatible, convert to opus
+            # save the uploaded file to disk, remove the old files if they exists
+            if os.path.exists('tmp_audio.mp3'):
+                os.remove('tmp_audio.mp3')
+
+            if os.path.exists('opus_audio.opus'):
+                os.remove('opus_audio.opus')
+
+            # Reset the file pointer to the beginning
+            uploaded_file.file.seek(0)
+            uploaded_file.save('tmp_audio.mp3')
+            LOG.info(f"Saved temporary file to disk: tmp_audio.mp3")
+
+            convert_aac_to_opus('tmp_audio.mp3', 'opus_audio.opus')
+
+            # replace uploaded file with the opus file
+            uploaded_file.filename = 'opus_audio.opus'
+            uploaded_file.file = open('opus_audio.opus', 'rb')
+
 
         max_file_size = get_max_file_size_transcribe()
         if len(file_content) > max_file_size:
@@ -832,15 +855,7 @@ class SpellbookRESTAPI(Bottle):
 
         LOG.info("Transcribing audio file")
         segments, info = WHISPER_MODEL.transcribe(uploaded_file.file, beam_size=5, language="en", max_new_tokens=128, condition_on_previous_text=False)
-
-        # save the uploaded file to disk, remove the old file if it exists
-        if os.path.exists(os.path.join(get_uploads_dir(), uploaded_file.filename)):
-            os.remove(os.path.join(get_uploads_dir(), uploaded_file.filename))
-
-        # Reset the file pointer to the beginning
-        uploaded_file.file.seek(0)
-        uploaded_file.save(os.path.join(get_uploads_dir(), uploaded_file.filename))
-        LOG.info(f"Saved uploaded file to disk: {uploaded_file.filename}")
+        uploaded_file.file.close()
 
         transcription = {'segments': []}
         full_text = ""
@@ -854,6 +869,13 @@ class SpellbookRESTAPI(Bottle):
         end = time.time()
         transcription['calculation_time'] = end - start
         return transcription
+
+def convert_aac_to_opus(input_file, opus_file):
+    command = f"ffmpeg -i {input_file} -c:a libopus {opus_file}"
+    subprocess.run(command, shell=True)
+    # Ensure the file is closed after it's used
+    with open(opus_file, 'rb') as file:
+        pass
 
 
 if __name__ == "__main__":
