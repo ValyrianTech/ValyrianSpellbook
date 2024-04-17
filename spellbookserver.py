@@ -837,6 +837,8 @@ class SpellbookRESTAPI(Bottle):
         if os.path.exists(os.path.join(get_uploads_dir(), uploaded_file.filename)):
             os.remove(os.path.join(get_uploads_dir(), uploaded_file.filename))
 
+        # Reset the file pointer to the beginning
+        uploaded_file.file.seek(0)
         uploaded_file.save(os.path.join(get_uploads_dir(), uploaded_file.filename))
         LOG.info(f"Saved uploaded file to disk: {uploaded_file.filename}")
 
