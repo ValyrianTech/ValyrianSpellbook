@@ -12,6 +12,7 @@ sudo apt-get update -y
 sudo apt-get upgrade -y
 sudo apt-get install git python3.10 python3.10-dev python3-pip -y
 sudo apt-get install libssl-dev
+sudo apt-get install ffmpeg -y
 
 mkdir spellbook_wallet
 mkdir spellbook_data
