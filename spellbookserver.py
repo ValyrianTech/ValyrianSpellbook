@@ -863,7 +863,7 @@ class SpellbookRESTAPI(Bottle):
             transcription['segments'].append({"start": segment.start, "end": segment.end, "text": segment.text})
             full_text += segment.text + " "
 
-        transcription['full_text'] = full_text.rstrip()
+        transcription['full_text'] = full_text.rstrip().lstrip()
         LOG.info(transcription['full_text'])
 
         end = time.time()
