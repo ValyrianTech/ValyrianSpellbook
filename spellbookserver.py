@@ -830,6 +830,7 @@ class SpellbookRESTAPI(Bottle):
         # Reset the file pointer to the beginning
         uploaded_file.file.seek(0)
 
+        print("Transcribing audio file")
         segments, info = WHISPER_MODEL.transcribe(uploaded_file.file, beam_size=5, language="en", max_new_tokens=128, condition_on_previous_text=False)
 
         transcription = {'segments': []}
@@ -839,6 +840,7 @@ class SpellbookRESTAPI(Bottle):
             full_text += segment.text + " "
 
         transcription['full_text'] = full_text.rstrip()
+        print(transcription['full_text'])
 
         end = time.time()
         transcription['calculation_time'] = end - start
