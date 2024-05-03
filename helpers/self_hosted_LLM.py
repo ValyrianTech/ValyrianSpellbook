@@ -159,6 +159,11 @@ class SelfHostedLLM:
             client = sseclient.SSEClient(stream_response)
 
             for event in client.events():
+                if check_stop_generation():
+                    print()
+                    sys.stdout.flush()
+                    break
+
                 payload = json.loads(event.data)
                 response = payload['choices'][0]['text']
                 response = response.replace('\r', '')
@@ -310,3 +315,13 @@ The output must be only the json object inside a markdown code block, and nothin
 ## Output
 """
     return find_expert_prompt
+
+def check_stop_generation() -> bool:
+    """Check if there is a file called 'stop' in the program directory."""
+    program_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    stop_file = os.path.join(program_dir, 'stop')
+    if os.path.exists(stop_file):
+        LOG.info("Stop file found, stopping generation")
+        os.remove(stop_file)
+        return True
+    return False
