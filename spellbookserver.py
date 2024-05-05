@@ -754,7 +754,9 @@ class SpellbookRESTAPI(Bottle):
     @enable_cors
     def upload_file():
         if get_enable_uploads() is False:
-            return HTTPResponse(status=403, body={"error": "File uploads are not enabled"})
+            LOG.error("File uploads are not enabled")
+            response.status = 403
+            return {"error": "File uploads are not enabled"}
 
         uploads_dir = get_uploads_dir()
         if not os.path.exists(uploads_dir):
@@ -763,13 +765,17 @@ class SpellbookRESTAPI(Bottle):
         uploaded_file = request.files.get('file')
 
         if not uploaded_file:
-            return HTTPResponse(status=400, body={"error": "No file uploaded"})
+            LOG.error("No file uploaded")
+            response.status = 400
+            return {"error": "No file uploaded"}
 
         allowed_extensions = get_allowed_extensions().split(',')
         file_extension = os.path.splitext(uploaded_file.filename)[1]
 
         if file_extension[1:] not in allowed_extensions:
-            return HTTPResponse(status=403, body={"error": f"File extension {file_extension} is not allowed"})
+            LOG.error(f"File extension {file_extension} is not allowed")
+            response.status = 403
+            return {"error": f"File extension {file_extension} is not allowed"}
 
         # Read file content into a variable
         file_content = uploaded_file.file.read()
@@ -777,12 +783,17 @@ class SpellbookRESTAPI(Bottle):
         # Validate file type with python-magic
         mime = magic.Magic(mime=True)
         file_type = mime.from_buffer(file_content)
+        LOG.info(f'Uploaded file type: {file_type}')
         if file_type.split('/')[1] not in allowed_extensions:
-            return HTTPResponse(status=403, body={"error": f"File type {file_type} is not allowed"})
+            LOG.error(f"File type {file_type} is not allowed")
+            response.status = 403
+            return {"error": f"File type {file_type} is not allowed"}
 
         max_file_size = get_max_file_size()
         if len(file_content) > max_file_size:
-            return HTTPResponse(status=413, body={"error": f"File size exceeds maximum allowed size of {max_file_size} bytes, file size is {len(file_content)} bytes"})
+            LOG.error(f"File size exceeds maximum allowed size of {max_file_size} bytes, file size is {len(file_content)} bytes")
+            response.status = 413
+            return {"error": f"File size exceeds maximum allowed size of {max_file_size} bytes, file size is {len(file_content)} bytes"}
 
         # Reset the file pointer to the beginning
         uploaded_file.file.seek(0)
@@ -795,7 +806,8 @@ class SpellbookRESTAPI(Bottle):
             return {"file_id": f"{unique_id}{file_extension}", "file_name": uploaded_file.filename}
 
         except Exception as e:
-            return HTTPResponse(status=500, body={"error": str(e)})
+            response.status = 500
+            return {"error": str(e)}
 
     @staticmethod
     @enable_cors
