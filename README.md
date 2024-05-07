@@ -32,7 +32,7 @@ The Valyrian Spellbook, formerly known as the Bitcoin Spellbook, is an open plat
 ### Large Language Model (LLM) Features
 
 - **Integration of Multiple Models**: Manage various LLMs through dynamic API end points.
-- **Text Processing and Interaction**: Automate responses and generate text based on blockchain data.
+- **Text Processing and Interaction**: Automate responses and generate text.
 
 ### Actions and Triggers System
 
