@@ -140,7 +140,7 @@ class LLM(object):
         self.temperature = temperature
         self.llm = get_llm(model_name, temperature)
 
-    def generate(self, messages: List[BaseMessage], stop=None, max_tokens: int = 1000):
+    def generate(self, messages: List[BaseMessage], stop=None, max_tokens: int = 4096):
         kwargs = {'temperature': self.temperature, 'max_tokens': max_tokens}
         if self.model_name == 'text-davinci-003':
             prompts = []
