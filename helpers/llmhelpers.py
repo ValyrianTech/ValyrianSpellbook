@@ -8,8 +8,9 @@ import simplejson
 from typing import List, Any, Dict
 
 from .configurationhelpers import get_enable_openai, get_openai_api_key, spellbook_config, CONFIGURATION_FILE, get_llms_default_model
-from langchain.llms import OpenAI
-from langchain.chat_models import ChatOpenAI
+
+from langchain_community.llms import OpenAI
+from langchain_openai import ChatOpenAI
 from langchain.schema import HumanMessage, AIMessage, SystemMessage, ChatMessage, BaseMessage, LLMResult
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 

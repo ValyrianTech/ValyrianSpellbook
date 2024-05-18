@@ -20,7 +20,9 @@ tweepy==4.14.0
 transformers==4.32.0
 mastodon.py==1.8.1
 beautifulsoup4==4.12.2
-langchain==0.1.9
+langchain==0.2.0
+langchain-openai==0.1.7
+langchain-community==0.2.0
 tiktoken==0.4.0
 ipfs-dict-chain==1.0.6
 chromadb==0.4.18
