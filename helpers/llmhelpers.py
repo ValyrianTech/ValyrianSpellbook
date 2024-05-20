@@ -20,6 +20,7 @@ from .self_hosted_LLM import SelfHostedLLM
 from helpers.websockethelpers import broadcast_message, get_broadcast_channel, get_broadcast_sender
 from .textgenerationhelpers import parse_generation, CodeGeneration
 from .together_ai_LLM import TogetherAILLM
+from .openai_llm import OpenAILLM
 
 CLIENTS = {}
 
@@ -60,9 +61,17 @@ def get_llm(model_name: str = 'default_model', temperature: float = 0.0):
         CLIENTS[model_name] = llm
         return llm
 
-    if model_name.startswith('together-ai'):
+    if model_name.startswith('Together-ai'):
         LOG.info(f'Initializing {model_name} LLM at Together.ai')
         llm = TogetherAILLM(model_name=model_name.split(':')[1])
+
+        # CLIENTS[model_name] = llm
+        return llm
+
+    if model_name.startswith('OpenAI'):
+        LOG.info('--------------')
+        LOG.info(f'Initializing {model_name} LLM at OpenAI')
+        llm = OpenAILLM(model_name=model_name.split(':')[1])
 
         # CLIENTS[model_name] = llm
         return llm
