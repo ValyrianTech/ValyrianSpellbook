@@ -1,6 +1,5 @@
 import json
 import sys
-from pprint import pprint
 
 import openai
 
@@ -11,8 +10,6 @@ from helpers.loghelpers import LOG
 from helpers.websockethelpers import broadcast_message, get_broadcast_channel, get_broadcast_sender
 from helpers.configurationhelpers import get_openai_api_key, get_enable_openai
 from .textgenerationhelpers import LLMResult, parse_generation
-
-
 
 
 class OpenAILLM:
