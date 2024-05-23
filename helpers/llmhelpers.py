@@ -7,7 +7,7 @@ import simplejson
 
 from typing import List, Any, Dict
 
-from .configurationhelpers import get_enable_openai, get_openai_api_key, spellbook_config, CONFIGURATION_FILE, get_llms_default_model
+from .configurationhelpers import get_enable_openai, get_openai_api_key, spellbook_config, CONFIGURATION_FILE, get_llms_default_model, get_enable_together_ai, get_enable_oobabooga
 
 from langchain_community.llms import OpenAI
 from langchain_openai import ChatOpenAI
@@ -47,16 +47,16 @@ def get_llm(model_name: str = 'default_model', temperature: float = 0.0):
 
         if model_name == 'self-hosted:auto':
             LOG.info(f'Initializing {model_name} LLM with default settings')
-            llm = SelfHostedLLM(mixture_of_experts=True)
+            llm = SelfHostedLLM(mixture_of_experts=True, model_name=model_name.split(':')[1])
 
         elif model_name in model_names:
             host = self_hosted_models[model_name.split(':')[1]]['host']
             port = self_hosted_models[model_name.split(':')[1]]['port']
             LOG.info(f'Initializing {model_name} LLM at {host}:{port}')
-            llm = SelfHostedLLM(host=host, port=port, mixture_of_experts=False)
+            llm = SelfHostedLLM(host=host, port=port, mixture_of_experts=False, model_name=model_name.split(':')[1])
         else:
             LOG.info(f'Initializing {model_name} LLM with default settings')
-            llm = SelfHostedLLM(mixture_of_experts=False)
+            llm = SelfHostedLLM(mixture_of_experts=False, model_name=model_name.split(':')[1])
 
         CLIENTS[model_name] = llm
         return llm
@@ -161,7 +161,7 @@ class LLM(object):
             prompts.append(prompt)
             return self.llm.generate(prompts, stop=stop, **kwargs)
         else:
-            return self.llm.generate([messages], stop=stop, **kwargs)
+            return self.llm.generate(messages, stop=stop, **kwargs)
 
     def run(self, messages: List[BaseMessage], stop=None, best_of: int = 1):
         """Run the LLM and return the completion text, the LLM output, and the generation info.
@@ -175,6 +175,16 @@ class LLM(object):
         """
         LOG.info(f'Running LLM {self.model_name}')
 
+        # Check if the model is enabled
+        if self.model_name.startswith('OpenAI:') and get_enable_openai() is False:
+            return 'OpenAI is not enabled. Please enable it in the config file.', {}, None
+
+        if self.model_name.startswith('Together-ai:') and get_enable_together_ai() is False:
+            return 'Together.ai is not enabled. Please enable it in the config file.', {}, None
+
+        if self.model_name.startswith('self-hosted:') and get_enable_oobabooga() is False:
+            return 'Oobabooga is not enabled. Please enable it in the config file.', {}, None
+
         results = [self.generate(messages, stop=stop) for _ in range(best_of)]
 
         if best_of > 1:
@@ -183,8 +193,8 @@ class LLM(object):
         else:
             llm_result = results[0]
 
-        completion_text = llm_result.generations[0][0].text
-        generation_info = llm_result.generations[0][0].generation_info
+        completion_text = llm_result.generations[0].get('text', '')
+        generation_info = llm_result.generations[0].get('generation_info', {})
         llm_output = llm_result.llm_output
 
         return completion_text, llm_output, generation_info
@@ -355,6 +365,6 @@ def construct_human_messages(text: str, image_paths: List[str] = None):
         }
         content.append(image_message)
 
-    messages = [HumanMessage(content=content)]
+    messages = [{'role': 'user', 'content': content}]
 
     return messages

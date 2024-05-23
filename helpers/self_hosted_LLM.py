@@ -8,9 +8,8 @@ import json
 import sys
 import tiktoken
 
-from langchain.schema import AIMessage, ChatGeneration
 
-from helpers.configurationhelpers import get_enable_oobabooga, get_llms_default_model, get_host, get_websocket_port
+from helpers.configurationhelpers import get_llms_default_model, get_host, get_websocket_port
 from helpers.jsonhelpers import load_from_json_file
 from helpers.loghelpers import LOG
 from helpers.textgenerationhelpers import LLMResult, parse_generation
@@ -43,7 +42,8 @@ def get_default_llm_host():
 
 
 class SelfHostedLLM:
-    def __init__(self, host: str = None, port: int = None, mixture_of_experts=False):
+    def __init__(self, host: str = None, port: int = None, mixture_of_experts=False, model_name: str = None):
+        self.model_name = model_name
         if host is None:
             host = get_default_llm_host()
 
@@ -111,11 +111,11 @@ class SelfHostedLLM:
     #         LOG.error(f'Error connecting to LLM at {self.URI}: {e}')
     #         yield 'Error: Self-hosted LLM is not running.\n'
 
-    def get_completion_text(self, content, stop=None, **kwargs):
-
-        img_str = ''
+    def get_completion_text(self, messages, stop=None, **kwargs):
+        prompt = ''
+        content = messages[0].get('content')
         if isinstance(content, list):
-            prompt = content[0].get('text', '')
+            prompt = messages[0].get('content')[0].get('text', '')
 
             if len(content) == 2 and content[1].get('type', None) == 'image_url':
                 img_str = content[1].get('image_url', {}).get('url', '')
@@ -141,6 +141,7 @@ class SelfHostedLLM:
         headers = {
             "Content-Type": "application/json"
         }
+
         data = {
             "stream": True,
             "prompt": prompt,
@@ -153,7 +154,7 @@ class SelfHostedLLM:
             "presence_penalty": 0,
             "repetition_penalty": 1,
         }
-
+        prompt_tokens, completion_tokens, total_tokens = 0, 0, 0
         try:
             stream_response = requests.post(url, headers=headers, json=data, verify=False, stream=True)
             client = sseclient.SSEClient(stream_response)
@@ -190,61 +191,45 @@ class SelfHostedLLM:
         broadcast_message(message=simplejson.dumps(data), channel=get_broadcast_channel())
 
         completion = completion.encode("utf-8").decode("utf-8")
-        return completion
+
+        usage = {'prompt_tokens': prompt_tokens, 'completion_tokens': completion_tokens, 'total_tokens': total_tokens}
+        return completion, usage
 
     def generate(self, messages, stop=None, **kwargs):
-        if get_enable_oobabooga() is False:
-            LOG.warning('Self-hosted LLM is not enabled. Please enable it in the config file.')
-            return
-
-        # Maintain backward compatibility with non-multimodal llms, old llms had only a single string as content, multimodal llms have a list of dicts, each dict has a 'type' and 'text' key
-        content = messages[0][0].content
-        if isinstance(content, list):
-            prompt = content[0].get('text', '')
-        elif isinstance(content, str):
-            prompt = content
-
-        prompt_tokens = len(encoding.encode(prompt))
-        completion_tokens = 0
 
         if self.mixture_of_experts is True:
+            # Maintain backward compatibility with non-multimodal llms, old llms had only a single string as content, multimodal llms have a list of dicts, each dict has a 'type' and 'text' key
+            content = messages[0][0].content
+            if isinstance(content, list):
+                prompt = content[0].get('text', '')
+            elif isinstance(content, str):
+                prompt = content
             self.set_expert_model(prompt)
 
         if stop is None:
             stop = []
 
-        completion_text = self.get_completion_text(messages[0][0].content, stop, **kwargs)
-        if completion_text.startswith(prompt):
-            completion_text = completion_text[len(prompt):]
-            completion_tokens = len(encoding.encode(completion_text))
-
-        # Create an AIMessage instance
-        ai_message = AIMessage(content=completion_text, additional_kwargs={}, example=False)
+        completion_text, usage = self.get_completion_text(messages, stop, **kwargs)
 
         # Create a ChatGeneration instance
-        chat_generation = ChatGeneration(
-            text=completion_text,
-            generation_info={'finish_reason': 'stop'},
-            message=ai_message
-        )
+        chat_generation = {
+            'text': completion_text,
+            'generation_info': {'finish_reason': 'stop'}
+        }
 
-        generations = [[chat_generation]]
+        generations = [chat_generation]
 
         # Create the llm_output dictionary
         llm_output = {
-            'token_usage': {'prompt_tokens': prompt_tokens, 'completion_tokens': completion_tokens, 'total_tokens': prompt_tokens + completion_tokens},  # Todo implement token count
-            'model_name': 'self-hosted-llm',
+            'token_usage': usage,
+            'model_name': f'OpenAI:{self.model_name}'
         }
-
-        # Create the run list
-        # run = [RunInfo(run_id=UUID('a92219df-5d74-4bfd-a3a6-cddb2bd4d048'))]
-        run_info = []
 
         # Return the final dictionary
         llm_result = LLMResult()
         llm_result.generations = generations
         llm_result.llm_output = llm_output
-        llm_result.run = run_info
+
         return llm_result
 
     def set_expert_model(self, prompt: str):  # TODO fix this
