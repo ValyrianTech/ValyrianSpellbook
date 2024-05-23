@@ -6,12 +6,10 @@ import requests
 import simplejson
 import sseclient
 import tiktoken
-from langchain_core.messages import AIMessage
-from langchain_core.outputs import ChatGeneration
 
 from helpers.loghelpers import LOG
 from helpers.websockethelpers import broadcast_message, get_broadcast_channel, get_broadcast_sender
-from helpers.configurationhelpers import get_enable_together_ai, get_together_ai_bearer_token
+from helpers.configurationhelpers import get_together_ai_bearer_token
 from .textgenerationhelpers import LLMResult, parse_generation
 
 encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
@@ -22,7 +20,7 @@ class TogetherAILLM:
         LOG.info(f'Together.ai LLM initialized for model {self.model_name}')
 
 
-    def get_completion_text(self, prompt, stop=None, **kwargs):
+    def get_completion_text(self, messages, stop=None, **kwargs):
         completion = ''
         print('\nkwargs:')
         pprint(kwargs)
@@ -37,7 +35,7 @@ class TogetherAILLM:
         }
         data = {
           "model": self.model_name,
-          "prompt": prompt,
+          "messages": messages,
           "temperature": 0.7,
           "top_p": 0.7,
           "top_k": 50,
@@ -52,6 +50,7 @@ class TogetherAILLM:
             LOG.info(f'response status code: {stream_response.status_code}')
 
             client = sseclient.SSEClient(stream_response)
+            prompt_tokens, completion_tokens, total_tokens = 0, 0, 0
 
             for event in client.events():
                 if event.data == "[DONE]":
@@ -63,13 +62,13 @@ class TogetherAILLM:
                 completion += response
                 print(response, end='')
                 sys.stdout.flush()
-                # remove the original prompt from the completion
-                if completion.startswith(prompt):
-                    completion_only = completion[len(prompt):]
-                else:
-                    completion_only = completion
 
-                data = {'message': completion_only.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion_only.lstrip())}
+                if payload.get('usage', None) is not None:
+                    prompt_tokens = payload['usage']['prompt_tokens']
+                    completion_tokens = payload['usage']['completion_tokens']
+                    total_tokens = payload['usage']['total_tokens']
+
+                data = {'message': completion.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion.lstrip())}
                 broadcast_message(message=simplejson.dumps(data), channel=get_broadcast_channel())
 
         except Exception as e:
@@ -83,52 +82,37 @@ class TogetherAILLM:
         broadcast_message(message=simplejson.dumps(data), channel=get_broadcast_channel())
 
         completion = completion.encode("utf-8").decode("utf-8")
-        return completion
+
+
+        usage = {'prompt_tokens': prompt_tokens, 'completion_tokens': completion_tokens, 'total_tokens': total_tokens}
+        return completion, usage
 
     def generate(self, messages, stop=None, **kwargs):
-        if get_enable_together_ai() is False:
-            LOG.error('Together.ai is not enabled. Please enable it in the config file.')
-            return
-
-        prompt = messages[0][0].content
-        prompt_tokens = len(encoding.encode(prompt))
-        completion_tokens = 0
-
         if stop is None:
             stop = []
 
-        completion_text = self.get_completion_text(prompt, stop, **kwargs)
-        if completion_text.startswith(prompt):
-            completion_text = completion_text[len(prompt):]
-            completion_tokens = len(encoding.encode(completion_text))
+        completion_text, usage = self.get_completion_text(messages, stop, **kwargs)
 
-        # Create an AIMessage instance
-        ai_message = AIMessage(content=completion_text, additional_kwargs={}, example=False)
 
         # Create a ChatGeneration instance
-        chat_generation = ChatGeneration(
-            text=completion_text,
-            generation_info={'finish_reason': 'stop'},
-            message=ai_message
-        )
+        chat_generation = {
+            'text': completion_text,
+            'generation_info': {'finish_reason': 'stop'}
+        }
 
-        generations = [[chat_generation]]
+        generations = [chat_generation]
 
         # Create the llm_output dictionary
         llm_output = {
-            'token_usage': {'prompt_tokens': prompt_tokens, 'completion_tokens': completion_tokens, 'total_tokens': prompt_tokens + completion_tokens},  # Todo implement token count
-            'model_name': f'Together.ai:{self.model_name}'
+            'token_usage': usage,
+            'model_name': f'OpenAI:{self.model_name}'
         }
-
-        # Create the run list
-        # run = [RunInfo(run_id=UUID('a92219df-5d74-4bfd-a3a6-cddb2bd4d048'))]
-        run_info = []
 
         # Return the final dictionary
         llm_result = LLMResult()
         llm_result.generations = generations
         llm_result.llm_output = llm_output
-        llm_result.run = run_info
+
         return llm_result
 
 

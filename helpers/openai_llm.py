@@ -3,12 +3,9 @@ import sys
 
 import openai
 
-from langchain_core.messages import AIMessage
-from langchain_core.outputs import ChatGeneration
-
 from helpers.loghelpers import LOG
 from helpers.websockethelpers import broadcast_message, get_broadcast_channel, get_broadcast_sender
-from helpers.configurationhelpers import get_openai_api_key, get_enable_openai
+from helpers.configurationhelpers import get_openai_api_key
 from .textgenerationhelpers import LLMResult, parse_generation
 
 
@@ -18,15 +15,10 @@ class OpenAILLM:
         openai.api_key = get_openai_api_key()
         LOG.info(f'OpenAI LLM initialized for model {self.model_name}')
 
-    def get_completion_text(self, prompt, stop=None, **kwargs):
+    def get_completion_text(self, messages, stop=None, **kwargs):
         LOG.info(f'Generating with OpenAI LLM with model {self.model_name}')
         LOG.info(f'kwargs: {kwargs}')
         LOG.info(f'stop: {stop}')
-
-        messages = [{
-                "role": "user",
-                "content": prompt[0][0].content,
-            }]
 
         completion = ''
         try:
@@ -75,26 +67,18 @@ class OpenAILLM:
         return completion, usage
 
     def generate(self, messages, stop=None, **kwargs):
-        if get_enable_openai() is False:
-            LOG.error('OpenAI is not enabled. Please enable it in the config file.')
-            return
-
         if stop is None:
             stop = []
 
         completion_text, usage = self.get_completion_text(messages, stop, **kwargs)
 
-        # Create an AIMessage instance
-        ai_message = AIMessage(content=completion_text, additional_kwargs={}, example=False)
-
         # Create a ChatGeneration instance
-        chat_generation = ChatGeneration(
-            text=completion_text,
-            generation_info={'finish_reason': 'stop'},
-            message=ai_message
-        )
+        chat_generation = {
+            'text': completion_text,
+            'generation_info': {'finish_reason': 'stop'}
+        }
 
-        generations = [[chat_generation]]
+        generations = [chat_generation]
 
         # Create the llm_output dictionary
         llm_output = {
@@ -102,13 +86,9 @@ class OpenAILLM:
             'model_name': f'OpenAI:{self.model_name}'
         }
 
-        # Create the run list
-        # run = [RunInfo(run_id=UUID('a92219df-5d74-4bfd-a3a6-cddb2bd4d048'))]
-        run_info = []
-
         # Return the final dictionary
         llm_result = LLMResult()
         llm_result.generations = generations
         llm_result.llm_output = llm_output
-        llm_result.run = run_info
+
         return llm_result
