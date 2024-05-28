@@ -53,6 +53,11 @@ class TogetherAILLM(LLMInterface):
             prompt_tokens, completion_tokens, total_tokens = 0, 0, 0
 
             for event in client.events():
+                if self.check_stop_generation():
+                    print()
+                    sys.stdout.flush()
+                    break
+
                 if event.data == "[DONE]":
                     break
 
