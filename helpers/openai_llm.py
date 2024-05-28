@@ -37,6 +37,11 @@ class OpenAILLM(LLMInterface):
 
             prompt_tokens, completion_tokens, total_tokens = 0, 0, 0
             for chunk in response:
+                if self.check_stop_generation():
+                    print()
+                    sys.stdout.flush()
+                    break
+
                 # Only the last chunk will have the usage information, but no choices
                 if len(chunk.choices) == 0:
                     prompt_tokens, completion_tokens, total_tokens = chunk.usage.prompt_tokens, chunk.usage.completion_tokens, chunk.usage.total_tokens
