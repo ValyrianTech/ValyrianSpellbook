@@ -3,15 +3,16 @@ import sys
 
 import openai
 
+from helpers.llm_interface import LLMInterface
 from helpers.loghelpers import LOG
 from helpers.websockethelpers import broadcast_message, get_broadcast_channel, get_broadcast_sender
 from helpers.configurationhelpers import get_openai_api_key
-from .textgenerationhelpers import LLMResult, parse_generation
+from .textgenerationhelpers import parse_generation
 
 
-class OpenAILLM:
+class OpenAILLM(LLMInterface):
     def __init__(self, model_name: str):
-        self.model_name = model_name
+        super().__init__(model_name)
         openai.api_key = get_openai_api_key()
         LOG.info(f'OpenAI LLM initialized for model {self.model_name}')
 
@@ -65,30 +66,3 @@ class OpenAILLM:
         usage = {'prompt_tokens': prompt_tokens, 'completion_tokens': completion_tokens, 'total_tokens': total_tokens}
 
         return completion, usage
-
-    def generate(self, messages, stop=None, **kwargs):
-        if stop is None:
-            stop = []
-
-        completion_text, usage = self.get_completion_text(messages, stop, **kwargs)
-
-        # Create a ChatGeneration instance
-        chat_generation = {
-            'text': completion_text,
-            'generation_info': {'finish_reason': 'stop'}
-        }
-
-        generations = [chat_generation]
-
-        # Create the llm_output dictionary
-        llm_output = {
-            'token_usage': usage,
-            'model_name': f'OpenAI:{self.model_name}'
-        }
-
-        # Return the final dictionary
-        llm_result = LLMResult()
-        llm_result.generations = generations
-        llm_result.llm_output = llm_output
-
-        return llm_result
