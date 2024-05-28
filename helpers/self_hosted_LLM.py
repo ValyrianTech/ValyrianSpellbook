@@ -6,16 +6,14 @@ import simplejson
 import sseclient
 import json
 import sys
-import tiktoken
 
-
+from helpers.llm_interface import LLMInterface
 from helpers.configurationhelpers import get_llms_default_model, get_host, get_websocket_port
 from helpers.jsonhelpers import load_from_json_file
 from helpers.loghelpers import LOG
-from helpers.textgenerationhelpers import LLMResult, parse_generation
+from helpers.textgenerationhelpers import parse_generation
 from helpers.websockethelpers import broadcast_message, init_websocket_server, get_broadcast_channel, get_broadcast_sender
 
-encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
 
 init_websocket_server(host=get_host(), port=get_websocket_port())
 
@@ -41,9 +39,9 @@ def get_default_llm_host():
         return default_model_host
 
 
-class SelfHostedLLM:
+class SelfHostedLLM(LLMInterface):
     def __init__(self, host: str = None, port: int = None, mixture_of_experts=False, model_name: str = None):
-        self.model_name = model_name
+        super().__init__(model_name)
         if host is None:
             host = get_default_llm_host()
 
@@ -171,13 +169,13 @@ class SelfHostedLLM:
                 completion += response
                 print(response, end='')
                 sys.stdout.flush()
-                # remove the original prompt from the completion
-                if completion.startswith(prompt):
-                    completion_only = completion[len(prompt):]
-                else:
-                    completion_only = completion
 
-                data = {'message': completion_only.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion_only.lstrip())}
+                if payload.get('usage', None) is not None:
+                    prompt_tokens = payload['usage']['prompt_tokens']
+                    completion_tokens = payload['usage']['completion_tokens']
+                    total_tokens = payload['usage']['total_tokens']
+
+                data = {'message': completion.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion.lstrip())}
                 broadcast_message(message=simplejson.dumps(data), channel=get_broadcast_channel())
 
         except Exception as e:
@@ -195,42 +193,42 @@ class SelfHostedLLM:
         usage = {'prompt_tokens': prompt_tokens, 'completion_tokens': completion_tokens, 'total_tokens': total_tokens}
         return completion, usage
 
-    def generate(self, messages, stop=None, **kwargs):
-
-        if self.mixture_of_experts is True:
-            # Maintain backward compatibility with non-multimodal llms, old llms had only a single string as content, multimodal llms have a list of dicts, each dict has a 'type' and 'text' key
-            content = messages[0][0].content
-            if isinstance(content, list):
-                prompt = content[0].get('text', '')
-            elif isinstance(content, str):
-                prompt = content
-            self.set_expert_model(prompt)
-
-        if stop is None:
-            stop = []
-
-        completion_text, usage = self.get_completion_text(messages, stop, **kwargs)
-
-        # Create a ChatGeneration instance
-        chat_generation = {
-            'text': completion_text,
-            'generation_info': {'finish_reason': 'stop'}
-        }
-
-        generations = [chat_generation]
-
-        # Create the llm_output dictionary
-        llm_output = {
-            'token_usage': usage,
-            'model_name': f'OpenAI:{self.model_name}'
-        }
-
-        # Return the final dictionary
-        llm_result = LLMResult()
-        llm_result.generations = generations
-        llm_result.llm_output = llm_output
-
-        return llm_result
+    # def generate(self, messages, stop=None, **kwargs):
+    #
+    #     if self.mixture_of_experts is True:
+    #         # Maintain backward compatibility with non-multimodal llms, old llms had only a single string as content, multimodal llms have a list of dicts, each dict has a 'type' and 'text' key
+    #         content = messages[0][0].content
+    #         if isinstance(content, list):
+    #             prompt = content[0].get('text', '')
+    #         elif isinstance(content, str):
+    #             prompt = content
+    #         self.set_expert_model(prompt)
+    #
+    #     if stop is None:
+    #         stop = []
+    #
+    #     completion_text, usage = self.get_completion_text(messages, stop, **kwargs)
+    #
+    #     # Create a ChatGeneration instance
+    #     chat_generation = {
+    #         'text': completion_text,
+    #         'generation_info': {'finish_reason': 'stop'}
+    #     }
+    #
+    #     generations = [chat_generation]
+    #
+    #     # Create the llm_output dictionary
+    #     llm_output = {
+    #         'token_usage': usage,
+    #         'model_name': f'OpenAI:{self.model_name}'
+    #     }
+    #
+    #     # Return the final dictionary
+    #     llm_result = LLMResult()
+    #     llm_result.generations = generations
+    #     llm_result.llm_output = llm_output
+    #
+    #     return llm_result
 
     def set_expert_model(self, prompt: str):  # TODO fix this
         available_llms = get_available_llms()
