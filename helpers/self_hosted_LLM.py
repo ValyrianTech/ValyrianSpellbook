@@ -8,14 +8,11 @@ import json
 import sys
 
 from helpers.llm_interface import LLMInterface
-from helpers.configurationhelpers import get_llms_default_model, get_host, get_websocket_port
+from helpers.configurationhelpers import get_llms_default_model
 from helpers.jsonhelpers import load_from_json_file
 from helpers.loghelpers import LOG
 from helpers.textgenerationhelpers import parse_generation
-from helpers.websockethelpers import broadcast_message, init_websocket_server, get_broadcast_channel, get_broadcast_sender
-
-
-init_websocket_server(host=get_host(), port=get_websocket_port())
+from helpers.websockethelpers import broadcast_message, get_broadcast_channel, get_broadcast_sender
 
 
 def load_llms():

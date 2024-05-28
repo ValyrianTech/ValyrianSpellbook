@@ -1,8 +1,12 @@
 import os
 from abc import abstractmethod, ABCMeta
 
+from helpers.configurationhelpers import get_host, get_websocket_port
 from helpers.loghelpers import LOG
 from helpers.textgenerationhelpers import LLMResult
+from helpers.websockethelpers import init_websocket_server
+
+init_websocket_server(host=get_host(), port=get_websocket_port())
 
 class LLMInterface(object):
     __metaclass__ = ABCMeta
