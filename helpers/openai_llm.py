@@ -68,6 +68,6 @@ class OpenAILLM(LLMInterface):
         broadcast_message(message=json.dumps(data), channel=get_broadcast_channel())
 
         completion = completion.encode("utf-8").decode("utf-8")
-        usage = {'prompt_tokens': prompt_tokens, 'completion_tokens': completion_tokens, 'total_tokens': total_tokens}
+        usage = {'prompt_tokens': prompt_tokens, 'completion_tokens': completion_tokens, 'total_tokens': total_tokens, 'total_cost': self.calculate_cost(prompt_tokens, completion_tokens)}
 
         return completion, usage
