@@ -268,9 +268,6 @@ def load_llms():
 
 
 def get_llm_config(llm_name: str):
-    if llm_name.startswith('self-hosted:'):
-        llm_name = llm_name.split(':')[1]
-
     llms_data = load_llms()
     return llms_data.get(llm_name, {})
 
@@ -287,45 +284,11 @@ def save_llm_config(llm_name: str, llm_config: dict):
 
     llms_data = load_llms()
 
-    if llm_config['server_type'] == 'Oobabooga':
-        if llm_config['model_name'] is None and llm_config['host'] is not None:
-            url = f"{llm_config['host']}/v1/models"
-            headers = {
-                "Content-Type": "application/json"
-            }
-            try:
-                response = requests.get(url=url, headers=headers)
-            except Exception as e:
-                LOG.error(f"Unable to connect to {url}: {e}")
-                return
-
-            if response.status_code == 200:
-                models = response.json()['data']
-                print(models)
-                for model in models:
-                    if model['id'] not in ['gpt-3.5-turbo', 'text-embedding-ada-002']:  # these come with the server, ignore them
-                        llm_config['model_name'] = model['id']
-                        break
-                    else:
-                        llm_config['model_name'] = 'Unknown'
-            else:
-                LOG.error(f"Unable to connect to {url}: {response.status_code} {response.text}")
-
-    if llm_config['model_name'] is None:
-        llm_config['model_name'] = 'Unknown'
-
-
-    if llm_config['description'] is None:
-        if llm_name.startswith('chat'):
-            llm_config['description'] = 'Optimized for chat'
-        elif llm_name.startswith('code'):
-            llm_config['description'] = 'Optimized for code'
-
-    llms_data[llm_name] = llm_config
-
     # if host ends with a trailing /, remove it
     if llm_config['host'] is not None and llm_config['host'].endswith('/'):
         llm_config['host'] = llm_config['host'][:-1]
+
+    llms_data[llm_name] = llm_config
 
     save_to_json_file(data=llms_data, filename=os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'configuration', 'LLMs.json'))
 
