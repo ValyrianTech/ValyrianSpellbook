@@ -19,6 +19,7 @@ from .jsonhelpers import load_from_json_file, save_to_json_file
 from .self_hosted_LLM import SelfHostedLLM
 from helpers.websockethelpers import broadcast_message, get_broadcast_channel, get_broadcast_sender
 from .textgenerationhelpers import parse_generation, CodeGeneration
+from .llm_interface import LLMInterface, llm_router_prompt, get_available_llms
 from .together_ai_LLM import TogetherAILLM
 from .openai_llm import OpenAILLM
 
@@ -37,8 +38,17 @@ def get_llm(model_name: str = 'default_model', temperature: float = 0.0):
         llm.temperature = temperature
         return llm
 
+    if model_name == 'auto':
+        LOG.info(f'Auto routing to the best suited LLM model')
+        llm = LLMInterface(model_name=model_name, auto_routing=True)
+        return llm
+    elif model_name.startswith('auto:'):
+        model_name = model_name[5:]
+
+    models_file = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")), 'configuration', 'LLMs.json')
+    model_configs = load_from_json_file(filename=models_file) if os.path.exists(models_file) else {}
+
     if model_name.startswith('self-hosted'):
-        models_file = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")), 'configuration', 'LLMs.json')
         self_hosted_models = load_from_json_file(filename=models_file) if os.path.exists(models_file) else {}
 
         model_names = []
@@ -61,17 +71,19 @@ def get_llm(model_name: str = 'default_model', temperature: float = 0.0):
         CLIENTS[model_name] = llm
         return llm
 
-    if model_name.startswith('Together-ai'):
+    if model_name.startswith('Together-ai:'):
         LOG.info(f'Initializing {model_name} LLM at Together.ai')
-        llm = TogetherAILLM(model_name=model_name.split(':')[1])
+        model_name = model_configs.get(model_name.split(':')[1], {}).get('model_name', None)
+        llm = TogetherAILLM(model_name=model_name)
 
         # CLIENTS[model_name] = llm
         return llm
 
-    if model_name.startswith('OpenAI'):
+    if model_name.startswith('OpenAI:'):
         LOG.info('--------------')
         LOG.info(f'Initializing {model_name} LLM at OpenAI')
-        llm = OpenAILLM(model_name=model_name.split(':')[1])
+        model_name = model_configs.get(model_name.split(':')[1], {}).get('model_name', None)
+        llm = OpenAILLM(model_name=model_name)
 
         # CLIENTS[model_name] = llm
         return llm
@@ -173,6 +185,16 @@ class LLM(object):
         :param best_of: int - number of completions to generate and return the best of
         :return: Tuple - completion text, LLM output, generation info
         """
+        if self.model_name == 'auto':
+            available_llms = get_available_llms()
+            routing_prompt = llm_router_prompt(messages[0].get('content', ''), available_llms[0])
+            print('----routing-------')
+            auto_routed = self.choose_best_llm(routing_prompt, available_llms[1])
+            self.model_name = f'auto:{auto_routed}'
+            self.llm = get_llm(model_name=self.model_name, temperature=self.temperature)
+            print('----routing-------')
+
+
         LOG.info(f'Running LLM {self.model_name}')
 
         # Check if the model is enabled
@@ -198,6 +220,37 @@ class LLM(object):
         llm_output = llm_result.llm_output
 
         return completion_text, llm_output, generation_info
+
+    def choose_best_llm(self, prompt: str, llm_names: list) -> str:
+        llm_config_name = 'default_model'
+
+        default_llm = get_llm(model_name='default_model')
+        default_llm.temperature = 0
+
+        messages = [{'role': 'user', 'content': prompt}]
+
+        result = default_llm.generate(messages=messages, max_tokens=1)
+
+        try:
+            text_completion = result.generations[0].get('text', '0')
+            # remove leading newline if there is one
+            if text_completion.startswith('\n'):
+                LOG.info('removing leading newline')
+                text_completion = text_completion[1:]
+
+            selection = int(text_completion[0])
+        except Exception as e:
+            LOG.error(f"Unable to parse generation: {e}")
+            LOG.error(f"Defaulting to default model")
+            return llm_config_name
+
+        if 0 <= selection < len(llm_names):
+            llm_config_name = llm_names[selection]
+
+        LOG.info(f"best LLM is {selection}: {llm_config_name}")
+
+        return llm_config_name
+
 
     def choose_best_generation(self, messages: List[BaseMessage], generations: List[LLMResult]) -> int:
 
