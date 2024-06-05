@@ -133,14 +133,14 @@ class SelfHostedLLM(LLMInterface):
         data = {
             "stream": True,
             "prompt": prompt,
-            "max_tokens": 1000,  # todo add max_tokens to the UI
+            "max_tokens": kwargs.get('max_tokens', 1000),  # todo add max_tokens to the UI
             "temperature": kwargs.get('temperature', 0.7),
             "top_p": kwargs.get('top_p', 0.7),  # todo add top_p to the UI
             "top_k": kwargs.get('top_k', 50),  # todo add top_k to the UI
             'stop': kwargs.get('stop', stop),
-            "frequency_penalty": 0,
-            "presence_penalty": 0,
-            "repetition_penalty": 1,
+            "frequency_penalty": kwargs.get('frequency_penalty', 0),
+            "presence_penalty": kwargs.get('presence_penalty', 0),
+            "repetition_penalty": kwargs.get('repetition_penalty', 1.0),
         }
         prompt_tokens, completion_tokens, total_tokens = 0, 0, 0
         try:
