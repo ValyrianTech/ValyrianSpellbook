@@ -188,11 +188,12 @@ class LLM(object):
         if self.model_name == 'auto':
             available_llms = get_available_llms()
             routing_prompt = llm_router_prompt(messages[0].get('content', ''), available_llms[0])
-            print('----routing-------')
+            print('----begin routing-------')
+            print(routing_prompt)
             auto_routed = self.choose_best_llm(routing_prompt, available_llms[1])
             self.model_name = f'auto:{auto_routed}'
             self.llm = get_llm(model_name=self.model_name, temperature=self.temperature)
-            print('----routing-------')
+            print('----end routing-------')
 
 
         LOG.info(f'Running LLM {self.model_name}')
@@ -229,7 +230,7 @@ class LLM(object):
 
         messages = [{'role': 'user', 'content': prompt}]
 
-        result = default_llm.generate(messages=messages, max_tokens=1)
+        result = default_llm.generate(messages=messages, max_tokens=5)
 
         try:
             text_completion = result.generations[0].get('text', '0')
