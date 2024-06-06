@@ -187,7 +187,14 @@ class LLM(object):
         """
         if self.model_name == 'auto':
             available_llms = get_available_llms()
-            routing_prompt = llm_router_prompt(messages[0].get('content', ''), available_llms[0])
+            prompt = ''
+            content = messages[0].get('content', '')
+            if type(content) == str:
+                prompt = content
+            elif type(content) == list:
+                prompt = content[0].get('text', '')
+
+            routing_prompt = llm_router_prompt(prompt=prompt, available_llms=available_llms[0])
             print('----begin routing-------')
             print(routing_prompt)
             auto_routed = self.choose_best_llm(routing_prompt, available_llms[1])
