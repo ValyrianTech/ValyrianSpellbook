@@ -1,5 +1,6 @@
 import base64
 import os
+import random
 import sys
 
 import requests
@@ -22,6 +23,7 @@ from .textgenerationhelpers import parse_generation, CodeGeneration
 from .llm_interface import LLMInterface, llm_router_prompt, get_available_llms
 from .together_ai_LLM import TogetherAILLM
 from .openai_llm import OpenAILLM
+from .anthropic_llm import AnthropicLLM
 
 CLIENTS = {}
 
@@ -88,6 +90,14 @@ def get_llm(model_name: str = 'default_model', temperature: float = 0.0):
         # CLIENTS[model_name] = llm
         return llm
 
+    if model_name.startswith('Anthropic:'):
+        LOG.info('--------------')
+        LOG.info(f'Initializing {model_name} LLM at Anthropic')
+        model_name = model_name.split(":")[1]
+        api_key = get_llm_api_key(model_name=model_name, server_type='Anthropic')
+        llm = AnthropicLLM(model_name=model_name, api_key=api_key)
+        return llm
+
     if get_enable_openai() is True:
         if model_name == 'text-davinci-003':
             llm = OpenAI(model_name=model_name, temperature=temperature, openai_api_key=get_openai_api_key(), request_timeout=300)
@@ -101,6 +111,18 @@ def get_llm(model_name: str = 'default_model', temperature: float = 0.0):
 
     return llm
 
+def get_llm_api_key(model_name: str, server_type: str):
+    llms_data = load_llms()
+    config_names = [config for config in llms_data if llms_data[config].get('server_type', None) == server_type and llms_data[config].get('model_name', None) == model_name]
+    api_keys = [llms_data[config_name].get('api_key', None) for config_name in config_names if llms_data[config_name].get('api_key', None) != '']
+
+    if len(api_keys) == 1:
+        return api_keys[0]
+    elif len(api_keys) > 1:
+        LOG.info(f'Multiple API keys found for {model_name} LLM at {server_type}, choosing one randomly')
+        return random.choice(api_keys)
+    else:
+        return None
 
 def get_role(message: BaseMessage):
     if isinstance(message, HumanMessage):
