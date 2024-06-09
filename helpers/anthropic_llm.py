@@ -16,7 +16,6 @@ class AnthropicLLM(LLMInterface):
 
         self.client = anthropic.Anthropic(api_key=api_key)
 
-        anthropic.api_key = get_openai_api_key()
         LOG.info(f'Anthropic LLM initialized for model {self.model_name}')
 
     def get_completion_text(self, messages, stop=None, **kwargs):
