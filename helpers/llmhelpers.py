@@ -85,8 +85,9 @@ def get_llm(model_name: str = 'default_model', temperature: float = 0.0):
     if model_name.startswith('OpenAI:'):
         LOG.info('--------------')
         LOG.info(f'Initializing {model_name} LLM at OpenAI')
-        model_name = model_configs.get(model_name.split(':')[1], {}).get('model_name', None)
-        llm = OpenAILLM(model_name=model_name)
+        model_name = model_name.split(":")[1]
+        api_key = get_llm_api_key(model_name=model_name, server_type='OpenAI')
+        llm = OpenAILLM(model_name=model_name, api_key=api_key)
 
         # CLIENTS[model_name] = llm
         return llm
