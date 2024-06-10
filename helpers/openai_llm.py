@@ -11,9 +11,13 @@ from .textgenerationhelpers import parse_generation
 
 
 class OpenAILLM(LLMInterface):
-    def __init__(self, model_name: str):
+    def __init__(self, model_name: str, api_key: str = None):
         super().__init__(model_name)
-        openai.api_key = get_openai_api_key()
+
+        if api_key is not None:
+            openai.api_key = api_key
+        else:
+            openai.api_key = get_openai_api_key()
         LOG.info(f'OpenAI LLM initialized for model {self.model_name}')
 
     def get_completion_text(self, messages, stop=None, **kwargs):
