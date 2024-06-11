@@ -15,8 +15,12 @@ from .textgenerationhelpers import parse_generation
 
 class TogetherAILLM(LLMInterface):
 
-    def __init__(self, model_name: str):
+    def __init__(self, model_name: str, api_key: str = None):
         super().__init__(model_name)
+        if api_key is not None:
+            self.api_key = api_key
+        else:
+            self.api_key = get_together_ai_bearer_token()
         LOG.info(f'Together.ai LLM initialized for model {self.model_name}')
 
 
@@ -31,7 +35,7 @@ class TogetherAILLM(LLMInterface):
         headers = {
             "accept": "application/json",
             "content-type": "application/json",
-            "Authorization": f"Bearer {get_together_ai_bearer_token()}"
+            "Authorization": f"Bearer {self.api_key}"
         }
         data = {
           "model": self.model_name,
