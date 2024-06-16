@@ -41,11 +41,9 @@ class TogetherAILLM(LLMInterface):
           "model": self.model_name,
           "messages": messages,
           "temperature": kwargs.get('temperature', 0.7),
-          "top_p": 0.7,
-          "top_k": 50,
           "max_tokens": kwargs.get('max_tokens', 1000),
-          "repetition_penalty": 1,
           "stream_tokens": True,
+          **kwargs
         }
 
         try:
