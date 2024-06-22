@@ -2,8 +2,8 @@ import base64
 import os
 import random
 import sys
+import time
 
-import requests
 import simplejson
 
 from typing import List, Any, Dict
@@ -248,7 +248,10 @@ class LLM(object):
         if self.model_name.startswith('self-hosted:') and get_enable_oobabooga() is False:
             return 'Oobabooga is not enabled. Please enable it in the config file.', {}, None
 
+        start_time = time.time()
         results = [self.generate(messages, stop=stop) for _ in range(best_of)]
+        end_time = time.time()
+        LOG.info(f'LLM {self.model_name} took {end_time - start_time} seconds to generate {best_of} completions')
 
         if best_of > 1:
             LOG.info('Choosing best generation')
