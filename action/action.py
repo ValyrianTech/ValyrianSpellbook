@@ -60,7 +60,7 @@ class Action(object):
                 'created': int(time.mktime(self.created.timetuple()))}
 
     @abstractmethod
-    def run(self):
+    def run(self, **kwargs):
         """
         Run the action
 
