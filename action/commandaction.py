@@ -15,14 +15,21 @@ class CommandAction(Action):
         self.run_command = None
         self.working_dir = None
 
-    def run(self):
+    def run(self, **kwargs):
         """
         Run the action
+
+        if a parameter called 'placeholders' is passed in the kwargs, the placeholders in the run_command will be replaced with the values in the placeholders dict
 
         :return: True upon success, False upon failure
         """
         if self.run_command is None or self.run_command == '':
             return False
+
+        placeholders = kwargs.get('placeholders', {})
+        for key, value in placeholders.items():
+            LOG.info('Replacing placeholder %s with %s' % (key, value))
+            self.run_command = self.run_command.replace(key, value)
 
         current_run_dir = os.getcwd()
         if self.working_dir is not None and current_run_dir != self.working_dir:
