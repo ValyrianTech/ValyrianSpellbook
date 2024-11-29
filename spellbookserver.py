@@ -29,7 +29,7 @@ from helpers.configurationhelpers import get_enable_ssl, get_ssl_certificate, ge
 from helpers.hotwallethelpers import get_hot_wallet
 from helpers.loghelpers import LOG, REQUESTS_LOG, get_logs
 from helpers.triggerhelpers import get_triggers, get_trigger_config, save_trigger, delete_trigger, activate_trigger, \
-    check_triggers, verify_signed_message, http_get_request, http_post_request, http_delete_request, http_options_request, sign_message
+    check_triggers, verify_signed_message, http_get_request, http_post_request, http_delete_request, http_options_request, sign_message, file_download
 from helpers.mailhelpers import sendmail
 from inputs.inputs import get_sil, get_profile, get_sul
 from linker.linker import get_lal, get_lbl, get_lrl, get_lsl
@@ -194,6 +194,9 @@ class SpellbookRESTAPI(Bottle):
         self.route('/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>/message', method='OPTIONS', callback=self.http_options_request)
 
         self.route('/api/sign_message', method='POST', callback=self.sign_message)
+
+        # Routes for file downloads
+        self.route('/files/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.file_download)
 
         # Routes for QR image generation
         self.route('/api/qr', method='GET', callback=self.qr)
@@ -603,6 +606,8 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @authentication_required
     def sign_message():
+        LOG.info('Sign message request received')
+        LOG.info(f'request json: {request.json}')
         response.content_type = 'application/json'
         return sign_message(**request.json)
 
@@ -749,6 +754,18 @@ class SpellbookRESTAPI(Bottle):
     def get_logs(filter_string):
         response.content_type = 'application/json'
         return get_logs(filter_string=filter_string)
+
+    @staticmethod
+    @enable_cors
+    def file_download(trigger_id):
+        response.content_type = 'image/png'
+        data = request.json if request.json is not None else {}
+
+        # Also add parameters passed via the query string to the data, if any parameters have the same name then the query string has priority
+        query = dict(request.query)
+        data.update(query)
+
+        return file_download(trigger_id, **data)
 
     @staticmethod
     @enable_cors
