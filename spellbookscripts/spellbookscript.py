@@ -113,6 +113,16 @@ class SpellbookScript(object):
             LOG.warning('SHA256 hash given, but no data to check against')  # This can happen when the trigger is created by another trigger
             return False
 
+        # if self.data is a string, convert it to a dict
+        if isinstance(self.data, str):
+            LOG.info('Data given is a string, converting to json')
+            try:
+                self.data = simplejson.loads(self.data)
+            except ValueError:
+                LOG.error('Data given is not valid json: %s' % self.data)
+                return False
+
+
         # check if sha256_hash is valid and corresponds with the data in self.data
         control_hash = hashlib.sha256(simplejson.dumps(self.data, sort_keys=True, indent=2, ensure_ascii=False).encode('utf-8')).hexdigest()
         if sha256_hash != control_hash:
