@@ -98,7 +98,7 @@ def get_available_llms():
         if llms_data[llm_name].get('allow_auto_routing', False) is True:
             available_llms_text += f'{i}: {llm_name} -> {llms_data[llm_name]["description"]}\n'
             server_type = llms_data[llm_name].get('server_type', 'self-hosted')
-            if server_type == 'Oobabooga':
+            if server_type == 'Oobabooga' or server_type == 'vLLM':
                 server_type = 'self-hosted'
 
             available_llms_names.append(f'{server_type}:{llm_name}')

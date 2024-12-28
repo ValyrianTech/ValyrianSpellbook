@@ -25,6 +25,7 @@ from .together_ai_LLM import TogetherAILLM
 from .openai_llm import OpenAILLM
 from .anthropic_llm import AnthropicLLM
 from .groq_llm import GroqLLM
+from .vLLM_llm import VLLMLLM
 
 CLIENTS = {}
 
@@ -37,7 +38,6 @@ def get_llm(model_name: str = 'default_model', temperature: float = 0.0):
 
     if model_name in CLIENTS:
         llm = CLIENTS[model_name]
-        llm.model_name = model_name
         llm.temperature = temperature
         return llm
 
@@ -66,7 +66,11 @@ def get_llm(model_name: str = 'default_model', temperature: float = 0.0):
             host = self_hosted_models[model_name.split(':')[1]]['host']
             port = self_hosted_models[model_name.split(':')[1]]['port']
             LOG.info(f'Initializing {model_name} LLM at {host}:{port}')
-            llm = SelfHostedLLM(host=host, port=port, mixture_of_experts=False, model_name=model_name.split(':')[1])
+            if self_hosted_models[model_name.split(':')[1]]['server_type'] == 'Oobabooga':
+                llm = SelfHostedLLM(host=host, port=port, mixture_of_experts=False, model_name=model_name.split(':')[1])
+            elif self_hosted_models[model_name.split(':')[1]]['server_type'] == 'vLLM':
+                LOG.info('Using vLLM')
+                llm = VLLMLLM(model_name=self_hosted_models[model_name.split(':')[1]]['model_name'], host=host, port=port)
         else:
             LOG.info(f'Initializing {model_name} LLM with default settings')
             llm = SelfHostedLLM(mixture_of_experts=False, model_name=model_name.split(':')[1])
