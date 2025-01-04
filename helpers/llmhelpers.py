@@ -26,6 +26,7 @@ from .openai_llm import OpenAILLM
 from .anthropic_llm import AnthropicLLM
 from .groq_llm import GroqLLM
 from .vLLM_llm import VLLMLLM
+from .vLLMchat_llm import VLLMchatLLM
 
 CLIENTS = {}
 
@@ -71,6 +72,9 @@ def get_llm(model_name: str = 'default_model', temperature: float = 0.0):
             elif self_hosted_models[model_name.split(':')[1]]['server_type'] == 'vLLM':
                 LOG.info('Using vLLM')
                 llm = VLLMLLM(model_name=self_hosted_models[model_name.split(':')[1]]['model_name'], host=host, port=port)
+            elif self_hosted_models[model_name.split(':')[1]]['server_type'] == 'vLLMchat':
+                LOG.info('Using vLLM chat')
+                llm = VLLMchatLLM(model_name=self_hosted_models[model_name.split(':')[1]]['model_name'], host=host, port=port)
         else:
             LOG.info(f'Initializing {model_name} LLM with default settings')
             llm = SelfHostedLLM(mixture_of_experts=False, model_name=model_name.split(':')[1])
@@ -409,7 +413,7 @@ def encode_image(image_path):
         return base64.b64encode(image_file.read()).decode('utf-8')
 
 
-def construct_human_messages(text: str, image_paths: List[str] = None):
+def construct_user_messages(text: str, image_paths: List[str] = None):
     if image_paths is None:
         image_paths = []
 
@@ -422,6 +426,10 @@ def construct_human_messages(text: str, image_paths: List[str] = None):
 
     # Add image messages if image_paths is not empty
     for image_path in image_paths:
+        if not os.path.exists(image_path):
+            LOG.error(f"Image file not found: {image_path}")
+            continue
+
         base64_image = encode_image(image_path)
         image_message = {
             "type": "image_url",
