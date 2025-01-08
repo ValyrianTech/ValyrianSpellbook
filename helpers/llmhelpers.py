@@ -419,12 +419,7 @@ def construct_user_messages(text: str, image_paths: List[str] = None):
     if image_paths is None:
         image_paths = []
 
-    # Construct the text message
-    text_message = {
-        "type": "text",
-        "text": text
-    }
-    content = [text_message]
+    content = []
 
     # Add image messages if image_paths is not empty
     for image_path in image_paths:
@@ -438,6 +433,13 @@ def construct_user_messages(text: str, image_paths: List[str] = None):
             "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}
         }
         content.append(image_message)
+
+    # Construct the text message
+    text_message = {
+        "type": "text",
+        "text": text
+    }
+    content.append(text_message)
 
     messages = [{'role': 'user', 'content': content}]
 
