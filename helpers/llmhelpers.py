@@ -197,11 +197,13 @@ class LLM(object):
     llm = None
     model_name: str = None
     temperature: float = 0.0
+    chat: bool = False  # indicates whether to use chat.completions or completions
 
     def __init__(self, model_name: str, temperature: float = 0.0):
         self.model_name = model_name
         self.temperature = temperature
         self.llm = get_llm(model_name, temperature)
+        self.chat = get_llm_config(model_name.split(':')[1]).get('chat', False)
 
     def generate(self, messages: List[BaseMessage], stop=None, max_tokens: int = 4096):
         kwargs = {'temperature': self.temperature, 'max_tokens': max_tokens}
