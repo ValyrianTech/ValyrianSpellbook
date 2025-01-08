@@ -100,20 +100,37 @@ class SelfHostedLLM(LLMInterface):
     #         yield 'Error: Self-hosted LLM is not running.\n'
 
     def get_completion_text(self, messages, stop=None, **kwargs):
+        # prompt = ''
+        # content = messages[0].get('content')
+        # if isinstance(content, list):
+        #     prompt = messages[0].get('content')[0].get('text', '')
+        #
+        #     if len(content) == 2 and content[1].get('type', None) == 'image_url':
+        #         img_str = content[1].get('image_url', {}).get('url', '')
+        #         print(f'len img_str: {len(img_str)}')
+        #
+        #         pre_prompt = f'### <<AGENTNAME>>\'s vision input: \n<img src="{img_str}">\n### Assistant:\n'
+        #         prompt = pre_prompt + prompt
+        #
+        # elif isinstance(content, str):
+        #     prompt = content
+
         prompt = ''
-        content = messages[0].get('content')
-        if isinstance(content, list):
-            prompt = messages[0].get('content')[0].get('text', '')
+        for message in messages:
+            if type(message['content']) == str:
+                prompt += message['content'] + '\n'
+            elif type(message['content']) == list:
+                for part in message['content']:
+                    if 'text' in part:
+                        prompt += part['text'] + '\n'
+                    elif 'image_url' in part:
+                        prompt += '===Included image===\n'
 
-            if len(content) == 2 and content[1].get('type', None) == 'image_url':
-                img_str = content[1].get('image_url', {}).get('url', '')
-                print(f'len img_str: {len(img_str)}')
+        prompt = prompt.strip()
 
-                pre_prompt = f'### <<AGENTNAME>>\'s vision input: \n<img src="{img_str}">\n### Assistant:\n'
-                prompt = pre_prompt + prompt
-
-        elif isinstance(content, str):
-            prompt = content
+        print('======================')
+        print(prompt + '|')
+        print('======================')
 
         completion = ''
         print('')
