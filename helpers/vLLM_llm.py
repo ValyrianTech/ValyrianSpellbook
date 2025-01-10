@@ -23,17 +23,19 @@ class VLLMLLM(LLMInterface):
         LOG.info(f'stop: {stop}')
 
         prompt = ''
-        for message in messages:
-            if type(message['content']) == str:
-                prompt += message['content'] + '\n'
-            elif type(message['content']) == list:
-                for part in message['content']:
-                    if 'text' in part:
-                        prompt += part['text'] + '\n'
-                    elif 'image_url' in part:
-                        prompt += '===Included image===\n'
-
-        prompt = prompt.strip()
+        # Maintain backward compatibility with non-multimodal llms, old llms had only a single string as content, multimodal llms have a list of dicts, each dict has a 'type' and 'text' key
+        if len(messages) == 1 and messages[0].get('role') == 'user' and isinstance(messages[0].get('content'), str):
+            prompt = messages[0].get('content', '')
+        else:
+            for message in messages:
+                if type(message['content']) == str:
+                    prompt += message['content'] + '\n'
+                elif type(message['content']) == list:
+                    for part in message['content']:
+                        if 'text' in part:
+                            prompt += part['text'] + '\n'
+                        elif 'image_url' in part:
+                            prompt += '===Included image===\n'
 
         client = OpenAI(
             base_url=f"{self.host}/v1",
