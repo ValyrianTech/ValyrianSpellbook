@@ -27,6 +27,7 @@ from .anthropic_llm import AnthropicLLM
 from .groq_llm import GroqLLM
 from .vLLM_llm import VLLMLLM
 from .vLLMchat_llm import VLLMchatLLM
+from .deepseek_llm import DeepSeekLLM
 
 CLIENTS = {}
 
@@ -115,6 +116,14 @@ def get_llm(model_name: str = 'default_model', temperature: float = 0.0):
         model_name = model_name.split(":")[1]
         api_key = get_llm_api_key(model_name=model_name, server_type='Groq')
         llm = GroqLLM(model_name=model_name, api_key=api_key)
+        return llm
+
+    if model_name.startswith('DeepSeek:'):
+        LOG.info('--------------')
+        LOG.info(f'Initializing {model_name} LLM at DeepSeek')
+        model_name = model_name.split(":")[1]
+        api_key = get_llm_api_key(model_name=model_name, server_type='DeepSeek')
+        llm = DeepSeekLLM(model_name=model_name, api_key=api_key)
         return llm
 
     if get_enable_openai() is True:
