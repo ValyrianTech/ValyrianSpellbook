@@ -443,12 +443,13 @@ def construct_user_messages(text: str, image_paths: List[str] = None):
         }
         content.append(image_message)
 
-    # Construct the text message
-    text_message = {
-        "type": "text",
-        "text": text
-    }
-    content.append(text_message)
+    if text != '':
+        # Construct the text message
+        text_message = {
+            "type": "text",
+            "text": text
+        }
+        content.append(text_message)
 
     messages = [{'role': 'user', 'content': content}]
 
