@@ -72,7 +72,7 @@ class DeepSeekLLM(LLMInterface):
                     reasoning_content += chunk.choices[0].delta.reasoning_content
 
                     if reasoning_content is not None:
-                        completion = f'<thinking>\n{reasoning_content}\n</thinking>\n\n'
+                        completion = f'<think>\n{reasoning_content}\n</think>\n\n'
 
                 else:
                     response_text = chunk.choices[0].delta.content
