@@ -281,6 +281,7 @@ class LLM(object):
         completion_text = llm_result.generations[0].get('text', '')
         generation_info = llm_result.generations[0].get('generation_info', {})
         llm_output = llm_result.llm_output
+        llm_output['generation_time'] = end_time - start_time
 
         return completion_text, llm_output, generation_info
 
