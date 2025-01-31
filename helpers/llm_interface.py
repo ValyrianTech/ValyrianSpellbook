@@ -62,7 +62,7 @@ class LLMInterface(object):
         # Create the llm_output dictionary
         llm_output = {
             'token_usage': usage,
-            'model_name': f'OpenAI:{self.model_name}'
+            'model_name': f'{self.model_name}'
         }
 
         # Return the final dictionary
