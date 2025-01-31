@@ -45,7 +45,11 @@ os.chdir(PROGRAM_DIR)
 # Only load the WhisperModel if transcribe endpoint is enabled
 if get_enable_transcribe() is True:
     from faster_whisper import WhisperModel
-    WHISPER_MODEL = WhisperModel(model_size_or_path=get_model_size_transcribe(), device="cpu", compute_type="int8")
+
+    model_size_or_path = get_model_size_transcribe()
+    model_size_or_path = model_size_or_path.replace('$programdir$', PROGRAM_DIR)
+    LOG.info(f'Loading WhisperModel with model_size_or_path: {model_size_or_path}')
+    WHISPER_MODEL = WhisperModel(model_size_or_path=model_size_or_path, device="cpu", compute_type="int8")
 
 def enable_cors(fn):
     def _enable_cors(*args, **kwargs):
