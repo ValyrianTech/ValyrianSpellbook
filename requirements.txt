@@ -24,7 +24,7 @@ langchain==0.2.3
 langchain-openai==0.1.8
 langchain-community==0.2.0
 tiktoken==0.7.0
-ipfs-dict-chain==1.0.6
+ipfs-dict-chain==1.0.7
 chromadb==0.4.18
 torch==2.0.0
 websockets==11.0.3
