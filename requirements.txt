@@ -35,3 +35,4 @@ faster-whisper==1.1.1
 anthropic==0.28.0
 groq==0.8.0
 hivemind-python==0.2.0
+httpx==0.27.2
