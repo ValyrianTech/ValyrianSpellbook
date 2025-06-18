@@ -564,7 +564,7 @@ if __name__ == "__main__":
                         
                         # Try with a simpler query string
                         search_params = {
-                            "query": "bitcoin"
+                            "query": "latest bitcoin price"
                         }
                         
                         search_response = client.invoke_tool('brave_web_search', search_params)
