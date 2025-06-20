@@ -33,7 +33,7 @@ class MCPClient:
             client_version (str): Version of the client to send in initialize message
             debug (bool): Whether to enable debug logging
         """
-        self.base_url = base_url
+        self.base_url = base_url.rstrip("/")
         self.sse_url = f"{base_url}/sse"
         self.client_name = client_name
         self.client_version = client_version
