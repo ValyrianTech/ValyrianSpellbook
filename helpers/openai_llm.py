@@ -27,17 +27,38 @@ class OpenAILLM(LLMInterface):
 
         completion = ''
         try:
-            response = openai.chat.completions.create(
-                model=self.model_name,
-                messages=messages,
-                top_p=0.7,
-                stop=stop,
-                stream=True,
-                stream_options= {
-                    "include_usage": True
-                },
-                **kwargs
-            )
+            # see if the model is in the o1, o3, or o4 series
+            if self.model_name[:2] in ['o1', 'o3', 'o4']:
+                LOG.info('Overriding kwargs for o-model OpenAI LLM')
+                if 'max_tokens' in kwargs:
+                    # replace with max_completion_tokens
+                    kwargs['max_completion_tokens'] = kwargs['max_tokens']
+                    del kwargs['max_tokens']
+
+                kwargs['temperature'] = 1
+                response = openai.chat.completions.create(
+                    model=self.model_name,
+                    messages=messages,
+
+                    stream=True,
+                    stream_options={
+                        "include_usage": True
+                    },
+                    **kwargs
+                )
+
+            else:
+                response = openai.chat.completions.create(
+                    model=self.model_name,
+                    messages=messages,
+                    top_p=0.7,
+                    stop=stop,
+                    stream=True,
+                    stream_options= {
+                        "include_usage": True
+                    },
+                    **kwargs
+                )
 
             prompt_tokens, completion_tokens, total_tokens = 0, 0, 0
             for chunk in response:
