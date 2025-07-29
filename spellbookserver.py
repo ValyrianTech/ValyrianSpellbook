@@ -138,10 +138,10 @@ class SpellbookRESTAPI(Bottle):
         # Routes for managing LLMs
         self.route('/spellbook/llms', method='GET', callback=self.get_llms)
         self.route('/spellbook/llms', method='OPTIONS', callback=self.get_llms)
-        self.route('/spellbook/llms/<llm_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.save_llm_config)
-        self.route('/spellbook/llms/<llm_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.get_llm_config)
-        self.route('/spellbook/llms/<llm_id:re:[a-zA-Z0-9_\-.]+>', method='OPTIONS', callback=self.get_llm_config)
-        self.route('/spellbook/llms/<llm_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.delete_llm)
+        self.route('/spellbook/llms/<llm_id:re:[a-zA-Z0-9_\-.:]+>', method='POST', callback=self.save_llm_config)
+        self.route('/spellbook/llms/<llm_id:re:[a-zA-Z0-9_\-.:]+>', method='GET', callback=self.get_llm_config)
+        self.route('/spellbook/llms/<llm_id:re:[a-zA-Z0-9_\-.:]+>', method='OPTIONS', callback=self.get_llm_config)
+        self.route('/spellbook/llms/<llm_id:re:[a-zA-Z0-9_\-.:]+>', method='DELETE', callback=self.delete_llm)
 
         # Routes for retrieving data from the blockchain
         self.route('/spellbook/blocks/latest', method='GET', callback=self.get_latest_block)
