@@ -401,6 +401,11 @@ def save_llm_config(llm_name: str, llm_config: dict):
 
     llms_data = load_llms()
 
+    # Prevent masked api_key to override existing api_key
+    if llm_config.get('api_key', None) == '********':
+        existing_api_key = llms_data.get(llm_name, {}).get('api_key', None)
+        llm_config['api_key'] = existing_api_key
+
     # if host ends with a trailing /, remove it
     if llm_config['host'] is not None and llm_config['host'].endswith('/'):
         llm_config['host'] = llm_config['host'][:-1]
