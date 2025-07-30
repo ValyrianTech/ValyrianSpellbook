@@ -347,6 +347,11 @@ class SpellbookRESTAPI(Bottle):
     def get_llm_config(llm_id):
         response.content_type = 'application/json'
         llm_config = get_llm_config(llm_id)
+
+        # Mask sensitive information like API keys for security
+        if 'api_key' in llm_config and llm_config['api_key'] not in ["", None]:
+            llm_config['api_key'] = '********'
+
         if llm_config is not None:
             return llm_config
         else:
