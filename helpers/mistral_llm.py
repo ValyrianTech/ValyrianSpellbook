@@ -21,7 +21,7 @@ class MistralLLM(LLMInterface):
         LOG.info(f'kwargs: {kwargs}')
         LOG.info(f'stop: {stop}')
 
-        client = Mistral(api_key='rMJqJPN88rfPIwcKrm936CJIdTdvTTnZ')
+        client = Mistral(api_key=self.api_key)
 
         print('======================')
         prompt = ''
