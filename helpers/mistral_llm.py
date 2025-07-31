@@ -49,15 +49,9 @@ class MistralLLM(LLMInterface):
                 stop=stop,
                 **kwargs
             )
-            print('m----')
-            print(response)
-            print('m----')
 
             prompt_tokens, completion_tokens, total_tokens = 0, 0, 0
             for chunk in response:
-                print('----')
-                print(chunk)
-                print('----')
                 if self.check_stop_generation():
                     print()
                     sys.stdout.flush()
@@ -67,25 +61,25 @@ class MistralLLM(LLMInterface):
                 if hasattr(chunk, 'data') and hasattr(chunk.data, 'choices'):
                     chunk_data = chunk.data
                     if len(chunk_data.choices) == 0:
-                        prompt_tokens, completion_tokens, total_tokens = chunk.usage.prompt_tokens, chunk.usage.completion_tokens, chunk.usage.total_tokens
+                        prompt_tokens, completion_tokens, total_tokens = chunk_data.usage.prompt_tokens, chunk_data.usage.completion_tokens, chunk_data.usage.total_tokens
                         continue
 
-                if hasattr(chunk.choices[0].delta, 'reasoning_content') and chunk.choices[0].delta.reasoning_content:
-                    reasoning_content += chunk.choices[0].delta.reasoning_content
+                    if hasattr(chunk_data.choices[0].delta, 'reasoning_content') and chunk_data.choices[0].delta.reasoning_content:
+                        reasoning_content += chunk_data.choices[0].delta.reasoning_content
 
-                    if reasoning_content is not None:
-                        completion = f'<think>\n{reasoning_content}\n</think>\n\n'
+                        if reasoning_content is not None:
+                            completion = f'<think>\n{reasoning_content}\n</think>\n\n'
 
-                else:
-                    response_text = chunk.choices[0].delta.content
+                    else:
+                        response_text = chunk_data.choices[0].delta.content
 
-                    if response_text is not None:
-                        completion += response_text
-                        print(response_text, end='')
-                        sys.stdout.flush()
+                        if response_text is not None:
+                            completion += response_text
+                            print(response_text, end='')
+                            sys.stdout.flush()
 
-                data = {'message': completion.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion.lstrip())}
-                broadcast_message(message=json.dumps(data), channel=get_broadcast_channel())
+                    data = {'message': completion.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion.lstrip())}
+                    broadcast_message(message=json.dumps(data), channel=get_broadcast_channel())
 
         except Exception as e:
             LOG.error(f'Error connecting to Mistral: {e}')
