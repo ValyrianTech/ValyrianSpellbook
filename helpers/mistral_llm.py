@@ -60,8 +60,15 @@ class MistralLLM(LLMInterface):
                 # Only the last chunk will have the usage information, but no choices
                 if hasattr(chunk, 'data') and hasattr(chunk.data, 'choices'):
                     chunk_data = chunk.data
+                    
+                    # Check if this chunk has usage information (usually in the final chunk)
+                    if hasattr(chunk_data, 'usage') and chunk_data.usage:
+                        prompt_tokens = chunk_data.usage.prompt_tokens
+                        completion_tokens = chunk_data.usage.completion_tokens
+                        total_tokens = chunk_data.usage.total_tokens
+                    
+                    # Skip processing if no choices available
                     if len(chunk_data.choices) == 0:
-                        prompt_tokens, completion_tokens, total_tokens = chunk_data.usage.prompt_tokens, chunk_data.usage.completion_tokens, chunk_data.usage.total_tokens
                         continue
 
                     if hasattr(chunk_data.choices[0].delta, 'reasoning_content') and chunk_data.choices[0].delta.reasoning_content:
