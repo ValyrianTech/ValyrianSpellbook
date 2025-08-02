@@ -26,21 +26,6 @@ class GoogleLLM(LLMInterface):
             api_key=self.api_key
         )
 
-        print('======================')
-        prompt = ''
-        for message in messages:
-            if type(message['content']) == str:
-                prompt += message['content'] + '\n'
-            elif type(message['content']) == list:
-                for part in message['content']:
-                    if 'text' in part:
-                        prompt += part['text'] + '\n'
-                    elif 'image_url' in part:
-                        prompt += '===Included image===\n'
-
-        print(prompt + '|')
-        print('======================')
-
         completion = ''
         reasoning_content = ''
         try:
@@ -57,8 +42,6 @@ class GoogleLLM(LLMInterface):
 
             prompt_tokens, completion_tokens, total_tokens = 0, 0, 0
             for chunk in response:
-                LOG.info(chunk)
-
                 if self.check_stop_generation():
                     print()
                     sys.stdout.flush()
