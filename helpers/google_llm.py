@@ -49,11 +49,16 @@ class GoogleLLM(LLMInterface):
                 messages=messages,
                 stop=stop,
                 stream=True,
+                stream_options={
+                    "include_usage": True
+                },
                 **kwargs
             )
 
             prompt_tokens, completion_tokens, total_tokens = 0, 0, 0
             for chunk in response:
+                LOG.info(chunk)
+
                 if self.check_stop_generation():
                     print()
                     sys.stdout.flush()
