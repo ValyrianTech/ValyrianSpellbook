@@ -29,6 +29,7 @@ from .vLLM_llm import VLLMLLM
 from .vLLMchat_llm import VLLMchatLLM
 from .deepseek_llm import DeepSeekLLM
 from .mistral_llm import MistralLLM
+from .google_llm import GoogleLLM
 
 CLIENTS = {}
 
@@ -133,6 +134,14 @@ def get_llm(model_name: str = 'default_model', temperature: float = 0.0):
         model_name = model_name.split(":")[1]
         api_key = get_llm_api_key(model_name=model_name, server_type='Mistral')
         llm = MistralLLM(model_name=model_name, api_key=api_key)
+        return llm
+
+    if model_name.startswith('Google:'):
+        LOG.info('--------------')
+        LOG.info(f'Initializing {model_name} LLM at Google')
+        model_name = model_name.split(":")[1]
+        api_key = get_llm_api_key(model_name=model_name, server_type='Google')
+        llm = GoogleLLM(model_name=model_name, api_key=api_key)
         return llm
 
     if get_enable_openai() is True:
