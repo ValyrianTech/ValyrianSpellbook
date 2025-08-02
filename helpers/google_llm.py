@@ -64,9 +64,12 @@ class GoogleLLM(LLMInterface):
                     sys.stdout.flush()
                     break
 
-                # Only the last chunk will have the usage information, but no choices
-                if len(chunk.choices) == 0:
+                # Extract usage information if available (Google provides it in every chunk)
+                if hasattr(chunk, 'usage') and chunk.usage:
                     prompt_tokens, completion_tokens, total_tokens = chunk.usage.prompt_tokens, chunk.usage.completion_tokens, chunk.usage.total_tokens
+
+                # Process choices if available
+                if len(chunk.choices) == 0:
                     continue
 
                 if hasattr(chunk.choices[0].delta, 'reasoning_content') and chunk.choices[0].delta.reasoning_content:
