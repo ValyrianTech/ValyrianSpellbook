@@ -153,9 +153,9 @@ def get_llm_api_key(model_name: str, server_type: str):
     Get API key for a specific LLM model and server type.
     
     Priority:
-    1. Check LLM configuration data
-    2. Fallback to .env file in spellbook_data directory
-    3. Auto-populate missing .env entries with empty values
+    1. Ensure .env file exists (create if missing)
+    2. Check LLM configuration data (primary source)
+    3. Fallback to .env file (backup source)
     
     Args:
         model_name: The specific model name
@@ -165,18 +165,6 @@ def get_llm_api_key(model_name: str, server_type: str):
         str or None: The API key if found, None otherwise
     """
     LOG.info('Getting API key for ' + model_name)
-    # First, check the LLM configuration data
-    llms_data = load_llms()
-    LOG.info(llms_data)
-
-    # Look for a valid API key in the configuration
-    api_key = llms_data[model_name].get('api_key', None)
-    if api_key and api_key.strip() != '':
-        LOG.info('Found api key in llms_data')
-        return api_key
-    
-    # If no API key found in config, check .env file
-    env_file_path = os.path.join(get_app_data_dir(), '.env')
     
     # Map server types to environment variable names
     env_var_mapping = {
@@ -195,17 +183,37 @@ def get_llm_api_key(model_name: str, server_type: str):
         LOG.warning(f'No environment variable mapping found for server type: {server_type}')
         return None
     
-    # Ensure .env file exists and has all required keys
+    # Always ensure .env file exists first (but don't check it yet)
+    env_file_path = os.path.join(get_app_data_dir(), '.env')
+    LOG.info(f'Reading environment variables from {env_file_path}')
     _ensure_env_file_complete(env_file_path, env_var_mapping)
     
-    # Load environment variables from .env file
+    # First, check LLM configuration data (primary source)
+    try:
+        llms_data = load_llms()
+        
+        # Safely check if model exists in configuration
+        if model_name in llms_data:
+            config_api_key = llms_data[model_name].get('api_key', None)
+            if config_api_key and config_api_key.strip() != '':
+                LOG.info('Found api key in llms_data')
+                return config_api_key
+        else:
+            LOG.info(f'Model {model_name} not found in LLM configuration')
+            
+    except Exception as e:
+        LOG.warning(f'Error loading LLM configuration: {e}')
+    
+    # If no API key found in config, check .env file (backup source)
+    LOG.info("Looking for api key in .env file")
     load_dotenv(env_file_path)
     
-    # Get the API key from environment
     api_key = os.getenv(env_var_name)
     if api_key and api_key.strip() != '':
+        LOG.info('Found api key in .env file')
         return api_key
     
+    LOG.info(f'No API key found for {model_name} ({server_type})')
     return None
 
 
