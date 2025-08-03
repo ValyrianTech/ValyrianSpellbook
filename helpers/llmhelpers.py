@@ -5,10 +5,11 @@ import sys
 import time
 
 import simplejson
+from dotenv import load_dotenv, set_key
 
 from typing import List, Any, Dict
 
-from .configurationhelpers import get_enable_openai, get_openai_api_key, spellbook_config, CONFIGURATION_FILE, get_llms_default_model, get_enable_together_ai, get_enable_oobabooga
+from .configurationhelpers import get_enable_openai, get_openai_api_key, spellbook_config, CONFIGURATION_FILE, get_llms_default_model, get_enable_together_ai, get_enable_oobabooga, get_app_data_dir
 
 from langchain_community.llms import OpenAI
 from langchain_openai import ChatOpenAI
@@ -157,18 +158,113 @@ def get_llm(model_name: str = 'default_model', temperature: float = 0.0):
 
     return llm
 
+
 def get_llm_api_key(model_name: str, server_type: str):
+    """
+    Get API key for a specific LLM model and server type.
+    
+    Priority:
+    1. Check LLM configuration data
+    2. Fallback to .env file in spellbook_data directory
+    3. Auto-populate missing .env entries with empty values
+    
+    Args:
+        model_name: The specific model name
+        server_type: The server/provider type (OpenAI, Anthropic, Google, etc.)
+    
+    Returns:
+        str or None: The API key if found, None otherwise
+    """
+    # First, check the LLM configuration data
     llms_data = load_llms()
     config_names = [config for config in llms_data if llms_data[config].get('server_type', None) == server_type and llms_data[config].get('model_name', None) == model_name]
-    api_keys = [llms_data[config_name].get('api_key', None) for config_name in config_names if llms_data[config_name].get('api_key', None) != '']
-
-    if len(api_keys) == 1:
-        return api_keys[0]
-    elif len(api_keys) > 1:
-        LOG.info(f'Multiple API keys found for {model_name} LLM at {server_type}, choosing one randomly')
-        return random.choice(api_keys)
-    else:
+    
+    # Look for a valid API key in the configuration
+    for config_name in config_names:
+        api_key = llms_data[config_name].get('api_key', None)
+        if api_key and api_key.strip() != '':
+            return api_key
+    
+    # If no API key found in config, check .env file
+    env_file_path = os.path.join(get_app_data_dir(), '.env')
+    
+    # Map server types to environment variable names
+    env_var_mapping = {
+        'OpenAI': 'OPENAI_API_KEY',
+        'Anthropic': 'ANTHROPIC_API_KEY',
+        'Google': 'GOOGLE_API_KEY',
+        'Mistral': 'MISTRAL_API_KEY',
+        'Together-ai': 'TOGETHERAI_API_KEY',
+        'Groq': 'GROQ_API_KEY',
+        'DeepSeek': 'DEEPSEEK_API_KEY'
+    }
+    
+    # Get the environment variable name for this server type
+    env_var_name = env_var_mapping.get(server_type)
+    if not env_var_name:
+        LOG.warning(f'No environment variable mapping found for server type: {server_type}')
         return None
+    
+    # Ensure .env file exists and has all required keys
+    _ensure_env_file_complete(env_file_path, env_var_mapping)
+    
+    # Load environment variables from .env file
+    load_dotenv(env_file_path)
+    
+    # Get the API key from environment
+    api_key = os.getenv(env_var_name)
+    if api_key and api_key.strip() != '':
+        return api_key
+    
+    return None
+
+
+def _ensure_env_file_complete(env_file_path: str, env_var_mapping: Dict[str, str]):
+    """
+    Ensure .env file exists and contains all required API key entries.
+    Auto-populate missing entries with empty values.
+    
+    Args:
+        env_file_path: Path to the .env file
+        env_var_mapping: Dictionary mapping server types to env var names
+    """
+    # Create .env file if it doesn't exist
+    if not os.path.exists(env_file_path):
+        # Create the directory if it doesn't exist
+        os.makedirs(os.path.dirname(env_file_path), exist_ok=True)
+        
+        # Create empty .env file
+        with open(env_file_path, 'w') as f:
+            f.write('# Valyrian Spellbook API Keys\n')
+            f.write('# Add your API keys below\n\n')
+        
+        LOG.info(f'Created new .env file at: {env_file_path}')
+    
+    # Read existing .env content
+    existing_vars = set()
+    if os.path.exists(env_file_path):
+        with open(env_file_path, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if '=' in line and not line.startswith('#'):
+                    var_name = line.split('=')[0].strip()
+                    existing_vars.add(var_name)
+    
+    # Add missing environment variables
+    missing_vars = []
+    for server_type, env_var_name in env_var_mapping.items():
+        if env_var_name not in existing_vars:
+            missing_vars.append((server_type, env_var_name))
+    
+    # Append missing variables to .env file
+    if missing_vars:
+        with open(env_file_path, 'a') as f:
+            f.write('\n# Auto-added missing API keys\n')
+            for server_type, env_var_name in missing_vars:
+                f.write(f'{env_var_name}=\n')
+        
+        LOG.info(f'Added {len(missing_vars)} missing API key entries to .env file: {[var[1] for var in missing_vars]}')
+
 
 def get_role(message: BaseMessage):
     if isinstance(message, HumanMessage):
