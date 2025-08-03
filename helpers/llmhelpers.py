@@ -88,61 +88,50 @@ def get_llm(model_name: str = 'default_model', temperature: float = 0.0):
 
     if model_name.startswith('Together-ai:'):
         LOG.info(f'Initializing {model_name} LLM at Together.ai')
-        model_name = model_name.split(":")[1]
         api_key = get_llm_api_key(model_name=model_name, server_type='Together-ai')
-        llm = TogetherAILLM(model_name=model_name, api_key=api_key)
-
-        # CLIENTS[model_name] = llm
+        llm = TogetherAILLM(model_name=model_name.split(":")[1], api_key=api_key)
         return llm
 
     if model_name.startswith('OpenAI:'):
         LOG.info('--------------')
         LOG.info(f'Initializing {model_name} LLM at OpenAI')
-        model_name = model_name.split(":")[1]
         api_key = get_llm_api_key(model_name=model_name, server_type='OpenAI')
-        llm = OpenAILLM(model_name=model_name, api_key=api_key)
-
-        # CLIENTS[model_name] = llm
+        llm = OpenAILLM(model_name=model_name.split(":")[1], api_key=api_key)
         return llm
 
     if model_name.startswith('Anthropic:'):
         LOG.info('--------------')
         LOG.info(f'Initializing {model_name} LLM at Anthropic')
-        model_name = model_name.split(":")[1]
         api_key = get_llm_api_key(model_name=model_name, server_type='Anthropic')
-        llm = AnthropicLLM(model_name=model_name, api_key=api_key)
+        llm = AnthropicLLM(model_name=model_name.split(":")[1], api_key=api_key)
         return llm
 
     if model_name.startswith('Groq:'):
         LOG.info('--------------')
         LOG.info(f'Initializing {model_name} LLM at Groq')
-        model_name = model_name.split(":")[1]
         api_key = get_llm_api_key(model_name=model_name, server_type='Groq')
-        llm = GroqLLM(model_name=model_name, api_key=api_key)
+        llm = GroqLLM(model_name=model_name.split(":")[1], api_key=api_key)
         return llm
 
     if model_name.startswith('DeepSeek:'):
         LOG.info('--------------')
         LOG.info(f'Initializing {model_name} LLM at DeepSeek')
-        model_name = model_name.split(":")[1]
         api_key = get_llm_api_key(model_name=model_name, server_type='DeepSeek')
-        llm = DeepSeekLLM(model_name=model_name, api_key=api_key)
+        llm = DeepSeekLLM(model_name=model_name.split(":")[1], api_key=api_key)
         return llm
 
     if model_name.startswith('Mistral:'):
         LOG.info('--------------')
         LOG.info(f'Initializing {model_name} LLM at Mistral')
-        model_name = model_name.split(":")[1]
         api_key = get_llm_api_key(model_name=model_name, server_type='Mistral')
-        llm = MistralLLM(model_name=model_name, api_key=api_key)
+        llm = MistralLLM(model_name=model_name.split(":")[1], api_key=api_key)
         return llm
 
     if model_name.startswith('Google:'):
         LOG.info('--------------')
         LOG.info(f'Initializing {model_name} LLM at Google')
-        model_name = model_name.split(":")[1]
         api_key = get_llm_api_key(model_name=model_name, server_type='Google')
-        llm = GoogleLLM(model_name=model_name, api_key=api_key)
+        llm = GoogleLLM(model_name=model_name.split(":")[1], api_key=api_key)
         return llm
 
     if get_enable_openai() is True:
@@ -175,15 +164,16 @@ def get_llm_api_key(model_name: str, server_type: str):
     Returns:
         str or None: The API key if found, None otherwise
     """
+    LOG.info('Getting API key for ' + model_name)
     # First, check the LLM configuration data
     llms_data = load_llms()
-    config_names = [config for config in llms_data if llms_data[config].get('server_type', None) == server_type and llms_data[config].get('model_name', None) == model_name]
-    
+    LOG.info(llms_data)
+
     # Look for a valid API key in the configuration
-    for config_name in config_names:
-        api_key = llms_data[config_name].get('api_key', None)
-        if api_key and api_key.strip() != '':
-            return api_key
+    api_key = llms_data[model_name].get('api_key', None)
+    if api_key and api_key.strip() != '':
+        LOG.info('Found api key in llms_data')
+        return api_key
     
     # If no API key found in config, check .env file
     env_file_path = os.path.join(get_app_data_dir(), '.env')
