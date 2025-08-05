@@ -72,6 +72,7 @@ class DeepSeekLLM(LLMInterface):
                     continue
 
                 if hasattr(chunk.choices[0].delta, 'reasoning_content') and chunk.choices[0].delta.reasoning_content:
+                    print(chunk.choices[0].delta.reasoning_content, end='')
                     reasoning_content += chunk.choices[0].delta.reasoning_content
 
                     if reasoning_content is not None:
