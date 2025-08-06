@@ -24,6 +24,7 @@ class GroqLLM(LLMInterface):
         LOG.info(f'stop: {stop}')
 
         completion = ''
+        reasoning_content = ''
         try:
             response = self.client.chat.completions.create(
                 model=self.model_name,
@@ -36,22 +37,32 @@ class GroqLLM(LLMInterface):
 
             prompt_tokens, completion_tokens, total_tokens = 0, 0, 0
             for chunk in response:
-
                 if self.check_stop_generation():
                     print()
                     sys.stdout.flush()
                     break
 
-                response_text = chunk.choices[0].delta.content
+                # Extract usage information if available
                 if chunk.x_groq is not None and chunk.x_groq.usage is not None:
                     prompt_tokens = chunk.x_groq.usage.prompt_tokens
                     completion_tokens = chunk.x_groq.usage.completion_tokens
                     total_tokens = chunk.x_groq.usage.total_tokens
 
-                if response_text is not None:
-                    completion += response_text
-                    print(response_text, end='')
-                    sys.stdout.flush()
+                # Handle reasoning content (similar to DeepSeek's reasoning_content)
+                if hasattr(chunk.choices[0].delta, 'reasoning') and chunk.choices[0].delta.reasoning:
+                    print(chunk.choices[0].delta.reasoning, end='')
+                    reasoning_content += chunk.choices[0].delta.reasoning
+
+                    if reasoning_content is not None:
+                        completion = f'<think>\n{reasoning_content}\n</think>\n\n'
+
+                else:
+                    # Handle regular content
+                    response_text = chunk.choices[0].delta.content
+                    if response_text is not None:
+                        completion += response_text
+                        print(response_text, end='')
+                        sys.stdout.flush()
 
                 data = {'message': completion.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion.lstrip())}
                 broadcast_message(message=json.dumps(data), channel=get_broadcast_channel())
