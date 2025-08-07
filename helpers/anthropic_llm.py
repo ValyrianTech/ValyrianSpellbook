@@ -28,7 +28,6 @@ class AnthropicLLM(LLMInterface):
             response = self.client.messages.create(
                 model=self.model_name,
                 messages=messages,
-                top_p=0.7,
                 stop_sequences=stop,
                 stream=True,
                 **kwargs
