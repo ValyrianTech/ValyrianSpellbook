@@ -28,7 +28,7 @@ class OpenAILLM(LLMInterface):
         completion = ''
         try:
             # see if the model is in the o1, o3, or o4 series
-            if self.model_name[:2] in ['o1', 'o3', 'o4']:
+            if self.model_name[:2] in ['o1', 'o3', 'o4'] or self.model_name in ['gpt-5', 'gpt-5-mini', 'gpt-5-nano']:
                 LOG.info('Overriding kwargs for o-model OpenAI LLM')
                 if 'max_tokens' in kwargs:
                     # replace with max_completion_tokens
