@@ -61,6 +61,8 @@ class OpenAILLM(LLMInterface):
                 )
 
             prompt_tokens, completion_tokens, total_tokens = 0, 0, 0
+            stop_sequence_detected = False
+            tokens_after_stop = 0
             for chunk in response:
                 if self.check_stop_generation():
                     print()
@@ -75,10 +77,22 @@ class OpenAILLM(LLMInterface):
                 response_text = chunk.choices[0].delta.content
 
                 if response_text is not None:
-                    completion += response_text
-                    print(response_text, end='')
-                    sys.stdout.flush()
+                    if not stop_sequence_detected:
+                        completion += response_text
+                        
+                        # Check for stop sequences after adding new content
+                        if stop and any(stop_seq in completion for stop_seq in stop):
+                            stop_sequence_detected = True
+                            LOG.info(f'Stop sequence detected in completion. Continuing to track usage for token waste analysis.')
+                        
+                        # Print and broadcast the content
+                        print(response_text, end='')
+                        sys.stdout.flush()
+                    else:
+                        # Stop sequence detected - count tokens but don't add to completion
+                        tokens_after_stop += len(response_text.split())  # Rough token estimate
 
+                # Always broadcast for UI updates (even if stop detected, for consistency)
                 data = {'message': completion.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion.lstrip())}
                 broadcast_message(message=json.dumps(data), channel=get_broadcast_channel())
 
@@ -93,6 +107,13 @@ class OpenAILLM(LLMInterface):
         broadcast_message(message=json.dumps(data), channel=get_broadcast_channel())
 
         completion = completion.encode("utf-8").decode("utf-8")
+        
+        # Log token waste analysis if stop sequence was detected
+        if stop_sequence_detected and tokens_after_stop > 0:
+            LOG.warning(f'Token waste detected: approximately {tokens_after_stop} tokens generated after stop sequence detection. '
+                       f'Total completion tokens: {completion_tokens}, estimated waste: {tokens_after_stop} tokens '
+                       f'({(tokens_after_stop/completion_tokens*100):.1f}% of completion)' if completion_tokens > 0 else '')
+        
         usage = {'prompt_tokens': prompt_tokens, 'completion_tokens': completion_tokens, 'total_tokens': total_tokens, 'total_cost': self.calculate_cost(prompt_tokens, completion_tokens)}
 
         return completion, usage
