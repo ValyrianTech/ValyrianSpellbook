@@ -38,3 +38,4 @@ httpx==0.28.1
 fastmcp==2.10.1
 mistralai==1.9.3
 huggingface-hub==0.34.4
+together==1.5.21
