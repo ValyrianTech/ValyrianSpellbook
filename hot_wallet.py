@@ -56,10 +56,13 @@ examples:
     -> add a private key to the default hot wallet
   - hot_wallet.py add_key 5myprivatekey54989 -w=mywallet
     -> add a private key to the hot wallet named 'mywallet'
+  - hot_wallet.py add_key 5myprivatekey54989 -w=mywallet --wallet-password=mypassword
+    -> add a private key to the hot wallet named 'mywallet' with password 'mypassword'
                                        ''')
 
 add_key_parser.add_argument('private_key', help='The private key')
 add_key_parser.add_argument('-w', '--wallet', help='name of the hot wallet')
+add_key_parser.add_argument('--wallet-password', help='password for wallet encryption/decryption (if not provided, will prompt interactively)')
 
 # Create parser for the delete_key subcommand
 delete_key_parser = subparsers.add_parser(name='delete_key',
@@ -74,10 +77,13 @@ examples:
     -> delete the private key belonging to address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 from the default hot wallet
   - hot_wallet.py delete_key 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 -w=mywallet
     -> delete the private key belonging to address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 from the hot wallet named 'mywallet'
+  - hot_wallet.py delete_key 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 -w=mywallet --wallet-password=mypassword
+    -> delete the private key belonging to address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 from the hot wallet named 'mywallet' with password 'mypassword'
                                           ''')
 
 delete_key_parser.add_argument('address', help='The address')
 delete_key_parser.add_argument('-w', '--wallet', help='name of the hot wallet')
+delete_key_parser.add_argument('--wallet-password', help='password for wallet encryption/decryption (if not provided, will prompt interactively)')
 
 # Create parser for the set_bip44 subcommand
 set_bip44_parser = subparsers.add_parser(name='set_bip44',
@@ -96,11 +102,15 @@ examples:
 
   - hot_wallet.py set_bip44 bench cabin ... -w=mywallet
     -> set the 12 or 24 mnemonic words for the hot wallet with id 'mywallet'
-                                          ''')
+
+  - hot_wallet.py set_bip44 bench cabin ... -w=mywallet --wallet-password=mypassword
+    -> set the 12 or 24 mnemonic words for the hot wallet with id 'mywallet' with password 'mypassword'
+                                         ''')
 
 set_bip44_parser.add_argument('mnemonic', help='The mnemonic of the BIP44 wallet (12 or 24 words)', nargs='+')
 set_bip44_parser.add_argument('-p', '--passphrase', help='The passphrase of the BIP44 wallet (optional)')
 set_bip44_parser.add_argument('-w', '--wallet', help='name of the hot wallet')
+set_bip44_parser.add_argument('--wallet-password', help='password for wallet encryption/decryption (if not provided, will prompt interactively)')
 
 # Create parser for the show subcommand
 show_parser = subparsers.add_parser(name='show',
@@ -113,9 +123,12 @@ Show the private keys and/or mnemonic of a hot wallet
 examples:
   - hot_wallet.py show -w=mywallet
     -> show the private keys and/or mnemonic for the hot wallet with id 'mywallet'
+  - hot_wallet.py show -w=mywallet --wallet-password=mypassword
+    -> show the private keys and/or mnemonic for the hot wallet with id 'mywallet' with password 'mypassword'
                                     ''')
 
 show_parser.add_argument('-w', '--wallet', help='name of the hot wallet')
+show_parser.add_argument('--wallet-password', help='password for wallet encryption/decryption (if not provided, will prompt interactively')
 
 
 # ----------------------------------------------------------------------------------------------------------------
@@ -128,7 +141,11 @@ def load_wallet():
     if not os.path.isfile(os.path.join(WALLET_DIR, '%s.enc' % WALLET_ID)):
         return {}
 
-    cipher = AESCipher(key=getpass.getpass('Enter the password to decrypt the hot wallet: '))
+    if args.wallet_password is not None:
+        cipher = AESCipher(key=args.wallet_password)
+    else:
+        cipher = AESCipher(key=getpass.getpass('Enter the password to decrypt the hot wallet: '))
+
     try:
         with open(os.path.join(WALLET_DIR, '%s.enc' % WALLET_ID), 'r') as input_file:
             encrypted_data = input_file.read()
@@ -143,8 +160,12 @@ def load_wallet():
 
 
 def save_wallet(wallet):
-    password1 = getpass.getpass('Enter the password to encrypt the hot wallet: ')
-    password2 = getpass.getpass('Re-enter the password to encrypt the hot wallet: ')
+    if args.wallet_password is not None:
+        password1 = args.wallet_password
+        password2 = args.wallet_password
+    else:
+        password1 = getpass.getpass('Enter the password to encrypt the hot wallet: ')
+        password2 = getpass.getpass('Re-enter the password to encrypt the hot wallet: ')
 
     if password1 != password2:
         print('Passwords do not match!', file=sys.stderr)
@@ -214,4 +235,3 @@ elif args.command == 'set_bip44':
     set_bip44()
 elif args.command == 'show':
     show()
-
