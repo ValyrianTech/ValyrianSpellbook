@@ -10,7 +10,7 @@ pycryptodome==3.18.0
 websocket_client==1.6.1
 websocket_client_py3==0.15.0
 mysql_connector_repackaged==0.3.1
-numpy==1.25.2
+numpy==2.2.6
 python-bitcoinlib==0.12.2
 qrcode==7.4.2
 cheroot==10.0.0
