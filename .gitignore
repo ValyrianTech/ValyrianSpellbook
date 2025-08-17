@@ -111,6 +111,7 @@ logs/
 
 # csv files
 *.csv
+!preconfigured_llm_models.csv
 
 # txt files
 *.txt
