@@ -3,8 +3,8 @@
 """
 Import LLM configurations from preconfigured_llm_models.csv into the Valyrian Spellbook.
 
-This script reads the CSV file containing pre-configured LLM models and makes API calls
-to the SaveLLMConfig endpoint to bulk import them into the system.
+This script reads the CSV file containing pre-configured LLM models and directly
+saves them to the system using the save_llm_config function.
 """
 
 import os
@@ -12,13 +12,12 @@ import sys
 import csv
 import json
 import argparse
-import requests
 from typing import Dict, Any, Optional
 
 # Add the current directory to the path to import Spellbook modules
 sys.path.append(os.path.dirname(__file__))
-from helpers.configurationhelpers import get_host, get_port
-from helpers.messagehelpers import sign_data
+# No longer need host/port configuration for direct storage
+from helpers.llmhelpers import save_llm_config
 
 
 def parse_price(price_str: str) -> float:
@@ -53,7 +52,7 @@ def parse_vision_capability(vision_str: str) -> bool:
     return vision_str.lower() in ['true', 'yes', '1', 'enabled']
 
 
-def create_llm_config(model_data: Dict[str, str], api_key: str = '') -> Dict[str, Any]:
+def create_llm_config(model_data: Dict[str, str]) -> Dict[str, Any]:
     """Create LLM configuration dictionary from CSV row data"""
     provider = model_data['Provider']
     model_name = model_data['Model_name']
@@ -78,7 +77,7 @@ def create_llm_config(model_data: Dict[str, str], api_key: str = '') -> Dict[str
         'completion_tokens_cost': completion_tokens_cost,
         'completion_tokens_multiplier': 1000000,  # Prices are per 1M tokens
         'allow_auto_routing': True,
-        'api_key': api_key,
+        'api_key': '',  # Empty API key - will be set separately
         'vision': vision,
         'audio': 'audio' in model_name.lower(),  # Detect audio models
         'video': False,  # No video models in current CSV
@@ -90,43 +89,44 @@ def create_llm_config(model_data: Dict[str, str], api_key: str = '') -> Dict[str
     return config
 
 
-def save_llm_config_via_api(config: Dict[str, Any], host: str, port: int, verbose: bool = False) -> bool:
-    """Save LLM configuration via API call to SaveLLMConfig endpoint"""
-    url = f'http://{host}:{port}/api/SaveLLMConfig/message'
+def save_llm_config_direct(config: Dict[str, Any], verbose: bool = False) -> bool:
+    """Save LLM configuration directly using save_llm_config function"""
     
-    # Sign the data for authentication
-    signed_data = sign_data(message_data=config, account=0, index=0)
+    llm_name = config['llm_name']
     
     if verbose:
-        print(f"Saving LLM config: {config['llm_name']}")
-        print(f"URL: {url}")
+        print(f"Saving LLM config: {llm_name}")
         print(f"Input cost: ${config['prompt_tokens_cost']:.2f}/1M tokens")
         print(f"Output cost: ${config['completion_tokens_cost']:.2f}/1M tokens")
     
     try:
-        response = requests.post(url, json=signed_data, timeout=30)
+        # Create the config dict in the format expected by save_llm_config
+        llm_config = {
+            'host': config['llm_host'],
+            'port': config['llm_port'],
+            'server_type': config['llm_server_type'],
+            'model_name': config['llm_model_name'],
+            'description': config['llm_description'],
+            'prompt_tokens_cost': config['prompt_tokens_cost'],
+            'prompt_tokens_multiplier': config['prompt_tokens_multiplier'],
+            'completion_tokens_cost': config['completion_tokens_cost'],
+            'completion_tokens_multiplier': config['completion_tokens_multiplier'],
+            'allow_auto_routing': config['allow_auto_routing'],
+            'api_key': config['api_key'],
+            'vision': config['vision'],
+            'audio': config['audio'],
+            'video': config['video'],
+            'context_length': config['context_length'],
+            'prompt_template': config['prompt_template'],
+            'chat': config['chat']
+        }
         
-        if verbose:
-            print(f"Response status: {response.status_code}")
-        
-        if response.status_code == 200:
-            result = response.json()
-            if result.get('success', False):
-                print(f"✓ Successfully saved: {config['llm_name']}")
-                return True
-            else:
-                print(f"✗ API returned success=False for: {config['llm_name']}")
-                if verbose:
-                    print(f"Response: {json.dumps(result, indent=2)}")
-                return False
-        else:
-            print(f"✗ HTTP {response.status_code} error for: {config['llm_name']}")
-            if verbose:
-                print(f"Response text: {response.text}")
-            return False
+        save_llm_config(llm_name, llm_config)
+        print(f"✓ Successfully saved: {llm_name}")
+        return True
             
     except Exception as ex:
-        print(f"✗ Exception saving {config['llm_name']}: {ex}")
+        print(f"✗ Exception saving {llm_name}: {ex}")
         return False
 
 
@@ -156,17 +156,7 @@ def main():
     parser.add_argument('--csv-file', 
                        default='preconfigured_llm_models.csv',
                        help='Path to CSV file (default: preconfigured_llm_models.csv)')
-    parser.add_argument('--api-key', 
-                       default='',
-                       help='OpenAI API key to use for all models')
-    parser.add_argument('--host', 
-                       default=None,
-                       help='Spellbook server host (default: from config)')
-    parser.add_argument('--port', 
-                       default=None,
-                       type=int,
-                       help='Spellbook server port (default: from config)')
-    parser.add_argument('--dry-run', 
+    parser.add_argument('--dry-run',
                        action='store_true',
                        help='Show what would be imported without actually doing it')
     parser.add_argument('--verbose', '-v', 
@@ -178,12 +168,7 @@ def main():
     
     args = parser.parse_args()
     
-    # Get host and port from configuration if not provided
-    host = args.host if args.host else get_host()
-    port = args.port if args.port else get_port()
-    
     print(f"Valyrian Spellbook LLM Config Import Tool")
-    print(f"Target server: {host}:{port}")
     print(f"CSV file: {args.csv_file}")
     if args.dry_run:
         print("DRY RUN MODE - No actual changes will be made")
@@ -217,7 +202,7 @@ def main():
         
         # Create configuration
         try:
-            config = create_llm_config(model_data, args.api_key)
+            config = create_llm_config(model_data)
         except Exception as ex:
             print(f"✗ Error creating config for {model_data['Model_name']}: {ex}")
             continue
@@ -233,8 +218,8 @@ def main():
             print(f"  Vision: {config['vision']}")
             success_count += 1
         else:
-            # Save via API
-            if save_llm_config_via_api(config, host, port, args.verbose):
+            # Save via direct function call (no API)
+            if save_llm_config_direct(config, args.verbose):
                 success_count += 1
     
     # Summary
