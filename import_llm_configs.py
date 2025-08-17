@@ -16,8 +16,8 @@ from typing import Dict, Any, Optional
 
 # Add the current directory to the path to import Spellbook modules
 sys.path.append(os.path.dirname(__file__))
-# No longer need host/port configuration for direct storage
-from helpers.llmhelpers import save_llm_config
+# Use lightweight helper to avoid background threads that cause hanging
+from helpers.llm_config_saver import save_llm_config_lightweight
 
 
 def parse_price(price_str: str) -> float:
@@ -121,7 +121,7 @@ def save_llm_config_direct(config: Dict[str, Any], verbose: bool = False) -> boo
             'chat': config['chat']
         }
         
-        save_llm_config(llm_name, llm_config)
+        save_llm_config_lightweight(llm_name, llm_config)
         print(f"✓ Successfully saved: {llm_name}")
         return True
             
