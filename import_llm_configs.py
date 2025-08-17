@@ -15,8 +15,8 @@ import argparse
 import requests
 from typing import Dict, Any, Optional
 
-# Add the parent directories to the path to import Spellbook modules
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+# Add the current directory to the path to import Spellbook modules
+sys.path.append(os.path.dirname(__file__))
 from helpers.configurationhelpers import get_host, get_port
 from helpers.messagehelpers import sign_data
 
