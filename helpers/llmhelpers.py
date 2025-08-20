@@ -369,13 +369,6 @@ class LLM(object):
 
         LOG.info(f'Running LLM {self.model_name}')
 
-        # Check if the model is enabled
-        if self.model_name.startswith('OpenAI:') and get_enable_openai() is False:
-            return 'OpenAI is not enabled. Please enable it in the config file.', {}, None
-
-        if self.model_name.startswith('Together-ai:') and get_enable_together_ai() is False:
-            return 'Together.ai is not enabled. Please enable it in the config file.', {}, None
-
         if self.model_name.startswith('self-hosted:') and get_enable_oobabooga() is False:
             return 'Oobabooga is not enabled. Please enable it in the config file.', {}, None
 
