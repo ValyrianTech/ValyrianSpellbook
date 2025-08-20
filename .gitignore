@@ -152,3 +152,6 @@ app_data
 !apps/Notary
 !apps/PaymentProcessor
 !apps/Voucher
+
+# models
+models
