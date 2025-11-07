@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import io
 import sys
 import glob
 import platform
@@ -19,11 +20,23 @@ if not os.path.isdir(logs_dir):
 
 LOG = logging.getLogger('Spellbook')
 
-stream_handler = logging.StreamHandler(sys.stdout)
-stream_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(message)s'))
+fmt = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s')
+try:
+    stream = sys.stdout
+    if hasattr(stream, "reconfigure"):
+        stream.reconfigure(encoding="utf-8", errors="replace")
+    elif hasattr(stream, "buffer"):
+        stream = io.TextIOWrapper(stream.buffer, encoding="utf-8", errors="replace", line_buffering=True)
+    # else: leave as-is; handler will use whatever stream is (rare)
+    stream_handler = logging.StreamHandler(stream)
+except Exception:
+    # Fallback if anything goes wrong
+    stream_handler = logging.StreamHandler(sys.stdout)
+
+stream_handler.setFormatter(fmt)
 LOG.addHandler(stream_handler)
 
-file_handler = RotatingFileHandler(os.path.join(logs_dir, 'spellbook.txt'), maxBytes=10000000, backupCount=backup_count)  # Todo change to concurrent_log_handler.ConcurrentRotatingFileHandler with backupCount 5 after python3 conversion
+file_handler = RotatingFileHandler(os.path.join(logs_dir, 'spellbook.txt'), maxBytes=10000000, backupCount=backup_count, encoding='utf-8')  # Todo change to concurrent_log_handler.ConcurrentRotatingFileHandler with backupCount 5 after python3 conversion
 file_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(message)s'))
 LOG.addHandler(file_handler)
 
@@ -32,7 +45,7 @@ LOG.setLevel(logging.DEBUG)
 # Create a log file for the http requests to the REST API
 REQUESTS_LOG = logging.getLogger('api_requests')
 
-file_handler = RotatingFileHandler(os.path.join(logs_dir, 'requests.txt'), maxBytes=10000000, backupCount=backup_count)  # Todo change to concurrent_log_handler.ConcurrentRotatingFileHandler with backupCount 5 after python3 conversion
+file_handler = RotatingFileHandler(os.path.join(logs_dir, 'requests.txt'), maxBytes=10000000, backupCount=backup_count, encoding='utf-8')  # Todo change to concurrent_log_handler.ConcurrentRotatingFileHandler with backupCount 5 after python3 conversion
 file_handler.setFormatter(logging.Formatter('%(message)s'))
 REQUESTS_LOG.addHandler(file_handler)
 
@@ -51,7 +64,7 @@ def get_logs(filter_string=''):
 
     combined_logs = []
     for log_file in log_files:
-        with open(log_file, 'r') as input_file:
+        with open(log_file, 'r', encoding='utf-8') as input_file:
             for line in input_file.readlines():
                 if filter_string in line:
                     combined_logs.append(line.strip())
