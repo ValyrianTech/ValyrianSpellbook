@@ -28,6 +28,7 @@ from .anthropic_llm import AnthropicLLM
 from .groq_llm import GroqLLM
 from .vLLM_llm import VLLMLLM
 from .vLLMchat_llm import VLLMchatLLM
+from .ollama_llm import OllamaLLM
 from .deepseek_llm import DeepSeekLLM
 from .mistral_llm import MistralLLM
 from .google_llm import GoogleLLM
@@ -73,6 +74,9 @@ def get_llm(model_name: str = 'default_model', temperature: float = 0.0):
             LOG.info(f'Initializing {model_name} LLM at {host}:{port}')
             if self_hosted_models[model_name.split(':')[1]]['server_type'] == 'Oobabooga':
                 llm = SelfHostedLLM(host=host, port=port, mixture_of_experts=False, model_name=model_name.split(':')[1])
+            elif self_hosted_models[model_name.split(':')[1]]['server_type'] == 'Ollama':
+                LOG.info('Using Ollama')
+                llm = OllamaLLM(model_name=self_hosted_models[model_name.split(':')[1]]['model_name'], host=host, port=port)
             elif self_hosted_models[model_name.split(':')[1]]['server_type'] == 'vLLM':
                 LOG.info('Using vLLM')
                 llm = VLLMLLM(model_name=self_hosted_models[model_name.split(':')[1]]['model_name'], host=host, port=port)
