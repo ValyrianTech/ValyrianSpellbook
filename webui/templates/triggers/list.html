@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Triggers - Valyrian Spellbook{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-3xl font-bold text-gray-100">Triggers</h1>
+        <a href="/triggers/new" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            New Trigger
+        </a>
+    </div>
+
+    {% if triggers %}
+    <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-700">
+            <thead class="bg-gray-900">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Type</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Description</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-700">
+                {% for trigger in triggers %}
+                <tr class="hover:bg-gray-700/50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <a href="/triggers/{{ trigger.id }}" class="text-indigo-400 hover:text-indigo-300 font-medium">
+                            {{ trigger.id }}
+                        </a>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-300">
+                        {{ trigger.config.get('trigger_type', 'N/A') }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% set status = trigger.config.get('status', 'Unknown') %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                            {% if status == 'Active' %}bg-green-900/50 text-green-300
+                            {% elif status == 'Pending' %}bg-yellow-900/50 text-yellow-300
+                            {% elif status == 'Disabled' %}bg-gray-700 text-gray-400
+                            {% else %}bg-gray-700 text-gray-400{% endif %}">
+                            {{ status }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-gray-400 max-w-xs truncate">
+                        {{ trigger.config.get('description', '-') }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <a href="/triggers/{{ trigger.id }}/edit" class="text-indigo-400 hover:text-indigo-300 mr-4">Edit</a>
+                        <form action="/triggers/{{ trigger.id }}/delete" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this trigger?');">
+                            <button type="submit" class="text-red-400 hover:text-red-300">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="bg-gray-800 rounded-lg p-12 border border-gray-700 text-center">
+        <svg class="mx-auto h-12 w-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+        </svg>
+        <h3 class="mt-4 text-lg font-medium text-gray-300">No triggers configured</h3>
+        <p class="mt-2 text-gray-500">Get started by creating your first trigger.</p>
+        <a href="/triggers/new" class="mt-4 inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors">
+            Create Trigger
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Address {{ address }} - Valyrian Spellbook{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center space-x-4">
+        <a href="/blockchain" class="text-gray-400 hover:text-gray-300">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+        </a>
+        <h1 class="text-3xl font-bold text-gray-100">Address</h1>
+    </div>
+
+    <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+        <p class="text-sm text-gray-400">Bitcoin Address</p>
+        <p class="font-mono text-indigo-400 break-all">{{ address }}</p>
+    </div>
+
+    {% if balance and not balance.get('error') %}
+    <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-700">
+            <h2 class="text-lg font-semibold text-gray-100">Balance</h2>
+        </div>
+        <div class="p-6">
+            <dl class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <dt class="text-sm font-medium text-gray-400">Final Balance</dt>
+                    <dd class="mt-1 text-2xl font-semibold text-gray-100">
+                        {{ balance.get('final_balance', 0) | default(0) }} <span class="text-sm text-gray-400">satoshis</span>
+                    </dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-400">Total Received</dt>
+                    <dd class="mt-1 text-xl text-green-400">
+                        {{ balance.get('total_received', 0) | default(0) }} <span class="text-sm text-gray-400">satoshis</span>
+                    </dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-400">Total Sent</dt>
+                    <dd class="mt-1 text-xl text-red-400">
+                        {{ balance.get('total_sent', 0) | default(0) }} <span class="text-sm text-gray-400">satoshis</span>
+                    </dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if utxos and not utxos.get('error') and utxos is iterable %}
+    <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-700">
+            <h2 class="text-lg font-semibold text-gray-100">UTXOs</h2>
+        </div>
+        <div class="p-6">
+            {% if utxos is mapping %}
+                <pre class="text-sm overflow-x-auto">{{ utxos | tojson(indent=2) }}</pre>
+            {% elif utxos %}
+                <div class="space-y-2 max-h-60 overflow-y-auto">
+                    {% for utxo in utxos %}
+                    <div class="bg-gray-900 rounded p-3 font-mono text-sm">
+                        <pre class="overflow-x-auto">{{ utxo | tojson(indent=2) if utxo is mapping else utxo }}</pre>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-400">No UTXOs found</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if transactions and not transactions.get('error') %}
+    <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-700">
+            <h2 class="text-lg font-semibold text-gray-100">Transactions</h2>
+        </div>
+        <div class="p-6">
+            {% if transactions is mapping %}
+                <pre class="text-sm overflow-x-auto max-h-96">{{ transactions | tojson(indent=2) }}</pre>
+            {% elif transactions is iterable %}
+                <div class="space-y-2 max-h-96 overflow-y-auto">
+                    {% for tx in transactions %}
+                    <div class="bg-gray-900 rounded p-3">
+                        {% if tx is string %}
+                        <a href="/blockchain/tx/{{ tx }}" class="font-mono text-sm text-indigo-400 hover:text-indigo-300 break-all">
+                            {{ tx }}
+                        </a>
+                        {% else %}
+                        <pre class="font-mono text-sm overflow-x-auto">{{ tx | tojson(indent=2) }}</pre>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-400">No transactions found</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

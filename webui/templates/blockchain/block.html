@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Block {{ block_id }} - Valyrian Spellbook{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center space-x-4">
+        <a href="/blockchain" class="text-gray-400 hover:text-gray-300">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+        </a>
+        <h1 class="text-3xl font-bold text-gray-100">Block {{ block_id }}</h1>
+    </div>
+
+    {% if block and not block.get('error') %}
+    <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-700">
+            <h2 class="text-lg font-semibold text-gray-100">Block Details</h2>
+        </div>
+        <div class="p-6">
+            <dl class="space-y-4">
+                {% for key, value in block.items() %}
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <dt class="text-sm font-medium text-gray-400">{{ key }}</dt>
+                    <dd class="md:col-span-3 text-gray-100 font-mono text-sm break-all">
+                        {% if value is mapping %}
+                            <pre class="text-sm overflow-x-auto">{{ value | tojson(indent=2) }}</pre>
+                        {% elif value is iterable and value is not string %}
+                            <div class="max-h-40 overflow-y-auto">
+                                {% for item in value %}
+                                <div class="py-1">{{ item }}</div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ value if value is not none else '-' }}
+                        {% endif %}
+                    </dd>
+                </div>
+                {% endfor %}
+            </dl>
+        </div>
+    </div>
+    {% else %}
+    <div class="bg-gray-800 rounded-lg p-12 border border-gray-700 text-center">
+        <svg class="mx-auto h-12 w-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <h3 class="mt-4 text-lg font-medium text-gray-300">Block not found</h3>
+        <p class="mt-2 text-gray-500">{{ block.get('error', 'Unable to fetch block data') }}</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

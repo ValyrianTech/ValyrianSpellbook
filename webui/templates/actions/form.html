@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_new %}New Action{% else %}Edit {{ action_id }}{% endif %} - Valyrian Spellbook{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center space-x-4">
+        <a href="/actions" class="text-gray-400 hover:text-gray-300">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+        </a>
+        <h1 class="text-3xl font-bold text-gray-100">{% if is_new %}New Action{% else %}Edit {{ action_id }}{% endif %}</h1>
+    </div>
+
+    {% if error %}
+    <div class="bg-red-900/50 border border-red-500 text-red-300 px-4 py-3 rounded-lg">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <form action="/actions/{{ action_id or 'new' }}/save" method="POST" class="space-y-6">
+        <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-700">
+                <h2 class="text-lg font-semibold text-gray-100">Basic Information</h2>
+            </div>
+            <div class="p-6 space-y-4">
+                {% if is_new %}
+                <div>
+                    <label for="action_id" class="block text-sm font-medium text-gray-300">Action ID</label>
+                    <input type="text" name="action_id" id="action_id" required
+                           class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                           placeholder="my-action-id">
+                </div>
+                {% endif %}
+
+                <div>
+                    <label for="action_type" class="block text-sm font-medium text-gray-300">Type</label>
+                    <select name="action_type" id="action_type"
+                            class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">Select type...</option>
+                        {% for type in ['Command', 'SpawnProcess', 'SendTransaction', 'RevealSecret', 'SendMail', 'Webhook'] %}
+                        <option value="{{ type }}" {% if action and action.get('action_type') == type %}selected{% endif %}>{{ type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-700">
+                <h2 class="text-lg font-semibold text-gray-100">Command Action</h2>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label for="run_command" class="block text-sm font-medium text-gray-300">Command</label>
+                    <input type="text" name="run_command" id="run_command"
+                           value="{{ action.run_command if action else '' }}"
+                           class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                           placeholder="echo 'Hello World'">
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-700">
+                <h2 class="text-lg font-semibold text-gray-100">Webhook Action</h2>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label for="webhook" class="block text-sm font-medium text-gray-300">Webhook URL</label>
+                    <input type="url" name="webhook" id="webhook"
+                           value="{{ action.webhook if action else '' }}"
+                           class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                           placeholder="https://example.com/webhook">
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-700">
+                <h2 class="text-lg font-semibold text-gray-100">SendMail Action</h2>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label for="mail_recipients" class="block text-sm font-medium text-gray-300">Recipients</label>
+                    <input type="text" name="mail_recipients" id="mail_recipients"
+                           value="{{ action.mail_recipients if action else '' }}"
+                           class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                           placeholder="email1@example.com, email2@example.com">
+                </div>
+                <div>
+                    <label for="mail_subject" class="block text-sm font-medium text-gray-300">Subject</label>
+                    <input type="text" name="mail_subject" id="mail_subject"
+                           value="{{ action.mail_subject if action else '' }}"
+                           class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                           placeholder="Email subject">
+                </div>
+                <div>
+                    <label for="mail_body_template" class="block text-sm font-medium text-gray-300">Body Template</label>
+                    <input type="text" name="mail_body_template" id="mail_body_template"
+                           value="{{ action.mail_body_template if action else '' }}"
+                           class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                           placeholder="template_name">
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-700">
+                <h2 class="text-lg font-semibold text-gray-100">RevealSecret Action</h2>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label for="reveal_text" class="block text-sm font-medium text-gray-300">Reveal Text</label>
+                    <textarea name="reveal_text" id="reveal_text" rows="3"
+                              class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                              placeholder="Secret text to reveal...">{{ action.reveal_text if action else '' }}</textarea>
+                </div>
+                <div>
+                    <label for="reveal_link" class="block text-sm font-medium text-gray-300">Reveal Link</label>
+                    <input type="url" name="reveal_link" id="reveal_link"
+                           value="{{ action.reveal_link if action else '' }}"
+                           class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                           placeholder="https://example.com/secret">
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end space-x-4">
+            <a href="/actions" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors">
+                Cancel
+            </a>
+            <button type="submit" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors">
+                {% if is_new %}Create Action{% else %}Save Changes{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Valyrian Spellbook{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-3xl font-bold text-gray-100">Dashboard</h1>
+        <div class="flex items-center space-x-2">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {% if api_online %}bg-green-900/50 text-green-300{% else %}bg-red-900/50 text-red-300{% endif %}">
+                <span class="w-2 h-2 mr-2 rounded-full {% if api_online %}bg-green-400{% else %}bg-red-400{% endif %}"></span>
+                API {% if api_online %}Online{% else %}Offline{% endif %}
+            </span>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Triggers Card -->
+        <a href="/triggers" class="bg-gray-800 rounded-lg p-6 border border-gray-700 hover:border-indigo-500 transition-colors">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-indigo-900/50 text-indigo-400">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-400">Triggers</p>
+                    <p class="text-2xl font-semibold text-gray-100">{{ trigger_count }}</p>
+                </div>
+            </div>
+        </a>
+
+        <!-- Actions Card -->
+        <a href="/actions" class="bg-gray-800 rounded-lg p-6 border border-gray-700 hover:border-indigo-500 transition-colors">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-900/50 text-green-400">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-400">Actions</p>
+                    <p class="text-2xl font-semibold text-gray-100">{{ action_count }}</p>
+                </div>
+            </div>
+        </a>
+
+        <!-- LLMs Card -->
+        <a href="/llms" class="bg-gray-800 rounded-lg p-6 border border-gray-700 hover:border-indigo-500 transition-colors">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-purple-900/50 text-purple-400">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-400">LLMs</p>
+                    <p class="text-2xl font-semibold text-gray-100">{{ llm_count }}</p>
+                </div>
+            </div>
+        </a>
+
+        <!-- Explorers Card -->
+        <a href="/explorers" class="bg-gray-800 rounded-lg p-6 border border-gray-700 hover:border-indigo-500 transition-colors">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-yellow-900/50 text-yellow-400">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-400">Explorers</p>
+                    <p class="text-2xl font-semibold text-gray-100">{{ explorer_count }}</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Latest Block Info -->
+    {% if latest_block and not latest_block.get('error') %}
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <h2 class="text-xl font-semibold text-gray-100 mb-4">Latest Block</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <p class="text-sm text-gray-400">Height</p>
+                <p class="text-lg font-mono text-gray-100">{{ latest_block.get('height', 'N/A') }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-400">Hash</p>
+                <p class="text-lg font-mono text-gray-100 truncate">{{ latest_block.get('hash', 'N/A') }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-400">Time</p>
+                <p class="text-lg font-mono text-gray-100">{{ latest_block.get('time', 'N/A') }}</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <h2 class="text-xl font-semibold text-gray-100 mb-4">Quick Actions</h2>
+        <div class="flex flex-wrap gap-4">
+            <a href="/triggers/new" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                New Trigger
+            </a>
+            <a href="/actions/new" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                New Action
+            </a>
+            <a href="/llms/new" class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                New LLM
+            </a>
+            <a href="/explorers/new" class="inline-flex items-center px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                New Explorer
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}LLMs - Valyrian Spellbook{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-3xl font-bold text-gray-100">LLMs</h1>
+        <a href="/llms/new" class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            New LLM
+        </a>
+    </div>
+
+    {% if llms %}
+    <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-700">
+            <thead class="bg-gray-900">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Server Type</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Model</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Host</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-700">
+                {% for llm in llms %}
+                <tr class="hover:bg-gray-700/50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <a href="/llms/{{ llm.id }}" class="text-purple-400 hover:text-purple-300 font-medium">
+                            {{ llm.id }}
+                        </a>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-300">
+                        {{ llm.config.get('server_type', 'N/A') }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-300">
+                        {{ llm.config.get('model_name', 'N/A') }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-400 font-mono text-sm">
+                        {% if llm.config.get('llm_host') %}
+                            {{ llm.config.get('llm_host') }}{% if llm.config.get('llm_port') %}:{{ llm.config.get('llm_port') }}{% endif %}
+                        {% else %}
+                            Cloud API
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <a href="/llms/{{ llm.id }}/edit" class="text-indigo-400 hover:text-indigo-300 mr-4">Edit</a>
+                        <form action="/llms/{{ llm.id }}/delete" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this LLM?');">
+                            <button type="submit" class="text-red-400 hover:text-red-300">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="bg-gray-800 rounded-lg p-12 border border-gray-700 text-center">
+        <svg class="mx-auto h-12 w-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+        </svg>
+        <h3 class="mt-4 text-lg font-medium text-gray-300">No LLMs configured</h3>
+        <p class="mt-2 text-gray-500">Get started by adding your first LLM configuration.</p>
+        <a href="/llms/new" class="mt-4 inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">
+            Add LLM
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

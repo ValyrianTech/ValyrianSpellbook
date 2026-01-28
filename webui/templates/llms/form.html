@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_new %}New LLM{% else %}Edit {{ llm_id }}{% endif %} - Valyrian Spellbook{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center space-x-4">
+        <a href="/llms" class="text-gray-400 hover:text-gray-300">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+        </a>
+        <h1 class="text-3xl font-bold text-gray-100">{% if is_new %}New LLM{% else %}Edit {{ llm_id }}{% endif %}</h1>
+    </div>
+
+    {% if error %}
+    <div class="bg-red-900/50 border border-red-500 text-red-300 px-4 py-3 rounded-lg">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <form action="/llms/{{ llm_id or 'new' }}/save" method="POST" class="space-y-6">
+        <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-700">
+                <h2 class="text-lg font-semibold text-gray-100">Basic Information</h2>
+            </div>
+            <div class="p-6 space-y-4">
+                {% if is_new %}
+                <div>
+                    <label for="llm_id" class="block text-sm font-medium text-gray-300">LLM ID</label>
+                    <input type="text" name="llm_id" id="llm_id" required
+                           class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                           placeholder="OpenAI:gpt-4o">
+                    <p class="mt-1 text-sm text-gray-500">Format: Provider:model-name (e.g., OpenAI:gpt-4o, Anthropic:claude-3-opus)</p>
+                </div>
+                {% endif %}
+
+                <div>
+                    <label for="server_type" class="block text-sm font-medium text-gray-300">Server Type</label>
+                    <select name="server_type" id="server_type"
+                            class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">Select type...</option>
+                        {% for type in ['OpenAI', 'Anthropic', 'Google', 'Mistral', 'Groq', 'DeepSeek', 'Together', 'Oobabooga', 'vLLM'] %}
+                        <option value="{{ type }}" {% if llm and llm.get('server_type') == type %}selected{% endif %}>{{ type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label for="model_name" class="block text-sm font-medium text-gray-300">Model Name</label>
+                    <input type="text" name="model_name" id="model_name"
+                           value="{{ llm.model_name if llm else '' }}"
+                           class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                           placeholder="gpt-4o-2024-08-06">
+                </div>
+
+                <div>
+                    <label for="description" class="block text-sm font-medium text-gray-300">Description</label>
+                    <textarea name="description" id="description" rows="2"
+                              class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                              placeholder="Description of this LLM configuration...">{{ llm.description if llm else '' }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-700">
+                <h2 class="text-lg font-semibold text-gray-100">Connection Settings</h2>
+                <p class="text-sm text-gray-500">For self-hosted models only. Leave empty for cloud APIs.</p>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="llm_host" class="block text-sm font-medium text-gray-300">Host</label>
+                        <input type="text" name="llm_host" id="llm_host"
+                               value="{{ llm.llm_host if llm else '' }}"
+                               class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                               placeholder="localhost">
+                    </div>
+                    <div>
+                        <label for="llm_port" class="block text-sm font-medium text-gray-300">Port</label>
+                        <input type="number" name="llm_port" id="llm_port"
+                               value="{{ llm.llm_port if llm else '' }}"
+                               class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                               placeholder="5000">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="api_key" class="block text-sm font-medium text-gray-300">API Key</label>
+                    <input type="password" name="api_key" id="api_key"
+                           value=""
+                           class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                           placeholder="{% if llm and llm.api_key == '********' %}Leave empty to keep existing key{% else %}Enter API key{% endif %}">
+                    <p class="mt-1 text-sm text-gray-500">Leave empty to use environment variable or keep existing key</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-700">
+                <h2 class="text-lg font-semibold text-gray-100">Pricing (per million tokens)</h2>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="prompt_tokens_cost" class="block text-sm font-medium text-gray-300">Input Cost ($)</label>
+                        <input type="number" step="0.01" name="prompt_tokens_cost" id="prompt_tokens_cost"
+                               value="{{ llm.prompt_tokens_cost if llm else '' }}"
+                               class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                               placeholder="2.50">
+                    </div>
+                    <div>
+                        <label for="completion_tokens_cost" class="block text-sm font-medium text-gray-300">Output Cost ($)</label>
+                        <input type="number" step="0.01" name="completion_tokens_cost" id="completion_tokens_cost"
+                               value="{{ llm.completion_tokens_cost if llm else '' }}"
+                               class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                               placeholder="10.00">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end space-x-4">
+            <a href="/llms" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors">
+                Cancel
+            </a>
+            <button type="submit" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">
+                {% if is_new %}Create LLM{% else %}Save Changes{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

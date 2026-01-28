@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_new %}New Explorer{% else %}Edit {{ explorer_id }}{% endif %} - Valyrian Spellbook{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center space-x-4">
+        <a href="/explorers" class="text-gray-400 hover:text-gray-300">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+        </a>
+        <h1 class="text-3xl font-bold text-gray-100">{% if is_new %}New Explorer{% else %}Edit {{ explorer_id }}{% endif %}</h1>
+    </div>
+
+    {% if error %}
+    <div class="bg-red-900/50 border border-red-500 text-red-300 px-4 py-3 rounded-lg">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <form action="/explorers/{{ explorer_id or 'new' }}/save" method="POST" class="space-y-6">
+        <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-700">
+                <h2 class="text-lg font-semibold text-gray-100">Explorer Configuration</h2>
+            </div>
+            <div class="p-6 space-y-4">
+                {% if is_new %}
+                <div>
+                    <label for="explorer_id" class="block text-sm font-medium text-gray-300">Explorer ID</label>
+                    <input type="text" name="explorer_id" id="explorer_id" required
+                           class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                           placeholder="my-explorer">
+                </div>
+                {% endif %}
+
+                <div>
+                    <label for="type" class="block text-sm font-medium text-gray-300">Type</label>
+                    <select name="type" id="type" required
+                            class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">Select type...</option>
+                        {% for type in ['BTC.com', 'Blockchain.info', 'Insight', 'Blocktrail.com', 'Chain.so'] %}
+                        <option value="{{ type }}" {% if explorer and explorer.get('type') == type %}selected{% endif %}>{{ type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label for="priority" class="block text-sm font-medium text-gray-300">Priority</label>
+                    <input type="number" name="priority" id="priority" required
+                           value="{{ explorer.priority if explorer else '1' }}"
+                           class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                           placeholder="1">
+                    <p class="mt-1 text-sm text-gray-500">Lower number = higher priority</p>
+                </div>
+
+                <div>
+                    <label for="url" class="block text-sm font-medium text-gray-300">URL (for Insight explorers)</label>
+                    <input type="url" name="url" id="url"
+                           value="{{ explorer.url if explorer else '' }}"
+                           class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                           placeholder="https://insight.example.com">
+                </div>
+
+                <div>
+                    <label for="api_key" class="block text-sm font-medium text-gray-300">API Key (for Blocktrail)</label>
+                    <input type="text" name="api_key" id="api_key"
+                           value="{{ explorer.api_key if explorer else '' }}"
+                           class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                           placeholder="Your API key">
+                </div>
+
+                <div class="flex items-center">
+                    <input type="checkbox" name="testnet" id="testnet" value="true"
+                           {% if explorer and explorer.testnet %}checked{% endif %}
+                           class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-600 rounded bg-gray-900">
+                    <label for="testnet" class="ml-2 block text-sm text-gray-300">Use Testnet</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end space-x-4">
+            <a href="/explorers" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors">
+                Cancel
+            </a>
+            <button type="submit" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors">
+                {% if is_new %}Create Explorer{% else %}Save Changes{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
