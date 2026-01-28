@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_new %}New Trigger{% else %}Edit {{ trigger_id }}{% endif %} - Valyrian Spellbook{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center space-x-4">
+        <a href="/triggers" class="text-gray-400 hover:text-gray-300">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+        </a>
+        <h1 class="text-3xl font-bold text-gray-100">{% if is_new %}New Trigger{% else %}Edit {{ trigger_id }}{% endif %}</h1>
+    </div>
+
+    {% if error %}
+    <div class="bg-red-900/50 border border-red-500 text-red-300 px-4 py-3 rounded-lg">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <form action="/triggers/{{ trigger_id or 'new' }}/save" method="POST" class="space-y-6">
+        <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-700">
+                <h2 class="text-lg font-semibold text-gray-100">Basic Information</h2>
+            </div>
+            <div class="p-6 space-y-4">
+                {% if is_new %}
+                <div>
+                    <label for="trigger_id" class="block text-sm font-medium text-gray-300">Trigger ID</label>
+                    <input type="text" name="trigger_id" id="trigger_id" required
+                           class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                           placeholder="my-trigger-id">
+                </div>
+                {% endif %}
+
+                <div>
+                    <label for="trigger_type" class="block text-sm font-medium text-gray-300">Type</label>
+                    <select name="trigger_type" id="trigger_type"
+                            class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">Select type...</option>
+                        {% for type in ['Manual', 'Balance', 'Received', 'Sent', 'Block_height', 'Tx_confirmation', 'Timestamp', 'Recurring', 'TriggerStatus', 'DeadMansSwitch', 'SignedMessage', 'HTTPGetRequest', 'HTTPPostRequest', 'HTTPDeleteRequest'] %}
+                        <option value="{{ type }}" {% if trigger and trigger.get('trigger_type') == type %}selected{% endif %}>{{ type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label for="status" class="block text-sm font-medium text-gray-300">Status</label>
+                    <select name="status" id="status"
+                            class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        {% for status in ['Pending', 'Active', 'Disabled'] %}
+                        <option value="{{ status }}" {% if trigger and trigger.get('status') == status %}selected{% endif %}>{{ status }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label for="description" class="block text-sm font-medium text-gray-300">Description</label>
+                    <textarea name="description" id="description" rows="3"
+                              class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                              placeholder="Describe what this trigger does...">{{ trigger.description if trigger else '' }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-700">
+                <h2 class="text-lg font-semibold text-gray-100">Trigger Settings</h2>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="address" class="block text-sm font-medium text-gray-300">Address</label>
+                        <input type="text" name="address" id="address"
+                               value="{{ trigger.address if trigger else '' }}"
+                               class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                               placeholder="Bitcoin address">
+                    </div>
+
+                    <div>
+                        <label for="amount" class="block text-sm font-medium text-gray-300">Amount (satoshis)</label>
+                        <input type="number" name="amount" id="amount"
+                               value="{{ trigger.amount if trigger else '' }}"
+                               class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                               placeholder="Amount in satoshis">
+                    </div>
+
+                    <div>
+                        <label for="confirmations" class="block text-sm font-medium text-gray-300">Confirmations</label>
+                        <input type="number" name="confirmations" id="confirmations"
+                               value="{{ trigger.confirmations if trigger else '3' }}"
+                               class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+
+                    <div>
+                        <label for="block_height" class="block text-sm font-medium text-gray-300">Block Height</label>
+                        <input type="number" name="block_height" id="block_height"
+                               value="{{ trigger.block_height if trigger else '' }}"
+                               class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+
+                    <div>
+                        <label for="timestamp" class="block text-sm font-medium text-gray-300">Timestamp (Unix)</label>
+                        <input type="number" name="timestamp" id="timestamp"
+                               value="{{ trigger.timestamp if trigger else '' }}"
+                               class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+
+                    <div>
+                        <label for="txid" class="block text-sm font-medium text-gray-300">Transaction ID</label>
+                        <input type="text" name="txid" id="txid"
+                               value="{{ trigger.txid if trigger else '' }}"
+                               class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                               placeholder="Transaction hash">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="script" class="block text-sm font-medium text-gray-300">Script</label>
+                    <input type="text" name="script" id="script"
+                           value="{{ trigger.script if trigger else '' }}"
+                           class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                           placeholder="Script to run when trigger activates">
+                </div>
+
+                <div>
+                    <label for="actions" class="block text-sm font-medium text-gray-300">Actions (comma-separated)</label>
+                    <input type="text" name="actions" id="actions"
+                           value="{{ trigger.actions | join(', ') if trigger and trigger.actions else '' }}"
+                           class="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                           placeholder="action1, action2, action3">
+                </div>
+
+                <div class="flex items-center">
+                    <input type="checkbox" name="multi" id="multi" value="true"
+                           {% if trigger and trigger.multi %}checked{% endif %}
+                           class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-600 rounded bg-gray-900">
+                    <label for="multi" class="ml-2 block text-sm text-gray-300">Allow multiple activations</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end space-x-4">
+            <a href="/triggers" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors">
+                Cancel
+            </a>
+            <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors">
+                {% if is_new %}Create Trigger{% else %}Save Changes{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
