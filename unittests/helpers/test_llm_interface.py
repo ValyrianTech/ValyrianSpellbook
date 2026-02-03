@@ -172,5 +172,122 @@ class TestLlmRouterPrompt(unittest.TestCase):
         self.assertIn("LLM router", result)
 
 
+class TestLLMInterfaceGenerate(unittest.TestCase):
+    """Test cases for LLMInterface generate method"""
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.llm_interface.load_llms', return_value={})
+    @patch('helpers.llm_interface.LOG')
+    def test_generate(self, mock_log, mock_load_llms, mock_ws):
+        """Test generate method returns LLMResult"""
+        from helpers.llm_interface import LLMInterface
+        
+        class ConcreteLLM(LLMInterface):
+            def get_completion_text(self, messages, stop, **kwargs):
+                return "test response", {'prompt_tokens': 10, 'completion_tokens': 5, 'total_tokens': 15}
+        
+        llm = ConcreteLLM(model_name='test-model')
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        
+        result = llm.generate(messages)
+        
+        self.assertEqual(result.generations[0]['text'], 'test response')
+        self.assertEqual(result.llm_output['token_usage']['prompt_tokens'], 10)
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.llm_interface.load_llms', return_value={})
+    @patch('helpers.llm_interface.LOG')
+    def test_generate_with_stop(self, mock_log, mock_load_llms, mock_ws):
+        """Test generate method with stop sequences"""
+        from helpers.llm_interface import LLMInterface
+        
+        class ConcreteLLM(LLMInterface):
+            def get_completion_text(self, messages, stop, **kwargs):
+                self.received_stop = stop
+                return "test", {}
+        
+        llm = ConcreteLLM(model_name='test-model')
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        
+        llm.generate(messages, stop=['\n', 'END'])
+        
+        self.assertEqual(llm.received_stop, ['\n', 'END'])
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.llm_interface.load_llms', return_value={})
+    @patch('helpers.llm_interface.LOG')
+    def test_init_auto_routing(self, mock_log, mock_load_llms, mock_ws):
+        """Test LLMInterface initialization with auto routing"""
+        from helpers.llm_interface import LLMInterface
+        
+        class ConcreteLLM(LLMInterface):
+            def get_completion_text(self, messages, stop, **kwargs):
+                return "test", {}
+        
+        llm = ConcreteLLM(model_name='auto')
+        
+        self.assertTrue(llm.auto_routing)
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.llm_interface.load_llms', return_value={})
+    @patch('helpers.llm_interface.LOG')
+    def test_init_none_model_name(self, mock_log, mock_load_llms, mock_ws):
+        """Test LLMInterface initialization with None model name"""
+        from helpers.llm_interface import LLMInterface
+        
+        class ConcreteLLM(LLMInterface):
+            def get_completion_text(self, messages, stop, **kwargs):
+                return "test", {}
+        
+        llm = ConcreteLLM(model_name=None)
+        
+        self.assertIsNone(llm.model_name)
+
+
+class TestGetAvailableLlmsServerTypes(unittest.TestCase):
+    """Test cases for get_available_llms with different server types"""
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.llm_interface.load_llms')
+    def test_get_available_llms_oobabooga(self, mock_load_llms, mock_ws):
+        """Test get_available_llms with Oobabooga server type"""
+        from helpers.llm_interface import get_available_llms
+        
+        mock_load_llms.return_value = {
+            'model1': {'allow_auto_routing': True, 'description': 'Model 1', 'server_type': 'Oobabooga'},
+        }
+        
+        text, names = get_available_llms()
+        
+        self.assertIn('self-hosted:model1', names)
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.llm_interface.load_llms')
+    def test_get_available_llms_vllm(self, mock_load_llms, mock_ws):
+        """Test get_available_llms with vLLM server type"""
+        from helpers.llm_interface import get_available_llms
+        
+        mock_load_llms.return_value = {
+            'model1': {'allow_auto_routing': True, 'description': 'Model 1', 'server_type': 'vLLM'},
+        }
+        
+        text, names = get_available_llms()
+        
+        self.assertIn('self-hosted:model1', names)
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.llm_interface.load_llms')
+    def test_get_available_llms_empty(self, mock_load_llms, mock_ws):
+        """Test get_available_llms with no models"""
+        from helpers.llm_interface import get_available_llms
+        
+        mock_load_llms.return_value = {}
+        
+        text, names = get_available_llms()
+        
+        self.assertEqual(text, '')
+        self.assertEqual(names, [])
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -30,3 +30,30 @@ class TestLogHelpers(object):
         logs = get_logs(filter_string='UNLIKELY_FILTER_STRING_12345')
         assert isinstance(logs, list)
         assert len(logs) == 0
+
+    def test_log_levels(self):
+        """Test that LOG supports different log levels"""
+        import logging
+        assert LOG.level == logging.DEBUG
+
+    def test_requests_log_levels(self):
+        """Test that REQUESTS_LOG supports different log levels"""
+        import logging
+        assert REQUESTS_LOG.level == logging.DEBUG
+
+    def test_log_has_handlers(self):
+        """Test that LOG has handlers configured"""
+        assert len(LOG.handlers) >= 2  # stream and file handler
+
+    def test_requests_log_has_handlers(self):
+        """Test that REQUESTS_LOG has handlers configured"""
+        assert len(REQUESTS_LOG.handlers) >= 1  # file handler
+
+    def test_get_logs_returns_sorted(self):
+        """Test that get_logs returns sorted results"""
+        logs = get_logs()
+        # Verify it's a list (sorting is done internally)
+        assert isinstance(logs, list)
+        # If there are logs, verify they're sorted
+        if len(logs) > 1:
+            assert logs == sorted(logs)
