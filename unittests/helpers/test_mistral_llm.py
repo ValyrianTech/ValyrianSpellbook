@@ -283,6 +283,119 @@ class TestMistralLLM(unittest.TestCase):
         # Should stop early
         self.assertIsInstance(result, str)
 
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.mistral_llm.Mistral')
+    @patch('helpers.mistral_llm.broadcast_message')
+    @patch('helpers.mistral_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.mistral_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.mistral_llm.LOG')
+    @patch('helpers.mistral_llm.LLMInterface.check_stop_generation', return_value=True)
+    def test_get_completion_text_check_stop_generation(self, mock_stop, mock_log, mock_sender, mock_channel, mock_broadcast, mock_mistral, mock_ws):
+        """Test completion stops when check_stop_generation returns True - covering lines 56-58"""
+        from helpers.mistral_llm import MistralLLM
+        
+        mock_chunk = MagicMock()
+        mock_chunk.data.choices = [MagicMock()]
+        mock_chunk.data.choices[0].delta.content = 'Hello!'
+        mock_chunk.data.choices[0].delta.reasoning_content = None
+        mock_chunk.data.usage = None
+        
+        mock_client = MagicMock()
+        mock_client.chat.stream.return_value = iter([mock_chunk])
+        mock_mistral.return_value = mock_client
+        
+        llm = MistralLLM(model_name='mistral-large', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+        
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages)
+        
+        # Should have stopped early
+        self.assertEqual(result, '')
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.mistral_llm.Mistral')
+    @patch('helpers.mistral_llm.broadcast_message')
+    @patch('helpers.mistral_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.mistral_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.mistral_llm.LOG')
+    def test_get_completion_text_with_text_attribute_chunk(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_mistral, mock_ws):
+        """Test completion with chunk item having text attribute - covering line 102-103"""
+        from helpers.mistral_llm import MistralLLM
+        
+        # Create mock chunk item with text attribute (no thinking)
+        mock_chunk_item = MagicMock(spec=['text'])
+        mock_chunk_item.text = 'Direct text'
+        del mock_chunk_item.thinking  # Ensure no thinking attribute
+        
+        mock_chunk = MagicMock()
+        mock_chunk.data.choices = [MagicMock()]
+        mock_chunk.data.choices[0].delta.content = [mock_chunk_item]
+        mock_chunk.data.choices[0].delta.reasoning_content = None
+        mock_chunk.data.usage = MagicMock()
+        mock_chunk.data.usage.prompt_tokens = 10
+        mock_chunk.data.usage.completion_tokens = 5
+        mock_chunk.data.usage.total_tokens = 15
+        
+        mock_client = MagicMock()
+        mock_client.chat.stream.return_value = iter([mock_chunk])
+        mock_mistral.return_value = mock_client
+        
+        llm = MistralLLM(model_name='mistral-large', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+        
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages)
+        
+        self.assertIn('think', result)
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.mistral_llm.Mistral')
+    @patch('helpers.mistral_llm.broadcast_message')
+    @patch('helpers.mistral_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.mistral_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.mistral_llm.LOG')
+    def test_get_completion_text_with_fallback_chunk(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_mistral, mock_ws):
+        """Test completion with chunk item fallback to string - covering lines 104-106"""
+        from helpers.mistral_llm import MistralLLM
+        
+        # Create mock chunk item without text or thinking attributes
+        mock_chunk_item = MagicMock()
+        # Remove text and thinking attributes so fallback to str() is used
+        del mock_chunk_item.text
+        del mock_chunk_item.thinking
+        mock_chunk_item.configure_mock(**{'__str__': lambda self: 'Fallback string'})
+        
+        mock_chunk = MagicMock()
+        mock_chunk.data.choices = [MagicMock()]
+        mock_chunk.data.choices[0].delta.content = [mock_chunk_item]
+        mock_chunk.data.choices[0].delta.reasoning_content = None
+        mock_chunk.data.usage = MagicMock()
+        mock_chunk.data.usage.prompt_tokens = 10
+        mock_chunk.data.usage.completion_tokens = 5
+        mock_chunk.data.usage.total_tokens = 15
+        
+        mock_client = MagicMock()
+        mock_client.chat.stream.return_value = iter([mock_chunk])
+        mock_mistral.return_value = mock_client
+        
+        llm = MistralLLM(model_name='mistral-large', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+        
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages)
+        
+        self.assertIn('think', result)
+
 
 if __name__ == '__main__':
     unittest.main()
