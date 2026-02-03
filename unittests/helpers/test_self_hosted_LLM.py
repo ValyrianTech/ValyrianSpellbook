@@ -208,5 +208,232 @@ class TestGetDefaultLLMHost(unittest.TestCase):
         self.assertEqual(result, '')
 
 
+class TestGetCompletionTextMultiMessage(unittest.TestCase):
+    """Test cases for multi-message content handling (line 114)"""
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.self_hosted_LLM.requests.post')
+    @patch('helpers.self_hosted_LLM.sseclient.SSEClient')
+    @patch('helpers.self_hosted_LLM.broadcast_message')
+    @patch('helpers.self_hosted_LLM.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.self_hosted_LLM.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.self_hosted_LLM.get_default_llm_host', return_value='http://localhost:7860')
+    @patch('helpers.self_hosted_LLM.LOG')
+    def test_get_completion_text_multi_message_string_content(self, mock_log, mock_get_host, mock_sender, mock_channel, mock_broadcast, mock_sse, mock_post, mock_ws):
+        """Test completion with multiple messages having string content (covers line 114)"""
+        from helpers.self_hosted_LLM import SelfHostedLLM
+        
+        mock_event = MagicMock()
+        mock_event.data = '{"choices": [{"text": "Response"}], "usage": {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15}}'
+        
+        mock_sse_client = MagicMock()
+        mock_sse_client.events.return_value = iter([mock_event])
+        mock_sse.return_value = mock_sse_client
+        
+        llm = SelfHostedLLM(host='http://localhost', port=7860, model_name='test-model')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+        
+        # Multiple messages with string content - this triggers line 114
+        messages = [
+            {'role': 'system', 'content': 'You are a helpful assistant.'},
+            {'role': 'user', 'content': 'Hello'}
+        ]
+        result, usage = llm.get_completion_text(messages)
+        
+        self.assertEqual(result, 'Response')
+        self.assertEqual(usage['prompt_tokens'], 10)
+
+
+class TestSetExpertModel(unittest.TestCase):
+    """Test cases for set_expert_model method (lines 228-253)"""
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.self_hosted_LLM.get_default_llm_host', return_value='http://localhost:7860')
+    @patch('helpers.self_hosted_LLM.LOG')
+    @patch('helpers.self_hosted_LLM.get_available_llms')
+    @patch('helpers.self_hosted_LLM.llm_router_prompt')
+    @patch('helpers.self_hosted_LLM.load_llms')
+    @patch('helpers.self_hosted_LLM.parse_generation')
+    def test_set_expert_model_valid_json(self, mock_parse, mock_load_llms, mock_router_prompt, mock_get_available, mock_log, mock_get_host, mock_ws):
+        """Test set_expert_model with valid JSON response selecting expert (lines 236-243)"""
+        from helpers.self_hosted_LLM import SelfHostedLLM
+        from helpers.textgenerationhelpers import CodeGeneration
+        
+        # Setup mocks
+        mock_get_available.return_value = (['model1 description', 'model2 description'], ['model1', 'model2'])
+        mock_router_prompt.return_value = 'router prompt'
+        mock_load_llms.return_value = {
+            'model1': {'host': 'http://host1', 'port': 8001},
+            'model2': {'host': 'http://host2', 'port': 8002}
+        }
+        # Mock parse_generation to return a CodeGeneration object (as the code expects)
+        mock_code_gen = CodeGeneration(content='{"expert_llm": 1}', language='json')
+        mock_parse.return_value = [mock_code_gen]
+        
+        llm = SelfHostedLLM(host='http://localhost', port=7860, model_name='test-model')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+        
+        # Mock get_completion_text to return a tuple
+        with patch.object(llm, 'get_completion_text') as mock_completion:
+            mock_completion.return_value = ('```json\n{"expert_llm": 1}\n```', {})
+            
+            llm.set_expert_model('test prompt')
+            
+            # Should have selected model2 (index 1)
+            self.assertEqual(llm.host, 'http://host2')
+            self.assertEqual(llm.port, 8002)
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.self_hosted_LLM.get_default_llm_host', return_value='http://localhost:7860')
+    @patch('helpers.self_hosted_LLM.LOG')
+    @patch('helpers.self_hosted_LLM.get_available_llms')
+    @patch('helpers.self_hosted_LLM.llm_router_prompt')
+    @patch('helpers.self_hosted_LLM.load_llms')
+    @patch('helpers.self_hosted_LLM.parse_generation')
+    def test_set_expert_model_invalid_json(self, mock_parse, mock_load_llms, mock_router_prompt, mock_get_available, mock_log, mock_get_host, mock_ws):
+        """Test set_expert_model with invalid JSON falls back to default (lines 238-241)"""
+        from helpers.self_hosted_LLM import SelfHostedLLM
+        from helpers.textgenerationhelpers import CodeGeneration
+        
+        # Setup mocks
+        mock_get_available.return_value = (['model1 description'], ['model1'])
+        mock_router_prompt.return_value = 'router prompt'
+        mock_load_llms.return_value = {
+            'model1': {'host': 'http://host1', 'port': 8001}
+        }
+        # Mock parse_generation to return a CodeGeneration with invalid JSON
+        mock_code_gen = CodeGeneration(content='{invalid json}', language='json')
+        mock_parse.return_value = [mock_code_gen]
+        
+        llm = SelfHostedLLM(host='http://localhost', port=7860, model_name='test-model')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+        
+        # Mock get_completion_text to return invalid JSON in code block
+        with patch.object(llm, 'get_completion_text') as mock_completion:
+            mock_completion.return_value = ('```json\n{invalid json}\n```', {})
+            
+            llm.set_expert_model('test prompt')
+            
+            # Should fall back to model1 (index 0)
+            self.assertEqual(llm.host, 'http://host1')
+            self.assertEqual(llm.port, 8001)
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.self_hosted_LLM.get_default_llm_host', return_value='http://localhost:7860')
+    @patch('helpers.self_hosted_LLM.LOG')
+    @patch('helpers.self_hosted_LLM.get_available_llms')
+    @patch('helpers.self_hosted_LLM.llm_router_prompt')
+    @patch('helpers.self_hosted_LLM.load_llms')
+    @patch('helpers.self_hosted_LLM.parse_generation')
+    def test_set_expert_model_index_out_of_range(self, mock_parse, mock_load_llms, mock_router_prompt, mock_get_available, mock_log, mock_get_host, mock_ws):
+        """Test set_expert_model with out of range index falls back to default (lines 245-247)"""
+        from helpers.self_hosted_LLM import SelfHostedLLM
+        from helpers.textgenerationhelpers import CodeGeneration
+        
+        # Setup mocks - only 2 models available
+        mock_get_available.return_value = (['model1 description', 'model2 description'], ['model1', 'model2'])
+        mock_router_prompt.return_value = 'router prompt'
+        mock_load_llms.return_value = {
+            'model1': {'host': 'http://host1', 'port': 8001},
+            'model2': {'host': 'http://host2', 'port': 8002}
+        }
+        # Mock parse_generation to return a CodeGeneration with index 10 (out of range)
+        mock_code_gen = CodeGeneration(content='{"expert_llm": 10}', language='json')
+        mock_parse.return_value = [mock_code_gen]
+        
+        llm = SelfHostedLLM(host='http://localhost', port=7860, model_name='test-model')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+        
+        # Mock get_completion_text to return index 10 (out of range)
+        with patch.object(llm, 'get_completion_text') as mock_completion:
+            mock_completion.return_value = ('```json\n{"expert_llm": 10}\n```', {})
+            
+            llm.set_expert_model('test prompt')
+            
+            # Should fall back to model1 (index 0) because 10 >= 2
+            self.assertEqual(llm.host, 'http://host1')
+            self.assertEqual(llm.port, 8001)
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.self_hosted_LLM.get_default_llm_host', return_value='http://localhost:7860')
+    @patch('helpers.self_hosted_LLM.LOG')
+    @patch('helpers.self_hosted_LLM.get_available_llms')
+    @patch('helpers.self_hosted_LLM.llm_router_prompt')
+    @patch('helpers.self_hosted_LLM.load_llms')
+    def test_set_expert_model_no_code_generation(self, mock_load_llms, mock_router_prompt, mock_get_available, mock_log, mock_get_host, mock_ws):
+        """Test set_expert_model with no CodeGeneration in response (line 235 condition false)"""
+        from helpers.self_hosted_LLM import SelfHostedLLM
+        
+        # Setup mocks
+        mock_get_available.return_value = (['model1 description'], ['model1'])
+        mock_router_prompt.return_value = 'router prompt'
+        mock_load_llms.return_value = {
+            'model1': {'host': 'http://host1', 'port': 8001}
+        }
+        
+        llm = SelfHostedLLM(host='http://localhost', port=7860, model_name='test-model')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+        
+        # Mock get_completion_text to return plain text (no code block)
+        with patch.object(llm, 'get_completion_text') as mock_completion:
+            mock_completion.return_value = ('Just plain text response', {})
+            
+            llm.set_expert_model('test prompt')
+            
+            # Should use default model1 (index 0)
+            self.assertEqual(llm.host, 'http://host1')
+            self.assertEqual(llm.port, 8001)
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.self_hosted_LLM.get_default_llm_host', return_value='http://localhost:7860')
+    @patch('helpers.self_hosted_LLM.LOG')
+    @patch('helpers.self_hosted_LLM.get_available_llms')
+    @patch('helpers.self_hosted_LLM.llm_router_prompt')
+    @patch('helpers.self_hosted_LLM.load_llms')
+    @patch('helpers.self_hosted_LLM.parse_generation')
+    def test_set_expert_model_empty_parsed(self, mock_parse, mock_load_llms, mock_router_prompt, mock_get_available, mock_log, mock_get_host, mock_ws):
+        """Test set_expert_model with empty parsed result (line 235 len check)"""
+        from helpers.self_hosted_LLM import SelfHostedLLM
+        
+        # Setup mocks
+        mock_get_available.return_value = (['model1 description'], ['model1'])
+        mock_router_prompt.return_value = 'router prompt'
+        mock_load_llms.return_value = {
+            'model1': {'host': 'http://host1', 'port': 8001}
+        }
+        # Mock parse_generation to return empty list
+        mock_parse.return_value = []
+        
+        llm = SelfHostedLLM(host='http://localhost', port=7860, model_name='test-model')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+        
+        with patch.object(llm, 'get_completion_text') as mock_completion:
+            mock_completion.return_value = ('', {})
+            
+            llm.set_expert_model('test prompt')
+            
+            # Should use default model1 (index 0)
+            self.assertEqual(llm.host, 'http://host1')
+            self.assertEqual(llm.port, 8001)
+
+
 if __name__ == '__main__':
     unittest.main()
