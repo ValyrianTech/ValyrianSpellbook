@@ -364,3 +364,386 @@ class TestSendTransactionAction(object):
         with pytest.raises(NotImplementedError) as exc_info:
             action.get_private_key()
         assert 'Unknown wallet type' in str(exc_info.value)
+
+
+class TestSendTransactionActionRun(object):
+    """Tests for SendTransactionAction run method"""
+
+    @mock.patch('action.sendtransactionaction.utxos')
+    def test_run_utxos_error(self, mock_utxos):
+        """Test run when utxos returns error"""
+        mock_utxos.return_value = {'error': 'API error'}
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1TestAddress'
+        result = action.run()
+        assert result == False
+
+    @mock.patch('action.sendtransactionaction.utxos')
+    def test_run_no_utxos(self, mock_utxos):
+        """Test run when no utxos found"""
+        mock_utxos.return_value = {'utxos': []}
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1TestAddress'
+        result = action.run()
+        assert result == False
+
+    @mock.patch('action.sendtransactionaction.utxos')
+    def test_run_minimum_amount_not_met(self, mock_utxos):
+        """Test run when minimum amount is not met"""
+        mock_utxos.return_value = {'utxos': [
+            {'value': 5000, 'output_hash': 'hash1', 'output_n': 0, 'confirmations': 6}
+        ]}
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1TestAddress'
+        action.minimum_amount = 10000
+        result = action.run()
+        assert result == False
+
+    @mock.patch('action.sendtransactionaction.utxos')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    def test_run_spellbook_fee_exceeds_input(self, mock_valid_amount, mock_valid_address, mock_utxos):
+        """Test run when spellbook fee exceeds total input"""
+        mock_utxos.return_value = {'utxos': [
+            {'value': 1000, 'output_hash': 'hash1', 'output_n': 0, 'confirmations': 6}
+        ]}
+        mock_valid_address.return_value = True
+        mock_valid_amount.return_value = True
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1TestAddress'
+        action.fee_address = '1FeeAddress'
+        action.fee_percentage = 200  # 200% fee
+        action.amount = 0
+        result = action.run()
+        assert result == False
+
+    @mock.patch('action.sendtransactionaction.utxos')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    def test_run_amount_plus_fee_exceeds_input(self, mock_valid_amount, mock_valid_address, mock_utxos):
+        """Test run when amount plus fee exceeds total input"""
+        mock_utxos.return_value = {'utxos': [
+            {'value': 10000, 'output_hash': 'hash1', 'output_n': 0, 'confirmations': 6}
+        ]}
+        mock_valid_address.return_value = True
+        mock_valid_amount.return_value = True
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1TestAddress'
+        action.fee_address = '1FeeAddress'
+        action.fee_percentage = 10
+        action.amount = 15000  # More than available
+        result = action.run()
+        assert result == False
+
+
+class TestTransactionInput(object):
+    """Tests for TransactionInput class"""
+
+    def test_transaction_input_init(self):
+        from action.sendtransactionaction import TransactionInput
+        tx_input = TransactionInput(
+            address='1TestAddress',
+            value=50000,
+            output_hash='abc123',
+            output_n=0,
+            confirmations=6
+        )
+        assert tx_input.address == '1TestAddress'
+        assert tx_input.value == 50000
+        assert tx_input.output_hash == 'abc123'
+        assert tx_input.output_n == 0
+        assert tx_input.confirmations == 6
+        assert tx_input.output == 'abc123:0'
+
+
+class TestTransactionOutput(object):
+    """Tests for TransactionOutput class"""
+
+    def test_transaction_output_init(self):
+        from action.sendtransactionaction import TransactionOutput
+        tx_output = TransactionOutput(address='1RecvAddress', amount=45000)
+        assert tx_output.address == '1RecvAddress'
+        assert tx_output.value == 45000
+
+
+class TestConstructTransactionOutputs(object):
+    """Tests for construct_transaction_outputs static method"""
+
+    def test_with_receiving_outputs(self):
+        from action.sendtransactionaction import SendTransactionAction, TransactionOutput
+        receiving = [TransactionOutput('addr1', 10000), TransactionOutput('addr2', 20000)]
+        outputs = SendTransactionAction.construct_transaction_outputs(receiving_outputs=receiving)
+        assert len(outputs) == 2
+        assert outputs[0]['address'] == 'addr1'
+        assert outputs[1]['address'] == 'addr2'
+
+    def test_with_change_output(self):
+        from action.sendtransactionaction import SendTransactionAction, TransactionOutput
+        receiving = [TransactionOutput('addr1', 10000)]
+        change = TransactionOutput('change_addr', 5000)
+        outputs = SendTransactionAction.construct_transaction_outputs(
+            receiving_outputs=receiving, change_output=change
+        )
+        assert len(outputs) == 2
+        # Change should be first
+        assert outputs[0]['address'] == 'change_addr'
+        assert outputs[1]['address'] == 'addr1'
+
+    def test_with_spellbook_fee_output(self):
+        from action.sendtransactionaction import SendTransactionAction, TransactionOutput
+        receiving = [TransactionOutput('addr1', 10000)]
+        fee = TransactionOutput('fee_addr', 1000)
+        outputs = SendTransactionAction.construct_transaction_outputs(
+            receiving_outputs=receiving, spellbook_fee_output=fee
+        )
+        assert len(outputs) == 2
+        # Fee should be last
+        assert outputs[0]['address'] == 'addr1'
+        assert outputs[1]['address'] == 'fee_addr'
+
+    def test_with_zero_value_outputs(self):
+        from action.sendtransactionaction import SendTransactionAction, TransactionOutput
+        receiving = [TransactionOutput('addr1', 0)]  # Zero value
+        change = TransactionOutput('change_addr', 0)  # Zero value
+        outputs = SendTransactionAction.construct_transaction_outputs(
+            receiving_outputs=receiving, change_output=change
+        )
+        # Zero value outputs should be excluded
+        assert len(outputs) == 0
+
+    def test_with_all_outputs(self):
+        from action.sendtransactionaction import SendTransactionAction, TransactionOutput
+        receiving = [TransactionOutput('addr1', 10000), TransactionOutput('addr2', 20000)]
+        change = TransactionOutput('change_addr', 5000)
+        fee = TransactionOutput('fee_addr', 1000)
+        outputs = SendTransactionAction.construct_transaction_outputs(
+            receiving_outputs=receiving, change_output=change, spellbook_fee_output=fee
+        )
+        assert len(outputs) == 4
+        # Order: change, receiving, fee
+        assert outputs[0]['address'] == 'change_addr'
+        assert outputs[1]['address'] == 'addr1'
+        assert outputs[2]['address'] == 'addr2'
+        assert outputs[3]['address'] == 'fee_addr'
+
+
+class TestGetDistributionAdvanced(object):
+    """Advanced tests for get_distribution method"""
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    def test_get_distribution_unknown_type(self, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        action = SendTransactionAction('test_send_tx')
+        with pytest.raises(NotImplementedError) as exc_info:
+            action.get_distribution('UnknownType', 50000)
+        assert 'Unknown transaction type' in str(exc_info.value)
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_block_height')
+    @mock.patch('action.sendtransactionaction.get_sil')
+    def test_get_distribution_send2sil(self, mock_get_sil, mock_valid_height, mock_valid_address, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        mock_valid_address.return_value = True
+        mock_valid_height.return_value = True
+        mock_get_sil.return_value = {'SIL': [('addr1', 50), ('addr2', 50)]}
+        
+        action = SendTransactionAction('test_send_tx')
+        action.registration_address = '1RegAddress'
+        action.registration_block_height = 700000
+        distribution = action.get_distribution('Send2SIL', 50000)
+        
+        assert distribution == {'addr1': 50, 'addr2': 50}
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_block_height')
+    @mock.patch('action.sendtransactionaction.get_sil')
+    def test_get_distribution_send2sil_invalid_data(self, mock_get_sil, mock_valid_height, mock_valid_address, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        mock_valid_address.return_value = True
+        mock_valid_height.return_value = True
+        mock_get_sil.return_value = {'error': 'SIL not found'}
+        
+        action = SendTransactionAction('test_send_tx')
+        action.registration_address = '1RegAddress'
+        action.registration_block_height = 700000
+        
+        with pytest.raises(Exception) as exc_info:
+            action.get_distribution('Send2SIL', 50000)
+        assert 'invalid SIL' in str(exc_info.value)
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_xpub')
+    @mock.patch('action.sendtransactionaction.valid_block_height')
+    @mock.patch('action.sendtransactionaction.get_lbl')
+    def test_get_distribution_send2lbl(self, mock_get_lbl, mock_valid_height, mock_valid_xpub, mock_valid_address, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        mock_valid_address.return_value = True
+        mock_valid_xpub.return_value = True
+        mock_valid_height.return_value = True
+        mock_get_lbl.return_value = {'LBL': [('addr1', 60), ('addr2', 40)]}
+        
+        action = SendTransactionAction('test_send_tx')
+        action.registration_address = '1RegAddress'
+        action.registration_xpub = 'xpub123'
+        action.registration_block_height = 700000
+        distribution = action.get_distribution('Send2LBL', 50000)
+        
+        assert distribution == {'addr1': 60, 'addr2': 40}
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_xpub')
+    @mock.patch('action.sendtransactionaction.valid_block_height')
+    @mock.patch('action.sendtransactionaction.get_lrl')
+    def test_get_distribution_send2lrl(self, mock_get_lrl, mock_valid_height, mock_valid_xpub, mock_valid_address, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        mock_valid_address.return_value = True
+        mock_valid_xpub.return_value = True
+        mock_valid_height.return_value = True
+        mock_get_lrl.return_value = {'LRL': [('addr1', 70), ('addr2', 30)]}
+        
+        action = SendTransactionAction('test_send_tx')
+        action.registration_address = '1RegAddress'
+        action.registration_xpub = 'xpub123'
+        action.registration_block_height = 700000
+        distribution = action.get_distribution('Send2LRL', 50000)
+        
+        assert distribution == {'addr1': 70, 'addr2': 30}
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_xpub')
+    @mock.patch('action.sendtransactionaction.valid_block_height')
+    @mock.patch('action.sendtransactionaction.get_lsl')
+    def test_get_distribution_send2lsl(self, mock_get_lsl, mock_valid_height, mock_valid_xpub, mock_valid_address, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        mock_valid_address.return_value = True
+        mock_valid_xpub.return_value = True
+        mock_valid_height.return_value = True
+        mock_get_lsl.return_value = {'LSL': [('addr1', 80), ('addr2', 20)]}
+        
+        action = SendTransactionAction('test_send_tx')
+        action.registration_address = '1RegAddress'
+        action.registration_xpub = 'xpub123'
+        action.registration_block_height = 700000
+        distribution = action.get_distribution('Send2LSL', 50000)
+        
+        assert distribution == {'addr1': 80, 'addr2': 20}
+
+
+class TestGetReceivingOutputs(object):
+    """Tests for get_receiving_outputs method"""
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    def test_get_receiving_outputs_single(self, mock_valid_address, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        mock_valid_address.return_value = True
+        
+        action = SendTransactionAction('test_send_tx')
+        action.receiving_address = '1RecvAddress'
+        action.transaction_type = 'Send2Single'
+        action.minimum_output_value = 546
+        
+        outputs = action.get_receiving_outputs(50000)
+        
+        assert len(outputs) == 1
+        assert outputs[0].address == '1RecvAddress'
+        assert outputs[0].value == 50000
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_distribution')
+    def test_get_receiving_outputs_excludes_small_outputs(self, mock_valid_distribution, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        mock_valid_distribution.return_value = True
+        
+        action = SendTransactionAction('test_send_tx')
+        action.distribution = {'addr1': 99, 'addr2': 1}  # addr2 gets 1% = 500 satoshis
+        action.transaction_type = 'Send2Many'
+        action.minimum_output_value = 546  # Dust limit
+        
+        outputs = action.get_receiving_outputs(50000)
+        
+        # addr2 should be excluded because 1% of 50000 = 500 < 546
+        assert len(outputs) == 1
+        assert outputs[0].address == 'addr1'
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_distribution')
+    def test_get_receiving_outputs_handles_rounding(self, mock_valid_distribution, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        mock_valid_distribution.return_value = True
+        
+        action = SendTransactionAction('test_send_tx')
+        action.distribution = {'addr1': 33, 'addr2': 33, 'addr3': 34}
+        action.transaction_type = 'Send2Many'
+        action.minimum_output_value = 1
+        
+        outputs = action.get_receiving_outputs(100)
+        
+        # Total should equal 100 even with rounding
+        total = sum(o.value for o in outputs)
+        assert total == 100
+
+
+class TestLogTransactionInfo(object):
+    """Tests for log_transaction_info method"""
+
+    def test_log_transaction_info_send_all(self):
+        action = SendTransactionAction('test_send_tx')
+        action.amount = 0  # Send all
+        action.transaction_type = 'Send2Single'
+        
+        tx_inputs = [{'address': '1Send', 'value': 50000, 'output': 'hash:0', 'confirmations': 6}]
+        tx_outputs = [{'address': '1Recv', 'value': 49000}]
+        
+        # Should not raise
+        action.log_transaction_info(tx_inputs, tx_outputs)
+
+    def test_log_transaction_info_specific_amount(self):
+        action = SendTransactionAction('test_send_tx')
+        action.amount = 30000  # Specific amount
+        action.transaction_type = 'Send2Single'
+        
+        tx_inputs = [{'address': '1Send', 'value': 50000, 'output': 'hash:0', 'confirmations': 6}]
+        tx_outputs = [{'address': '1Recv', 'value': 30000}, {'address': '1Change', 'value': 19000}]
+        
+        # Should not raise
+        action.log_transaction_info(tx_inputs, tx_outputs)
+
+    def test_log_transaction_info_with_op_return(self):
+        action = SendTransactionAction('test_send_tx')
+        action.amount = 0
+        action.transaction_type = 'Send2Single'
+        action.op_return_data = 'Test OP_RETURN data'
+        
+        tx_inputs = [{'address': '1Send', 'value': 50000, 'output': 'hash:0', 'confirmations': 6}]
+        tx_outputs = [{'address': '1Recv', 'value': 49000}]
+        
+        # Should not raise
+        action.log_transaction_info(tx_inputs, tx_outputs)
+
+
+class TestIsFeeAcceptable(object):
+    """Tests for is_fee_acceptable static method"""
+
+    @mock.patch('action.sendtransactionaction.get_max_tx_fee_percentage', return_value=0)
+    def test_is_fee_acceptable_no_limit(self, mock_max_fee):
+        """Test when max fee percentage is 0 (no limit)"""
+        result = SendTransactionAction.is_fee_acceptable(50000, 100000)
+        assert result == True
+
+    @mock.patch('action.sendtransactionaction.get_max_tx_fee_percentage', return_value=10)
+    def test_is_fee_acceptable_within_limit(self, mock_max_fee):
+        """Test when fee is within limit"""
+        result = SendTransactionAction.is_fee_acceptable(5000, 100000)  # 5%
+        assert result == True
+
+    @mock.patch('action.sendtransactionaction.get_max_tx_fee_percentage', return_value=10)
+    def test_is_fee_acceptable_exceeds_limit(self, mock_max_fee):
+        """Test when fee exceeds limit"""
+        result = SendTransactionAction.is_fee_acceptable(15000, 100000)  # 15%
+        assert result == False
