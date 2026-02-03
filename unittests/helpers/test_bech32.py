@@ -201,13 +201,28 @@ class TestDecode(object):
         assert witprog is None
 
     def test_decode_invalid_witness_version(self):
-        # Witness version > 16 is invalid
-        # This would require crafting a specific invalid address
-        pass
+        # Witness version > 16 is invalid - create address with version 17
+        # We need to craft a bech32 string with witness version > 16
+        # Version is first data byte, 17 = 'h' in charset
+        hrp = 'bc'
+        # Create data with version 17 (invalid) and some program
+        data = [17] + [0] * 20
+        bech = bech32_encode(hrp, data)
+        witver, witprog = decode('bc', bech)
+        assert witver is None
+        assert witprog is None
 
-    def test_decode_invalid_length(self):
-        # Program length < 2 or > 40 is invalid
-        pass
+    def test_decode_invalid_v0_length(self):
+        # For v0, program must be 20 or 32 bytes
+        # Create v0 address with 25 bytes (invalid for v0)
+        hrp = 'bc'
+        witprog = [0] * 25
+        # Manually encode to bypass validation in encode()
+        data = [0] + convertbits(witprog, 8, 5)
+        bech = bech32_encode(hrp, data)
+        witver, result = decode('bc', bech)
+        assert witver is None
+        assert result is None
 
 
 class TestEncode(object):
@@ -219,6 +234,14 @@ class TestEncode(object):
         result = encode('bc', 0, witprog)
         assert result is not None
         assert result.startswith('bc1q')
+
+    def test_encode_invalid_returns_none(self):
+        # Test that encode returns None for invalid data
+        # Create a program that would fail decode validation
+        # A 1-byte program is too short (< 2 bytes)
+        witprog = [0]
+        result = encode('bc', 0, witprog)
+        assert result is None
 
     def test_encode_p2wsh(self):
         # 32-byte witness program (P2WSH)
