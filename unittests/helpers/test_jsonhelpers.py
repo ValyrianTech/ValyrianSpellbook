@@ -77,3 +77,19 @@ class TestJsonHelpers(object):
             finally:
                 # Restore permissions for cleanup
                 os.chmod(filepath, 0o644)
+
+    @mock.patch('helpers.jsonhelpers.LOG')
+    @mock.patch('helpers.jsonhelpers.time.sleep')
+    def test_load_from_json_file_retry_on_error(self, mock_sleep, mock_log):
+        """Test that load_from_json_file retries on error"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            filepath = os.path.join(tmpdir, 'test.json')
+            # Create an invalid JSON file
+            with open(filepath, 'w') as f:
+                f.write('invalid json {')
+            
+            # This should fail, retry, and return None
+            result = load_from_json_file(filepath)
+            assert result is None
+            mock_log.error.assert_called()
+            mock_sleep.assert_called_once_with(1)
