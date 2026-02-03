@@ -32,3 +32,15 @@ class TestConversionHelpers(object):
             random_satoshis = random.randint(1, 1000000000000)
             btc = str(random_satoshis/1e8)
             assert btc2satoshis(btc=btc) == random_satoshis
+
+    def test_btc2satoshis_multiple_dots_raises(self):
+        """Test that multiple dots in string raises exception"""
+        with pytest.raises(Exception) as excinfo:
+            btc2satoshis('1.2.3')
+        assert 'single "."' in str(excinfo.value)
+
+    def test_btc2satoshis_invalid_type_raises(self):
+        """Test that invalid type raises exception"""
+        with pytest.raises(Exception) as excinfo:
+            btc2satoshis([1, 2, 3])
+        assert 'Invalid type' in str(excinfo.value)
