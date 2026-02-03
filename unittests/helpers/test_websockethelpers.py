@@ -3,6 +3,7 @@
 import unittest
 from unittest.mock import patch, MagicMock, AsyncMock
 import asyncio
+import pytest
 
 from helpers.websockethelpers import (
     set_broadcast_channel, get_broadcast_channel, get_broadcast_sender,
@@ -150,6 +151,7 @@ class TestBroadcastMessage(unittest.TestCase):
         mock_run_coro.assert_called_once()
 
 
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
 class TestStartWebsocketServer(unittest.TestCase):
     """Test cases for start_websocket_server function"""
 
