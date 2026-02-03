@@ -62,3 +62,67 @@ class TestAuthentication(object):
         with pytest.raises(Exception) as ex:
             authentication.signature(self.data, NONCE, 'a')
         assert 'The secret must be a string with a length of a multiple of 4!' in str(ex.value)
+
+    def test_check_authentication_with_invalid_json_file(self):
+        authentication.load_from_json_file = mock.MagicMock(return_value=None)
+        assert authentication.check_authentication(self.headers, self.data) == authentication.AuthenticationStatus.INVALID_JSON_FILE
+
+    def test_check_authentication_with_invalid_nonce_format(self):
+        self.headers['API_Nonce'] = 'not_a_number'
+        assert authentication.check_authentication(self.headers, self.data) == authentication.AuthenticationStatus.INVALID_NONCE
+
+
+class TestAuthenticationStatus(object):
+    """Tests for AuthenticationStatus constants"""
+
+    def test_authentication_status_constants(self):
+        assert authentication.AuthenticationStatus.OK == 'OK'
+        assert authentication.AuthenticationStatus.INVALID_API_KEY == 'Invalid API key'
+        assert authentication.AuthenticationStatus.NO_API_KEY == 'No API key supplied'
+        assert authentication.AuthenticationStatus.INVALID_SIGNATURE == 'Invalid signature'
+        assert authentication.AuthenticationStatus.NO_SIGNATURE == 'No signature supplied'
+        assert authentication.AuthenticationStatus.INVALID_JSON_FILE == 'Invalid json file'
+        assert authentication.AuthenticationStatus.NO_NONCE == 'No nonce supplied'
+        assert authentication.AuthenticationStatus.INVALID_NONCE == 'Invalid nonce'
+
+
+class TestHashMessage(object):
+    """Tests for hash_message function"""
+
+    def test_hash_message(self):
+        data = {'key': 'value'}
+        nonce = 12345
+        result = authentication.hash_message(data, nonce)
+        assert isinstance(result, bytes)
+        assert len(result) == 64  # SHA512 produces 64 bytes
+
+    def test_hash_message_different_nonces(self):
+        data = {'key': 'value'}
+        result1 = authentication.hash_message(data, 1)
+        result2 = authentication.hash_message(data, 2)
+        assert result1 != result2
+
+    def test_hash_message_different_data(self):
+        nonce = 12345
+        result1 = authentication.hash_message({'key': 'value1'}, nonce)
+        result2 = authentication.hash_message({'key': 'value2'}, nonce)
+        assert result1 != result2
+
+
+class TestSignature(object):
+    """Tests for signature function"""
+
+    def test_signature_valid_secret(self):
+        data = {'key': 'value'}
+        nonce = 12345
+        secret = 'ABCD'  # Length 4, multiple of 4
+        result = authentication.signature(data, nonce, secret)
+        assert isinstance(result, str)
+
+    def test_signature_deterministic(self):
+        data = {'key': 'value'}
+        nonce = 12345
+        secret = 'ABCD'
+        result1 = authentication.signature(data, nonce, secret)
+        result2 = authentication.signature(data, nonce, secret)
+        assert result1 == result2
