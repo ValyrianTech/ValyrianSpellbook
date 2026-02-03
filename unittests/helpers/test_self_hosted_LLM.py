@@ -112,5 +112,101 @@ class TestGetDefaultLLMHost(unittest.TestCase):
         self.assertEqual(result, 'http://myhost:8080')
 
 
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.self_hosted_LLM.requests.post')
+    @patch('helpers.self_hosted_LLM.sseclient.SSEClient')
+    @patch('helpers.self_hosted_LLM.broadcast_message')
+    @patch('helpers.self_hosted_LLM.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.self_hosted_LLM.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.self_hosted_LLM.get_default_llm_host', return_value='http://localhost:7860')
+    @patch('helpers.self_hosted_LLM.LOG')
+    def test_get_completion_text_multimodal(self, mock_log, mock_get_host, mock_sender, mock_channel, mock_broadcast, mock_sse, mock_post, mock_ws):
+        """Test completion with multimodal messages"""
+        from helpers.self_hosted_LLM import SelfHostedLLM
+        
+        mock_event = MagicMock()
+        mock_event.data = '{"choices": [{"text": "I see an image"}], "usage": {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15}}'
+        
+        mock_sse_client = MagicMock()
+        mock_sse_client.events.return_value = iter([mock_event])
+        mock_sse.return_value = mock_sse_client
+        
+        llm = SelfHostedLLM(host='http://localhost', port=7860, model_name='test-model')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+        
+        # Test with multimodal content
+        messages = [
+            {'role': 'user', 'content': [{'text': 'Describe this'}, {'image_url': 'data:image/jpeg;base64,...'}]}
+        ]
+        result, usage = llm.get_completion_text(messages)
+        
+        self.assertEqual(result, 'I see an image')
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.self_hosted_LLM.requests.post')
+    @patch('helpers.self_hosted_LLM.sseclient.SSEClient')
+    @patch('helpers.self_hosted_LLM.broadcast_message')
+    @patch('helpers.self_hosted_LLM.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.self_hosted_LLM.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.self_hosted_LLM.get_default_llm_host', return_value='http://localhost:7860')
+    @patch('helpers.self_hosted_LLM.LOG')
+    def test_get_completion_text_no_port(self, mock_log, mock_get_host, mock_sender, mock_channel, mock_broadcast, mock_sse, mock_post, mock_ws):
+        """Test completion without port (uses host only)"""
+        from helpers.self_hosted_LLM import SelfHostedLLM
+        
+        mock_event = MagicMock()
+        mock_event.data = '{"choices": [{"text": "Hello!"}], "usage": {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15}}'
+        
+        mock_sse_client = MagicMock()
+        mock_sse_client.events.return_value = iter([mock_event])
+        mock_sse.return_value = mock_sse_client
+        
+        llm = SelfHostedLLM(host='http://localhost:7860', port=None, model_name='test-model')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+        
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages)
+        
+        self.assertEqual(result, 'Hello!')
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.self_hosted_LLM.requests.post')
+    @patch('helpers.self_hosted_LLM.sseclient.SSEClient')
+    @patch('helpers.self_hosted_LLM.broadcast_message')
+    @patch('helpers.self_hosted_LLM.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.self_hosted_LLM.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.self_hosted_LLM.get_default_llm_host', return_value='http://localhost:7860')
+    @patch('helpers.self_hosted_LLM.LOG')
+    @patch('helpers.self_hosted_LLM.LLMInterface.check_stop_generation', return_value=True)
+    def test_get_completion_text_stop_generation(self, mock_stop, mock_log, mock_get_host, mock_sender, mock_channel, mock_broadcast, mock_sse, mock_post, mock_ws):
+        """Test completion stops when stop file is detected"""
+        from helpers.self_hosted_LLM import SelfHostedLLM
+        
+        mock_event = MagicMock()
+        mock_event.data = '{"choices": [{"text": "Hello!"}]}'
+        
+        mock_sse_client = MagicMock()
+        mock_sse_client.events.return_value = iter([mock_event])
+        mock_sse.return_value = mock_sse_client
+        
+        llm = SelfHostedLLM(host='http://localhost', port=7860, model_name='test-model')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+        
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages)
+        
+        # Should have stopped early
+        self.assertEqual(result, '')
+
+
 if __name__ == '__main__':
     unittest.main()
