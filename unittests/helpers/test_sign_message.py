@@ -149,18 +149,22 @@ class TestSignMessage(object):
     @pytest.mark.parametrize('index', range(1))
     def test_sign_message_with_addresses_from_hot_wallet_in_testnet_mode(self, index):
         set_chain_mode(mainnet=False)
-        account = 0
-        address = get_address_from_wallet(account=account, index=index)
-        private_key = get_private_key_from_wallet(account=account, index=index)[address]
-        message = 'This is a test message'
+        try:
+            account = 0
+            address = get_address_from_wallet(account=account, index=index)
+            private_key = get_private_key_from_wallet(account=account, index=index)[address]
+            message = 'This is a test message'
 
-        print('Address:', address)
-        print('Message:', message)
+            print('Address:', address)
+            print('Message:', message)
 
-        signature = sign_message(message, private_key)
-        print('Signature:', signature)
+            signature = sign_message(message, private_key)
+            print('Signature:', signature)
 
-        assert verify_message(address=address, message=message, signature=signature)
+            assert verify_message(address=address, message=message, signature=signature)
+        finally:
+            # Reset to mainnet mode to avoid affecting other tests
+            set_chain_mode(mainnet=True)
 
     def test_sign_message_with_a_message_of_256_chars(self):
         address = get_address_from_wallet(account=0, index=0)

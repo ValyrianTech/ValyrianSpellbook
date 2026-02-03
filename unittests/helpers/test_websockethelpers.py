@@ -91,5 +91,50 @@ class TestWebSocketHandler(unittest.TestCase):
         self.assertEqual(handler.subscriptions, {})
 
 
+class TestWebSocketHandlerAdvanced(unittest.TestCase):
+    """Advanced test cases for WebSocketHandler"""
+
+    def test_handler_subscribe_message(self):
+        """Test handler processes subscribe messages"""
+        handler = WebSocketHandler()
+        
+        async def run_test():
+            mock_websocket = AsyncMock()
+            mock_websocket.remote_address = ('127.0.0.1', 12345)
+            
+            # Simulate subscribe message
+            async with handler.lock:
+                handler.connected.add(mock_websocket)
+                handler.subscriptions[mock_websocket] = {'general'}
+            
+            # Process subscribe
+            async with handler.lock:
+                handler.subscriptions[mock_websocket].add('new-channel')
+            
+            self.assertIn('new-channel', handler.subscriptions[mock_websocket])
+        
+        asyncio.run(run_test())
+
+    def test_handler_unsubscribe_message(self):
+        """Test handler processes unsubscribe messages"""
+        handler = WebSocketHandler()
+        
+        async def run_test():
+            mock_websocket = AsyncMock()
+            
+            async with handler.lock:
+                handler.connected.add(mock_websocket)
+                handler.subscriptions[mock_websocket] = {'general', 'channel-to-remove'}
+            
+            # Process unsubscribe
+            async with handler.lock:
+                handler.subscriptions[mock_websocket].remove('channel-to-remove')
+            
+            self.assertNotIn('channel-to-remove', handler.subscriptions[mock_websocket])
+            self.assertIn('general', handler.subscriptions[mock_websocket])
+        
+        asyncio.run(run_test())
+
+
 if __name__ == '__main__':
     unittest.main()
