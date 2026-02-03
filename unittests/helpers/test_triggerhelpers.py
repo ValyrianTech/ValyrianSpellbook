@@ -16,6 +16,7 @@ from helpers.triggerhelpers import (
     http_get_request,
     http_post_request,
     http_delete_request,
+    http_options_request,
     signed_message_request,
     file_download,
     TRIGGERS_DIR,
@@ -521,3 +522,145 @@ class TestSignMessage(object):
         result = sign_message(address='addr', message='test')
         assert result['success'] == False
         assert 'Unable to sign' in result['error']
+
+
+class TestCheckTriggersAdvanced(object):
+    """Advanced tests for check_triggers function"""
+
+    @mock.patch('helpers.triggerhelpers.delete_trigger')
+    @mock.patch('helpers.triggerhelpers.delete_action')
+    @mock.patch('helpers.triggerhelpers.get_triggers', return_value=['trigger1'])
+    @mock.patch('helpers.triggerhelpers.get_trigger')
+    @mock.patch('time.time', return_value=1000)
+    def test_check_triggers_self_destruct(self, mock_time, mock_get_trigger, mock_get_triggers, mock_delete_action, mock_delete_trigger):
+        """Test trigger self-destruct functionality"""
+        mock_trigger = mock.MagicMock()
+        mock_trigger.status = 'Inactive'
+        mock_trigger.self_destruct = 500  # Already past
+        mock_trigger.destruct_actions = False
+        mock_trigger.actions = []
+        mock_get_trigger.return_value = mock_trigger
+        
+        check_triggers()
+        mock_delete_trigger.assert_called_once_with(trigger_id='trigger1')
+
+    @mock.patch('helpers.triggerhelpers.delete_trigger')
+    @mock.patch('helpers.triggerhelpers.delete_action')
+    @mock.patch('helpers.triggerhelpers.get_triggers', return_value=['trigger1'])
+    @mock.patch('helpers.triggerhelpers.get_trigger')
+    @mock.patch('time.time', return_value=1000)
+    def test_check_triggers_self_destruct_with_actions(self, mock_time, mock_get_trigger, mock_get_triggers, mock_delete_action, mock_delete_trigger):
+        """Test trigger self-destruct with action destruction"""
+        mock_trigger = mock.MagicMock()
+        mock_trigger.status = 'Inactive'
+        mock_trigger.self_destruct = 500  # Already past
+        mock_trigger.destruct_actions = True
+        mock_trigger.actions = ['action1', 'action2']
+        mock_get_trigger.return_value = mock_trigger
+        
+        check_triggers()
+        assert mock_delete_action.call_count == 2
+        mock_delete_trigger.assert_called_once()
+
+
+class TestVerifySignedMessageAdvanced(object):
+    """Advanced tests for verify_signed_message function"""
+
+    @mock.patch('helpers.triggerhelpers.verify_message', return_value=True)
+    @mock.patch('helpers.triggerhelpers.get_triggers', return_value=['trigger1'])
+    @mock.patch('helpers.triggerhelpers.get_trigger')
+    def test_verify_signed_message_success(self, mock_get_trigger, mock_get_triggers, mock_verify):
+        """Test successful signature verification"""
+        mock_trigger = mock.MagicMock()
+        mock_trigger.trigger_type = TriggerType.SIGNEDMESSAGE
+        mock_trigger.address = None  # Accept any address
+        mock_trigger.status = 'Active'
+        mock_trigger.id = 'trigger1'
+        mock_get_trigger.return_value = mock_trigger
+        
+        verify_signed_message('trigger1', address='addr', message='msg', signature='sig')
+        mock_trigger.process_message.assert_called_once()
+        mock_trigger.activate.assert_called_once()
+
+    @mock.patch('helpers.triggerhelpers.verify_message', return_value=True)
+    @mock.patch('helpers.triggerhelpers.get_triggers', return_value=['trigger1'])
+    @mock.patch('helpers.triggerhelpers.get_trigger')
+    def test_verify_signed_message_with_data(self, mock_get_trigger, mock_get_triggers, mock_verify):
+        """Test signature verification with additional data"""
+        mock_trigger = mock.MagicMock()
+        mock_trigger.trigger_type = TriggerType.SIGNEDMESSAGE
+        mock_trigger.address = None
+        mock_trigger.status = 'Active'
+        mock_trigger.id = 'trigger1'
+        mock_get_trigger.return_value = mock_trigger
+        
+        verify_signed_message('trigger1', address='addr', message='msg', signature='sig', 
+                             data={'key': 'value'}, ipfs_object='QmHash')
+        mock_trigger.process_message.assert_called_once()
+
+    @mock.patch('helpers.triggerhelpers.verify_message', return_value=False)
+    @mock.patch('helpers.triggerhelpers.get_triggers', return_value=['trigger1'])
+    @mock.patch('helpers.triggerhelpers.get_trigger')
+    def test_verify_signed_message_invalid_signature(self, mock_get_trigger, mock_get_triggers, mock_verify):
+        """Test invalid signature verification"""
+        mock_trigger = mock.MagicMock()
+        mock_trigger.trigger_type = TriggerType.SIGNEDMESSAGE
+        mock_trigger.address = None
+        mock_trigger.status = 'Active'
+        mock_trigger.id = 'trigger1'
+        mock_get_trigger.return_value = mock_trigger
+        
+        result = verify_signed_message('trigger1', address='addr', message='msg', signature='bad_sig')
+        assert 'error' in result
+        assert 'invalid' in result['error'].lower()
+
+
+class TestHttpOptionsRequest(object):
+    """Tests for http_options_request function"""
+
+    @mock.patch('helpers.triggerhelpers.get_triggers', return_value=[])
+    def test_http_options_request_unknown(self, mock_get_triggers):
+        """Test HTTP OPTIONS request with unknown trigger"""
+        from helpers.triggerhelpers import http_options_request
+        result = http_options_request('unknown')
+        assert 'error' in result
+
+    @mock.patch('helpers.triggerhelpers.get_triggers', return_value=['trigger1'])
+    @mock.patch('helpers.triggerhelpers.get_trigger')
+    def test_http_options_request_wrong_type(self, mock_get_trigger, mock_get_triggers):
+        """Test HTTP OPTIONS request with wrong trigger type"""
+        from helpers.triggerhelpers import http_options_request
+        mock_trigger = mock.MagicMock()
+        mock_trigger.trigger_type = TriggerType.MANUAL
+        mock_get_trigger.return_value = mock_trigger
+        
+        result = http_options_request('trigger1')
+        assert 'error' in result
+
+    @mock.patch('helpers.triggerhelpers.get_triggers', return_value=['trigger1'])
+    @mock.patch('helpers.triggerhelpers.get_trigger')
+    def test_http_options_request_success(self, mock_get_trigger, mock_get_triggers):
+        """Test successful HTTP OPTIONS request"""
+        from helpers.triggerhelpers import http_options_request
+        mock_trigger = mock.MagicMock()
+        mock_trigger.trigger_type = TriggerType.HTTPOPTIONSREQUEST
+        mock_trigger.status = 'Active'
+        mock_get_trigger.return_value = mock_trigger
+        
+        http_options_request('trigger1', key='value')
+        mock_trigger.set_json_data.assert_called_once()
+        mock_trigger.activate.assert_called_once()
+
+    @mock.patch('helpers.triggerhelpers.get_triggers', return_value=['trigger1'])
+    @mock.patch('helpers.triggerhelpers.get_trigger')
+    def test_http_options_request_no_data(self, mock_get_trigger, mock_get_triggers):
+        """Test HTTP OPTIONS request without data"""
+        from helpers.triggerhelpers import http_options_request
+        mock_trigger = mock.MagicMock()
+        mock_trigger.trigger_type = TriggerType.HTTPOPTIONSREQUEST
+        mock_trigger.status = 'Active'
+        mock_get_trigger.return_value = mock_trigger
+        
+        http_options_request('trigger1')
+        mock_trigger.set_json_data.assert_not_called()
+        mock_trigger.activate.assert_called_once()
