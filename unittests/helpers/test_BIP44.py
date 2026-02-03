@@ -109,6 +109,65 @@ class TestBIP44Wallet(unittest.TestCase):
     @patch('helpers.BIP44.get_xpriv_keys')
     @patch('helpers.BIP44.get_addresses_from_xpub')
     @patch('helpers.BIP44.get_change_addresses_from_xpub')
+    @patch('helpers.BIP44.requests.get')
+    @patch('helpers.BIP44.time.sleep')
+    @patch('helpers.BIP44.get_private_key')
+    @patch('helpers.BIP44.pprint')
+    @patch('builtins.print')
+    def test_wallet_scan_with_balance(self, mock_print, mock_pprint, mock_get_priv, mock_sleep, mock_requests,
+                                       mock_change_addr, mock_addr, mock_xpriv, mock_xpub):
+        """Test BIP44Wallet scan with addresses that have balance"""
+        from helpers.BIP44 import BIP44Wallet
+        
+        # Use address lists - addresses with balance, change addresses without
+        addresses = ['1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2', '1JvPmDzJfmMxJkj2pTcAYLgfpLjJx5Qvf7']
+        change_addresses = ['1ChangeAddr1', '1ChangeAddr2']
+        
+        mock_xpub.return_value = ['xpub_key_0']
+        mock_xpriv.return_value = ['xpriv_key_0']
+        mock_addr.return_value = addresses
+        mock_change_addr.return_value = change_addresses
+        
+        # Create wallet first
+        wallet = BIP44Wallet(mnemonic='test', n=2)
+        
+        # Manually set addresses to ensure they match what the API returns
+        wallet.addresses = addresses
+        wallet.change_addresses = change_addresses
+        
+        # Mock responses - first call for addresses, second for change_addresses
+        # Both need to return addresses that are in their respective lists
+        mock_response_addresses = MagicMock()
+        mock_response_addresses.json.return_value = {
+            'addresses': [
+                {'address': '1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2', 'final_balance': 100000},
+                {'address': '1JvPmDzJfmMxJkj2pTcAYLgfpLjJx5Qvf7', 'final_balance': 0}
+            ]
+        }
+        mock_response_change = MagicMock()
+        mock_response_change.json.return_value = {
+            'addresses': [
+                {'address': '1ChangeAddr1', 'final_balance': 0},
+                {'address': '1ChangeAddr2', 'final_balance': 0}
+            ]
+        }
+        mock_requests.side_effect = [mock_response_addresses, mock_response_change]
+        
+        # Mock get_private_key to return the expected structure
+        mock_get_priv.return_value = {'1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2': 'private_key_for_addr1'}
+        
+        result = wallet.scan()
+        
+        # Should have one address with balance
+        self.assertEqual(len(result), 1)
+        self.assertIn('1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2', result)
+        self.assertEqual(result['1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2']['value'], 100000)
+        self.assertEqual(result['1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2']['private_key'], 'private_key_for_addr1')
+
+    @patch('helpers.BIP44.get_xpub_keys')
+    @patch('helpers.BIP44.get_xpriv_keys')
+    @patch('helpers.BIP44.get_addresses_from_xpub')
+    @patch('helpers.BIP44.get_change_addresses_from_xpub')
     def test_wallet_sweep_not_implemented(self, mock_change_addr, mock_addr, mock_xpriv, mock_xpub):
         """Test BIP44Wallet sweep method (not implemented)"""
         from helpers.BIP44 import BIP44Wallet

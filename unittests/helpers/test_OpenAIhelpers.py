@@ -4,6 +4,45 @@ import unittest
 from unittest.mock import patch, MagicMock
 
 
+class TestOpenAIHelpersInitialization(unittest.TestCase):
+    """Test cases for OpenAI initialization when enabled"""
+
+    def test_openai_initialization_when_enabled(self):
+        """Test that openai is configured when get_enable_openai returns True
+        
+        This test covers lines 8-9 of OpenAIhelpers.py by reloading the module
+        with mocked configuration functions that return True/test values.
+        """
+        import sys
+        import importlib
+        import openai
+        
+        # Save original values
+        original_org = getattr(openai, 'organization', None)
+        original_key = getattr(openai, 'api_key', None)
+        
+        # Remove the module from cache to force reimport
+        if 'helpers.OpenAIhelpers' in sys.modules:
+            del sys.modules['helpers.OpenAIhelpers']
+        
+        try:
+            # Patch at the source - the configurationhelpers module
+            with patch('helpers.configurationhelpers.get_enable_openai', return_value=True), \
+                 patch('helpers.configurationhelpers.get_openai_organization', return_value='test-org'), \
+                 patch('helpers.configurationhelpers.get_openai_api_key', return_value='test-api-key'):
+                
+                # Import fresh - this will execute lines 7-9
+                import helpers.OpenAIhelpers
+                
+                # Verify the openai module was configured
+                self.assertEqual(openai.organization, 'test-org')
+                self.assertEqual(openai.api_key, 'test-api-key')
+        finally:
+            # Restore original values
+            openai.organization = original_org
+            openai.api_key = original_key
+
+
 class TestOpenAIHelpers(unittest.TestCase):
     """Test cases for helpers/OpenAIhelpers.py"""
 

@@ -244,6 +244,26 @@ class TestMnemonicMain(object):
 class TestMnemonicEdgeCases(object):
     """Edge case tests for Mnemonic class"""
 
+    def test_to_entropy_non_english_language(self):
+        """Test to_entropy with non-English language (uses index instead of binary_search)"""
+        m = Mnemonic('japanese')
+        # Generate a valid Japanese mnemonic
+        mnemonic = m.generate(strength=128)
+        # Japanese mnemonics use ideographic space (U+3000), split properly
+        words = mnemonic.split('\u3000')
+        # Convert to entropy - this should use index() instead of binary_search
+        entropy = m.to_entropy(words)
+        assert len(entropy) == 16
+
+    def test_to_entropy_invalid_checksum(self):
+        """Test to_entropy raises ValueError on invalid checksum"""
+        m = Mnemonic('english')
+        # Create a mnemonic with invalid checksum by using valid words but wrong combination
+        # "abandon" repeated 12 times has an invalid checksum
+        invalid_mnemonic = "abandon " * 11 + "abandon"
+        with pytest.raises(ValueError, match="Failed checksum"):
+            m.to_entropy(invalid_mnemonic)
+
     def test_to_entropy_with_list_input(self):
         """Test to_entropy accepts list of words directly"""
         m = Mnemonic('english')
