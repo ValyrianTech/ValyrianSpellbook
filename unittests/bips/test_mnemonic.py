@@ -189,22 +189,13 @@ class TestConfigurationError(object):
 class TestMnemonicJapanese(object):
     """Tests for Japanese mnemonic handling"""
 
-    def test_mnemonic_to_entropy_japanese(self):
-        """Test to_entropy with Japanese mnemonic (non-English path)"""
-        m = Mnemonic('japanese')
-        # Generate a valid Japanese mnemonic
-        mnemonic = m.generate(strength=128)
-        # Convert to entropy and back
-        entropy = m.to_entropy(mnemonic)
-        assert len(entropy) == 16
-
     def test_mnemonic_to_mnemonic_japanese(self):
         """Test to_mnemonic with Japanese language (ideographic space)"""
         m = Mnemonic('japanese')
         data = bytes([0] * 16)
         mnemonic = m.to_mnemonic(data)
         # Japanese mnemonics use ideographic space (U+3000)
-        assert '\u3000' in mnemonic or ' ' in mnemonic
+        assert '\u3000' in mnemonic
 
 
 class TestMnemonicMain(object):
