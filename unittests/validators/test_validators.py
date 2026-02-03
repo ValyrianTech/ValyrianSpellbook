@@ -353,3 +353,154 @@ class TestValidators(object):
         helpers.configurationhelpers.get_use_testnet = mock.MagicMock(return_value=True)
         print(description)
         assert validators.valid_bech32_address(address) == expected
+
+    @pytest.mark.parametrize('status, expected, description', [
+        ['Pending', True, 'valid status: Pending'],
+        ['Active', True, 'valid status: Active'],
+        ['Disabled', True, 'valid status: Disabled'],
+        ['Succeeded', True, 'valid status: Succeeded'],
+        ['Failed', True, 'valid status: Failed'],
+        ['Invalid', False, 'invalid status'],
+        ['pending', False, 'lowercase pending'],
+        ['', False, 'empty string'],
+        [None, False, 'None value'],
+    ])
+    def test_valid_status(self, status, expected, description):
+        print(description)
+        assert validators.valid_status(status) == expected
+
+    @pytest.mark.parametrize('visibility, expected, description', [
+        ['Public', True, 'valid visibility: Public'],
+        ['Private', True, 'valid visibility: Private'],
+        ['public', False, 'lowercase public'],
+        ['Hidden', False, 'invalid visibility'],
+        ['', False, 'empty string'],
+        [None, False, 'None value'],
+    ])
+    def test_valid_visibility(self, visibility, expected, description):
+        print(description)
+        assert validators.valid_visibility(visibility) == expected
+
+    @pytest.mark.parametrize('trigger_type, expected, description', [
+        ['Manual', True, 'valid trigger type: Manual'],
+        ['Balance', True, 'valid trigger type: Balance'],
+        ['Received', True, 'valid trigger type: Received'],
+        ['Sent', True, 'valid trigger type: Sent'],
+        ['Block_height', True, 'valid trigger type: Block_height'],
+        ['Timestamp', True, 'valid trigger type: Timestamp'],
+        ['Recurring', True, 'valid trigger type: Recurring'],
+        ['TriggerStatus', True, 'valid trigger type: TriggerStatus'],
+        ['DeadMansSwitch', True, 'valid trigger type: DeadMansSwitch'],
+        ['SignedMessage', True, 'valid trigger type: SignedMessage'],
+        ['Invalid', False, 'invalid trigger type'],
+        ['manual', False, 'lowercase manual'],
+        ['', False, 'empty string'],
+        [None, False, 'None value'],
+    ])
+    def test_valid_trigger_type(self, trigger_type, expected, description):
+        print(description)
+        assert validators.valid_trigger_type(trigger_type) == expected
+
+    @pytest.mark.parametrize('action_type, expected, description', [
+        ['Command', True, 'valid action type: Command'],
+        ['SendTransaction', True, 'valid action type: SendTransaction'],
+        ['RevealSecret', True, 'valid action type: RevealSecret'],
+        ['SendMail', True, 'valid action type: SendMail'],
+        ['Webhook', True, 'valid action type: Webhook'],
+        ['Invalid', False, 'invalid action type'],
+        ['command', False, 'lowercase command'],
+        ['', False, 'empty string'],
+        [None, False, 'None value'],
+    ])
+    def test_valid_action_type(self, action_type, expected, description):
+        print(description)
+        assert validators.valid_action_type(action_type) == expected
+
+    @pytest.mark.parametrize('transaction_type, expected, description', [
+        ['Send2Single', True, 'valid transaction type: Send2Single'],
+        ['Send2Many', True, 'valid transaction type: Send2Many'],
+        ['Send2SIL', True, 'valid transaction type: Send2SIL'],
+        ['Send2LBL', True, 'valid transaction type: Send2LBL'],
+        ['Send2LRL', True, 'valid transaction type: Send2LRL'],
+        ['Send2LSL', True, 'valid transaction type: Send2LSL'],
+        ['Send2LAL', True, 'valid transaction type: Send2LAL'],
+        ['Invalid', False, 'invalid transaction type'],
+        ['send2single', False, 'lowercase send2single'],
+        ['', False, 'empty string'],
+        [None, False, 'None value'],
+    ])
+    def test_valid_transaction_type(self, transaction_type, expected, description):
+        print(description)
+        assert validators.valid_transaction_type(transaction_type) == expected
+
+    @pytest.mark.parametrize('actions, expected, description', [
+        [['action1', 'action2'], True, 'valid actions list'],
+        [['action1'], True, 'single action'],
+        [[], True, 'empty list is valid'],
+        [['action1', 123], False, 'list with non-string element'],
+        ['action1', False, 'string instead of list'],
+        [None, False, 'None value'],
+    ])
+    def test_valid_actions(self, actions, expected, description):
+        print(description)
+        assert validators.valid_actions(actions) == expected
+
+    @pytest.mark.parametrize('timestamp, expected, description', [
+        [1, True, 'valid timestamp: 1'],
+        [1609459200, True, 'valid timestamp: 2021-01-01'],
+        [0, False, 'zero timestamp'],
+        [-1, False, 'negative timestamp'],
+        [1.5, False, 'float timestamp'],
+        ['1609459200', False, 'string timestamp'],
+        [None, False, 'None value'],
+    ])
+    def test_valid_timestamp(self, timestamp, expected, description):
+        print(description)
+        assert validators.valid_timestamp(timestamp) == expected
+
+    @pytest.mark.parametrize('phase, expected, description', [
+        [0, True, 'valid phase: 0'],
+        [1, True, 'valid phase: 1'],
+        [2, True, 'valid phase: 2'],
+        [3, True, 'valid phase: 3'],
+        [4, True, 'valid phase: 4'],
+        [5, True, 'valid phase: 5'],
+        [6, False, 'invalid phase: 6'],
+        [-1, False, 'negative phase'],
+        ['0', False, 'string phase'],
+        [None, False, 'None value'],
+    ])
+    def test_valid_phase(self, phase, expected, description):
+        print(description)
+        assert validators.valid_phase(phase) == expected
+
+    @pytest.mark.parametrize('script, expected, description', [
+        [123, False, 'non-string script'],
+        ['script.txt', False, 'script without .py extension'],
+        ['nonexistent.py', False, 'script file does not exist'],
+        ['Echo.py', True, 'valid script in spellbookscripts directory'],
+        ['Notary/Notary.py', True, 'valid script in apps directory'],
+    ])
+    def test_valid_script(self, script, expected, description):
+        print(description)
+        assert validators.valid_script(script) == expected
+
+    @pytest.mark.parametrize('outputs, expected, description', [
+        [[('1Robbk6PuJst6ot6ay2DcVugv8nxfJh5y',)], False, 'tuple with only 1 element'],
+        [[('1Robbk6PuJst6ot6ay2DcVugv8nxfJh5y', 50000, 'extra')], False, 'tuple with 3 elements'],
+        [[[]], False, 'empty inner list'],
+        [[('1Robbk6PuJst6ot6ay2DcVugv8nxfJh5y', 0)], False, 'amount is 0'],
+        [[('1Robbk6PuJst6ot6ay2DcVugv8nxfJh5y', -1)], False, 'negative amount'],
+        [[('4InvalidAddress', 50000)], False, 'invalid address in output'],
+        [[], False, 'empty list'],
+    ])
+    def test_valid_outputs_edge_cases(self, outputs, expected, description):
+        helpers.configurationhelpers.get_use_testnet = mock.MagicMock(return_value=False)
+        print(description)
+        assert validators.valid_outputs(outputs) == expected
+
+    def test_valid_bech32_address_non_string(self):
+        helpers.configurationhelpers.get_use_testnet = mock.MagicMock(return_value=False)
+        assert validators.valid_bech32_address(12345) == False
+        assert validators.valid_bech32_address(None) == False
+        assert validators.valid_bech32_address(['bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4']) == False
