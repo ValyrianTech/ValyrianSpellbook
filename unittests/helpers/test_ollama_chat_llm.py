@@ -234,6 +234,237 @@ class TestOllamaChatLLM(unittest.TestCase):
         # Should have stopped early
         self.assertEqual(result, '')
 
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.ollama_chat_llm.OpenAI')
+    @patch('helpers.ollama_chat_llm.broadcast_message')
+    @patch('helpers.ollama_chat_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.ollama_chat_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.ollama_chat_llm.LOG')
+    def test_get_completion_text_reasoning_on_delta(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_openai, mock_ws):
+        """Test completion with reasoning on delta.reasoning - covering line 92"""
+        from helpers.ollama_chat_llm import OllamaChatLLM
+        
+        # Create mock chunk with reasoning on delta.reasoning (not reasoning_content)
+        mock_chunk1 = MagicMock()
+        mock_choice1 = MagicMock()
+        mock_choice1.delta = MagicMock()
+        mock_choice1.delta.content = None
+        mock_choice1.delta.reasoning_content = None
+        mock_choice1.delta.reasoning = 'Thinking via delta.reasoning...'
+        mock_choice1.message = None
+        mock_choice1.reasoning_content = None
+        mock_choice1.reasoning = None
+        mock_chunk1.choices = [mock_choice1]
+        mock_chunk1.usage = None
+        
+        mock_chunk2 = MagicMock()
+        mock_chunk2.choices = []
+        mock_chunk2.usage = MagicMock()
+        mock_chunk2.usage.prompt_tokens = 10
+        mock_chunk2.usage.completion_tokens = 5
+        mock_chunk2.usage.total_tokens = 15
+        
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = iter([mock_chunk1, mock_chunk2])
+        mock_openai.return_value = mock_client
+        
+        llm = OllamaChatLLM(model_name='llama2', host='http://localhost', port=11434)
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+        
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages)
+        
+        self.assertIn('think', result)
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.ollama_chat_llm.OpenAI')
+    @patch('helpers.ollama_chat_llm.broadcast_message')
+    @patch('helpers.ollama_chat_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.ollama_chat_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.ollama_chat_llm.LOG')
+    def test_get_completion_text_reasoning_on_message(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_openai, mock_ws):
+        """Test completion with reasoning on message - covering lines 96-99"""
+        from helpers.ollama_chat_llm import OllamaChatLLM
+        
+        # Create mock chunk with reasoning on message.reasoning_content
+        mock_chunk1 = MagicMock()
+        mock_choice1 = MagicMock()
+        mock_choice1.delta = MagicMock()
+        mock_choice1.delta.content = None
+        mock_choice1.delta.reasoning_content = None
+        mock_choice1.delta.reasoning = None
+        mock_choice1.message = MagicMock()
+        mock_choice1.message.reasoning_content = 'Thinking via message.reasoning_content...'
+        mock_choice1.message.reasoning = None
+        mock_choice1.reasoning_content = None
+        mock_choice1.reasoning = None
+        mock_chunk1.choices = [mock_choice1]
+        mock_chunk1.usage = None
+        
+        mock_chunk2 = MagicMock()
+        mock_chunk2.choices = []
+        mock_chunk2.usage = MagicMock()
+        mock_chunk2.usage.prompt_tokens = 10
+        mock_chunk2.usage.completion_tokens = 5
+        mock_chunk2.usage.total_tokens = 15
+        
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = iter([mock_chunk1, mock_chunk2])
+        mock_openai.return_value = mock_client
+        
+        llm = OllamaChatLLM(model_name='llama2', host='http://localhost', port=11434)
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+        
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages)
+        
+        self.assertIn('think', result)
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.ollama_chat_llm.OpenAI')
+    @patch('helpers.ollama_chat_llm.broadcast_message')
+    @patch('helpers.ollama_chat_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.ollama_chat_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.ollama_chat_llm.LOG')
+    def test_get_completion_text_reasoning_on_choice(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_openai, mock_ws):
+        """Test completion with reasoning directly on choice - covering lines 103, 105"""
+        from helpers.ollama_chat_llm import OllamaChatLLM
+        
+        # Create mock chunk with reasoning directly on choice
+        mock_chunk1 = MagicMock()
+        mock_choice1 = MagicMock()
+        mock_choice1.delta = MagicMock()
+        mock_choice1.delta.content = None
+        mock_choice1.delta.reasoning_content = None
+        mock_choice1.delta.reasoning = None
+        mock_choice1.message = None
+        mock_choice1.reasoning_content = 'Thinking via choice.reasoning_content...'
+        mock_choice1.reasoning = None
+        mock_chunk1.choices = [mock_choice1]
+        mock_chunk1.usage = None
+        
+        mock_chunk2 = MagicMock()
+        mock_chunk2.choices = []
+        mock_chunk2.usage = MagicMock()
+        mock_chunk2.usage.prompt_tokens = 10
+        mock_chunk2.usage.completion_tokens = 5
+        mock_chunk2.usage.total_tokens = 15
+        
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = iter([mock_chunk1, mock_chunk2])
+        mock_openai.return_value = mock_client
+        
+        llm = OllamaChatLLM(model_name='llama2', host='http://localhost', port=11434)
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+        
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages)
+        
+        self.assertIn('think', result)
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.ollama_chat_llm.OpenAI')
+    @patch('helpers.ollama_chat_llm.broadcast_message')
+    @patch('helpers.ollama_chat_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.ollama_chat_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.ollama_chat_llm.LOG')
+    def test_get_completion_text_reasoning_on_message_reasoning(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_openai, mock_ws):
+        """Test completion with reasoning on message.reasoning (not reasoning_content) - covering lines 98-99"""
+        from helpers.ollama_chat_llm import OllamaChatLLM
+        
+        # Create mock chunk with reasoning on message.reasoning
+        mock_chunk1 = MagicMock()
+        mock_choice1 = MagicMock()
+        mock_choice1.delta = MagicMock()
+        mock_choice1.delta.content = None
+        mock_choice1.delta.reasoning_content = None
+        mock_choice1.delta.reasoning = None
+        mock_choice1.message = MagicMock()
+        mock_choice1.message.reasoning_content = None
+        mock_choice1.message.reasoning = 'Thinking via message.reasoning...'
+        mock_choice1.reasoning_content = None
+        mock_choice1.reasoning = None
+        mock_chunk1.choices = [mock_choice1]
+        mock_chunk1.usage = None
+        
+        mock_chunk2 = MagicMock()
+        mock_chunk2.choices = []
+        mock_chunk2.usage = MagicMock()
+        mock_chunk2.usage.prompt_tokens = 10
+        mock_chunk2.usage.completion_tokens = 5
+        mock_chunk2.usage.total_tokens = 15
+        
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = iter([mock_chunk1, mock_chunk2])
+        mock_openai.return_value = mock_client
+        
+        llm = OllamaChatLLM(model_name='llama2', host='http://localhost', port=11434)
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+        
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages)
+        
+        self.assertIn('think', result)
+        self.assertIn('message.reasoning', result)
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.ollama_chat_llm.OpenAI')
+    @patch('helpers.ollama_chat_llm.broadcast_message')
+    @patch('helpers.ollama_chat_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.ollama_chat_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.ollama_chat_llm.LOG')
+    def test_get_completion_text_reasoning_on_choice_reasoning(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_openai, mock_ws):
+        """Test completion with reasoning on choice.reasoning (not reasoning_content) - covering line 105"""
+        from helpers.ollama_chat_llm import OllamaChatLLM
+        
+        # Create mock chunk with reasoning directly on choice.reasoning
+        mock_chunk1 = MagicMock()
+        mock_choice1 = MagicMock()
+        mock_choice1.delta = MagicMock()
+        mock_choice1.delta.content = None
+        mock_choice1.delta.reasoning_content = None
+        mock_choice1.delta.reasoning = None
+        mock_choice1.message = None
+        mock_choice1.reasoning_content = None
+        mock_choice1.reasoning = 'Thinking via choice.reasoning...'
+        mock_chunk1.choices = [mock_choice1]
+        mock_chunk1.usage = None
+        
+        mock_chunk2 = MagicMock()
+        mock_chunk2.choices = []
+        mock_chunk2.usage = MagicMock()
+        mock_chunk2.usage.prompt_tokens = 10
+        mock_chunk2.usage.completion_tokens = 5
+        mock_chunk2.usage.total_tokens = 15
+        
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = iter([mock_chunk1, mock_chunk2])
+        mock_openai.return_value = mock_client
+        
+        llm = OllamaChatLLM(model_name='llama2', host='http://localhost', port=11434)
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+        
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages)
+        
+        self.assertIn('think', result)
+        self.assertIn('choice.reasoning', result)
+
 
 if __name__ == '__main__':
     unittest.main()
