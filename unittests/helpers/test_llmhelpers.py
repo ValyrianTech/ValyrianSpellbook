@@ -240,6 +240,213 @@ class TestConstructUserMessages(unittest.TestCase):
         self.assertEqual(result[0]['content'][0]['type'], 'image_url')
         self.assertEqual(result[0]['content'][1]['type'], 'text')
 
+    @patch('helpers.llmhelpers.os.path.exists', return_value=False)
+    @patch('helpers.llmhelpers.LOG')
+    def test_construct_with_missing_image(self, mock_log, mock_exists):
+        """Test construct_user_messages with missing image file"""
+        from helpers.llmhelpers import construct_user_messages
+        
+        result = construct_user_messages("Hello", image_paths=['/path/to/missing.jpg'])
+        
+        # Should only have text, no image
+        self.assertEqual(len(result[0]['content']), 1)
+        self.assertEqual(result[0]['content'][0]['type'], 'text')
+        mock_log.error.assert_called()
+
+
+class TestDeleteLlm(unittest.TestCase):
+    """Test cases for delete_llm function"""
+
+    @patch('helpers.llmhelpers.save_to_json_file')
+    @patch('helpers.llmhelpers.load_llms')
+    def test_delete_llm_exists(self, mock_load, mock_save):
+        """Test deleting an existing LLM"""
+        from helpers.llmhelpers import delete_llm
+        
+        mock_load.return_value = {'model1': {'host': 'localhost'}, 'model2': {'host': 'remote'}}
+        
+        delete_llm('model1')
+        
+        mock_save.assert_called_once()
+        saved_data = mock_save.call_args[1]['data']
+        self.assertNotIn('model1', saved_data)
+        self.assertIn('model2', saved_data)
+
+    @patch('helpers.llmhelpers.save_to_json_file')
+    @patch('helpers.llmhelpers.load_llms')
+    def test_delete_llm_not_exists(self, mock_load, mock_save):
+        """Test deleting a non-existing LLM"""
+        from helpers.llmhelpers import delete_llm
+        
+        mock_load.return_value = {'model1': {'host': 'localhost'}}
+        
+        delete_llm('nonexistent')
+        
+        # Should not call save if LLM doesn't exist
+        mock_save.assert_not_called()
+
+
+class TestSaveLlmConfig(unittest.TestCase):
+    """Test cases for save_llm_config function"""
+
+    @patch('helpers.llmhelpers.save_to_json_file')
+    @patch('helpers.llmhelpers.load_llms')
+    def test_save_llm_config_new(self, mock_load, mock_save):
+        """Test saving a new LLM config"""
+        from helpers.llmhelpers import save_llm_config
+        
+        mock_load.return_value = {}
+        
+        config = {'host': 'localhost', 'port': 8080, 'api_key': 'test-key'}
+        save_llm_config('new_model', config)
+        
+        mock_save.assert_called_once()
+        saved_data = mock_save.call_args[1]['data']
+        self.assertIn('new_model', saved_data)
+
+    @patch('helpers.llmhelpers.save_to_json_file')
+    @patch('helpers.llmhelpers.load_llms')
+    def test_save_llm_config_masked_api_key(self, mock_load, mock_save):
+        """Test saving config with masked API key preserves existing key"""
+        from helpers.llmhelpers import save_llm_config
+        
+        mock_load.return_value = {'model1': {'host': 'localhost', 'api_key': 'real-key'}}
+        
+        config = {'host': 'localhost', 'api_key': '********'}
+        save_llm_config('model1', config)
+        
+        mock_save.assert_called_once()
+        saved_data = mock_save.call_args[1]['data']
+        self.assertEqual(saved_data['model1']['api_key'], 'real-key')
+
+    @patch('helpers.llmhelpers.save_to_json_file')
+    @patch('helpers.llmhelpers.load_llms')
+    def test_save_llm_config_trailing_slash(self, mock_load, mock_save):
+        """Test saving config removes trailing slash from host"""
+        from helpers.llmhelpers import save_llm_config
+        
+        mock_load.return_value = {}
+        
+        config = {'host': 'http://localhost:8080/', 'api_key': 'test'}
+        save_llm_config('model1', config)
+        
+        mock_save.assert_called_once()
+        saved_data = mock_save.call_args[1]['data']
+        self.assertEqual(saved_data['model1']['host'], 'http://localhost:8080')
+
+
+class TestSetDefaultLlm(unittest.TestCase):
+    """Test cases for set_default_llm function"""
+
+    @patch('builtins.open', unittest.mock.mock_open())
+    @patch('helpers.llmhelpers.spellbook_config')
+    def test_set_default_llm(self, mock_config):
+        """Test setting default LLM"""
+        from helpers.llmhelpers import set_default_llm
+        
+        mock_config_instance = MagicMock()
+        mock_config.return_value = mock_config_instance
+        
+        set_default_llm('gpt-4')
+        
+        mock_config_instance.set.assert_called_with(section='LLMs', option='default_model', value='gpt-4')
+
+
+class TestComparisonPrompt(unittest.TestCase):
+    """Test cases for comparison_prompt function"""
+
+    def test_comparison_prompt(self):
+        """Test comparison_prompt generates correct format"""
+        from helpers.llmhelpers import comparison_prompt
+        from langchain.schema import HumanMessage
+        
+        messages = [HumanMessage(content="Test prompt")]
+        
+        mock_generation = MagicMock()
+        mock_generation.generations = [[MagicMock(text="Response 1")]]
+        generations = [mock_generation]
+        
+        result = comparison_prompt(messages, generations)
+        
+        self.assertIn("Test prompt", result)
+        self.assertIn("Response 1", result)
+        self.assertIn("best_n", result)
+
+
+class TestGetRoleUnknown(unittest.TestCase):
+    """Test cases for get_role with unknown message types"""
+
+    def test_get_role_chat_message(self):
+        """Test get_role for ChatMessage"""
+        from helpers.llmhelpers import get_role
+        from langchain.schema import ChatMessage
+        
+        msg = ChatMessage(content="test", role="custom_role")
+        result = get_role(msg)
+        
+        self.assertEqual(result, 'custom_role')
+
+    def test_get_role_unknown_type(self):
+        """Test get_role raises for unknown type"""
+        from helpers.llmhelpers import get_role
+        
+        class UnknownMessage:
+            content = "test"
+        
+        with self.assertRaises(Exception) as context:
+            get_role(UnknownMessage())
+        
+        self.assertIn("Unknown message type", str(context.exception))
+
+
+class TestCustomStreamingCallbackHandler(unittest.TestCase):
+    """Test cases for CustomStreamingCallbackHandler"""
+
+    @patch('helpers.llmhelpers.broadcast_message')
+    @patch('helpers.llmhelpers.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.llmhelpers.get_broadcast_sender', return_value='test-sender')
+    def test_on_llm_start(self, mock_sender, mock_channel, mock_broadcast):
+        """Test on_llm_start resets completion"""
+        from helpers.llmhelpers import CustomStreamingCallbackHandler
+        
+        handler = CustomStreamingCallbackHandler()
+        handler.full_completion = "previous content"
+        
+        handler.on_llm_start({}, ["prompt"])
+        
+        self.assertEqual(handler.full_completion, "")
+
+    @patch('helpers.llmhelpers.broadcast_message')
+    @patch('helpers.llmhelpers.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.llmhelpers.get_broadcast_sender', return_value='test-sender')
+    def test_on_llm_end(self, mock_sender, mock_channel, mock_broadcast):
+        """Test on_llm_end broadcasts end message"""
+        from helpers.llmhelpers import CustomStreamingCallbackHandler
+        
+        handler = CustomStreamingCallbackHandler()
+        handler.full_completion = "some content"
+        
+        mock_response = MagicMock()
+        handler.on_llm_end(mock_response)
+        
+        self.assertEqual(handler.full_completion, "")
+        mock_broadcast.assert_called()
+
+    @patch('helpers.llmhelpers.broadcast_message')
+    @patch('helpers.llmhelpers.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.llmhelpers.get_broadcast_sender', return_value='test-sender')
+    @patch('sys.stdout')
+    def test_on_llm_new_token(self, mock_stdout, mock_sender, mock_channel, mock_broadcast):
+        """Test on_llm_new_token accumulates tokens"""
+        from helpers.llmhelpers import CustomStreamingCallbackHandler
+        
+        handler = CustomStreamingCallbackHandler()
+        
+        handler.on_llm_new_token("Hello")
+        handler.on_llm_new_token(" World")
+        
+        self.assertEqual(handler.full_completion, "Hello World")
+
 
 if __name__ == '__main__':
     unittest.main()
