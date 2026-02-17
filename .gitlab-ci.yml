@@ -1,0 +1,30 @@
+stages:
+  - backup
+
+backup_repositories:
+  stage: backup
+  image: python:3.9
+  before_script:
+    - apt-get update -qq
+    - apt-get install -y git git-lfs curl
+    - pip install requests
+    - git lfs install
+  script:
+    - python backup_script.py
+  artifacts:
+    reports:
+      junit: backup_report.xml
+    paths:
+      - backup_log.txt
+    expire_in: 30 days
+  cache:
+    paths:
+      - .cache/pip/
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PIPELINE_SOURCE == "web"

@@ -175,5 +175,29 @@ class TestDeleteLlmLightweight(unittest.TestCase):
         self.assertFalse(result)
 
 
+class TestLoadLlms(unittest.TestCase):
+    """Test cases for load_llms function - covering lines 45-46"""
+
+    @patch('helpers.llm_config_saver.os.path.exists', return_value=True)
+    @patch('helpers.llm_config_saver.load_from_json_file')
+    @patch('helpers.llm_config_saver.get_llms_file_path', return_value='/fake/path/LLMs.json')
+    def test_load_llms_file_exists(self, mock_path, mock_load_json, mock_exists):
+        """Test load_llms when file exists"""
+        mock_load_json.return_value = {'model1': {'host': 'localhost'}}
+        
+        result = load_llms()
+        
+        self.assertEqual(result, {'model1': {'host': 'localhost'}})
+        mock_load_json.assert_called_once_with('/fake/path/LLMs.json')
+
+    @patch('helpers.llm_config_saver.os.path.exists', return_value=False)
+    @patch('helpers.llm_config_saver.get_llms_file_path', return_value='/fake/path/LLMs.json')
+    def test_load_llms_file_not_exists(self, mock_path, mock_exists):
+        """Test load_llms when file does not exist returns empty dict"""
+        result = load_llms()
+        
+        self.assertEqual(result, {})
+
+
 if __name__ == '__main__':
     unittest.main()

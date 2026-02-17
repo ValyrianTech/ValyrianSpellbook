@@ -113,5 +113,48 @@ class TestFileMetaData(unittest.TestCase):
         self.assertEqual(metadata.signed_message, 'message')
 
 
+class TestAddFile(unittest.TestCase):
+    """Test cases for add_file function"""
+
+    @patch('helpers.ipfshelpers.IPFS_API')
+    def test_add_file_success(self, mock_ipfs_api):
+        """Test add_file function success"""
+        # We need to set the global IPFS_API in the module
+        import helpers.ipfshelpers as ipfs_module
+        
+        mock_api = MagicMock()
+        mock_api.add.return_value = {
+            'Hash': 'QmTestHash123',
+            'Name': 'testfile.txt',
+            'Size': '1024'
+        }
+        ipfs_module.IPFS_API = mock_api
+        
+        from helpers.ipfshelpers import add_file
+        
+        result = add_file('testfile.txt')
+        
+        self.assertEqual(result[0], 'QmTestHash123')
+        self.assertEqual(result[1], 'testfile.txt')
+        self.assertEqual(result[2], '1024')
+
+    @patch('helpers.ipfshelpers.LOG')
+    def test_add_file_failure(self, mock_log):
+        """Test add_file function failure"""
+        import helpers.ipfshelpers as ipfs_module
+        
+        mock_api = MagicMock()
+        mock_api.add.side_effect = Exception('IPFS connection failed')
+        ipfs_module.IPFS_API = mock_api
+        
+        from helpers.ipfshelpers import add_file
+        
+        with self.assertRaises(Exception) as context:
+            add_file('testfile.txt')
+        
+        self.assertIn('IPFS failure', str(context.exception))
+        mock_log.error.assert_called()
+
+
 if __name__ == '__main__':
     unittest.main()

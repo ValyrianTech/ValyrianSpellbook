@@ -157,6 +157,81 @@ class TestTogetherAILLM(unittest.TestCase):
         self.assertEqual(result, '')
         self.assertEqual(usage['prompt_tokens'], 10)
 
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.together_ai_LLM.Together')
+    @patch('helpers.together_ai_LLM.broadcast_message')
+    @patch('helpers.together_ai_LLM.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.together_ai_LLM.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.together_ai_LLM.get_together_ai_bearer_token', return_value='test-token')
+    @patch('helpers.together_ai_LLM.LOG')
+    def test_get_completion_text_with_stop_sequences(self, mock_log, mock_get_token, mock_sender, mock_channel, mock_broadcast, mock_together, mock_ws):
+        """Test completion with stop sequences - covering line 48"""
+        from helpers.together_ai_LLM import TogetherAILLM
+        
+        mock_chunk = MagicMock()
+        mock_chunk.choices = [MagicMock()]
+        mock_chunk.choices[0].delta.content = 'Hello!'
+        mock_chunk.usage = MagicMock()
+        mock_chunk.usage.prompt_tokens = 10
+        mock_chunk.usage.completion_tokens = 5
+        mock_chunk.usage.total_tokens = 15
+        
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = iter([mock_chunk])
+        mock_together.return_value = mock_client
+        
+        llm = TogetherAILLM(model_name='mistralai/Mixtral-8x7B', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+        
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages, stop=['\n', 'END'])
+        
+        self.assertEqual(result, 'Hello!')
+        # Verify stop was passed to the API
+        call_kwargs = mock_client.chat.completions.create.call_args[1]
+        self.assertEqual(call_kwargs['stop'], ['\n', 'END'])
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.together_ai_LLM.Together')
+    @patch('helpers.together_ai_LLM.broadcast_message')
+    @patch('helpers.together_ai_LLM.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.together_ai_LLM.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.together_ai_LLM.get_together_ai_bearer_token', return_value='test-token')
+    @patch('helpers.together_ai_LLM.LOG')
+    def test_get_completion_text_with_extra_kwargs(self, mock_log, mock_get_token, mock_sender, mock_channel, mock_broadcast, mock_together, mock_ws):
+        """Test completion with extra kwargs - covering lines 53-54"""
+        from helpers.together_ai_LLM import TogetherAILLM
+        
+        mock_chunk = MagicMock()
+        mock_chunk.choices = [MagicMock()]
+        mock_chunk.choices[0].delta.content = 'Hello!'
+        mock_chunk.usage = MagicMock()
+        mock_chunk.usage.prompt_tokens = 10
+        mock_chunk.usage.completion_tokens = 5
+        mock_chunk.usage.total_tokens = 15
+        
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = iter([mock_chunk])
+        mock_together.return_value = mock_client
+        
+        llm = TogetherAILLM(model_name='mistralai/Mixtral-8x7B', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+        
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages, top_p=0.9, presence_penalty=0.5)
+        
+        self.assertEqual(result, 'Hello!')
+        # Verify extra kwargs were passed
+        call_kwargs = mock_client.chat.completions.create.call_args[1]
+        self.assertEqual(call_kwargs['top_p'], 0.9)
+        self.assertEqual(call_kwargs['presence_penalty'], 0.5)
+
 
 if __name__ == '__main__':
     unittest.main()
