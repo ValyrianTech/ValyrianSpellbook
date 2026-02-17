@@ -155,3 +155,6 @@ app_data
 
 # models
 models
+
+# Tailwind CSS standalone binary
+tailwindcss-*
