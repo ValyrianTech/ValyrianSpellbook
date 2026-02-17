@@ -288,3 +288,25 @@ class TestRegexPatterns(object):
         import re
         hex_key = encode_privkey(12345, 'hex')
         assert re.match(hexadecimal_regex, hex_key) is not None
+
+
+class TestPrivateKeyTestnet(object):
+    """Tests for PrivateKey with testnet - covering additional paths"""
+
+    def test_privatekey_mainnet(self):
+        """Test PrivateKey creation with mainnet (default)"""
+        pk = PrivateKey(12345, testnet=False)
+        assert pk.decimal == 12345
+        assert pk.wif is not None
+        # Mainnet WIF starts with '5'
+        assert pk.wif.startswith('5')
+
+
+class TestDecodePrivkeyEdgeCases(object):
+    """Tests for decode_privkey edge cases"""
+
+    def test_decode_privkey_invalid_format_raises(self):
+        """Test that invalid format raises exception"""
+        with pytest.raises(Exception) as excinfo:
+            decode_privkey('test', 'invalid_format')
+        assert 'WIF does not represent privkey' in str(excinfo.value)

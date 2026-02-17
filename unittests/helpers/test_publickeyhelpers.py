@@ -311,3 +311,13 @@ class TestBinHash160(object):
         result1 = bin_hash160(b'hello')
         result2 = bin_hash160(b'world')
         assert result1 != result2
+
+    def test_bin_hash160_exception(self):
+        """Test bin_hash160 raises exception when ripemd160 fails"""
+        import pytest
+        from unittest.mock import patch
+        
+        with patch('helpers.publickeyhelpers.ripemd160', side_effect=Exception('RIPEMD160 error')):
+            with pytest.raises(Exception) as excinfo:
+                bin_hash160(b'test')
+            assert 'Unable to get ripemd160 digest' in str(excinfo.value)

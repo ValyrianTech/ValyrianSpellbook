@@ -77,3 +77,18 @@ class TestProcessLog(object):
 
     def test_process_log_has_handlers(self):
         assert len(PROCESS_LOG.handlers) >= 1
+
+
+class TestRunCommandProcessWorkingDir(object):
+    """Tests for RunCommandProcess working directory handling"""
+
+    def test_working_dir_stored(self):
+        """Test that working_dir is properly stored"""
+        process = RunCommandProcess('echo hello', working_dir='/test/dir')
+        assert process.working_dir == '/test/dir'
+        assert process.command == 'echo hello'
+
+    def test_working_dir_none_by_default(self):
+        """Test that working_dir is None by default"""
+        process = RunCommandProcess('echo hello')
+        assert process.working_dir is None

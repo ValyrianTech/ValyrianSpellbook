@@ -124,6 +124,32 @@ class TestMastodonToots(unittest.TestCase):
             visibility='public'
         )
 
+    @patch('helpers.mastodonhelpers.api')
+    @patch('helpers.mastodonhelpers.LOG')
+    def test_get_popular_toot_ids_with_pagination(self, mock_log, mock_api):
+        """Test get_popular_toot_ids with pagination - covering lines 66-67"""
+        from helpers.mastodonhelpers import get_popular_toot_ids
+        
+        # First page of results
+        first_page = [
+            {'in_reply_to_id': '123'},
+            {'in_reply_to_id': '456'},
+        ]
+        # Second page of results
+        second_page = [
+            {'in_reply_to_id': '789'},
+        ]
+        
+        mock_api.timeline_hashtag.return_value = first_page
+        mock_api.fetch_next.side_effect = [second_page, []]
+        
+        result = get_popular_toot_ids('test', limit=10)
+        
+        # Should have fetched from both pages
+        self.assertIn('123', result)
+        self.assertIn('456', result)
+        self.assertIn('789', result)
+
 
 if __name__ == '__main__':
     unittest.main()
