@@ -7,7 +7,11 @@ from helpers.loghelpers import LOG
 from helpers.textgenerationhelpers import LLMResult
 from helpers.websockethelpers import init_websocket_server
 
-init_websocket_server(host=get_host(), port=get_websocket_port())
+# Only start websocket server if not running as a standalone script
+import sys
+import os
+if not os.environ.get('SKIP_WEBSOCKET_SERVER'):
+    init_websocket_server(host=get_host(), port=get_websocket_port())
 
 class LLMInterface(object):
     __metaclass__ = ABCMeta
