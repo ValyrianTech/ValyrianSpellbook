@@ -28,6 +28,35 @@ class GoogleLLM(LLMInterface):
 
         completion = ''
         reasoning_content = ''
+        
+        # Extract thinking_level from kwargs
+        thinking_level = kwargs.pop('thinking_level', None)
+        
+        # Google Gemini thinking configuration
+        # Gemini 3: uses thinkingLevel (minimal, low, medium, high)
+        # Gemini 2.5: uses thinkingBudget (0=off, -1=dynamic, or token count)
+        extra_body = None
+        if thinking_level is not None:
+            # Map thinking_level to Google's parameters
+            # For simplicity, we use thinkingBudget which works across models
+            thinking_budget_map = {
+                'off': 0,
+                'minimal': 1024,
+                'low': 2048,
+                'medium': 8192,
+                'high': 16384,
+                'xhigh': 24576
+            }
+            budget = thinking_budget_map.get(thinking_level, 8192)
+            extra_body = {
+                "generationConfig": {
+                    "thinkingConfig": {
+                        "thinkingBudget": budget
+                    }
+                }
+            }
+            LOG.info(f'Thinking level: {thinking_level} -> Google thinkingBudget: {budget}')
+        
         try:
             response = client.chat.completions.create(
                 model=self.model_name,
@@ -37,6 +66,7 @@ class GoogleLLM(LLMInterface):
                 stream_options={
                     "include_usage": True
                 },
+                extra_body=extra_body,
                 **kwargs
             )
 
