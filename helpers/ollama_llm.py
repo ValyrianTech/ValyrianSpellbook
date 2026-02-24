@@ -7,6 +7,7 @@ from helpers.llm_interface import LLMInterface
 from helpers.loghelpers import LOG
 from helpers.websockethelpers import broadcast_message, get_broadcast_channel, get_broadcast_sender
 from .textgenerationhelpers import parse_generation
+from .thinking_levels import THINKING_LEVEL_OLLAMA
 
 
 class OllamaLLM(LLMInterface):
@@ -47,6 +48,12 @@ class OllamaLLM(LLMInterface):
         print('======================')
 
         completion = ''
+        
+        # Extract thinking_level from kwargs (not used by completions API, but remove to avoid passing unknown param)
+        thinking_level = kwargs.pop('thinking_level', None)
+        if thinking_level:
+            LOG.info(f'Thinking level {thinking_level} specified but completions API does not support reasoning. Use OllamaChatLLM for reasoning support.')
+        
         try:
             response = client.completions.create(
                 model=self.model_name,
