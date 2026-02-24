@@ -39,3 +39,13 @@ THINKING_LEVEL_ANTHROPIC = {
     'high': 16384,
     'xhigh': 32768
 }
+
+# Google Gemini uses reasoning_effort for OpenAI-compatible API
+THINKING_LEVEL_GOOGLE = {
+    'off': 'none',
+    'minimal': 'low',
+    'low': 'low',
+    'medium': 'medium',
+    'high': 'high',
+    'xhigh': 'high'
+}

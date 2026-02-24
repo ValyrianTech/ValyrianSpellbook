@@ -7,6 +7,7 @@ from helpers.llm_interface import LLMInterface
 from helpers.loghelpers import LOG
 from helpers.websockethelpers import broadcast_message, get_broadcast_channel, get_broadcast_sender
 from .textgenerationhelpers import parse_generation
+from .thinking_levels import THINKING_LEVEL_GOOGLE
 
 
 class GoogleLLM(LLMInterface):
@@ -36,15 +37,7 @@ class GoogleLLM(LLMInterface):
         # Maps to: none (off), low, medium, high
         reasoning_effort = None
         if thinking_level is not None:
-            reasoning_effort_map = {
-                'off': 'none',
-                'minimal': 'low',
-                'low': 'low',
-                'medium': 'medium',
-                'high': 'high',
-                'xhigh': 'high'
-            }
-            reasoning_effort = reasoning_effort_map.get(thinking_level, 'medium')
+            reasoning_effort = THINKING_LEVEL_GOOGLE.get(thinking_level, 'medium')
             LOG.info(f'Thinking level: {thinking_level} -> Google reasoning_effort: {reasoning_effort}')
         
         try:
