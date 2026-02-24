@@ -45,17 +45,18 @@ class OpenAILLM(LLMInterface):
                 kwargs['temperature'] = 1
                 
                 # Apply reasoning effort based on thinking_level
+                # OpenAI uses 'reasoning_effort' as a top-level parameter: 'low', 'medium', 'high'
                 if thinking_level is not None:
                     openai_effort = THINKING_LEVEL_OPENAI.get(thinking_level, 'medium')
                     if openai_effort is not None:
-                        kwargs['reasoning'] = {'effort': openai_effort}
-                        LOG.info(f'Thinking level: {thinking_level} -> OpenAI reasoning effort: {openai_effort}')
+                        kwargs['reasoning_effort'] = openai_effort
+                        LOG.info(f'Thinking level: {thinking_level} -> OpenAI reasoning_effort: {openai_effort}')
                     else:
                         LOG.info(f'Thinking level: {thinking_level} -> Reasoning not applied (off)')
                 else:
                     # Default: medium effort for reasoning models
-                    kwargs['reasoning'] = {'effort': 'medium'}
-                    LOG.info(f'Thinking level: {thinking_level} -> OpenAI reasoning effort: medium (default)')
+                    kwargs['reasoning_effort'] = 'medium'
+                    LOG.info(f'Thinking level: {thinking_level} -> OpenAI reasoning_effort: medium (default)')
                 
                 response = openai.chat.completions.create(
                     model=self.model_name,
