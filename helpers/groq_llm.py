@@ -1,4 +1,5 @@
 import json
+import re
 import sys
 
 from groq import Groq
@@ -25,6 +26,7 @@ class GroqLLM(LLMInterface):
 
         completion = ''
         reasoning_content = ''
+        in_think_block = False  # Track if we're inside inline <think> tags
         
         # Extract thinking_level from kwargs (Groq doesn't support thinking levels)
         thinking_level = kwargs.pop('thinking_level', None)
@@ -66,9 +68,33 @@ class GroqLLM(LLMInterface):
                     # Handle regular content
                     response_text = chunk.choices[0].delta.content
                     if response_text is not None:
-                        completion += response_text
-                        print(response_text, end='')
-                        sys.stdout.flush()
+                        # Handle inline <think> tags (GPT-OSS style)
+                        # Check for opening tag
+                        if '<think>' in response_text:
+                            in_think_block = True
+                        
+                        # Check for closing tag
+                        if '</think>' in response_text:
+                            in_think_block = False
+                        
+                        # Accumulate content
+                        if in_think_block:
+                            # Inside think block - accumulate to reasoning_content
+                            # Strip the <think> tag if present
+                            text_to_add = response_text.replace('<think>', '').replace('</think>', '')
+                            reasoning_content += text_to_add
+                            print(response_text, end='')
+                            sys.stdout.flush()
+                            # Build completion with proper think tags
+                            completion = f'<think>\n{reasoning_content}\n</think>\n\n'
+                        else:
+                            # Outside think block - regular content
+                            # Strip any remaining </think> tag
+                            text_to_add = response_text.replace('</think>', '')
+                            if text_to_add:
+                                completion += text_to_add
+                                print(text_to_add, end='')
+                                sys.stdout.flush()
 
                 data = {'message': completion.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion.lstrip())}
                 broadcast_message(message=json.dumps(data), channel=get_broadcast_channel())
