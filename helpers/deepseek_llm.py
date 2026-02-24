@@ -43,6 +43,19 @@ class DeepSeekLLM(LLMInterface):
 
         completion = ''
         reasoning_content = ''
+        
+        # Extract thinking_level from kwargs
+        thinking_level = kwargs.pop('thinking_level', None)
+        
+        # DeepSeek thinking mode is binary: off or enabled
+        # Any thinking_level other than 'off' or None enables thinking mode
+        extra_body = None
+        if thinking_level is not None and thinking_level != 'off':
+            extra_body = {"thinking": {"type": "enabled"}}
+            LOG.info(f'Thinking level: {thinking_level} -> DeepSeek thinking mode enabled')
+        else:
+            LOG.info(f'Thinking level: {thinking_level} -> DeepSeek thinking mode disabled')
+        
         try:
             response = client.chat.completions.create(
                 model=self.model_name,
@@ -53,6 +66,7 @@ class DeepSeekLLM(LLMInterface):
                 stream_options= {
                     "include_usage": True
                 },
+                extra_body=extra_body,
                 **kwargs
             )
 
