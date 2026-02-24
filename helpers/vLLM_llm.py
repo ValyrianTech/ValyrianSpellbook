@@ -47,6 +47,12 @@ class VLLMLLM(LLMInterface):
         print('======================')
 
         completion = ''
+        
+        # Extract thinking_level from kwargs (vLLM completions API doesn't support thinking levels)
+        thinking_level = kwargs.pop('thinking_level', None)
+        if thinking_level is not None:
+            LOG.info(f'Thinking level: {thinking_level} -> Ignored (vLLM completions API does not support thinking levels)')
+        
         try:
             response = client.completions.create(
                 model=self.model_name,

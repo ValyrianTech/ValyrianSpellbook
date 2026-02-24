@@ -125,6 +125,11 @@ class SelfHostedLLM(LLMInterface):
 
         completion = ''
         print('')
+        
+        # Extract thinking_level from kwargs (self-hosted LLM doesn't support thinking levels)
+        thinking_level = kwargs.pop('thinking_level', None)
+        if thinking_level is not None:
+            LOG.info(f'Thinking level: {thinking_level} -> Ignored (self-hosted LLM does not support thinking levels)')
 
         print('kwargs:')
         pprint(kwargs)

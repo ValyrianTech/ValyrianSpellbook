@@ -47,6 +47,11 @@ class TogetherAILLM(LLMInterface):
         if stop:
             request_params["stop"] = stop
             
+        # Extract thinking_level from kwargs (Together.ai doesn't support thinking levels)
+        thinking_level = kwargs.pop('thinking_level', None)
+        if thinking_level is not None:
+            LOG.info(f'Thinking level: {thinking_level} -> Ignored (Together.ai does not support thinking levels)')
+        
         # Add any additional kwargs (excluding the ones we've already handled)
         excluded_keys = {'temperature', 'max_tokens'}
         for key, value in kwargs.items():

@@ -40,6 +40,12 @@ class MistralLLM(LLMInterface):
 
         completion = ''
         reasoning_content = ''
+        
+        # Extract thinking_level from kwargs (Mistral doesn't support thinking levels)
+        thinking_level = kwargs.pop('thinking_level', None)
+        if thinking_level is not None:
+            LOG.info(f'Thinking level: {thinking_level} -> Ignored (Mistral does not support thinking levels)')
+        
         try:
             print('generating with Mistral')
             response = client.chat.stream(
