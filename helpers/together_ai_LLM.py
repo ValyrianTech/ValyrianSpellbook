@@ -10,6 +10,7 @@ from helpers.loghelpers import LOG
 from helpers.websockethelpers import broadcast_message, get_broadcast_channel, get_broadcast_sender
 from helpers.configurationhelpers import get_together_ai_bearer_token
 from .textgenerationhelpers import parse_generation
+from .thinking_levels import THINKING_LEVEL_OPENAI
 
 
 class TogetherAILLM(LLMInterface):
@@ -28,6 +29,8 @@ class TogetherAILLM(LLMInterface):
 
     def get_completion_text(self, messages, stop=None, **kwargs):
         completion = ''
+        reasoning_content = ''
+        in_think_block = False  # Track if we're inside inline <think> tags
         print('\nkwargs:')
         pprint(kwargs)
         print(f'stop: {stop}')
@@ -47,10 +50,16 @@ class TogetherAILLM(LLMInterface):
         if stop:
             request_params["stop"] = stop
             
-        # Extract thinking_level from kwargs (Together.ai doesn't support thinking levels)
+        # Extract thinking_level and map to reasoning_effort for GPT-OSS models
         thinking_level = kwargs.pop('thinking_level', None)
         if thinking_level is not None:
-            LOG.info(f'Thinking level: {thinking_level} -> Ignored (Together.ai does not support thinking levels)')
+            # Together.ai supports reasoning_effort for GPT-OSS models (low/medium/high)
+            reasoning_effort = THINKING_LEVEL_OPENAI.get(thinking_level)
+            if reasoning_effort is not None:
+                request_params['reasoning_effort'] = reasoning_effort
+                LOG.info(f'Thinking level: {thinking_level} -> Together.ai reasoning_effort: {reasoning_effort}')
+            else:
+                LOG.info(f'Thinking level: {thinking_level} -> Disabled (no reasoning_effort)')
         
         # Add any additional kwargs (excluding the ones we've already handled)
         excluded_keys = {'temperature', 'max_tokens'}
@@ -81,15 +90,42 @@ class TogetherAILLM(LLMInterface):
                     continue
 
                 delta = chunk.choices[0].delta
-                if hasattr(delta, 'content') and delta.content:
-                    response = delta.content.replace('\r', '')
-                    completion += response
-                    print(response, end='')
+                
+                # Handle reasoning content (Together.ai returns it in delta.reasoning for GPT-OSS)
+                if hasattr(delta, 'reasoning') and delta.reasoning:
+                    reasoning_content += delta.reasoning
+                    print(delta.reasoning, end='')
                     sys.stdout.flush()
+                    # Build completion with think tags
+                    completion = f'<think>\n{reasoning_content}\n</think>\n\n'
+                
+                if hasattr(delta, 'content') and delta.content:
+                    response_text = delta.content.replace('\r', '')
+                    
+                    # Handle inline <think> tags (GPT-OSS style fallback)
+                    if '<think>' in response_text:
+                        in_think_block = True
+                    if '</think>' in response_text:
+                        in_think_block = False
+                    
+                    if in_think_block:
+                        # Inside think block - accumulate to reasoning_content
+                        text_to_add = response_text.replace('<think>', '').replace('</think>', '')
+                        reasoning_content += text_to_add
+                        print(response_text, end='')
+                        sys.stdout.flush()
+                        completion = f'<think>\n{reasoning_content}\n</think>\n\n'
+                    else:
+                        # Outside think block - regular content
+                        text_to_add = response_text.replace('</think>', '')
+                        if text_to_add:
+                            completion += text_to_add
+                            print(text_to_add, end='')
+                            sys.stdout.flush()
 
-                    # Broadcast the streaming message
-                    data = {'message': completion.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion.lstrip())}
-                    broadcast_message(message=simplejson.dumps(data), channel=get_broadcast_channel())
+                # Broadcast the streaming message
+                data = {'message': completion.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion.lstrip())}
+                broadcast_message(message=simplejson.dumps(data), channel=get_broadcast_channel())
 
         except Exception as e:
             LOG.error(f'Error connecting to Together.ai LLM: {e}')
