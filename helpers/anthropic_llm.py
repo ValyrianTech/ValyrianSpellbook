@@ -61,6 +61,13 @@ class AnthropicLLM(LLMInterface):
             request_kwargs = dict(kwargs)
             if thinking_param is not None:
                 request_kwargs['thinking'] = thinking_param
+                # Anthropic requires max_tokens > budget_tokens
+                # Ensure max_tokens is at least budget_tokens + 4096 for response
+                budget = thinking_param['budget_tokens']
+                current_max = request_kwargs.get('max_tokens', 4096)
+                if current_max <= budget:
+                    request_kwargs['max_tokens'] = budget + 4096
+                    LOG.info(f'Adjusted max_tokens from {current_max} to {request_kwargs["max_tokens"]} (must be > budget_tokens)')
             
             response = self.client.messages.create(
                 model=self.model_name,
