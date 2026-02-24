@@ -32,43 +32,37 @@ class GoogleLLM(LLMInterface):
         # Extract thinking_level from kwargs
         thinking_level = kwargs.pop('thinking_level', None)
         
-        # Google Gemini thinking configuration
-        # Gemini 3: uses thinkingLevel (minimal, low, medium, high)
-        # Gemini 2.5: uses thinkingBudget (0=off, -1=dynamic, or token count)
-        extra_body = None
+        # Google Gemini OpenAI-compatible API uses reasoning_effort parameter
+        # Maps to: none (off), low, medium, high
+        reasoning_effort = None
         if thinking_level is not None:
-            # Map thinking_level to Google's parameters
-            # For simplicity, we use thinkingBudget which works across models
-            thinking_budget_map = {
-                'off': 0,
-                'minimal': 1024,
-                'low': 2048,
-                'medium': 8192,
-                'high': 16384,
-                'xhigh': 24576
+            reasoning_effort_map = {
+                'off': 'none',
+                'minimal': 'low',
+                'low': 'low',
+                'medium': 'medium',
+                'high': 'high',
+                'xhigh': 'high'
             }
-            budget = thinking_budget_map.get(thinking_level, 8192)
-            extra_body = {
-                "generationConfig": {
-                    "thinkingConfig": {
-                        "thinkingBudget": budget
-                    }
-                }
-            }
-            LOG.info(f'Thinking level: {thinking_level} -> Google thinkingBudget: {budget}')
+            reasoning_effort = reasoning_effort_map.get(thinking_level, 'medium')
+            LOG.info(f'Thinking level: {thinking_level} -> Google reasoning_effort: {reasoning_effort}')
         
         try:
-            response = client.chat.completions.create(
-                model=self.model_name,
-                messages=messages,
-                stop=stop,
-                stream=True,
-                stream_options={
-                    "include_usage": True
-                },
-                extra_body=extra_body,
+            # Build request kwargs
+            request_kwargs = {
+                'model': self.model_name,
+                'messages': messages,
+                'stop': stop,
+                'stream': True,
+                'stream_options': {"include_usage": True},
                 **kwargs
-            )
+            }
+            
+            # Add reasoning_effort if specified
+            if reasoning_effort is not None:
+                request_kwargs['reasoning_effort'] = reasoning_effort
+            
+            response = client.chat.completions.create(**request_kwargs)
 
             prompt_tokens, completion_tokens, total_tokens = 0, 0, 0
             for chunk in response:
