@@ -8,6 +8,7 @@ from helpers.loghelpers import LOG
 from helpers.websockethelpers import broadcast_message, get_broadcast_channel, get_broadcast_sender
 from helpers.configurationhelpers import get_openai_api_key
 from .textgenerationhelpers import parse_generation
+from .thinking_levels import THINKING_LEVEL_OPENAI
 
 
 class OpenAILLM(LLMInterface):
@@ -26,16 +27,36 @@ class OpenAILLM(LLMInterface):
         LOG.info(f'stop: {stop}')
 
         completion = ''
+        
+        # Extract thinking_level from kwargs
+        thinking_level = kwargs.pop('thinking_level', None)
+        
         try:
-            # see if the model is in the o1, o3, or o4 series
-            if self.model_name[:2] in ['o1', 'o3', 'o4'] or self.model_name in ['gpt-5', 'gpt-5-mini', 'gpt-5-nano']:
-                LOG.info('Overriding kwargs for o-model OpenAI LLM')
+            # see if the model is in the o1, o3, or o4 series or GPT-5
+            is_reasoning_model = self.model_name[:2] in ['o1', 'o3', 'o4'] or self.model_name.startswith('gpt-5')
+            
+            if is_reasoning_model:
+                LOG.info('Overriding kwargs for reasoning model OpenAI LLM')
                 if 'max_tokens' in kwargs:
                     # replace with max_completion_tokens
                     kwargs['max_completion_tokens'] = kwargs['max_tokens']
                     del kwargs['max_tokens']
 
                 kwargs['temperature'] = 1
+                
+                # Apply reasoning effort based on thinking_level
+                if thinking_level is not None:
+                    openai_effort = THINKING_LEVEL_OPENAI.get(thinking_level, 'medium')
+                    if openai_effort is not None:
+                        kwargs['reasoning'] = {'effort': openai_effort}
+                        LOG.info(f'Thinking level: {thinking_level} -> OpenAI reasoning effort: {openai_effort}')
+                    else:
+                        LOG.info(f'Thinking level: {thinking_level} -> Reasoning not applied (off)')
+                else:
+                    # Default: medium effort for reasoning models
+                    kwargs['reasoning'] = {'effort': 'medium'}
+                    LOG.info(f'Thinking level: {thinking_level} -> OpenAI reasoning effort: medium (default)')
+                
                 response = openai.chat.completions.create(
                     model=self.model_name,
                     messages=messages,
@@ -48,6 +69,9 @@ class OpenAILLM(LLMInterface):
                 )
 
             else:
+                # Non-reasoning model - thinking_level is ignored
+                if thinking_level is not None:
+                    LOG.info(f'Thinking level: {thinking_level} -> Ignored (not a reasoning model)')
                 response = openai.chat.completions.create(
                     model=self.model_name,
                     messages=messages,
