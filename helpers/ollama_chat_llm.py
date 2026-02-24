@@ -1,4 +1,5 @@
 import json
+import re
 import sys
 import requests
 
@@ -41,6 +42,7 @@ class OllamaChatLLM(LLMInterface):
 
         completion = ''
         reasoning_content = ''
+        in_think_block = False  # Track if we're inside an inline <think> block
         
         # Extract thinking_level from kwargs and map to Ollama-specific 'think' parameter
         # Ollama native API uses 'think' parameter: True, False, "low", "medium", "high"
@@ -134,12 +136,34 @@ class OllamaChatLLM(LLMInterface):
                         broadcast_message(message=json.dumps(data), channel=get_broadcast_channel())
                         continue
                     
-                    # Handle regular content
+                    # Handle regular content (may contain inline <think> tags for some models like GPT-OSS)
                     content = message.get('content', '')
                     if content:
-                        completion += content
-                        print(content, end='')
-                        sys.stdout.flush()
+                        # Check for inline <think> tags in content
+                        if '<think>' in content:
+                            in_think_block = True
+                        
+                        if in_think_block:
+                            # Accumulate thinking content
+                            reasoning_content += content
+                            print(content, end='')
+                            sys.stdout.flush()
+                            
+                            # Check if thinking block is complete
+                            if '</think>' in reasoning_content:
+                                in_think_block = False
+                                # Extract thinking and regular content
+                                think_match = re.search(r'<think>(.*?)</think>', reasoning_content, re.DOTALL)
+                                if think_match:
+                                    thinking_text = think_match.group(1).strip()
+                                    # Get any content after </think>
+                                    after_think = re.sub(r'.*</think>\s*', '', reasoning_content, flags=re.DOTALL)
+                                    completion = f'<think>\n{thinking_text}\n</think>\n\n{after_think}'
+                                    reasoning_content = thinking_text  # Keep for final output
+                        else:
+                            completion += content
+                            print(content, end='')
+                            sys.stdout.flush()
                         
                         data = {'message': completion.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion.lstrip())}
                         broadcast_message(message=json.dumps(data), channel=get_broadcast_channel())
