@@ -43,8 +43,7 @@ class TextGenerationWebuiChatLLM(LLMInterface):
         print('======================')
 
         completion = ''
-        reasoning_content = ''
-        in_think_block = False  # Track if we're inside inline <think> tags
+        raw_response = ''  # Accumulate full raw response for parsing
         
         # Extract thinking_level from kwargs (text-generation-webui chat API doesn't support thinking levels)
         thinking_level = kwargs.pop('thinking_level', None)
@@ -81,35 +80,15 @@ class TextGenerationWebuiChatLLM(LLMInterface):
                 response_text = chunk.choices[0].delta.content
 
                 if response_text is not None:
-                    # Handle inline <think> tags (reasoning models like DeepSeek R1)
-                    # Check for opening tag
-                    if '<think>' in response_text:
-                        in_think_block = True
-                    
-                    # Check for closing tag
-                    if '</think>' in response_text:
-                        in_think_block = False
-                    
-                    # Accumulate content
-                    if in_think_block:
-                        # Inside think block - accumulate to reasoning_content
-                        text_to_add = response_text.replace('<think>', '').replace('</think>', '')
-                        reasoning_content += text_to_add
-                        print(response_text, end='')
-                        sys.stdout.flush()
-                        # Build completion with proper think tags
-                        completion = f'<think>\n{reasoning_content}\n</think>\n\n'
-                    else:
-                        # Outside think block - regular content
-                        # Strip any remaining </think> tag
-                        text_to_add = response_text.replace('</think>', '')
-                        if text_to_add:
-                            completion += text_to_add
-                            print(text_to_add, end='')
-                            sys.stdout.flush()
+                    raw_response += response_text
+                    print(response_text, end='')
+                    sys.stdout.flush()
 
-                data = {'message': completion.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion.lstrip())}
+                data = {'message': raw_response.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(raw_response.lstrip())}
                 broadcast_message(message=json.dumps(data), channel=get_broadcast_channel())
+            
+            # Post-process the raw response to extract reasoning and final content
+            completion = self._extract_thinking_content(raw_response)
 
         except Exception as e:
             LOG.error(f'Error connecting to text-generation-webui: {e}')
@@ -125,3 +104,47 @@ class TextGenerationWebuiChatLLM(LLMInterface):
         usage = {'prompt_tokens': prompt_tokens, 'completion_tokens': completion_tokens, 'total_tokens': total_tokens, 'total_cost': self.calculate_cost(prompt_tokens, completion_tokens)}
 
         return completion, usage
+
+    def _extract_thinking_content(self, raw_response: str) -> str:
+        """
+        Extract thinking/reasoning content from raw response.
+        
+        Handles multiple formats:
+        1. GPT-OSS style: <|channel|>analysis<|message|>...<|end|><|start|>assistant<|channel|>final<|message|>...
+        2. DeepSeek R1 style: <think>...</think>
+        """
+        import re
+        
+        reasoning_content = ''
+        final_content = ''
+        
+        # Check for GPT-OSS style format: <|channel|>analysis<|message|>...<|end|>...<|channel|>final<|message|>...
+        if '<|channel|>analysis' in raw_response or '<|channel|>final' in raw_response:
+            # Extract analysis (thinking) content
+            analysis_match = re.search(r'<\|channel\|>analysis<\|message\|>(.*?)(?:<\|end\|>|<\|channel\|>final)', raw_response, re.DOTALL)
+            if analysis_match:
+                reasoning_content = analysis_match.group(1).strip()
+            
+            # Extract final content
+            final_match = re.search(r'<\|channel\|>final<\|message\|>(.*?)$', raw_response, re.DOTALL)
+            if final_match:
+                final_content = final_match.group(1).strip()
+            
+            # Build completion with think tags wrapping the reasoning
+            if reasoning_content and final_content:
+                return f'<think>\n{reasoning_content}\n</think>\n\n{final_content}'
+            elif final_content:
+                return final_content
+            elif reasoning_content:
+                return f'<think>\n{reasoning_content}\n</think>'
+        
+        # Check for DeepSeek R1 style: <think>...</think>
+        elif '<think>' in raw_response:
+            think_match = re.search(r'<think>(.*?)</think>(.*?)$', raw_response, re.DOTALL)
+            if think_match:
+                reasoning_content = think_match.group(1).strip()
+                final_content = think_match.group(2).strip()
+                return f'<think>\n{reasoning_content}\n</think>\n\n{final_content}'
+        
+        # No special format detected, return as-is
+        return raw_response
