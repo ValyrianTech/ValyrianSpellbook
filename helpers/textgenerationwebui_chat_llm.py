@@ -43,6 +43,8 @@ class TextGenerationWebuiChatLLM(LLMInterface):
         print('======================')
 
         completion = ''
+        reasoning_content = ''
+        in_think_block = False  # Track if we're inside inline <think> tags
         
         # Extract thinking_level from kwargs (text-generation-webui chat API doesn't support thinking levels)
         thinking_level = kwargs.pop('thinking_level', None)
@@ -68,18 +70,43 @@ class TextGenerationWebuiChatLLM(LLMInterface):
                     sys.stdout.flush()
                     break
 
-                # Only the last chunk will have the usage information, but no choices
+                # Extract usage information if available
+                if hasattr(chunk, 'usage') and chunk.usage:
+                    prompt_tokens, completion_tokens, total_tokens = chunk.usage.prompt_tokens, chunk.usage.completion_tokens, chunk.usage.total_tokens
+
+                # Process choices if available
                 if len(chunk.choices) == 0:
-                    if hasattr(chunk, 'usage') and chunk.usage:
-                        prompt_tokens, completion_tokens, total_tokens = chunk.usage.prompt_tokens, chunk.usage.completion_tokens, chunk.usage.total_tokens
                     continue
 
                 response_text = chunk.choices[0].delta.content
 
                 if response_text is not None:
-                    completion += response_text
-                    print(response_text, end='')
-                    sys.stdout.flush()
+                    # Handle inline <think> tags (reasoning models like DeepSeek R1)
+                    # Check for opening tag
+                    if '<think>' in response_text:
+                        in_think_block = True
+                    
+                    # Check for closing tag
+                    if '</think>' in response_text:
+                        in_think_block = False
+                    
+                    # Accumulate content
+                    if in_think_block:
+                        # Inside think block - accumulate to reasoning_content
+                        text_to_add = response_text.replace('<think>', '').replace('</think>', '')
+                        reasoning_content += text_to_add
+                        print(response_text, end='')
+                        sys.stdout.flush()
+                        # Build completion with proper think tags
+                        completion = f'<think>\n{reasoning_content}\n</think>\n\n'
+                    else:
+                        # Outside think block - regular content
+                        # Strip any remaining </think> tag
+                        text_to_add = response_text.replace('</think>', '')
+                        if text_to_add:
+                            completion += text_to_add
+                            print(text_to_add, end='')
+                            sys.stdout.flush()
 
                 data = {'message': completion.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion.lstrip())}
                 broadcast_message(message=json.dumps(data), channel=get_broadcast_channel())
