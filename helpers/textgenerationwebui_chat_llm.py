@@ -7,6 +7,7 @@ from helpers.llm_interface import LLMInterface
 from helpers.loghelpers import LOG
 from helpers.websockethelpers import broadcast_message, get_broadcast_channel, get_broadcast_sender
 from .textgenerationhelpers import parse_generation
+from .thinking_levels import THINKING_LEVEL_OPENAI
 
 
 class TextGenerationWebuiChatLLM(LLMInterface):
@@ -45,10 +46,19 @@ class TextGenerationWebuiChatLLM(LLMInterface):
         completion = ''
         raw_response = ''  # Accumulate full raw response for parsing
         
-        # Extract thinking_level from kwargs (text-generation-webui chat API doesn't support thinking levels)
+        # Prepare extra params for the request
+        extra_params = {}
+        
+        # Extract thinking_level and map to reasoning_effort for GPT-OSS models
         thinking_level = kwargs.pop('thinking_level', None)
         if thinking_level is not None:
-            LOG.info(f'Thinking level: {thinking_level} -> Ignored (text-generation-webui chat API does not support thinking levels)')
+            # Text-generation-webui supports reasoning_effort for GPT-OSS models (low/medium/high)
+            reasoning_effort = THINKING_LEVEL_OPENAI.get(thinking_level)
+            if reasoning_effort is not None:
+                extra_params['reasoning_effort'] = reasoning_effort
+                LOG.info(f'Thinking level: {thinking_level} -> reasoning_effort: {reasoning_effort}')
+            else:
+                LOG.info(f'Thinking level: {thinking_level} -> Disabled (no reasoning_effort)')
         
         try:
             response = client.chat.completions.create(
@@ -59,6 +69,7 @@ class TextGenerationWebuiChatLLM(LLMInterface):
                 stream_options={
                     "include_usage": True
                 },
+                **extra_params,
                 **kwargs
             )
 
