@@ -838,6 +838,10 @@ class SpellbookRESTAPI(Bottle):
     @staticmethod
     @enable_cors
     def transcribe():
+        # Handle OPTIONS preflight request for CORS
+        if request.method == 'OPTIONS':
+            return {}
+
         start = time.time()
         if get_enable_transcribe() is False:
             return HTTPResponse(status=403, body={"error": "Transcribe endpoint is not enabled"})
