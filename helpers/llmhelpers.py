@@ -33,6 +33,8 @@ from .ollama_chat_llm import OllamaChatLLM
 from .deepseek_llm import DeepSeekLLM
 from .mistral_llm import MistralLLM
 from .google_llm import GoogleLLM
+from .textgenerationwebui_llm import TextGenerationWebuiLLM
+from .textgenerationwebui_chat_llm import TextGenerationWebuiChatLLM
 
 CLIENTS = {}
 
@@ -87,6 +89,12 @@ def get_llm(model_name: str = 'default_model', temperature: float = 0.0):
             elif self_hosted_models[model_name.split(':')[1]]['server_type'] == 'vLLMchat':
                 LOG.info('Using vLLM chat')
                 llm = VLLMchatLLM(model_name=self_hosted_models[model_name.split(':')[1]]['model_name'], host=host, port=port)
+            elif self_hosted_models[model_name.split(':')[1]]['server_type'] == 'TextGenerationWebui':
+                LOG.info('Using TextGenerationWebui')
+                llm = TextGenerationWebuiLLM(model_name=self_hosted_models[model_name.split(':')[1]]['model_name'], host=host, port=port)
+            elif self_hosted_models[model_name.split(':')[1]]['server_type'] == 'TextGenerationWebuiChat':
+                LOG.info('Using TextGenerationWebuiChat')
+                llm = TextGenerationWebuiChatLLM(model_name=self_hosted_models[model_name.split(':')[1]]['model_name'], host=host, port=port)
         else:
             LOG.info(f'Initializing {model_name} LLM with default settings')
             llm = SelfHostedLLM(mixture_of_experts=False, model_name=model_name.split(':')[1])
