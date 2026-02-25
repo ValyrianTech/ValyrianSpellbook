@@ -150,13 +150,14 @@ class TextGenerationWebuiChatLLM(LLMInterface):
         elif '<think>' in raw_response:
             # Handle incomplete think block during streaming
             if '</think>' in raw_response:
-                think_match = re.search(r'<think>(.*?)</think>(.*?)$', raw_response, re.DOTALL)
+                # Use greedy match for content after </think> to capture everything
+                think_match = re.search(r'<think>(.*?)</think>(.*)$', raw_response, re.DOTALL)
                 if think_match:
                     reasoning_content = think_match.group(1).strip()
                     final_content = think_match.group(2).strip()
             else:
                 # Still inside think block
-                think_match = re.search(r'<think>(.*?)$', raw_response, re.DOTALL)
+                think_match = re.search(r'<think>(.*)$', raw_response, re.DOTALL)
                 if think_match:
                     reasoning_content = think_match.group(1).strip()
             
@@ -200,11 +201,15 @@ class TextGenerationWebuiChatLLM(LLMInterface):
         
         # Check for DeepSeek R1 style: <think>...</think>
         elif '<think>' in raw_response:
-            think_match = re.search(r'<think>(.*?)</think>(.*?)$', raw_response, re.DOTALL)
+            # Use greedy match for content after </think> to capture everything
+            think_match = re.search(r'<think>(.*?)</think>(.*)$', raw_response, re.DOTALL)
             if think_match:
                 reasoning_content = think_match.group(1).strip()
                 final_content = think_match.group(2).strip()
-                return f'<think>\n{reasoning_content}\n</think>\n\n{final_content}'
+                if final_content:
+                    return f'<think>\n{reasoning_content}\n</think>\n\n{final_content}'
+                else:
+                    return f'<think>\n{reasoning_content}\n</think>'
         
         # No special format detected, return as-is
         return raw_response
