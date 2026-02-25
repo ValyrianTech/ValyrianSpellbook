@@ -83,11 +83,24 @@ class TextGenerationWebuiChatLLM(LLMInterface):
                     raw_response += response_text
                     print(response_text, end='')
                     sys.stdout.flush()
+                    
+                    # Build the completion in real-time for the UI
+                    # Extract current reasoning and final content from raw_response
+                    current_reasoning, current_final = self._extract_thinking_content_realtime(raw_response)
+                    
+                    if current_reasoning and current_final:
+                        completion = f'<think>\n{current_reasoning}\n</think>\n\n{current_final}'
+                    elif current_reasoning:
+                        completion = f'<think>\n{current_reasoning}\n</think>\n\n'
+                    elif current_final:
+                        completion = current_final
+                    else:
+                        completion = raw_response
 
-                data = {'message': raw_response.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(raw_response.lstrip())}
+                data = {'message': completion.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion.lstrip())}
                 broadcast_message(message=json.dumps(data), channel=get_broadcast_channel())
             
-            # Post-process the raw response to extract reasoning and final content
+            # Final post-process to ensure clean output
             completion = self._extract_thinking_content(raw_response)
 
         except Exception as e:
@@ -104,6 +117,53 @@ class TextGenerationWebuiChatLLM(LLMInterface):
         usage = {'prompt_tokens': prompt_tokens, 'completion_tokens': completion_tokens, 'total_tokens': total_tokens, 'total_cost': self.calculate_cost(prompt_tokens, completion_tokens)}
 
         return completion, usage
+
+    def _extract_thinking_content_realtime(self, raw_response: str) -> tuple:
+        """
+        Extract thinking/reasoning content from raw response in real-time during streaming.
+        Returns a tuple of (reasoning_content, final_content).
+        
+        Handles multiple formats:
+        1. GPT-OSS style: <|channel|>analysis<|message|>...<|end|><|start|>assistant<|channel|>final<|message|>...
+        2. DeepSeek R1 style: <think>...</think>
+        """
+        import re
+        
+        reasoning_content = ''
+        final_content = ''
+        
+        # Check for GPT-OSS style format
+        if '<|channel|>analysis' in raw_response or '<|channel|>final' in raw_response:
+            # Extract analysis (thinking) content - may be incomplete during streaming
+            analysis_match = re.search(r'<\|channel\|>analysis<\|message\|>(.*?)(?:<\|end\|>|<\|channel\|>final|$)', raw_response, re.DOTALL)
+            if analysis_match:
+                reasoning_content = analysis_match.group(1).strip()
+            
+            # Extract final content - may be incomplete during streaming
+            final_match = re.search(r'<\|channel\|>final<\|message\|>(.*?)$', raw_response, re.DOTALL)
+            if final_match:
+                final_content = final_match.group(1).strip()
+            
+            return (reasoning_content, final_content)
+        
+        # Check for DeepSeek R1 style: <think>...</think>
+        elif '<think>' in raw_response:
+            # Handle incomplete think block during streaming
+            if '</think>' in raw_response:
+                think_match = re.search(r'<think>(.*?)</think>(.*?)$', raw_response, re.DOTALL)
+                if think_match:
+                    reasoning_content = think_match.group(1).strip()
+                    final_content = think_match.group(2).strip()
+            else:
+                # Still inside think block
+                think_match = re.search(r'<think>(.*?)$', raw_response, re.DOTALL)
+                if think_match:
+                    reasoning_content = think_match.group(1).strip()
+            
+            return (reasoning_content, final_content)
+        
+        # No special format detected
+        return ('', '')
 
     def _extract_thinking_content(self, raw_response: str) -> str:
         """
