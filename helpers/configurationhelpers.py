@@ -292,6 +292,10 @@ def get_enable_together_ai():
 def get_together_ai_bearer_token():
     return spellbook_config().get('LLMs', 'together_ai_bearer_token')
 
+@verify_config('LLMs', 'openrouter_api_key')
+def get_openrouter_api_key():
+    return spellbook_config().get('LLMs', 'openrouter_api_key')
+
 @verify_config('Uploads', 'enable_uploads')
 def get_enable_uploads():
     return spellbook_config().getboolean('Uploads', 'enable_uploads')

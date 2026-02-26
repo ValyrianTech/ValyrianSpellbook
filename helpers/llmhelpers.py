@@ -33,6 +33,7 @@ from .ollama_chat_llm import OllamaChatLLM
 from .deepseek_llm import DeepSeekLLM
 from .mistral_llm import MistralLLM
 from .google_llm import GoogleLLM
+from .openrouter_llm import OpenRouterLLM
 from .textgenerationwebui_llm import TextGenerationWebuiLLM
 from .textgenerationwebui_chat_llm import TextGenerationWebuiChatLLM
 
@@ -150,6 +151,13 @@ def get_llm(model_name: str = 'default_model', temperature: float = 0.0):
         llm = GoogleLLM(model_name=model_name.split(":")[1], api_key=api_key)
         return llm
 
+    if model_name.startswith('OpenRouter:'):
+        LOG.info('--------------')
+        LOG.info(f'Initializing {model_name} LLM at OpenRouter')
+        api_key = get_llm_api_key(model_name=model_name, server_type='OpenRouter')
+        llm = OpenRouterLLM(model_name=model_name.split(":", 1)[1], api_key=api_key)
+        return llm
+
     if get_enable_openai() is True:
         if model_name == 'text-davinci-003':
             llm = OpenAI(model_name=model_name, temperature=temperature, openai_api_key=get_openai_api_key(), request_timeout=300)
@@ -190,7 +198,8 @@ def get_llm_api_key(model_name: str, server_type: str):
         'Mistral': 'MISTRAL_API_KEY',
         'Together-ai': 'TOGETHERAI_API_KEY',
         'Groq': 'GROQ_API_KEY',
-        'DeepSeek': 'DEEPSEEK_API_KEY'
+        'DeepSeek': 'DEEPSEEK_API_KEY',
+        'OpenRouter': 'OPENROUTER_API_KEY'
     }
     
     # Get the environment variable name for this server type
