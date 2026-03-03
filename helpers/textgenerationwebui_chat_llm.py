@@ -28,21 +28,6 @@ class TextGenerationWebuiChatLLM(LLMInterface):
             api_key="EMPTY"  # text-generation-webui doesn't require an API key, but the client expects one
         )
 
-        print('======================')
-        prompt = ''
-        for message in messages:
-            if type(message['content']) == str:
-                prompt += message['content'] + '\n'
-            elif type(message['content']) == list:
-                for part in message['content']:
-                    if 'text' in part:
-                        prompt += part['text'] + '\n'
-                    elif 'image_url' in part:
-                        prompt += '===Included image===\n'
-
-        print(prompt + '|')
-        print('======================')
-
         completion = ''
         raw_response = ''  # Accumulate full raw response for parsing
         

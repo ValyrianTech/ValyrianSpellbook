@@ -43,10 +43,6 @@ class OllamaLLM(LLMInterface):
             api_key="EMPTY"  # Ollama doesn't require an API key, but the client expects one
         )
 
-        print('======================')
-        print(prompt + '|')
-        print('======================')
-
         completion = ''
         
         # Extract thinking_level from kwargs (not used by completions API, but remove to avoid passing unknown param)

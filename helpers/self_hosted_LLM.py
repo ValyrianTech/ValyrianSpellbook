@@ -119,10 +119,6 @@ class SelfHostedLLM(LLMInterface):
                         elif 'image_url' in part:
                             prompt += '===Included image===\n'
 
-        print('======================')
-        print(prompt + '|')
-        print('======================')
-
         completion = ''
         print('')
         

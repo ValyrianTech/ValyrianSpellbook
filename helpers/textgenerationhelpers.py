@@ -4,6 +4,42 @@ from pprint import pprint
 from langchain_core.outputs import ChatGeneration
 
 
+def print_prompt(prompt_or_messages):
+    """
+    Print the prompt to the terminal for debugging purposes.
+    Accepts either a single prompt string or a list of messages (chat format).
+    Ends with a pipe character to show exactly where the prompt ends.
+    """
+    print('======================')
+    
+    if isinstance(prompt_or_messages, str):
+        # Single prompt string
+        print(prompt_or_messages + '|')
+    elif isinstance(prompt_or_messages, list):
+        # Messages format (list of dicts with 'role' and 'content')
+        prompt = ''
+        for message in prompt_or_messages:
+            content = message.get('content', '')
+            if isinstance(content, str):
+                prompt += content + '\n'
+            elif isinstance(content, list):
+                # Multimodal content (list of parts)
+                for part in content:
+                    if isinstance(part, dict):
+                        if 'text' in part:
+                            prompt += part['text'] + '\n'
+                        elif 'image_url' in part:
+                            prompt += '===Included image===\n'
+                    elif isinstance(part, str):
+                        prompt += part + '\n'
+        print(prompt + '|')
+    else:
+        # Fallback for other types
+        print(str(prompt_or_messages) + '|')
+    
+    print('======================')
+
+
 class LLMResult(object):
     generations: list[list[ChatGeneration]]
 
