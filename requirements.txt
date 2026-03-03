@@ -36,7 +36,7 @@ anthropic==0.60.0
 groq==0.31.0
 hivemind-python==0.2.0
 httpx==0.28.1
-fastmcp==2.10.1
+fastmcp==2.14.0
 mistralai==1.9.3
 huggingface-hub==0.34.4
 together==1.5.21
