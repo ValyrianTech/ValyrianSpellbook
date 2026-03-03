@@ -96,6 +96,10 @@ def get_llm(model_name: str = 'default_model', temperature: float = 0.0):
             elif self_hosted_models[model_name.split(':')[1]]['server_type'] == 'TextGenerationWebuiChat':
                 LOG.info('Using TextGenerationWebuiChat')
                 llm = TextGenerationWebuiChatLLM(model_name=self_hosted_models[model_name.split(':')[1]]['model_name'], host=host, port=port)
+            elif self_hosted_models[model_name.split(':')[1]]['server_type'] == 'OpenRouter':
+                LOG.info('Using OpenRouter')
+                api_key = get_llm_api_key(model_name=model_name, server_type='OpenRouter')
+                llm = OpenRouterLLM(model_name=self_hosted_models[model_name.split(':')[1]]['model_name'], api_key=api_key)
         else:
             LOG.info(f'Initializing {model_name} LLM with default settings')
             llm = SelfHostedLLM(mixture_of_experts=False, model_name=model_name.split(':')[1])
