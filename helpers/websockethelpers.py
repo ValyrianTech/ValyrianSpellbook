@@ -30,7 +30,7 @@ class WebSocketHandler:
         self.subscriptions = {}
         self.lock = asyncio.Lock()
 
-    async def handler(self, websocket, path):
+    async def handler(self, websocket):
         try:
             # Register.
             async with self.lock:
@@ -72,23 +72,31 @@ def broadcast_message(message: str, channel: str = 'general'):
     asyncio.run_coroutine_threadsafe(WEBSOCKET_HANDLER.broadcast(message, channel), LOOP)
 
 
-def start_websocket_server(host: str, port: int):
-
+async def run_websocket_server(host: str, port: int):
+    """Async function to run the websocket server using websockets 16.0+ API."""
     LOG.info(f'Starting websocket server on {host}:{port} ...')
-    asyncio.set_event_loop(LOOP)
 
     if get_enable_ssl():
         ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         ssl_context.load_cert_chain(get_ssl_certificate(), get_ssl_private_key())
-        start_server = websockets.serve(WEBSOCKET_HANDLER.handler, host, port, ssl=ssl_context)
+        async with websockets.serve(WEBSOCKET_HANDLER.handler, host, port, ssl=ssl_context):
+            LOG.info('Websocket server running.')
+            await asyncio.get_running_loop().create_future()  # Run forever
     else:
-        start_server = websockets.serve(WEBSOCKET_HANDLER.handler, host, port)
+        async with websockets.serve(WEBSOCKET_HANDLER.handler, host, port):
+            LOG.info('Websocket server running.')
+            await asyncio.get_running_loop().create_future()  # Run forever
 
-    LOG.info('Initializing websocket server.')
-    LOOP.run_until_complete(start_server)
-    LOG.info('Websocket server running.')
-    LOOP.run_forever()
-    LOG.info('Websocket server stopped.')
+
+def start_websocket_server(host: str, port: int):
+    LOG.info(f'Initializing websocket server on {host}:{port} ...')
+    asyncio.set_event_loop(LOOP)
+    try:
+        LOOP.run_until_complete(run_websocket_server(host, port))
+    except Exception as e:
+        LOG.error(f'Websocket server error: {e}')
+    finally:
+        LOG.info('Websocket server stopped.')
 
 
 def init_websocket_server(host: str = 'localhost', port: int = 8765):
