@@ -9,6 +9,7 @@ from helpers.loghelpers import LOG
 from helpers.websockethelpers import broadcast_message, get_broadcast_channel, get_broadcast_sender
 from helpers.configurationhelpers import get_openrouter_api_key
 from .textgenerationhelpers import parse_generation
+from .thinking_levels import THINKING_LEVEL_OPENROUTER
 
 
 class OpenRouterLLM(LLMInterface):
@@ -50,6 +51,21 @@ class OpenRouterLLM(LLMInterface):
         # Add stop sequences if provided
         if stop:
             request_params["stop"] = stop
+        
+        # Extract thinking_level and map to OpenRouter reasoning.effort
+        thinking_level = kwargs.pop('thinking_level', None)
+        if thinking_level is not None:
+            # OpenRouter uses reasoning.effort with values: xhigh, high, medium, low, minimal, none
+            reasoning_effort = THINKING_LEVEL_OPENROUTER.get(thinking_level)
+            if reasoning_effort is not None:
+                request_params['extra_body'] = {
+                    'reasoning': {
+                        'effort': reasoning_effort
+                    }
+                }
+                LOG.info(f'Thinking level: {thinking_level} -> OpenRouter reasoning.effort: {reasoning_effort}')
+            else:
+                LOG.info(f'Thinking level: {thinking_level} -> Disabled (no reasoning.effort)')
         
         # Add any additional kwargs (excluding the ones we've already handled)
         excluded_keys = {'temperature', 'max_tokens'}

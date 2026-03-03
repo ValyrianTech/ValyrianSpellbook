@@ -31,6 +31,16 @@ THINKING_LEVEL_OPENAI = {
     'xhigh': 'high'
 }
 
+# OpenRouter uses reasoning.effort with full support for xhigh
+THINKING_LEVEL_OPENROUTER = {
+    'off': 'none',
+    'minimal': 'minimal',
+    'low': 'low',
+    'medium': 'medium',
+    'high': 'high',
+    'xhigh': 'xhigh'
+}
+
 THINKING_LEVEL_ANTHROPIC = {
     'off': None,
     'minimal': 1024,    # budget_tokens
