@@ -17,21 +17,22 @@ def print_prompt(prompt_or_messages):
         print(prompt_or_messages + '|')
     elif isinstance(prompt_or_messages, list):
         # Messages format (list of dicts with 'role' and 'content')
-        prompt = ''
+        parts = []
         for message in prompt_or_messages:
             content = message.get('content', '')
             if isinstance(content, str):
-                prompt += content + '\n'
+                parts.append(content)
             elif isinstance(content, list):
                 # Multimodal content (list of parts)
                 for part in content:
                     if isinstance(part, dict):
                         if 'text' in part:
-                            prompt += part['text'] + '\n'
+                            parts.append(part['text'])
                         elif 'image_url' in part:
-                            prompt += '===Included image===\n'
+                            parts.append('===Included image===')
                     elif isinstance(part, str):
-                        prompt += part + '\n'
+                        parts.append(part)
+        prompt = '\n'.join(parts)
         print(prompt + '|')
     else:
         # Fallback for other types
