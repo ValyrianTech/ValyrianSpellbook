@@ -91,8 +91,8 @@ Google,gemini-2.0-flash-live-001,$0.35,$1.50,1000000,TRUE
 Google,gemini-1.5-flash,$0.075,$0.30,1000000,TRUE
 Google,gemini-1.5-flash-8b,$0.0375,$0.15,1000000,TRUE
 Google,gemini-1.5-pro,$1.25,$5.00,2000000,TRUE
-DeepSeek,deepseek-chat,$0.27,$1.10,64000,FALSE
-DeepSeek,deepseek-reasoner,$0.55,$2.19,64000,FALSE
+DeepSeek,deepseek-chat,$0.27,$1.10,128000,FALSE
+DeepSeek,deepseek-reasoner,$0.55,$2.19,128000,FALSE
 Together-ai,deepseek-ai/DeepSeek-R1,$3.00,$7.00,4096,FALSE
 Together-ai,moonshotai/Kimi-K2-Instruct,$1.00,$3.00,128000,FALSE
 Together-ai,openai/gpt-oss-120b,$0.15,$0.60,128000,FALSE
