@@ -95,10 +95,14 @@ DeepSeek,deepseek-chat,$0.27,$1.10,128000,FALSE
 DeepSeek,deepseek-reasoner,$0.55,$2.19,128000,FALSE
 Together-ai,deepseek-ai/DeepSeek-R1,$3.00,$7.00,4096,FALSE
 Together-ai,moonshotai/Kimi-K2-Instruct,$1.00,$3.00,128000,FALSE
+Together-ai,moonshotai/Kimi-K2-Instruct-0905,$1.00,$3.00,256000,FALSE
+Together-ai,moonshotai/Kimi-K2.5,$0.30,$1.20,256000,FALSE
 Together-ai,openai/gpt-oss-120b,$0.15,$0.60,128000,FALSE
+Together-ai,Qwen/Qwen3.5-397B-A17B,$0.60,$3.60,256000,FALSE
 Together-ai,Qwen/Qwen3-235B-A22B-Thinking-2507,$0.65,$3.00,128000,FALSE
 Together-ai,Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8,$2.00,$2.00,128000,FALSE
 Together-ai,zai-org/GLM-4.5-Air-FP8,$0.20,$1.10,128000,FALSE
+Together-ai,zai-org/GLM-5,$1.00,$3.20,202000,FALSE
 Together-ai,Qwen/Qwen3-235B-A22B-Instruct-2507-tput,$0.20,$0.80,128000,FALSE
 Together-ai,meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8,$0.27,$0.95,128000,FALSE
 Together-ai,deepseek-ai/DeepSeek-V3,$1.25,$1.25,128000,FALSE
