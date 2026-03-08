@@ -70,6 +70,9 @@ Mistral,devstral-small-2505,$0.10,$0.30,128000,FALSE
 Mistral,open-codestral-mamba,$0.20,$0.60,256000,FALSE
 Mistral,pixtral-12b-2409,$0.15,$0.15,128000,TRUE
 Mistral,open-mistral-nemo,$0.15,$0.15,128000,FALSE
+Google,gemini-3.1-pro-preview,$2.00,$12.00,1048576,TRUE
+Google,gemini-3-flash-preview,$0.50,$3.00,1048576,TRUE
+Google,gemini-3.1-flash-lite-preview,$0.25,$1.50,1048576,TRUE
 Google,gemini-2.5-pro,$1.25,$10.00,2000000,TRUE
 Google,gemini-2.5-flash,$0.30,$2.50,1000000,TRUE
 Google,gemini-2.5-flash-lite,$0.10,$0.40,1000000,TRUE
