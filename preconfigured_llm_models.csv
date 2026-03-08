@@ -42,10 +42,13 @@ Anthropic,claude-3-5-haiku-20241022,$0.80,$4.00,200000,TRUE
 Anthropic,claude-3-5-sonnet-20241022,$3.00,$15.00,200000,TRUE
 Anthropic,claude-3-5-sonnet-20240620,$3.00,$15.00,200000,TRUE
 Anthropic,claude-3-haiku-20240307,$0.25,$1.25,200000,TRUE
+Mistral,mistral-large-2512,$2.00,$6.00,256000,TRUE
+Mistral,mistral-medium-2508,$0.40,$2.00,128000,TRUE
 Mistral,mistral-medium-2505,$0.40,$2.00,128000,TRUE
 Mistral,magistral-medium-2507,$2.00,$5.00,40000,FALSE
 Mistral,codestral-2508,$0.30,$0.90,256000,FALSE
 Mistral,voxtral-mini-2507,$0.00,$0.00,32000,FALSE
+Mistral,devstral-2512,$0.40,$2.00,256000,FALSE
 Mistral,devstral-medium-2507,$0.40,$2.00,128000,FALSE
 Mistral,mistral-ocr-2505,$0.00,$0.00,32000,TRUE
 Mistral,magistral-medium-2506,$2.00,$5.00,40000,FALSE
