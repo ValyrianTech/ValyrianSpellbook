@@ -28,17 +28,19 @@ class GoogleLLM(LLMInterface):
         )
 
         completion = ''
-        reasoning_content = ''
         
         # Extract thinking_level from kwargs
         thinking_level = kwargs.pop('thinking_level', None)
         
         # Google Gemini OpenAI-compatible API uses reasoning_effort parameter
         # Maps to: none (off), low, medium, high
+        # NOTE: Thought summaries are NOT available via the OpenAI-compatible API
+        # They require Google's native SDK with include_thoughts=True
+        # The reasoning_effort parameter controls thinking depth but thoughts are internal only
         reasoning_effort = None
         if thinking_level is not None:
             reasoning_effort = THINKING_LEVEL_GOOGLE.get(thinking_level, 'medium')
-            LOG.info(f'Thinking level: {thinking_level} -> Google reasoning_effort: {reasoning_effort}')
+            LOG.info(f'Thinking level: {thinking_level} -> Google reasoning_effort: {reasoning_effort} (thoughts not exposed via OpenAI API)')
         
         try:
             # Build request kwargs
@@ -52,6 +54,8 @@ class GoogleLLM(LLMInterface):
             }
             
             # Add reasoning_effort if specified
+            # Note: include_thoughts via extra_body doesn't seem to work with OpenAI client
+            # The reasoning_effort parameter controls thinking level
             if reasoning_effort is not None:
                 request_kwargs['reasoning_effort'] = reasoning_effort
             
@@ -72,19 +76,12 @@ class GoogleLLM(LLMInterface):
                 if len(chunk.choices) == 0:
                     continue
 
-                if hasattr(chunk.choices[0].delta, 'reasoning_content') and chunk.choices[0].delta.reasoning_content:
-                    reasoning_content += chunk.choices[0].delta.reasoning_content
+                response_text = chunk.choices[0].delta.content
 
-                    if reasoning_content is not None:
-                        completion = f'<think>\n{reasoning_content}\n</think>\n\n'
-
-                else:
-                    response_text = chunk.choices[0].delta.content
-
-                    if response_text is not None:
-                        completion += response_text
-                        print(response_text, end='')
-                        sys.stdout.flush()
+                if response_text is not None:
+                    completion += response_text
+                    print(response_text, end='')
+                    sys.stdout.flush()
 
                 data = {'message': completion.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion.lstrip())}
                 broadcast_message(message=json.dumps(data), channel=get_broadcast_channel())
