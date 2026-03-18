@@ -2,26 +2,32 @@ import asyncio
 import websockets
 import threading
 import ssl
+from contextvars import ContextVar
 
 from helpers.configurationhelpers import what_is_my_ip
 from helpers.loghelpers import LOG
 from helpers.configurationhelpers import get_enable_ssl, get_ssl_certificate, get_ssl_private_key
-BROADCAST_CHANNEL = 'general'
-BROADCAST_SENDER = 'stream'
+
+# Use ContextVars instead of global variables to support concurrent conversations
+# Each execution context (thread/async task) maintains its own isolated values
+BROADCAST_CHANNEL: ContextVar[str] = ContextVar('broadcast_channel', default='general')
+BROADCAST_SENDER: ContextVar[str] = ContextVar('broadcast_sender', default='stream')
 
 
 def set_broadcast_channel(channel: str, sender: str):
-    global BROADCAST_CHANNEL, BROADCAST_SENDER
-    BROADCAST_CHANNEL = channel
-    BROADCAST_SENDER = sender
+    """Set the broadcast channel and sender for the current execution context."""
+    BROADCAST_CHANNEL.set(channel)
+    BROADCAST_SENDER.set(sender)
 
 
-def get_broadcast_channel():
-    return BROADCAST_CHANNEL
+def get_broadcast_channel() -> str:
+    """Get the broadcast channel for the current execution context."""
+    return BROADCAST_CHANNEL.get()
 
 
-def get_broadcast_sender():
-    return BROADCAST_SENDER
+def get_broadcast_sender() -> str:
+    """Get the broadcast sender for the current execution context."""
+    return BROADCAST_SENDER.get()
 
 
 class WebSocketHandler:
