@@ -31,13 +31,12 @@ class CommandAction(Action):
             LOG.info('Replacing placeholder %s with %s' % (key, value))
             self.run_command = self.run_command.replace(key, value)
 
-        current_run_dir = os.getcwd()
-        if self.working_dir is not None and current_run_dir != self.working_dir:
-            os.chdir(self.working_dir)
-            LOG.info('Switched to working dir: %s' % os.getcwd())
-
         LOG.info('Running command: %s' % self.run_command)
-        command_process = Popen(self.run_command, stdout=PIPE, stderr=PIPE, shell=True)
+        if self.working_dir is not None:
+            LOG.info('Working dir: %s' % self.working_dir)
+        
+        # Use cwd parameter instead of os.chdir() for thread-safety
+        command_process = Popen(self.run_command, stdout=PIPE, stderr=PIPE, shell=True, cwd=self.working_dir)
         output, error = command_process.communicate()
         stripped_output = output.strip()
         LOG.info('Command output: %s' % stripped_output)
@@ -45,10 +44,6 @@ class CommandAction(Action):
         stripped_error = error.strip()
         if len(stripped_error):
             LOG.error('Command error: %s' % stripped_error)
-
-        if current_run_dir != os.getcwd():
-            os.chdir(current_run_dir)
-            LOG.info('Switched back to: %s' % os.getcwd())
 
         if command_process.returncode == 0:
             return True, stripped_output, stripped_error
