@@ -4,7 +4,7 @@ bottle==0.12.25
 pytest==7.4.0
 pytest-cov==7.0.0
 requests==2.32.4
-deepdiff==8.6.1
+deepdiff==8.6.2
 ecdsa==0.19.1
 simplejson==3.19.1
 pycryptodome==3.23.0
