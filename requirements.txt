@@ -5,7 +5,7 @@ pytest==7.4.0
 pytest-cov==7.0.0
 requests==2.32.4
 deepdiff==8.6.1
-ecdsa==0.19.1
+ecdsa==0.19.2
 simplejson==3.19.1
 pycryptodome==3.23.0
 websocket_client==1.6.1
