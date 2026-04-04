@@ -82,9 +82,10 @@ class OllamaChatLLM(LLMInterface):
             'think': ollama_think
         }
         
-        # Add optional parameters
+        # Add optional parameters (must be inside 'options' for Ollama API)
         if stop:
-            request_payload['stop'] = stop
+            request_payload['options'] = request_payload.get('options', {})
+            request_payload['options']['stop'] = stop
         if 'temperature' in kwargs:
             request_payload['options'] = request_payload.get('options', {})
             request_payload['options']['temperature'] = kwargs.pop('temperature')
