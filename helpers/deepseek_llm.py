@@ -1,7 +1,8 @@
 import json
 import sys
+import time
 
-from openai import OpenAI
+from openai import APIConnectionError, OpenAI
 
 from helpers.llm_interface import LLMInterface
 from helpers.loghelpers import LOG
@@ -41,56 +42,69 @@ class DeepSeekLLM(LLMInterface):
         else:
             LOG.info(f'Thinking level: {thinking_level} -> DeepSeek thinking mode disabled')
         
-        try:
-            response = client.chat.completions.create(
-                model=self.model_name,
-                messages=messages,
-                top_p=0.7,
-                stop=stop,
-                stream=True,
-                stream_options= {
-                    "include_usage": True
-                },
-                extra_body=extra_body,
-                **kwargs
-            )
+        max_retries = 3
+        retry_delay = 10
 
-            prompt_tokens, completion_tokens, total_tokens = 0, 0, 0
-            for chunk in response:
-                if self.check_stop_generation():
-                    print()
-                    sys.stdout.flush()
-                    break
+        for attempt in range(1, max_retries + 1):
+            try:
+                response = client.chat.completions.create(
+                    model=self.model_name,
+                    messages=messages,
+                    top_p=0.7,
+                    stop=stop,
+                    stream=True,
+                    stream_options={
+                        "include_usage": True
+                    },
+                    extra_body=extra_body,
+                    **kwargs
+                )
 
-                # Extract usage information if available (DeepSeek provides it in final chunk with choices)
-                if hasattr(chunk, 'usage') and chunk.usage:
-                    prompt_tokens, completion_tokens, total_tokens = chunk.usage.prompt_tokens, chunk.usage.completion_tokens, chunk.usage.total_tokens
-
-                # Process choices if available
-                if len(chunk.choices) == 0:
-                    continue
-
-                if hasattr(chunk.choices[0].delta, 'reasoning_content') and chunk.choices[0].delta.reasoning_content:
-                    print(chunk.choices[0].delta.reasoning_content, end='')
-                    reasoning_content += chunk.choices[0].delta.reasoning_content
-
-                    if reasoning_content is not None:
-                        completion = f'<think>\n{reasoning_content}\n</think>\n\n'
-
-                else:
-                    response_text = chunk.choices[0].delta.content
-
-                    if response_text is not None:
-                        completion += response_text
-                        print(response_text, end='')
+                prompt_tokens, completion_tokens, total_tokens = 0, 0, 0
+                for chunk in response:
+                    if self.check_stop_generation():
+                        print()
                         sys.stdout.flush()
+                        break
 
-                data = {'message': completion.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion.lstrip())}
-                broadcast_message(message=json.dumps(data), channel=get_broadcast_channel())
+                    if hasattr(chunk, 'usage') and chunk.usage:
+                        prompt_tokens, completion_tokens, total_tokens = chunk.usage.prompt_tokens, chunk.usage.completion_tokens, chunk.usage.total_tokens
 
-        except Exception as e:
-            LOG.error(f'Error connecting to DeepSeek: {e}')
-            return 'Error: Unable to connect to DeepSeek.\n'
+                    if len(chunk.choices) == 0:
+                        continue
+
+                    if hasattr(chunk.choices[0].delta, 'reasoning_content') and chunk.choices[0].delta.reasoning_content:
+                        print(chunk.choices[0].delta.reasoning_content, end='')
+                        reasoning_content += chunk.choices[0].delta.reasoning_content
+
+                        if reasoning_content is not None:
+                            completion = f'<think>\n{reasoning_content}\n</think>\n\n'
+
+                    else:
+                        response_text = chunk.choices[0].delta.content
+
+                        if response_text is not None:
+                            completion += response_text
+                            print(response_text, end='')
+                            sys.stdout.flush()
+
+                    data = {'message': completion.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion.lstrip())}
+                    broadcast_message(message=json.dumps(data), channel=get_broadcast_channel())
+
+                break
+
+            except APIConnectionError as e:
+                LOG.error(f'Error connecting to DeepSeek (attempt {attempt}/{max_retries}): {e}')
+                if attempt < max_retries:
+                    LOG.info(f'Retrying in {retry_delay} seconds...')
+                    time.sleep(retry_delay)
+                else:
+                    LOG.error(f'All {max_retries} attempts failed.')
+                    return 'Error: Unable to connect to DeepSeek.\n'
+
+            except Exception as e:
+                LOG.error(f'Error connecting to DeepSeek: {e}')
+                return 'Error: Unable to connect to DeepSeek.\n'
 
         print('')
 
