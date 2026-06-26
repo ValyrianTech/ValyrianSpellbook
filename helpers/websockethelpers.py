@@ -75,6 +75,11 @@ LOOP = asyncio.new_event_loop()
 
 
 def broadcast_message(message: str, channel: str = 'general'):
+    # If the websocket server was never started (e.g. standalone scripts that set
+    # SKIP_WEBSOCKET_SERVER), the LOOP is not running. Scheduling a coroutine on a
+    # non-running loop leaves it un-awaited and triggers a RuntimeWarning, so skip it.
+    if not LOOP.is_running():
+        return
     asyncio.run_coroutine_threadsafe(WEBSOCKET_HANDLER.broadcast(message, channel), LOOP)
 
 
