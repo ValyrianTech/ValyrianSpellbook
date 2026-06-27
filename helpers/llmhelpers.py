@@ -355,9 +355,16 @@ class LLM(object):
         self.temperature = temperature
         self.thinking_level = thinking_level
         self.llm = get_llm(model_name, temperature)
-        self.chat = get_llm_config(model_name.split(':')[1]).get('chat', False) if ':' in model_name else False
+        if ':' in model_name:
+            llm_config = get_llm_config(model_name) or get_llm_config(model_name.split(':')[1])
+        else:
+            llm_config = {}
+        self.chat = llm_config.get('chat', False)
+        self.max_tokens = llm_config.get('max_tokens', 4096)
 
-    def generate(self, messages: List[BaseMessage], stop=None, max_tokens: int = 4096):
+    def generate(self, messages: List[BaseMessage], stop=None, max_tokens: int = None):
+        if max_tokens is None:
+            max_tokens = self.max_tokens
         kwargs = {'temperature': self.temperature, 'max_tokens': max_tokens}
         if self.thinking_level is not None:
             kwargs['thinking_level'] = self.thinking_level
