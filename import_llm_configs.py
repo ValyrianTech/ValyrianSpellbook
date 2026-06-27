@@ -83,7 +83,8 @@ def create_llm_config(model_data: Dict[str, str]) -> Dict[str, Any]:
         'video': False,  # No video models in current CSV
         'context_length': context_size,
         'prompt_template': '',
-        'chat': True  # All modern LLM models support chat format
+        'chat': True,  # All modern LLM models support chat format
+        'max_tokens': 4096
     }
     
     return config
@@ -118,7 +119,8 @@ def save_llm_config_direct(config: Dict[str, Any], verbose: bool = False) -> boo
             'video': config['video'],
             'context_length': config['context_length'],
             'prompt_template': config['prompt_template'],
-            'chat': config['chat']
+            'chat': config['chat'],
+            'max_tokens': config['max_tokens']
         }
         
         save_llm_config_lightweight(llm_name, llm_config)
