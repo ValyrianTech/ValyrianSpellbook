@@ -2,13 +2,63 @@
 # -*- coding: utf-8 -*-
 import argparse
 import time
-import deepdiff
 
 from helpers.setupscripthelpers import spellbook_call
 from pprint import pprint
 
 
 EXPLORERS = spellbook_call('get_explorers')
+
+
+def deep_diff(d1, d2, prefix='root'):
+    values_changed = {}
+    type_changes = {}
+
+    if type(d1) != type(d2):
+        return {'values_changed': values_changed, 'type_changes': type_changes}
+
+    if isinstance(d1, dict):
+        for key in d1.keys() & d2.keys():
+            path = f"{prefix}['{key}']"
+            v1, v2 = d1[key], d2[key]
+
+            if isinstance(v1, dict) and isinstance(v2, dict):
+                sub = deep_diff(v1, v2, path)
+                values_changed.update(sub['values_changed'])
+                type_changes.update(sub.get('type_changes', {}))
+            elif isinstance(v1, list) and isinstance(v2, list):
+                sub = deep_diff(v1, v2, path)
+                values_changed.update(sub['values_changed'])
+                type_changes.update(sub.get('type_changes', {}))
+            elif v1 != v2:
+                if type(v1) != type(v2):
+                    type_changes[path] = {'old_type': type(v1), 'new_type': type(v2), 'old_value': v1, 'new_value': v2}
+                else:
+                    values_changed[path] = {'old_value': v1, 'new_value': v2}
+
+    elif isinstance(d1, list):
+        for i in range(min(len(d1), len(d2))):
+            path = f"{prefix}[{i}]"
+            v1, v2 = d1[i], d2[i]
+
+            if isinstance(v1, dict) and isinstance(v2, dict):
+                sub = deep_diff(v1, v2, path)
+                values_changed.update(sub['values_changed'])
+                type_changes.update(sub.get('type_changes', {}))
+            elif isinstance(v1, list) and isinstance(v2, list):
+                sub = deep_diff(v1, v2, path)
+                values_changed.update(sub['values_changed'])
+                type_changes.update(sub.get('type_changes', {}))
+            elif v1 != v2:
+                if type(v1) != type(v2):
+                    type_changes[path] = {'old_type': type(v1), 'new_type': type(v2), 'old_value': v1, 'new_value': v2}
+                else:
+                    values_changed[path] = {'old_value': v1, 'new_value': v2}
+
+    result = {'values_changed': values_changed}
+    if type_changes:
+        result['type_changes'] = type_changes
+    return result
 
 
 class Comparison(object):
@@ -96,7 +146,7 @@ class Comparison(object):
 
         for i in range(len(EXPLORERS)):
             print('\nComparing %s and %s: .... ' % (EXPLORERS[i], EXPLORERS[i-1]),)
-            differences = deepdiff.DeepDiff(response_data[EXPLORERS[i]], response_data[EXPLORERS[i-1]])
+            differences = deep_diff(response_data[EXPLORERS[i]], response_data[EXPLORERS[i-1]])
 
             if len(differences['values_changed'].keys()) > 1 or 'type_changes' in differences:
                 print('NOT OK')
