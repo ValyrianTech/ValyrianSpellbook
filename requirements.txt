@@ -17,7 +17,7 @@ cheroot==10.0.0
 psutil==5.9.5
 openai==1.99.9
 tweepy==4.14.0
-transformers==4.55.0
+transformers==5.12.1
 mastodon.py==1.8.1
 beautifulsoup4==4.13.4
 langchain==0.3.27
@@ -37,7 +37,7 @@ hivemind-python==0.2.0
 httpx==0.28.1
 fastmcp==3.2.0
 mistralai==1.9.3
-huggingface-hub==0.34.4
+huggingface-hub==1.21.0
 together==1.5.21
 ddgs==9.14.1
 playwright>=1.58.0
