@@ -14,7 +14,9 @@ from datetime import datetime
 from functools import wraps
 from logging.handlers import RotatingFileHandler
 
-from bottle import Bottle, request, response, static_file, ServerAdapter, server_names, HTTPResponse
+from bottle import Bottle, BaseRequest, request, response, static_file, ServerAdapter, server_names, HTTPResponse
+
+BaseRequest.MEMFILE_MAX = 10 * 1024 * 1024  # 10MB — override default 100KB for large AddMessage payloads
 
 from authentication import initialize_api_keys_file
 from data.data import get_explorers, get_explorer_config, save_explorer, delete_explorer
