@@ -1,0 +1,6 @@
+[run]
+omit =
+    # Python 2 only code - not testable in Python 3
+    helpers/py2specials.py
+    # Script only runs as __main__ - no importable functions
+    helpers/notify_transaction.py
