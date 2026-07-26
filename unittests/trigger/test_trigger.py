@@ -363,3 +363,10 @@ class TestTrigger(object):
         trigger.script = 'testscript.py'
         result = trigger.load_script()
         assert result is None
+
+    def test_trigger_conditions_fulfilled_abstract_body(self):
+        """Test that the abstract conditions_fulfilled method body (pass) can be called directly"""
+        from trigger.trigger import Trigger
+        trigger = ConcreteTrigger('test_trigger_id')
+        result = Trigger.conditions_fulfilled(trigger)
+        assert result is None

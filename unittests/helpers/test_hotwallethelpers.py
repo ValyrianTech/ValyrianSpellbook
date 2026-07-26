@@ -95,6 +95,42 @@ class TestGetHotWallet(unittest.TestCase):
     @patch('helpers.hotwallethelpers.get_wallet_dir')
     @patch('helpers.hotwallethelpers.get_default_wallet')
     @patch('helpers.hotwallethelpers.AESCipher')
+    @patch('helpers.hotwallethelpers.prompt_decryption_password')
+    @patch('builtins.open', create=True)
+    def test_get_hot_wallet_empty_password_fails_then_prompts(self, mock_open, mock_prompt, mock_cipher_class, mock_wallet, mock_dir):
+        """Test get_hot_wallet when empty password decryption fails, triggering prompt_decryption_password (lines 28-29)"""
+        from helpers.hotwallethelpers import get_hot_wallet
+        import helpers.hotwallethelpers as hw_module
+
+        hw_module.HOT_WALLET_PASSWORD = None
+
+        mock_dir.return_value = '/tmp/wallets'
+        mock_wallet.return_value = 'test_wallet'
+
+        mock_cipher = MagicMock()
+        # First call (empty password) fails, second call (prompted password) succeeds
+        mock_cipher.decrypt.side_effect = [Exception('Decryption failed'), '{"mnemonic": ["word1"], "passphrase": ""}']
+        mock_cipher_class.return_value = mock_cipher
+
+        mock_file = MagicMock()
+        mock_file.read.return_value = 'encrypted_data'
+        mock_file.__enter__ = MagicMock(return_value=mock_file)
+        mock_file.__exit__ = MagicMock(return_value=False)
+        mock_open.return_value = mock_file
+
+        # prompt_decryption_password sets the global password
+        def set_password():
+            hw_module.HOT_WALLET_PASSWORD = 'prompted_password'
+        mock_prompt.side_effect = set_password
+
+        result = get_hot_wallet()
+
+        mock_prompt.assert_called_once()
+        self.assertEqual(result['mnemonic'], ['word1'])
+
+    @patch('helpers.hotwallethelpers.get_wallet_dir')
+    @patch('helpers.hotwallethelpers.get_default_wallet')
+    @patch('helpers.hotwallethelpers.AESCipher')
     @patch('builtins.open', create=True)
     def test_get_hot_wallet_invalid_password(self, mock_open, mock_cipher_class, mock_wallet, mock_dir):
         """Test get_hot_wallet with invalid password"""

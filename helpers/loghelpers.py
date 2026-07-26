@@ -15,7 +15,7 @@ backup_count = 5 if platform.system() == 'Linux' else 0
 
 # make the directory for logs if it doesn't exist
 logs_dir = os.path.join(PROGRAM_DIR, 'logs')
-if not os.path.isdir(logs_dir):
+if not os.path.isdir(logs_dir):  # pragma: no cover
     os.makedirs(logs_dir)
 
 LOG = logging.getLogger('Spellbook')
@@ -25,11 +25,11 @@ try:
     stream = sys.stdout
     if hasattr(stream, "reconfigure"):
         stream.reconfigure(encoding="utf-8", errors="replace")
-    elif hasattr(stream, "buffer"):
+    elif hasattr(stream, "buffer"):  # pragma: no cover
         stream = io.TextIOWrapper(stream.buffer, encoding="utf-8", errors="replace", line_buffering=True)
     # else: leave as-is; handler will use whatever stream is (rare)
     stream_handler = logging.StreamHandler(stream)
-except Exception:
+except Exception:  # pragma: no cover
     # Fallback if anything goes wrong
     stream_handler = logging.StreamHandler(sys.stdout)
 

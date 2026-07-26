@@ -187,6 +187,47 @@ class TestGoogleLLM(unittest.TestCase):
         self.assertIn('The answer is 42', result)
         self.assertEqual(usage['prompt_tokens'], 10)
 
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.google_llm.OpenAI')
+    @patch('helpers.google_llm.broadcast_message')
+    @patch('helpers.google_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.google_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.google_llm.LOG')
+    def test_get_completion_text_with_thinking_level(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_openai, mock_ws):
+        """Test completion with thinking_level set - covering lines 43-44, 61"""
+        from helpers.google_llm import GoogleLLM
+        
+        mock_chunk1 = MagicMock()
+        mock_chunk1.choices = [MagicMock()]
+        mock_chunk1.choices[0].delta.content = 'Hello!'
+        mock_chunk1.choices[0].delta.reasoning_content = None
+        mock_chunk1.usage = None
+        
+        mock_chunk2 = MagicMock()
+        mock_chunk2.choices = []
+        mock_chunk2.usage = MagicMock()
+        mock_chunk2.usage.prompt_tokens = 10
+        mock_chunk2.usage.completion_tokens = 5
+        mock_chunk2.usage.total_tokens = 15
+        
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = iter([mock_chunk1, mock_chunk2])
+        mock_openai.return_value = mock_client
+        
+        llm = GoogleLLM(model_name='gemini-pro', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+        
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages, thinking_level='high')
+        
+        self.assertEqual(result, 'Hello!')
+        # Verify reasoning_effort was added to request_kwargs
+        create_call_kwargs = mock_client.chat.completions.create.call_args[1]
+        self.assertEqual(create_call_kwargs['reasoning_effort'], 'high')
+
 
 if __name__ == '__main__':
     unittest.main()

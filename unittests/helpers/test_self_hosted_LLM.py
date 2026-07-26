@@ -435,5 +435,40 @@ class TestSetExpertModel(unittest.TestCase):
             self.assertEqual(llm.port, 8001)
 
 
+class TestSelfHostedLLMThinkingLevel(unittest.TestCase):
+    """Test thinking_level handling in SelfHostedLLM"""
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.self_hosted_LLM.requests.post')
+    @patch('helpers.self_hosted_LLM.sseclient.SSEClient')
+    @patch('helpers.self_hosted_LLM.broadcast_message')
+    @patch('helpers.self_hosted_LLM.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.self_hosted_LLM.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.self_hosted_LLM.get_default_llm_host', return_value='http://localhost:7860')
+    @patch('helpers.self_hosted_LLM.LOG')
+    def test_get_completion_text_with_thinking_level(self, mock_log, mock_get_host, mock_sender, mock_channel, mock_broadcast, mock_sse, mock_post, mock_ws):
+        """Test completion with thinking_level - covering line 128"""
+        from helpers.self_hosted_LLM import SelfHostedLLM
+        
+        mock_event = MagicMock()
+        mock_event.data = '{"choices": [{"text": "Hello!"}], "usage": {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15}}'
+        
+        mock_sse_client = MagicMock()
+        mock_sse_client.events.return_value = iter([mock_event])
+        mock_sse.return_value = mock_sse_client
+        
+        llm = SelfHostedLLM(host='http://localhost', port=7860, model_name='test-model')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+        
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages, thinking_level='high')
+        
+        self.assertEqual(result, 'Hello!')
+        mock_log.info.assert_any_call('Thinking level: high -> Ignored (self-hosted LLM does not support thinking levels)')
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -151,7 +151,7 @@ def sendmail(recipients, subject, body_template, variables=None, images=None, at
             fp = open(attachment_file, 'rb')
             mime_file = MIMEBase('application', "octet-stream")
             mime_file.set_payload(fp.read())
-            Encoders.encode_base64(mime_file)
+            encoders.encode_base64(mime_file)
 
             fp.close()
 

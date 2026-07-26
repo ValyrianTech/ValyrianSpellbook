@@ -71,6 +71,21 @@ class TestBitcoinwandCall(unittest.TestCase):
         
         self.assertEqual(result, {"signed": True})
 
+    @patch('helpers.setupscripthelpers.Popen')
+    @patch('helpers.setupscripthelpers.get_python_exe', return_value='/usr/bin/python3')
+    @patch('helpers.setupscripthelpers.format_args', side_effect=lambda x: ' '.join(x))
+    def test_bitcoinwand_call_with_error(self, mock_format, mock_python, mock_popen):
+        """Test bitcoinwand_call with error output (lines 48-51)"""
+        from helpers.setupscripthelpers import bitcoinwand_call
+        
+        mock_process = MagicMock()
+        mock_process.communicate.return_value = (b'{"signed": true}', b'Some error occurred')
+        mock_popen.return_value = mock_process
+        
+        result = bitcoinwand_call('1A1zP1...', 'message', 'http://example.com')
+        
+        self.assertEqual(result, {"signed": True})
+
 
 class TestCleanUpTriggers(unittest.TestCase):
     """Test cases for clean_up_triggers function"""

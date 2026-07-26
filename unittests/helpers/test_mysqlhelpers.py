@@ -244,6 +244,73 @@ class TestMysqlHelpers(unittest.TestCase):
         mock_cursor.close.assert_called_once()
         mock_cnx.close.assert_called_once()
 
+    @patch('helpers.mysqlhelpers.LOG')
+    def test_create_database_error(self, mock_log):
+        """Test create_database with mysql error (lines 20-21)"""
+        from helpers.mysqlhelpers import create_database
+
+        class MockMySQLError(Exception):
+            pass
+
+        mock_cursor = MagicMock()
+        mock_error = MockMySQLError("Failed creating database")
+        mock_cursor.execute.side_effect = mock_error
+
+        with patch.object(__import__('helpers.mysqlhelpers', fromlist=['mysql']).mysql.connector, 'Error', MockMySQLError):
+            create_database(mock_cursor, 'test_db')
+
+        mock_log.error.assert_called_once()
+
+    @patch('helpers.mysqlhelpers.LOG')
+    def test_create_tables_success(self, mock_log):
+        """Test create_tables successful creation"""
+        from helpers.mysqlhelpers import create_tables
+
+        mock_cursor = MagicMock()
+        tables = {'users': 'CREATE TABLE users (id INT)'}
+
+        create_tables(mock_cursor, tables)
+
+        mock_cursor.execute.assert_called_once_with('CREATE TABLE users (id INT)')
+
+    @patch('helpers.mysqlhelpers.LOG')
+    def test_create_tables_already_exists(self, mock_log):
+        """Test create_tables with ER_TABLE_EXISTS_ERROR (lines 38-39)"""
+        import helpers.mysqlhelpers as mysql_module
+        from helpers.mysqlhelpers import create_tables, errorcode
+
+        class MockMySQLError(Exception):
+            pass
+
+        mock_cursor = MagicMock()
+        mock_error = MockMySQLError("Table already exists")
+        mock_error.errno = errorcode.ER_TABLE_EXISTS_ERROR
+        mock_cursor.execute.side_effect = mock_error
+
+        with patch.object(mysql_module.mysql.connector, 'Error', MockMySQLError):
+            create_tables(mock_cursor, {'users': 'CREATE TABLE users (id INT)'})
+
+        mock_log.info.assert_any_call("already exists.")
+
+    @patch('helpers.mysqlhelpers.LOG')
+    def test_create_tables_other_error(self, mock_log):
+        """Test create_tables with other mysql error (lines 40-41)"""
+        import helpers.mysqlhelpers as mysql_module
+        from helpers.mysqlhelpers import create_tables, errorcode
+
+        class MockMySQLError(Exception):
+            pass
+
+        mock_cursor = MagicMock()
+        mock_error = MockMySQLError("Some other error")
+        mock_error.errno = 1234
+        mock_error.msg = "Some other error message"
+        mock_cursor.execute.side_effect = mock_error
+
+        with patch.object(mysql_module.mysql.connector, 'Error', MockMySQLError):
+            create_tables(mock_cursor, {'users': 'CREATE TABLE users (id INT)'})
+
+        mock_log.error.assert_called_with("Some other error message")
 
 
 if __name__ == '__main__':

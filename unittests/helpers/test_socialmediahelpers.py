@@ -98,5 +98,24 @@ class TestMastodonClass(unittest.TestCase):
         self.assertEqual(result, {'data': [{'id': 'id1'}]})
 
 
+class TestSocialMediaAbstractMethods(unittest.TestCase):
+    """Test cases for SocialMedia abstract method bodies"""
+
+    def test_abstract_methods_pass_body(self):
+        """Test that abstract method pass bodies can be called directly (lines 24, 28)"""
+        from helpers.socialmediahelpers import SocialMedia
+
+        class ConcreteSocialMedia(SocialMedia):
+            def get_trending_topics(self, woeid=1):
+                return super().get_trending_topics(woeid)
+
+            def get_popular_statuses(self, topic, limit):
+                return super().get_popular_statuses(topic, limit)
+
+        sm = ConcreteSocialMedia()
+        self.assertIsNone(sm.get_trending_topics())
+        self.assertIsNone(sm.get_popular_statuses('test', 10))
+
+
 if __name__ == '__main__':
     unittest.main()

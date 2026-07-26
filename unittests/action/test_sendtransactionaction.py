@@ -1670,6 +1670,39 @@ class TestRunEdgeCases(object):
         result = action.run()
         assert result == False
 
+    @mock.patch('action.sendtransactionaction.make_custom_tx', return_value='deadbeef')
+    @mock.patch('action.sendtransactionaction.get_high_priority_fee', return_value=1000)
+    @mock.patch('action.sendtransactionaction.get_private_key')
+    @mock.patch('action.sendtransactionaction.get_hot_wallet')
+    @mock.patch('action.sendtransactionaction.utxos')
+    @mock.patch('action.sendtransactionaction.valid_distribution')
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.get_max_tx_fee_percentage', return_value=0)
+    def test_run_send_all_one_output_cannot_cover_fee_share(self, mock_max_fee, mock_valid_amount,
+                                                          mock_valid_dist, mock_utxos, mock_get_hot_wallet, mock_get_priv,
+                                                          mock_high_fee, mock_make_tx):
+        """Test run send-all where total >= fee but one output < fee_share (line 301-302)"""
+        mock_utxos.return_value = {'utxos': [
+            {'value': 100000, 'output_hash': 'hash1', 'output_n': 0, 'confirmations': 6}
+        ]}
+        mock_valid_amount.return_value = True
+        mock_valid_dist.return_value = True
+        mock_get_hot_wallet.return_value = {'1TestAddress': 'priv_key_1'}
+        mock_get_priv.return_value = {'1TestAddress': 'priv_key_1'}
+
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1TestAddress'
+        action.wallet_type = 'Single'
+        action.amount = 0
+        action.transaction_type = 'Send2Many'
+        action.distribution = {'addr1': 99, 'addr2': 1}
+        action.minimum_output_value = 1
+        # sending_amount = 100000, addr1=99000, addr2=1000
+        # tx_size=4 bytes, fee=4*1000=4000, total=100000 >= 4000 (passes line 294)
+        # fee_share=4000/2=2000, addr2=1000 < 2000 -> hits line 301-302
+        result = action.run()
+        assert result == False
+
     @mock.patch('action.sendtransactionaction.push_tx')
     @mock.patch('action.sendtransactionaction.txhash', return_value='abc123')
     @mock.patch('action.sendtransactionaction.make_custom_tx', side_effect=['deadbeef', None])

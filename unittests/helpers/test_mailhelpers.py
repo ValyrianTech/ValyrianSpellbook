@@ -362,6 +362,75 @@ class TestModuleConstants(unittest.TestCase):
                 self.assertTrue(result)
                 mock_session.sendmail.assert_called_once()
 
+    @patch('helpers.mailhelpers.get_enable_smtp', return_value=True)
+    @patch('helpers.mailhelpers.load_smtp_settings')
+    @patch('helpers.mailhelpers.LOG')
+    @patch('helpers.mailhelpers.smtplib.SMTP')
+    def test_sendmail_template_in_apps_dir(self, mock_smtp, mock_log, mock_load, mock_enable):
+        """Test sendmail finds template in apps directory (lines 85, 90)"""
+        from helpers.mailhelpers import sendmail
+        
+        with tempfile.TemporaryDirectory() as template_dir, tempfile.TemporaryDirectory() as apps_dir:
+            # Create templates only in apps dir, not template dir
+            html_path = os.path.join(apps_dir, 'app_template.html')
+            with open(html_path, 'w') as f:
+                f.write('<html>Test</html>')
+            txt_path = os.path.join(apps_dir, 'app_template.txt')
+            with open(txt_path, 'w') as f:
+                f.write('Test content')
+            
+            with patch('helpers.mailhelpers.TEMPLATE_DIR', template_dir), \
+                 patch('helpers.mailhelpers.APPS_DIR', apps_dir):
+                mock_session = MagicMock()
+                mock_smtp.return_value = mock_session
+                
+                result = sendmail(
+                    recipients='test@example.com',
+                    subject='Test Subject',
+                    body_template='app_template'
+                )
+                
+                self.assertTrue(result)
+
+    @patch('helpers.mailhelpers.get_enable_smtp', return_value=True)
+    @patch('helpers.mailhelpers.load_smtp_settings')
+    @patch('helpers.mailhelpers.LOG')
+    @patch('helpers.mailhelpers.smtplib.SMTP')
+    def test_sendmail_html_template_read_error(self, mock_smtp, mock_log, mock_load, mock_enable):
+        """Test sendmail with HTML template read error (lines 101-103)"""
+        from helpers.mailhelpers import sendmail
+        
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Create a valid txt template
+            txt_path = os.path.join(temp_dir, 'test_template.txt')
+            with open(txt_path, 'w') as f:
+                f.write('Test content')
+            
+            # Create an html template path that exists but can't be read
+            html_path = os.path.join(temp_dir, 'test_template.html')
+            with open(html_path, 'w') as f:
+                f.write('<html>Test</html>')
+            
+            with patch('helpers.mailhelpers.TEMPLATE_DIR', temp_dir):
+                mock_session = MagicMock()
+                mock_smtp.return_value = mock_session
+                
+                # Mock open to raise for the html file
+                original_open = open
+                def mock_open_func(path, *args, **kwargs):
+                    if 'test_template.html' in str(path):
+                        raise PermissionError('Permission denied')
+                    return original_open(path, *args, **kwargs)
+                
+                with patch('builtins.open', side_effect=mock_open_func):
+                    result = sendmail(
+                        recipients='test@example.com',
+                        subject='Test Subject',
+                        body_template='test_template'
+                    )
+                    
+                    self.assertFalse(result)
+
 
 if __name__ == '__main__':
     unittest.main()

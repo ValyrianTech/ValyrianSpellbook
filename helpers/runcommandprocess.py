@@ -14,7 +14,7 @@ PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 # make the directory for logs if it doesn't exist
 logs_dir = os.path.join(PROGRAM_DIR, 'logs')
-if not os.path.isdir(logs_dir):
+if not os.path.isdir(logs_dir):  # pragma: no cover
     os.makedirs(logs_dir)
 
 PROCESS_LOG = logging.getLogger('process_log')

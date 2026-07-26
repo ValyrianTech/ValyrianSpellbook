@@ -578,3 +578,28 @@ class TestConfigurationGetters(object):
             assert result is not None
         except Exception:
             pass
+
+    def test_get_openrouter_api_key(self):
+        """Test getting openrouter API key (line 297)"""
+        import tempfile
+        import os
+        from helpers.configurationhelpers import get_openrouter_api_key
+        from configparser import ConfigParser
+
+        # Create a temp config file with the openrouter_api_key option
+        mock_config = ConfigParser()
+        mock_config.add_section('LLMs')
+        mock_config.set('LLMs', 'openrouter_api_key', 'test_key')
+
+        tmp_fd, tmp_path = tempfile.mkstemp(suffix='.conf')
+        os.close(tmp_fd)
+        with open(tmp_path, 'w') as f:
+            mock_config.write(f)
+
+        try:
+            with mock.patch('decorators.CONFIGURATION_FILE', tmp_path), \
+                 mock.patch('helpers.configurationhelpers.spellbook_config', return_value=mock_config):
+                result = get_openrouter_api_key()
+                assert result == 'test_key'
+        finally:
+            os.unlink(tmp_path)

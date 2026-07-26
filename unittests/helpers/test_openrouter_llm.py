@@ -374,6 +374,127 @@ class TestOpenRouterLLM(unittest.TestCase):
         # Should contain reasoning wrapped in think tags and the content
         self.assertIn('Answer!', result)
 
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.openrouter_llm.OpenAI')
+    @patch('helpers.openrouter_llm.broadcast_message')
+    @patch('helpers.openrouter_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.openrouter_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.openrouter_llm.get_openrouter_api_key', return_value='test-key')
+    @patch('helpers.openrouter_llm.LOG')
+    def test_get_completion_text_with_stop_and_extra_kwargs(self, mock_log, mock_get_key, mock_sender, mock_channel, mock_broadcast, mock_openai, mock_ws):
+        """Test completion with stop sequences and extra kwargs - covers lines 53, 73-74"""
+        from helpers.openrouter_llm import OpenRouterLLM
+
+        mock_chunk = MagicMock()
+        mock_chunk.choices = [MagicMock()]
+        mock_chunk.choices[0].delta.content = 'Hello!'
+        mock_chunk.choices[0].delta.reasoning = None
+        mock_chunk.usage = MagicMock()
+        mock_chunk.usage.prompt_tokens = 10
+        mock_chunk.usage.completion_tokens = 5
+        mock_chunk.usage.total_tokens = 15
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = iter([mock_chunk])
+        mock_openai.return_value = mock_client
+
+        llm = OpenRouterLLM(model_name='openai/gpt-4o', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages, stop=['END'], top_p=0.9)
+
+        call_kwargs = mock_client.chat.completions.create.call_args.kwargs
+        self.assertEqual(call_kwargs['stop'], ['END'])
+        self.assertEqual(call_kwargs['top_p'], 0.9)
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.openrouter_llm.OpenAI')
+    @patch('helpers.openrouter_llm.broadcast_message')
+    @patch('helpers.openrouter_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.openrouter_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.openrouter_llm.get_openrouter_api_key', return_value='test-key')
+    @patch('helpers.openrouter_llm.LOG')
+    def test_get_completion_text_invalid_thinking_level(self, mock_log, mock_get_key, mock_sender, mock_channel, mock_broadcast, mock_openai, mock_ws):
+        """Test completion with invalid thinking_level - covers line 68"""
+        from helpers.openrouter_llm import OpenRouterLLM
+
+        mock_chunk = MagicMock()
+        mock_chunk.choices = [MagicMock()]
+        mock_chunk.choices[0].delta.content = 'Hello!'
+        mock_chunk.choices[0].delta.reasoning = None
+        mock_chunk.usage = MagicMock()
+        mock_chunk.usage.prompt_tokens = 10
+        mock_chunk.usage.completion_tokens = 5
+        mock_chunk.usage.total_tokens = 15
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = iter([mock_chunk])
+        mock_openai.return_value = mock_client
+
+        llm = OpenRouterLLM(model_name='openai/gpt-4o', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages, thinking_level='invalid_level')
+
+        mock_log.info.assert_any_call('Thinking level: invalid_level -> Disabled (no reasoning.effort)')
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.openrouter_llm.OpenAI')
+    @patch('helpers.openrouter_llm.broadcast_message')
+    @patch('helpers.openrouter_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.openrouter_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.openrouter_llm.get_openrouter_api_key', return_value='test-key')
+    @patch('helpers.openrouter_llm.LOG')
+    def test_get_completion_text_inline_think_tags(self, mock_log, mock_get_key, mock_sender, mock_channel, mock_broadcast, mock_openai, mock_ws):
+        """Test completion with inline think tags in content - covers lines 113, 115, 119-123"""
+        from helpers.openrouter_llm import OpenRouterLLM
+
+        # Chunk 1: opens think block with <think> tag
+        mock_chunk1 = MagicMock()
+        mock_chunk1.choices = [MagicMock()]
+        mock_chunk1.choices[0].delta.content = '<think>Let me think'
+        mock_chunk1.choices[0].delta.reasoning = None
+        mock_chunk1.usage = None
+
+        # Chunk 2: closes think block with </think> tag and provides answer
+        mock_chunk2 = MagicMock()
+        mock_chunk2.choices = [MagicMock()]
+        mock_chunk2.choices[0].delta.content = '</think>The answer is 42'
+        mock_chunk2.choices[0].delta.reasoning = None
+        mock_chunk2.usage = None
+
+        # Chunk 3: usage only
+        mock_chunk3 = MagicMock()
+        mock_chunk3.choices = []
+        mock_chunk3.usage = MagicMock()
+        mock_chunk3.usage.prompt_tokens = 10
+        mock_chunk3.usage.completion_tokens = 5
+        mock_chunk3.usage.total_tokens = 15
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = iter([mock_chunk1, mock_chunk2, mock_chunk3])
+        mock_openai.return_value = mock_client
+
+        llm = OpenRouterLLM(model_name='openai/gpt-4o', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages)
+
+        self.assertIn('Let me think', result)
+        self.assertIn('The answer is 42', result)
+
 
 if __name__ == '__main__':
     unittest.main()

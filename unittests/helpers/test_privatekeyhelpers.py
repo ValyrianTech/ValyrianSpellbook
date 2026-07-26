@@ -347,3 +347,13 @@ class TestGetPrivkeyFormatEdgeCases(object):
         """Test get_privkey_format with empty string raises exception"""
         with pytest.raises(Exception):
             get_privkey_format('')
+
+    def test_get_privkey_format_invalid_wif_length(self):
+        """Test get_privkey_format with WIF that decodes to invalid length (line 103)"""
+        from unittest.mock import patch
+        # A string that doesn't match any length checks (not 58, 64, 66, etc.)
+        # but will fall through to the b58check_to_bin path
+        with patch('helpers.privatekeyhelpers.b58check_to_bin', return_value=b'\x00' * 20):
+            with pytest.raises(Exception) as excinfo:
+                get_privkey_format('LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL')
+            assert 'WIF does not represent privkey' in str(excinfo.value)

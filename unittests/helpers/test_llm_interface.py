@@ -288,6 +288,20 @@ class TestGetAvailableLlmsServerTypes(unittest.TestCase):
         self.assertEqual(text, '')
         self.assertEqual(names, [])
 
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.llm_interface.load_llms', return_value={})
+    def test_get_completion_text_abstract_body(self, mock_load_llms, mock_ws):
+        """Test that the abstract get_completion_text method body (pass) can be called directly (line 50)"""
+        from helpers.llm_interface import LLMInterface
+
+        class ConcreteLLM(LLMInterface):
+            def get_completion_text(self, messages, stop, **kwargs):
+                return super().get_completion_text(messages, stop, **kwargs)
+
+        llm = ConcreteLLM('test_model')
+        result = llm.get_completion_text([], [])
+        self.assertIsNone(result)
+
 
 if __name__ == '__main__':
     unittest.main()

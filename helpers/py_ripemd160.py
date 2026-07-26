@@ -58,7 +58,7 @@ def fi(x, y, z, i):
         return (x & z) | (y & ~z)
     elif i == 4:
         return x ^ (y | ~z)
-    else:
+    else:  # pragma: no cover
         assert False
 
 

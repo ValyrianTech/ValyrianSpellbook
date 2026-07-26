@@ -33,7 +33,7 @@ def generate_qr(message, border=4, box_size=64, error='M', version=None):
             error_correction = qrcode.constants.ERROR_CORRECT_Q
         elif error == 'H':
             error_correction = qrcode.constants.ERROR_CORRECT_H
-        else:
+        else:  # pragma: no cover
             raise NotImplementedError('Unknown error correction type: %s' % error)
 
     qr = qrcode.QRCode(

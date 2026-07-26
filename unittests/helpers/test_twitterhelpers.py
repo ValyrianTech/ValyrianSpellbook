@@ -575,5 +575,22 @@ class TestGetTweets(unittest.TestCase):
         self.assertIn(mock_tweet2, result)
 
 
+class TestGetTweet(unittest.TestCase):
+    """Test cases for get_tweet function"""
+
+    @patch('helpers.twitterhelpers.client')
+    def test_get_tweet(self, mock_client):
+        """Test get_tweet returns tweet data"""
+        from helpers.twitterhelpers import get_tweet
+        
+        mock_tweet = MagicMock()
+        mock_client.get_tweet.return_value = mock_tweet
+        
+        result = get_tweet('123456')
+        
+        self.assertEqual(result, mock_tweet)
+        mock_client.get_tweet.assert_called_once()
+
+
 if __name__ == '__main__':
     unittest.main()

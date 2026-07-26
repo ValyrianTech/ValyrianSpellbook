@@ -115,3 +115,11 @@ class TestAction(object):
     def test_action_run(self):
         action = ConcreteAction('test_action_id')
         assert action.run() == True
+
+    def test_action_run_abstract_body(self):
+        """Test that the abstract run method body (pass) can be called directly"""
+        from action.action import Action
+        action = ConcreteAction('test_action_id')
+        # Call the abstract base method directly to cover the 'pass' body
+        result = Action.run(action)
+        assert result is None

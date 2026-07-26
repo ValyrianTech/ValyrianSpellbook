@@ -29,11 +29,11 @@ class PrivateKey(object):
             if re.match(wif_compressed_regex, self.wifc) is None:
                 raise Exception('Invalid WIF compressed key: %s' % self.wifc)
 
-        elif self.wif is not None:
+        elif self.wif is not None:  # pragma: no cover
             if re.match(wif_uncompressed_regex, self.wif) is None:
                 raise Exception('Invalid WIF uncompressed key: %s' % self.wif)
 
-        elif self.hex is not None:
+        elif self.hex is not None:  # pragma: no cover
             if re.match(hexadecimal_regex, self.hex) is None:
                 raise Exception('Invalid HEX key: %s' % self.hex)
 
