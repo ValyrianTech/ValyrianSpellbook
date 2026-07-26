@@ -68,6 +68,7 @@ class TestTogetherAILLM(unittest.TestCase):
         mock_chunk = MagicMock()
         mock_chunk.choices = [MagicMock()]
         mock_chunk.choices[0].delta.content = 'Hello!'
+        mock_chunk.choices[0].delta.reasoning = None
         mock_chunk.usage = MagicMock()
         mock_chunk.usage.prompt_tokens = 10
         mock_chunk.usage.completion_tokens = 5
@@ -171,6 +172,7 @@ class TestTogetherAILLM(unittest.TestCase):
         mock_chunk = MagicMock()
         mock_chunk.choices = [MagicMock()]
         mock_chunk.choices[0].delta.content = 'Hello!'
+        mock_chunk.choices[0].delta.reasoning = None
         mock_chunk.usage = MagicMock()
         mock_chunk.usage.prompt_tokens = 10
         mock_chunk.usage.completion_tokens = 5
@@ -208,6 +210,7 @@ class TestTogetherAILLM(unittest.TestCase):
         mock_chunk = MagicMock()
         mock_chunk.choices = [MagicMock()]
         mock_chunk.choices[0].delta.content = 'Hello!'
+        mock_chunk.choices[0].delta.reasoning = None
         mock_chunk.usage = MagicMock()
         mock_chunk.usage.prompt_tokens = 10
         mock_chunk.usage.completion_tokens = 5

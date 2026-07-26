@@ -28,7 +28,8 @@ class GoogleLLM(LLMInterface):
         )
 
         completion = ''
-        
+        reasoning_content = ''
+
         # Extract thinking_level from kwargs
         thinking_level = kwargs.pop('thinking_level', None)
         
@@ -76,7 +77,16 @@ class GoogleLLM(LLMInterface):
                 if len(chunk.choices) == 0:
                     continue
 
-                response_text = chunk.choices[0].delta.content
+                delta = chunk.choices[0].delta
+
+                # Handle reasoning content (some models expose thought summaries via OpenAI-compatible API)
+                if hasattr(delta, 'reasoning_content') and delta.reasoning_content:
+                    reasoning_content += delta.reasoning_content
+                    print(delta.reasoning_content, end='')
+                    sys.stdout.flush()
+                    completion = f'<think>\n{reasoning_content}\n</think>\n\n'
+
+                response_text = delta.content
 
                 if response_text is not None:
                     completion += response_text
