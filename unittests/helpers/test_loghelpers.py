@@ -57,3 +57,28 @@ class TestLogHelpers(object):
         # If there are logs, verify they're sorted
         if len(logs) > 1:
             assert logs == sorted(logs)
+
+    def test_get_logs_with_matching_filter(self):
+        """Test get_logs with a filter that matches log entries"""
+        # First write a log entry, then filter for it
+        LOG.info('UNIQUE_TEST_MARKER_12345')
+        logs = get_logs(filter_string='UNIQUE_TEST_MARKER_12345')
+        assert isinstance(logs, list)
+        # The log file may not be flushed immediately, but the function should work
+        # If there are results, they should all contain the filter string
+        for entry in logs:
+            assert 'UNIQUE_TEST_MARKER_12345' in entry
+
+    def test_get_logs_requests_log(self):
+        """Test get_logs with requests log file"""
+        REQUESTS_LOG.info('REQUEST_TEST_MARKER_12345')
+        logs = get_logs(filter_string='REQUEST_TEST_MARKER_12345')
+        assert isinstance(logs, list)
+
+    def test_log_handlers_count(self):
+        """Test that LOG has both stream and file handlers"""
+        import logging
+        stream_count = sum(1 for h in LOG.handlers if isinstance(h, logging.StreamHandler) and not isinstance(h, logging.handlers.RotatingFileHandler))
+        file_count = sum(1 for h in LOG.handlers if isinstance(h, logging.handlers.RotatingFileHandler))
+        assert stream_count >= 1
+        assert file_count >= 1

@@ -424,6 +424,61 @@ class TestWebSocketHandlerBroadcastWithTasks(unittest.TestCase):
 
         asyncio.run(run_test())
 
+    def test_handler_subscribe_unsubscribe(self):
+        """Test handler processes subscribe and unsubscribe messages"""
+        handler = WebSocketHandler()
+
+        async def run_test():
+            mock_ws = AsyncMock()
+            mock_ws.remote_address = ('127.0.0.1', 12345)
+            mock_ws.close = AsyncMock()
+
+            async def msg_iter():
+                yield 'subscribe:channel-a'
+                yield 'unsubscribe:general'
+                yield 'hello world'
+
+            mock_ws.__aiter__ = lambda self: msg_iter()
+            mock_ws.__anext__ = msg_iter().__anext__
+
+            await handler.handler(mock_ws)
+
+            # After handler completes, websocket should be removed from connected
+            assert mock_ws not in handler.connected
+
+        asyncio.run(run_test())
+
+    def test_handler_error_handling(self):
+        """Test handler gracefully handles errors"""
+        handler = WebSocketHandler()
+
+        async def run_test():
+            mock_ws = AsyncMock()
+            mock_ws.remote_address = ('127.0.0.1', 12345)
+            mock_ws.close = AsyncMock()
+
+            async def msg_iter():
+                yield 'msg1'
+                raise Exception('Connection lost')
+
+            mock_ws.__aiter__ = lambda self: msg_iter()
+            mock_ws.__anext__ = msg_iter().__anext__
+
+            # Should not raise
+            await handler.handler(mock_ws)
+
+            # Should have cleaned up
+            assert mock_ws not in handler.connected
+            mock_ws.close.assert_called()
+
+        asyncio.run(run_test())
+
+    def test_broadcast_message_loop_not_running(self):
+        """Test broadcast_message when loop is not running - should return without error"""
+        from helpers.websockethelpers import broadcast_message
+        # LOOP is not running during tests, so this should just return
+        broadcast_message('test message', 'general')
+
 
 if __name__ == '__main__':
     unittest.main()

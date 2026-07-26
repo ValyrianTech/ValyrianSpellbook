@@ -243,6 +243,121 @@ class TestOpenAILLM(unittest.TestCase):
         # Should have logged warning about token waste
         mock_log.warning.assert_called()
 
+    @patch('helpers.openai_llm.openai')
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.openai_llm.broadcast_message')
+    @patch('helpers.openai_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.openai_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.openai_llm.get_openai_api_key', return_value='test-key')
+    @patch('helpers.openai_llm.LOG')
+    def test_get_completion_text_reasoning_model_with_thinking_level(self, mock_log, mock_get_key, mock_sender, mock_channel, mock_broadcast, mock_ws, mock_openai):
+        """Test get_completion_text with reasoning model and thinking_level set"""
+        from helpers.openai_llm import OpenAILLM
+
+        mock_chunk1 = MagicMock()
+        mock_chunk1.choices = [MagicMock()]
+        mock_chunk1.choices[0].delta.content = 'Hello'
+        mock_chunk1.usage = None
+
+        mock_chunk2 = MagicMock()
+        mock_chunk2.choices = []
+        mock_chunk2.usage = MagicMock()
+        mock_chunk2.usage.prompt_tokens = 10
+        mock_chunk2.usage.completion_tokens = 20
+        mock_chunk2.usage.total_tokens = 30
+
+        mock_openai.chat.completions.create.return_value = iter([mock_chunk1, mock_chunk2])
+
+        llm = OpenAILLM(model_name='o3-mini', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages, thinking_level='high')
+
+        self.assertEqual(result, 'Hello')
+        self.assertEqual(usage['prompt_tokens'], 10)
+        # Verify reasoning_effort was passed
+        call_kwargs = mock_openai.chat.completions.create.call_args
+        self.assertEqual(call_kwargs.kwargs['reasoning_effort'], 'high')
+
+    @patch('helpers.openai_llm.openai')
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.openai_llm.broadcast_message')
+    @patch('helpers.openai_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.openai_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.openai_llm.get_openai_api_key', return_value='test-key')
+    @patch('helpers.openai_llm.LOG')
+    def test_get_completion_text_reasoning_model_thinking_off(self, mock_log, mock_get_key, mock_sender, mock_channel, mock_broadcast, mock_ws, mock_openai):
+        """Test get_completion_text with reasoning model and thinking_level='off'"""
+        from helpers.openai_llm import OpenAILLM
+
+        mock_chunk1 = MagicMock()
+        mock_chunk1.choices = [MagicMock()]
+        mock_chunk1.choices[0].delta.content = 'Hello'
+        mock_chunk1.usage = None
+
+        mock_chunk2 = MagicMock()
+        mock_chunk2.choices = []
+        mock_chunk2.usage = MagicMock()
+        mock_chunk2.usage.prompt_tokens = 10
+        mock_chunk2.usage.completion_tokens = 20
+        mock_chunk2.usage.total_tokens = 30
+
+        mock_openai.chat.completions.create.return_value = iter([mock_chunk1, mock_chunk2])
+
+        llm = OpenAILLM(model_name='o3-mini', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages, thinking_level='off')
+
+        # Should log that reasoning is not applied (off)
+        mock_log.info.assert_called()
+
+    @patch('helpers.openai_llm.openai')
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.openai_llm.broadcast_message')
+    @patch('helpers.openai_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.openai_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.openai_llm.get_openai_api_key', return_value='test-key')
+    @patch('helpers.openai_llm.LOG')
+    def test_get_completion_text_non_reasoning_model_with_thinking_level(self, mock_log, mock_get_key, mock_sender, mock_channel, mock_broadcast, mock_ws, mock_openai):
+        """Test get_completion_text with non-reasoning model and thinking_level set - should log ignored"""
+        from helpers.openai_llm import OpenAILLM
+
+        mock_chunk1 = MagicMock()
+        mock_chunk1.choices = [MagicMock()]
+        mock_chunk1.choices[0].delta.content = 'Hello'
+        mock_chunk1.usage = None
+
+        mock_chunk2 = MagicMock()
+        mock_chunk2.choices = []
+        mock_chunk2.usage = MagicMock()
+        mock_chunk2.usage.prompt_tokens = 10
+        mock_chunk2.usage.completion_tokens = 20
+        mock_chunk2.usage.total_tokens = 30
+
+        mock_openai.chat.completions.create.return_value = iter([mock_chunk1, mock_chunk2])
+
+        llm = OpenAILLM(model_name='gpt-4', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages, thinking_level='high')
+
+        self.assertEqual(result, 'Hello')
+        # Should log that thinking_level is ignored for non-reasoning model
+        mock_log.info.assert_called()
+
 
 if __name__ == '__main__':
     unittest.main()

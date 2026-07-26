@@ -310,3 +310,40 @@ class TestDecodePrivkeyEdgeCases(object):
         with pytest.raises(Exception) as excinfo:
             decode_privkey('test', 'invalid_format')
         assert 'WIF does not represent privkey' in str(excinfo.value)
+
+
+class TestPrivateKeyTestnetWIF(object):
+    """Tests for PrivateKey with testnet WIF format"""
+
+    def test_privatekey_testnet_raises_on_wifc_validation(self):
+        """Test PrivateKey testnet raises exception because WIF compressed regex doesn't match testnet keys"""
+        with pytest.raises(Exception) as excinfo:
+            PrivateKey(12345, testnet=True)
+        assert 'Invalid WIF compressed key' in str(excinfo.value)
+
+    def test_privatekey_from_wif_compressed(self):
+        """Test creating PrivateKey from WIF compressed format"""
+        wifc = encode_privkey(12345, 'wif_compressed')
+        pk = PrivateKey(wifc)
+        assert pk.decimal == 12345
+
+    def test_privatekey_from_hex_string(self):
+        """Test creating PrivateKey from hex string"""
+        hex_key = '0000000000000000000000000000000000000000000000000000000000003039'
+        pk = PrivateKey(hex_key)
+        assert pk.decimal == 12345
+        assert pk.hex == hex_key.upper()
+
+
+class TestGetPrivkeyFormatEdgeCases(object):
+    """Tests for get_privkey_format edge cases"""
+
+    def test_get_privkey_format_invalid_bin_length(self):
+        """Test get_privkey_format with invalid binary length raises exception"""
+        with pytest.raises(Exception):
+            get_privkey_format(b'\x00' * 31)  # Not 32 or 33 bytes
+
+    def test_get_privkey_format_empty_string(self):
+        """Test get_privkey_format with empty string raises exception"""
+        with pytest.raises(Exception):
+            get_privkey_format('')

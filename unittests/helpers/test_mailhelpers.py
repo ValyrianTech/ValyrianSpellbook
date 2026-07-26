@@ -304,6 +304,64 @@ class TestModuleConstants(unittest.TestCase):
         from helpers.mailhelpers import PORT
         self.assertIsInstance(PORT, int)
 
+    @patch('helpers.mailhelpers.get_enable_smtp', return_value=True)
+    @patch('helpers.mailhelpers.load_smtp_settings')
+    @patch('helpers.mailhelpers.LOG')
+    @patch('helpers.mailhelpers.smtplib.SMTP')
+    def test_sendmail_with_attachment_error(self, mock_smtp, mock_log, mock_load, mock_enable):
+        """Test sendmail when attachment file cannot be read - should log error but still send"""
+        from helpers.mailhelpers import sendmail
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            template_path = os.path.join(temp_dir, 'test_template.txt')
+            with open(template_path, 'w') as f:
+                f.write('Test content')
+
+            with patch('helpers.mailhelpers.TEMPLATE_DIR', temp_dir):
+                mock_session = MagicMock()
+                mock_smtp.return_value = mock_session
+
+                result = sendmail(
+                    recipients='test@example.com',
+                    subject='Test Subject',
+                    body_template='test_template',
+                    attachments={'doc.pdf': '/nonexistent/path.pdf'}
+                )
+
+                # Should still succeed, just log error for attachment
+                self.assertTrue(result)
+                mock_log.error.assert_called()
+
+    @patch('helpers.mailhelpers.get_enable_smtp', return_value=True)
+    @patch('helpers.mailhelpers.load_smtp_settings')
+    @patch('helpers.mailhelpers.LOG')
+    @patch('helpers.mailhelpers.smtplib.SMTP')
+    def test_sendmail_with_both_html_and_txt_templates(self, mock_smtp, mock_log, mock_load, mock_enable):
+        """Test sendmail with both HTML and txt templates available"""
+        from helpers.mailhelpers import sendmail
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Create both templates
+            txt_path = os.path.join(temp_dir, 'test_template.txt')
+            with open(txt_path, 'w') as f:
+                f.write('Plain text content')
+            html_path = os.path.join(temp_dir, 'test_template.html')
+            with open(html_path, 'w') as f:
+                f.write('<html><body>HTML content</body></html>')
+
+            with patch('helpers.mailhelpers.TEMPLATE_DIR', temp_dir):
+                mock_session = MagicMock()
+                mock_smtp.return_value = mock_session
+
+                result = sendmail(
+                    recipients='test@example.com',
+                    subject='Test Subject',
+                    body_template='test_template'
+                )
+
+                self.assertTrue(result)
+                mock_session.sendmail.assert_called_once()
+
 
 if __name__ == '__main__':
     unittest.main()

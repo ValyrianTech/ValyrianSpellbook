@@ -798,8 +798,107 @@ class TestGetLlm(unittest.TestCase):
         mock_openai.return_value = mock_llm_instance
         
         result = get_llm('auto:OpenAI:gpt-4', 0.5)
-        
+
         mock_openai.assert_called_once_with(model_name='gpt-4', api_key='test-key')
+
+    @patch('helpers.llmhelpers.load_from_json_file')
+    @patch('helpers.llmhelpers.os.path.exists', return_value=True)
+    @patch('helpers.llmhelpers.TextGenerationWebuiLLM')
+    @patch('helpers.llmhelpers.LOG')
+    def test_get_llm_self_hosted_textgen_webui(self, mock_log, mock_textgen, mock_exists, mock_load_json):
+        """Test get_llm with self-hosted TextGenerationWebui server"""
+        from helpers.llmhelpers import get_llm, CLIENTS
+        CLIENTS.clear()
+
+        mock_load_json.return_value = {
+            'test-model': {'host': 'localhost', 'port': 5000, 'server_type': 'TextGenerationWebui', 'model_name': 'mistral'}
+        }
+        mock_llm_instance = MagicMock()
+        mock_textgen.return_value = mock_llm_instance
+
+        result = get_llm('self-hosted:test-model', 0.5)
+
+        mock_textgen.assert_called_once_with(model_name='mistral', host='localhost', port=5000)
+
+    @patch('helpers.llmhelpers.load_from_json_file')
+    @patch('helpers.llmhelpers.os.path.exists', return_value=True)
+    @patch('helpers.llmhelpers.TextGenerationWebuiChatLLM')
+    @patch('helpers.llmhelpers.LOG')
+    def test_get_llm_self_hosted_textgen_webui_chat(self, mock_log, mock_textgen_chat, mock_exists, mock_load_json):
+        """Test get_llm with self-hosted TextGenerationWebuiChat server"""
+        from helpers.llmhelpers import get_llm, CLIENTS
+        CLIENTS.clear()
+
+        mock_load_json.return_value = {
+            'test-model': {'host': 'localhost', 'port': 5000, 'server_type': 'TextGenerationWebuiChat', 'model_name': 'mistral'}
+        }
+        mock_llm_instance = MagicMock()
+        mock_textgen_chat.return_value = mock_llm_instance
+
+        result = get_llm('self-hosted:test-model', 0.5)
+
+        mock_textgen_chat.assert_called_once_with(model_name='mistral', host='localhost', port=5000)
+
+    @patch('helpers.llmhelpers.get_llm_api_key', return_value='test-key')
+    @patch('helpers.llmhelpers.load_from_json_file')
+    @patch('helpers.llmhelpers.os.path.exists', return_value=True)
+    @patch('helpers.llmhelpers.OpenRouterLLM')
+    @patch('helpers.llmhelpers.LOG')
+    def test_get_llm_self_hosted_openrouter(self, mock_log, mock_openrouter, mock_exists, mock_load_json, mock_api_key):
+        """Test get_llm with self-hosted OpenRouter server"""
+        from helpers.llmhelpers import get_llm, CLIENTS
+        CLIENTS.clear()
+
+        mock_load_json.return_value = {
+            'test-model': {'host': 'localhost', 'port': 5000, 'server_type': 'OpenRouter', 'model_name': 'mistral'}
+        }
+        mock_llm_instance = MagicMock()
+        mock_openrouter.return_value = mock_llm_instance
+
+        result = get_llm('self-hosted:test-model', 0.5)
+
+        mock_openrouter.assert_called_once_with(model_name='mistral', api_key='test-key')
+
+    @patch('helpers.llmhelpers.get_llm_api_key', return_value='test-key')
+    @patch('helpers.llmhelpers.OpenRouterLLM')
+    @patch('helpers.llmhelpers.LOG')
+    def test_get_llm_openrouter_prefix(self, mock_log, mock_openrouter, mock_api_key):
+        """Test get_llm with OpenRouter: prefix"""
+        from helpers.llmhelpers import get_llm, CLIENTS
+        CLIENTS.clear()
+
+        mock_llm_instance = MagicMock()
+        mock_openrouter.return_value = mock_llm_instance
+
+        result = get_llm('OpenRouter:mistral/mistral-7b', 0.5)
+
+        mock_openrouter.assert_called_once_with(model_name='mistral/mistral-7b', api_key='test-key')
+        self.assertEqual(result, mock_llm_instance)
+
+
+class TestLLMGenerateWithThinkingLevel(unittest.TestCase):
+    """Test cases for LLM.generate method with thinking_level"""
+
+    @patch('helpers.llmhelpers.get_llm_config', return_value={})
+    @patch('helpers.llmhelpers.get_llm')
+    @patch('helpers.llmhelpers.LOG')
+    def test_llm_generate_with_thinking_level(self, mock_log, mock_get_llm, mock_get_config):
+        """Test LLM.generate passes thinking_level to kwargs"""
+        from helpers.llmhelpers import LLM
+
+        mock_llm_instance = MagicMock()
+        mock_get_llm.return_value = mock_llm_instance
+        mock_llm_instance.generate.return_value = ('result', {'prompt_tokens': 10, 'completion_tokens': 20, 'total_tokens': 30, 'total_cost': 0.01})
+
+        client = LLM(model_name='OpenAI:gpt-4', thinking_level='medium')
+        from langchain.schema import HumanMessage
+        messages = [HumanMessage(content="Test")]
+        result = client.generate(messages)
+
+        # Check that thinking_level was passed in kwargs
+        call_kwargs = mock_llm_instance.generate.call_args
+        self.assertIn('thinking_level', call_kwargs.kwargs)
+        self.assertEqual(call_kwargs.kwargs['thinking_level'], 'medium')
 
 
 class TestGetLlmApiKeyException(unittest.TestCase):

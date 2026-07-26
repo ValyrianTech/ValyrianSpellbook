@@ -1218,3 +1218,485 @@ class TestFixedFeeInvalid(object):
         with pytest.raises(Exception) as exc_info:
             action.run()
         assert 'Invalid fixed transaction fee' in str(exc_info.value)
+
+
+class TestGetDistributionValidationErrors(object):
+    """Tests for get_distribution validation error paths"""
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_block_height')
+    def test_send2sil_invalid_registration_address(self, mock_valid_height, mock_valid_address, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        mock_valid_address.return_value = False
+        mock_valid_height.return_value = True
+        action = SendTransactionAction('test_send_tx')
+        action.registration_address = 'invalid'
+        action.registration_block_height = 700000
+        with pytest.raises(Exception) as exc_info:
+            action.get_distribution('Send2SIL', 50000)
+        assert 'invalid registration_address' in str(exc_info.value)
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_block_height')
+    def test_send2sil_invalid_block_height(self, mock_valid_height, mock_valid_address, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        mock_valid_address.return_value = True
+        mock_valid_height.return_value = False
+        action = SendTransactionAction('test_send_tx')
+        action.registration_address = '1RegAddress'
+        action.registration_block_height = 'invalid'
+        with pytest.raises(Exception) as exc_info:
+            action.get_distribution('Send2SIL', 50000)
+        assert 'invalid registration_block_height' in str(exc_info.value)
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_xpub')
+    @mock.patch('action.sendtransactionaction.valid_block_height')
+    def test_send2lbl_invalid_registration_address(self, mock_valid_height, mock_valid_xpub, mock_valid_address, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        mock_valid_address.return_value = False
+        mock_valid_xpub.return_value = True
+        mock_valid_height.return_value = True
+        action = SendTransactionAction('test_send_tx')
+        action.registration_address = 'invalid'
+        action.registration_xpub = 'xpub123'
+        action.registration_block_height = 700000
+        with pytest.raises(Exception) as exc_info:
+            action.get_distribution('Send2LBL', 50000)
+        assert 'invalid registration_address' in str(exc_info.value)
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_xpub')
+    @mock.patch('action.sendtransactionaction.valid_block_height')
+    def test_send2lbl_invalid_xpub(self, mock_valid_height, mock_valid_xpub, mock_valid_address, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        mock_valid_address.return_value = True
+        mock_valid_xpub.return_value = False
+        mock_valid_height.return_value = True
+        action = SendTransactionAction('test_send_tx')
+        action.registration_address = '1RegAddress'
+        action.registration_xpub = 'invalid'
+        action.registration_block_height = 700000
+        with pytest.raises(Exception) as exc_info:
+            action.get_distribution('Send2LBL', 50000)
+        assert 'invalid registration_xpub' in str(exc_info.value)
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_xpub')
+    @mock.patch('action.sendtransactionaction.valid_block_height')
+    def test_send2lbl_invalid_block_height(self, mock_valid_height, mock_valid_xpub, mock_valid_address, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        mock_valid_address.return_value = True
+        mock_valid_xpub.return_value = True
+        mock_valid_height.return_value = False
+        action = SendTransactionAction('test_send_tx')
+        action.registration_address = '1RegAddress'
+        action.registration_xpub = 'xpub123'
+        action.registration_block_height = 'invalid'
+        with pytest.raises(Exception) as exc_info:
+            action.get_distribution('Send2LBL', 50000)
+        assert 'invalid registration_block_height' in str(exc_info.value)
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_xpub')
+    @mock.patch('action.sendtransactionaction.valid_block_height')
+    @mock.patch('action.sendtransactionaction.get_lbl')
+    def test_send2lbl_invalid_lbl_data(self, mock_get_lbl, mock_valid_height, mock_valid_xpub, mock_valid_address, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        mock_valid_address.return_value = True
+        mock_valid_xpub.return_value = True
+        mock_valid_height.return_value = True
+        mock_get_lbl.return_value = {'error': 'LBL not found'}
+        action = SendTransactionAction('test_send_tx')
+        action.registration_address = '1RegAddress'
+        action.registration_xpub = 'xpub123'
+        action.registration_block_height = 700000
+        with pytest.raises(Exception) as exc_info:
+            action.get_distribution('Send2LBL', 50000)
+        assert 'invalid LBL' in str(exc_info.value)
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_xpub')
+    @mock.patch('action.sendtransactionaction.valid_block_height')
+    def test_send2lrl_invalid_registration_address(self, mock_valid_height, mock_valid_xpub, mock_valid_address, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        mock_valid_address.return_value = False
+        mock_valid_xpub.return_value = True
+        mock_valid_height.return_value = True
+        action = SendTransactionAction('test_send_tx')
+        action.registration_address = 'invalid'
+        action.registration_xpub = 'xpub123'
+        action.registration_block_height = 700000
+        with pytest.raises(Exception) as exc_info:
+            action.get_distribution('Send2LRL', 50000)
+        assert 'invalid registration_address' in str(exc_info.value)
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_xpub')
+    @mock.patch('action.sendtransactionaction.valid_block_height')
+    def test_send2lrl_invalid_xpub(self, mock_valid_height, mock_valid_xpub, mock_valid_address, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        mock_valid_address.return_value = True
+        mock_valid_xpub.return_value = False
+        mock_valid_height.return_value = True
+        action = SendTransactionAction('test_send_tx')
+        action.registration_address = '1RegAddress'
+        action.registration_xpub = 'invalid'
+        action.registration_block_height = 700000
+        with pytest.raises(Exception) as exc_info:
+            action.get_distribution('Send2LRL', 50000)
+        assert 'invalid registration_xpub' in str(exc_info.value)
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_xpub')
+    @mock.patch('action.sendtransactionaction.valid_block_height')
+    def test_send2lrl_invalid_block_height(self, mock_valid_height, mock_valid_xpub, mock_valid_address, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        mock_valid_address.return_value = True
+        mock_valid_xpub.return_value = True
+        mock_valid_height.return_value = False
+        action = SendTransactionAction('test_send_tx')
+        action.registration_address = '1RegAddress'
+        action.registration_xpub = 'xpub123'
+        action.registration_block_height = 'invalid'
+        with pytest.raises(Exception) as exc_info:
+            action.get_distribution('Send2LRL', 50000)
+        assert 'invalid registration_block_height' in str(exc_info.value)
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_xpub')
+    @mock.patch('action.sendtransactionaction.valid_block_height')
+    @mock.patch('action.sendtransactionaction.get_lrl')
+    def test_send2lrl_invalid_lrl_data(self, mock_get_lrl, mock_valid_height, mock_valid_xpub, mock_valid_address, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        mock_valid_address.return_value = True
+        mock_valid_xpub.return_value = True
+        mock_valid_height.return_value = True
+        mock_get_lrl.return_value = {'error': 'LRL not found'}
+        action = SendTransactionAction('test_send_tx')
+        action.registration_address = '1RegAddress'
+        action.registration_xpub = 'xpub123'
+        action.registration_block_height = 700000
+        with pytest.raises(Exception) as exc_info:
+            action.get_distribution('Send2LRL', 50000)
+        assert 'invalid LRL' in str(exc_info.value)
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_xpub')
+    @mock.patch('action.sendtransactionaction.valid_block_height')
+    def test_send2lsl_invalid_registration_address(self, mock_valid_height, mock_valid_xpub, mock_valid_address, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        mock_valid_address.return_value = False
+        mock_valid_xpub.return_value = True
+        mock_valid_height.return_value = True
+        action = SendTransactionAction('test_send_tx')
+        action.registration_address = 'invalid'
+        action.registration_xpub = 'xpub123'
+        action.registration_block_height = 700000
+        with pytest.raises(Exception) as exc_info:
+            action.get_distribution('Send2LSL', 50000)
+        assert 'invalid registration_address' in str(exc_info.value)
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_xpub')
+    @mock.patch('action.sendtransactionaction.valid_block_height')
+    def test_send2lsl_invalid_xpub(self, mock_valid_height, mock_valid_xpub, mock_valid_address, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        mock_valid_address.return_value = True
+        mock_valid_xpub.return_value = False
+        mock_valid_height.return_value = True
+        action = SendTransactionAction('test_send_tx')
+        action.registration_address = '1RegAddress'
+        action.registration_xpub = 'invalid'
+        action.registration_block_height = 700000
+        with pytest.raises(Exception) as exc_info:
+            action.get_distribution('Send2LSL', 50000)
+        assert 'invalid registration_xpub' in str(exc_info.value)
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_xpub')
+    @mock.patch('action.sendtransactionaction.valid_block_height')
+    def test_send2lsl_invalid_block_height(self, mock_valid_height, mock_valid_xpub, mock_valid_address, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        mock_valid_address.return_value = True
+        mock_valid_xpub.return_value = True
+        mock_valid_height.return_value = False
+        action = SendTransactionAction('test_send_tx')
+        action.registration_address = '1RegAddress'
+        action.registration_xpub = 'xpub123'
+        action.registration_block_height = 'invalid'
+        with pytest.raises(Exception) as exc_info:
+            action.get_distribution('Send2LSL', 50000)
+        assert 'invalid registration_block_height' in str(exc_info.value)
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_xpub')
+    @mock.patch('action.sendtransactionaction.valid_block_height')
+    @mock.patch('action.sendtransactionaction.get_lsl')
+    def test_send2lsl_invalid_lsl_data(self, mock_get_lsl, mock_valid_height, mock_valid_xpub, mock_valid_address, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        mock_valid_address.return_value = True
+        mock_valid_xpub.return_value = True
+        mock_valid_height.return_value = True
+        mock_get_lsl.return_value = {'error': 'LSL not found'}
+        action = SendTransactionAction('test_send_tx')
+        action.registration_address = '1RegAddress'
+        action.registration_xpub = 'xpub123'
+        action.registration_block_height = 700000
+        with pytest.raises(Exception) as exc_info:
+            action.get_distribution('Send2LSL', 50000)
+        assert 'invalid LSL' in str(exc_info.value)
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_xpub')
+    @mock.patch('action.sendtransactionaction.valid_block_height')
+    def test_send2lal_invalid_sending_address(self, mock_valid_height, mock_valid_xpub, mock_valid_address, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        mock_valid_address.return_value = False
+        mock_valid_xpub.return_value = True
+        mock_valid_height.return_value = True
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = 'invalid'
+        action.registration_xpub = 'xpub123'
+        action.registration_block_height = 700000
+        with pytest.raises(Exception) as exc_info:
+            action.get_distribution('Send2LAL', 50000)
+        assert 'invalid sending_address' in str(exc_info.value)
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_xpub')
+    @mock.patch('action.sendtransactionaction.valid_block_height')
+    def test_send2lal_invalid_xpub(self, mock_valid_height, mock_valid_xpub, mock_valid_address, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        mock_valid_address.return_value = True
+        mock_valid_xpub.return_value = False
+        mock_valid_height.return_value = True
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1SendAddress'
+        action.registration_xpub = 'invalid'
+        action.registration_block_height = 700000
+        with pytest.raises(Exception) as exc_info:
+            action.get_distribution('Send2LAL', 50000)
+        assert 'invalid registration_xpub' in str(exc_info.value)
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_xpub')
+    @mock.patch('action.sendtransactionaction.valid_block_height')
+    def test_send2lal_invalid_block_height(self, mock_valid_height, mock_valid_xpub, mock_valid_address, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        mock_valid_address.return_value = True
+        mock_valid_xpub.return_value = True
+        mock_valid_height.return_value = False
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1SendAddress'
+        action.registration_xpub = 'xpub123'
+        action.registration_block_height = 'invalid'
+        with pytest.raises(Exception) as exc_info:
+            action.get_distribution('Send2LAL', 50000)
+        assert 'invalid registration_block_height' in str(exc_info.value)
+
+
+class TestRunEdgeCases(object):
+    """Tests for run() method edge cases covering remaining uncovered lines"""
+
+    @mock.patch('action.sendtransactionaction.push_tx')
+    @mock.patch('action.sendtransactionaction.txhash', return_value='abc123')
+    @mock.patch('action.sendtransactionaction.make_custom_tx', return_value='deadbeef')
+    @mock.patch('action.sendtransactionaction.get_high_priority_fee', return_value=10)
+    @mock.patch('action.sendtransactionaction.get_private_key')
+    @mock.patch('action.sendtransactionaction.get_hot_wallet')
+    @mock.patch('action.sendtransactionaction.utxos')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.get_max_tx_fee_percentage', return_value=0)
+    def test_run_with_spellbook_fee_output(self, mock_max_fee, mock_valid_amount, mock_valid_address, mock_utxos,
+                                            mock_get_hot_wallet, mock_get_priv, mock_high_fee, mock_make_tx, mock_txhash, mock_push):
+        """Test run with fee_address and spellbook_fee > 0 creating a fee output"""
+        mock_utxos.return_value = {'utxos': [
+            {'value': 100000, 'output_hash': 'hash1', 'output_n': 0, 'confirmations': 6}
+        ]}
+        mock_valid_address.return_value = True
+        mock_valid_amount.return_value = True
+        mock_get_hot_wallet.return_value = {'1TestAddress': 'priv_key_1'}
+        mock_get_priv.return_value = {'1TestAddress': 'priv_key_1'}
+        mock_push.return_value = {'success': True}
+
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1TestAddress'
+        action.receiving_address = '1RecvAddress'
+        action.wallet_type = 'Single'
+        action.amount = 0
+        action.transaction_type = 'Send2Single'
+        action.fee_address = '1FeeAddress'
+        action.fee_percentage = 5
+        result = action.run()
+        assert result == True
+
+    @mock.patch('action.sendtransactionaction.get_private_key')
+    @mock.patch('action.sendtransactionaction.get_hot_wallet')
+    @mock.patch('action.sendtransactionaction.utxos')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.make_custom_tx', return_value='deadbeef')
+    @mock.patch('action.sendtransactionaction.get_max_tx_fee_percentage', return_value=0)
+    def test_run_unknown_tx_fee_type(self, mock_max_fee, mock_make_tx, mock_valid_amount, mock_valid_address,
+                                      mock_utxos, mock_get_hot_wallet, mock_get_priv):
+        """Test run with unknown tx_fee_type raises NotImplementedError"""
+        mock_utxos.return_value = {'utxos': [
+            {'value': 100000, 'output_hash': 'hash1', 'output_n': 0, 'confirmations': 6}
+        ]}
+        mock_valid_address.return_value = True
+        mock_valid_amount.return_value = True
+        mock_get_hot_wallet.return_value = {'1TestAddress': 'priv_key_1'}
+        mock_get_priv.return_value = {'1TestAddress': 'priv_key_1'}
+
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1TestAddress'
+        action.receiving_address = '1RecvAddress'
+        action.wallet_type = 'Single'
+        action.amount = 0
+        action.transaction_type = 'Send2Single'
+        action.tx_fee_type = 'Unknown'
+        with pytest.raises(NotImplementedError) as exc_info:
+            action.run()
+        assert 'Unknown transaction fee type' in str(exc_info.value)
+
+    @mock.patch('action.sendtransactionaction.make_custom_tx', return_value='deadbeef')
+    @mock.patch('action.sendtransactionaction.get_high_priority_fee', return_value=100000)
+    @mock.patch('action.sendtransactionaction.get_private_key')
+    @mock.patch('action.sendtransactionaction.get_hot_wallet')
+    @mock.patch('action.sendtransactionaction.utxos')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.get_max_tx_fee_percentage', return_value=0)
+    def test_run_send_all_fee_exceeds_value(self, mock_max_fee, mock_valid_amount, mock_valid_address, mock_utxos,
+                                             mock_get_hot_wallet, mock_get_priv, mock_high_fee, mock_make_tx):
+        """Test run send-all where total sending value is less than transaction fee"""
+        mock_utxos.return_value = {'utxos': [
+            {'value': 100000, 'output_hash': 'hash1', 'output_n': 0, 'confirmations': 6}
+        ]}
+        mock_valid_address.return_value = True
+        mock_valid_amount.return_value = True
+        mock_get_hot_wallet.return_value = {'1TestAddress': 'priv_key_1'}
+        mock_get_priv.return_value = {'1TestAddress': 'priv_key_1'}
+
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1TestAddress'
+        action.receiving_address = '1RecvAddress'
+        action.wallet_type = 'Single'
+        action.amount = 0
+        action.transaction_type = 'Send2Single'
+        # transaction_size = len('deadbeef')/2 = 4, fee = 4 * 100000 = 400000 > 100000
+        result = action.run()
+        assert result == False
+
+    @mock.patch('action.sendtransactionaction.make_custom_tx', return_value='deadbeef')
+    @mock.patch('action.sendtransactionaction.get_high_priority_fee', return_value=10)
+    @mock.patch('action.sendtransactionaction.get_private_key')
+    @mock.patch('action.sendtransactionaction.get_hot_wallet')
+    @mock.patch('action.sendtransactionaction.utxos')
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_distribution')
+    @mock.patch('action.sendtransactionaction.get_max_tx_fee_percentage', return_value=0)
+    def test_run_send_all_output_cannot_cover_fee_share(self, mock_max_fee, mock_valid_dist, mock_valid_amount,
+                                                          mock_utxos, mock_get_hot_wallet, mock_get_priv,
+                                                          mock_high_fee, mock_make_tx):
+        """Test run send-all with Send2Many where one output can't cover its fee share"""
+        mock_utxos.return_value = {'utxos': [
+            {'value': 100000, 'output_hash': 'hash1', 'output_n': 0, 'confirmations': 6}
+        ]}
+        mock_valid_amount.return_value = True
+        mock_valid_dist.return_value = True
+        mock_get_hot_wallet.return_value = {'1TestAddress': 'priv_key_1'}
+        mock_get_priv.return_value = {'1TestAddress': 'priv_key_1'}
+
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1TestAddress'
+        action.wallet_type = 'Single'
+        action.amount = 0
+        action.transaction_type = 'Send2Many'
+        action.distribution = {'addr1': 99, 'addr2': 1}
+        action.minimum_output_value = 1
+        # addr2 gets 1% of 100000 = 1000, fee_share = 4*10/2 = 20, 1000 > 20 so this passes
+        # But let's make fee higher: fee = 4 * 100000 = 400000, fee_share = 200000
+        # addr2 = 1000 < 200000 -> should fail
+        mock_high_fee.return_value = 100000
+        result = action.run()
+        assert result == False
+
+    @mock.patch('action.sendtransactionaction.make_custom_tx', return_value='deadbeef')
+    @mock.patch('action.sendtransactionaction.get_high_priority_fee', return_value=10)
+    @mock.patch('action.sendtransactionaction.get_private_key')
+    @mock.patch('action.sendtransactionaction.get_hot_wallet')
+    @mock.patch('action.sendtransactionaction.utxos')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.get_max_tx_fee_percentage', return_value=0)
+    def test_run_change_cannot_cover_fee(self, mock_max_fee, mock_valid_amount, mock_valid_address, mock_utxos,
+                                          mock_get_hot_wallet, mock_get_priv, mock_high_fee, mock_make_tx):
+        """Test run with specific amount where change output can't cover transaction fee"""
+        mock_utxos.return_value = {'utxos': [
+            {'value': 100000, 'output_hash': 'hash1', 'output_n': 0, 'confirmations': 6}
+        ]}
+        mock_valid_address.return_value = True
+        mock_valid_amount.return_value = True
+        mock_get_hot_wallet.return_value = {'1TestAddress': 'priv_key_1'}
+        mock_get_priv.return_value = {'1TestAddress': 'priv_key_1'}
+
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1TestAddress'
+        action.receiving_address = '1RecvAddress'
+        action.wallet_type = 'Single'
+        action.amount = 99990
+        action.transaction_type = 'Send2Single'
+        # change = 100000 - 99990 - 0 = 10, fee = 4 * 10 = 40, 10 < 40 -> fail
+        result = action.run()
+        assert result == False
+
+    @mock.patch('action.sendtransactionaction.push_tx')
+    @mock.patch('action.sendtransactionaction.txhash', return_value='abc123')
+    @mock.patch('action.sendtransactionaction.make_custom_tx', side_effect=['deadbeef', None])
+    @mock.patch('action.sendtransactionaction.get_high_priority_fee', return_value=10)
+    @mock.patch('action.sendtransactionaction.get_private_key')
+    @mock.patch('action.sendtransactionaction.get_hot_wallet')
+    @mock.patch('action.sendtransactionaction.utxos')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.get_max_tx_fee_percentage', return_value=0)
+    def test_run_second_make_custom_tx_returns_none(self, mock_max_fee, mock_valid_amount, mock_valid_address, mock_utxos,
+                                                     mock_get_hot_wallet, mock_get_priv, mock_high_fee, mock_make_tx,
+                                                     mock_txhash, mock_push):
+        """Test run when second make_custom_tx returns None"""
+        mock_utxos.return_value = {'utxos': [
+            {'value': 100000, 'output_hash': 'hash1', 'output_n': 0, 'confirmations': 6}
+        ]}
+        mock_valid_address.return_value = True
+        mock_valid_amount.return_value = True
+        mock_get_hot_wallet.return_value = {'1TestAddress': 'priv_key_1'}
+        mock_get_priv.return_value = {'1TestAddress': 'priv_key_1'}
+
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1TestAddress'
+        action.receiving_address = '1RecvAddress'
+        action.wallet_type = 'Single'
+        action.amount = 0
+        action.transaction_type = 'Send2Single'
+        result = action.run()
+        assert result == False
