@@ -173,9 +173,10 @@ def valid_script(script):
         LOG.error('Script %s is invalid: does not end with .py extension' % script)
         return False
 
-    if os.path.isfile(os.path.join('spellbookscripts', script)):
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if os.path.isfile(os.path.join(project_root, 'spellbookscripts', script)):
         return True
-    elif os.path.isfile(os.path.join('apps', script)):
+    elif os.path.isfile(os.path.join(project_root, 'apps', script)):
         return True
     else:
         LOG.error('Script %s is invalid: file not found in spellbookscripts or apps directory' % script)
