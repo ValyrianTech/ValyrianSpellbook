@@ -10,7 +10,7 @@ from helpers.publickeyhelpers import add_pubkeys, compress, bin_hash160, encode_
 
 from helpers.configurationhelpers import get_use_testnet
 
-BIP32_DERIVATION_PATH_REGEX = "^m(\/\d+'?)*"
+BIP32_DERIVATION_PATH_REGEX = r"^m(\/\d+'?)*"
 HARDENED = 2**31
 
 MAINNET_PRIVATE = b'\x04\x88\xAD\xE4'
