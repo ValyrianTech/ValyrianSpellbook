@@ -340,5 +340,178 @@ class TestOllamaChatLLM(unittest.TestCase):
         self.assertIn('message.thinking', result)
 
 
+class TestOllamaChatLLMAdvanced(unittest.TestCase):
+    """Advanced tests for uncovered ollama_chat_llm paths"""
+
+    @patch('helpers.ollama_chat_llm.requests.post')
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.ollama_chat_llm.broadcast_message')
+    @patch('helpers.ollama_chat_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.ollama_chat_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.ollama_chat_llm.LOG')
+    def test_stop_sequences(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_ws, mock_post):
+        """Test that stop sequences are passed in options"""
+        from helpers.ollama_chat_llm import OllamaChatLLM
+
+        lines = [
+            json.dumps({'message': {'content': 'Hello!', 'thinking': ''}, 'done': False}).encode('utf-8'),
+            json.dumps({'done': True, 'prompt_eval_count': 10, 'eval_count': 5}).encode('utf-8'),
+        ]
+
+        mock_response = MagicMock()
+        mock_response.iter_lines.return_value = iter(lines)
+        mock_response.raise_for_status = MagicMock()
+        mock_post.return_value.__enter__ = MagicMock(return_value=mock_response)
+        mock_post.return_value.__exit__ = MagicMock(return_value=False)
+
+        llm = OllamaChatLLM(model_name='llama2', host='http://localhost', port=11434)
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages, stop=['END'], temperature=0.5, max_tokens=100)
+
+        call_kwargs = mock_post.call_args[1]
+        self.assertEqual(call_kwargs['json']['options']['stop'], ['END'])
+        self.assertEqual(call_kwargs['json']['options']['temperature'], 0.5)
+        self.assertEqual(call_kwargs['json']['options']['num_predict'], 100)
+
+    @patch('helpers.ollama_chat_llm.requests.post')
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.ollama_chat_llm.broadcast_message')
+    @patch('helpers.ollama_chat_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.ollama_chat_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.ollama_chat_llm.LOG')
+    def test_empty_lines_skipped(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_ws, mock_post):
+        """Test that empty lines in response are skipped"""
+        from helpers.ollama_chat_llm import OllamaChatLLM
+
+        lines = [
+            b'',
+            json.dumps({'message': {'content': 'Hello!', 'thinking': ''}, 'done': False}).encode('utf-8'),
+            b'',
+            json.dumps({'done': True, 'prompt_eval_count': 10, 'eval_count': 5}).encode('utf-8'),
+        ]
+
+        mock_response = MagicMock()
+        mock_response.iter_lines.return_value = iter(lines)
+        mock_response.raise_for_status = MagicMock()
+        mock_post.return_value.__enter__ = MagicMock(return_value=mock_response)
+        mock_post.return_value.__exit__ = MagicMock(return_value=False)
+
+        llm = OllamaChatLLM(model_name='llama2', host='http://localhost', port=11434)
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages)
+
+        self.assertEqual(result, 'Hello!')
+
+    @patch('helpers.ollama_chat_llm.requests.post')
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.ollama_chat_llm.broadcast_message')
+    @patch('helpers.ollama_chat_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.ollama_chat_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.ollama_chat_llm.LOG')
+    def test_json_decode_error_skipped(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_ws, mock_post):
+        """Test that invalid JSON lines are skipped"""
+        from helpers.ollama_chat_llm import OllamaChatLLM
+
+        lines = [
+            b'invalid json',
+            json.dumps({'message': {'content': 'Hello!', 'thinking': ''}, 'done': False}).encode('utf-8'),
+            json.dumps({'done': True, 'prompt_eval_count': 10, 'eval_count': 5}).encode('utf-8'),
+        ]
+
+        mock_response = MagicMock()
+        mock_response.iter_lines.return_value = iter(lines)
+        mock_response.raise_for_status = MagicMock()
+        mock_post.return_value.__enter__ = MagicMock(return_value=mock_response)
+        mock_post.return_value.__exit__ = MagicMock(return_value=False)
+
+        llm = OllamaChatLLM(model_name='llama2', host='http://localhost', port=11434)
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages)
+
+        self.assertEqual(result, 'Hello!')
+
+    @patch('helpers.ollama_chat_llm.requests.post')
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.ollama_chat_llm.broadcast_message')
+    @patch('helpers.ollama_chat_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.ollama_chat_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.ollama_chat_llm.LOG')
+    def test_inline_think_tags_in_content(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_ws, mock_post):
+        """Test handling of inline think tags in content"""
+        from helpers.ollama_chat_llm import OllamaChatLLM
+
+        lines = [
+            json.dumps({'message': {'content': '\x3cthink\x3eThinking about this', 'thinking': ''}, 'done': False}).encode('utf-8'),
+            json.dumps({'message': {'content': ' more thinking\x3c/think\x3e', 'thinking': ''}, 'done': False}).encode('utf-8'),
+            json.dumps({'message': {'content': 'Final answer!', 'thinking': ''}, 'done': False}).encode('utf-8'),
+            json.dumps({'done': True, 'prompt_eval_count': 10, 'eval_count': 5}).encode('utf-8'),
+        ]
+
+        mock_response = MagicMock()
+        mock_response.iter_lines.return_value = iter(lines)
+        mock_response.raise_for_status = MagicMock()
+        mock_post.return_value.__enter__ = MagicMock(return_value=mock_response)
+        mock_post.return_value.__exit__ = MagicMock(return_value=False)
+
+        llm = OllamaChatLLM(model_name='llama2', host='http://localhost', port=11434)
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages)
+
+        self.assertIn('Final answer!', result)
+
+    @patch('helpers.ollama_chat_llm.requests.post')
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.ollama_chat_llm.broadcast_message')
+    @patch('helpers.ollama_chat_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.ollama_chat_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.ollama_chat_llm.LOG')
+    def test_no_usage_info(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_ws, mock_post):
+        """Test completion when no usage info is provided"""
+        from helpers.ollama_chat_llm import OllamaChatLLM
+
+        lines = [
+            json.dumps({'message': {'content': 'Hello!', 'thinking': ''}, 'done': False}).encode('utf-8'),
+            json.dumps({'done': True}).encode('utf-8'),
+        ]
+
+        mock_response = MagicMock()
+        mock_response.iter_lines.return_value = iter(lines)
+        mock_response.raise_for_status = MagicMock()
+        mock_post.return_value.__enter__ = MagicMock(return_value=mock_response)
+        mock_post.return_value.__exit__ = MagicMock(return_value=False)
+
+        llm = OllamaChatLLM(model_name='llama2', host='http://localhost', port=11434)
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages)
+
+        self.assertEqual(usage['prompt_tokens'], 0)
+        self.assertEqual(usage['completion_tokens'], 0)
+
+
 if __name__ == '__main__':
     unittest.main()

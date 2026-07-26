@@ -140,5 +140,128 @@ class TestLLMResult(unittest.TestCase):
         self.assertEqual(result.generations, [])
 
 
+class TestPrintPrompt(unittest.TestCase):
+    """Test cases for print_prompt function"""
+
+    def test_print_prompt_string(self):
+        """Test print_prompt with a simple string"""
+        from helpers.textgenerationhelpers import print_prompt
+        import io
+        from contextlib import redirect_stdout
+        f = io.StringIO()
+        with redirect_stdout(f):
+            print_prompt("Hello world")
+        output = f.getvalue()
+        self.assertIn("Hello world|", output)
+        self.assertIn("======================", output)
+
+    def test_print_prompt_messages_list(self):
+        """Test print_prompt with a list of messages"""
+        from helpers.textgenerationhelpers import print_prompt
+        import io
+        from contextlib import redirect_stdout
+        messages = [
+            {'role': 'user', 'content': 'Hello'},
+            {'role': 'assistant', 'content': 'Hi there'},
+        ]
+        f = io.StringIO()
+        with redirect_stdout(f):
+            print_prompt(messages)
+        output = f.getvalue()
+        self.assertIn("Hello", output)
+        self.assertIn("Hi there", output)
+        self.assertIn("|", output)
+
+    def test_print_prompt_multimodal_messages(self):
+        """Test print_prompt with multimodal content (list of parts)"""
+        from helpers.textgenerationhelpers import print_prompt
+        import io
+        from contextlib import redirect_stdout
+        messages = [
+            {'role': 'user', 'content': [
+                {'text': 'Describe this image'},
+                {'image_url': 'http://example.com/img.png'},
+            ]},
+        ]
+        f = io.StringIO()
+        with redirect_stdout(f):
+            print_prompt(messages)
+        output = f.getvalue()
+        self.assertIn("Describe this image", output)
+        self.assertIn("===Included image===", output)
+
+    def test_print_prompt_multimodal_string_parts(self):
+        """Test print_prompt with multimodal content containing string parts"""
+        from helpers.textgenerationhelpers import print_prompt
+        import io
+        from contextlib import redirect_stdout
+        messages = [
+            {'role': 'user', 'content': ['plain string part']},
+        ]
+        f = io.StringIO()
+        with redirect_stdout(f):
+            print_prompt(messages)
+        output = f.getvalue()
+        self.assertIn("plain string part", output)
+
+    def test_print_prompt_other_type(self):
+        """Test print_prompt with a non-string non-list type"""
+        from helpers.textgenerationhelpers import print_prompt
+        import io
+        from contextlib import redirect_stdout
+        f = io.StringIO()
+        with redirect_stdout(f):
+            print_prompt(42)
+        output = f.getvalue()
+        self.assertIn("42|", output)
+
+    def test_print_prompt_empty_content_in_message(self):
+        """Test print_prompt with a message that has no 'content' key"""
+        from helpers.textgenerationhelpers import print_prompt
+        import io
+        from contextlib import redirect_stdout
+        messages = [{'role': 'user'}]
+        f = io.StringIO()
+        with redirect_stdout(f):
+            print_prompt(messages)
+        output = f.getvalue()
+        self.assertIn("|", output)
+
+
+class TestParseGenerationEdgeCases(unittest.TestCase):
+    """Edge case tests for parse_generation function"""
+
+    def test_unclosed_code_block_no_text_before(self):
+        """Test unclosed code block with no text before it"""
+        result = parse_generation("```python\nprint('hello')")
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]['type'], 'code')
+
+    def test_unclosed_code_block_empty_after(self):
+        """Test unclosed code block with nothing after the opening backticks"""
+        result = parse_generation("text before```")
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]['type'], 'text')
+
+    def test_code_block_no_code_content(self):
+        """Test code block with language but no code content"""
+        result = parse_generation("```python\n```")
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]['type'], 'code')
+        self.assertEqual(result[0]['language'], 'python')
+        self.assertEqual(result[0]['content'], '')
+
+    def test_only_backticks(self):
+        """Test string with only triple backticks"""
+        result = parse_generation("```")
+        self.assertEqual(result, [])
+
+    def test_text_with_single_backtick_after_code(self):
+        """Test that single backtick after code block is not included"""
+        result = parse_generation("```python\ncode\n```")
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]['type'], 'code')
+
+
 if __name__ == '__main__':
     unittest.main()

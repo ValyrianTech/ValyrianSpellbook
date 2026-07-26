@@ -32,6 +32,34 @@ class TestNotifyTransaction(unittest.TestCase):
         self.assertIn(txid, expected_command)
         self.assertIn('Content-Type: application/json', expected_command)
 
+    @patch('subprocess.Popen')
+    def test_notify_transaction_script(self, mock_popen):
+        """Test executing notify_transaction.py as a module to cover __main__ block"""
+        mock_process = MagicMock()
+        mock_process.communicate.return_value = (b'OK', b'')
+        mock_popen.return_value = mock_process
+
+        import helpers.notify_transaction as nt_module
+        import sys
+
+        original_argv = sys.argv
+        sys.argv = ['notify_transaction', 'http://example.com/notify', 'pr123', 'tx456']
+
+        try:
+            with open(nt_module.__file__) as f:
+                source = f.read()
+            exec(compile(source, nt_module.__file__, 'exec'), {'__name__': '__main__'})
+        except SystemExit:
+            pass
+        finally:
+            sys.argv = original_argv
+
+        mock_popen.assert_called_once()
+        call_args = mock_popen.call_args[0][0]
+        self.assertIn('http://example.com/notify', call_args)
+        self.assertIn('pr123', call_args)
+        self.assertIn('tx456', call_args)
+
 
 if __name__ == '__main__':
     unittest.main()

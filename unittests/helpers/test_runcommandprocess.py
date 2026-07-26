@@ -51,6 +51,37 @@ class TestRunCommandProcess(object):
         mock_popen.assert_called_once()
 
     @mock.patch('helpers.runcommandprocess.Popen')
+    @mock.patch('helpers.runcommandprocess.os.chdir')
+    @mock.patch('helpers.runcommandprocess.os.getcwd')
+    def test_run_with_working_dir_change(self, mock_getcwd, mock_chdir, mock_popen):
+        """Test that run() changes to working_dir and back"""
+        mock_getcwd.side_effect = ['/original/dir', '/working/dir', '/working/dir', '/original/dir']
+        mock_process = mock.MagicMock()
+        mock_process.stdout.readline.side_effect = ['']
+        mock_process.stderr.readline.side_effect = ['']
+        mock_popen.return_value = mock_process
+
+        process = RunCommandProcess('echo hello', working_dir='/working/dir')
+        process.run()
+
+        mock_popen.assert_called_once()
+
+    @mock.patch('helpers.runcommandprocess.Popen')
+    @mock.patch('helpers.runcommandprocess.os.getcwd', return_value='/same/dir')
+    @mock.patch('helpers.runcommandprocess.os.chdir')
+    def test_run_no_dir_change_when_same(self, mock_chdir, mock_getcwd, mock_popen):
+        """Test that run() does not change dir when already there"""
+        mock_process = mock.MagicMock()
+        mock_process.stdout.readline.side_effect = ['']
+        mock_process.stderr.readline.side_effect = ['']
+        mock_popen.return_value = mock_process
+
+        process = RunCommandProcess('echo hello', working_dir='/same/dir')
+        process.run()
+
+        mock_chdir.assert_not_called()
+
+    @mock.patch('helpers.runcommandprocess.Popen')
     def test_run_multiple_output_lines(self, mock_popen):
         mock_process = mock.MagicMock()
         mock_process.stdout.readline.side_effect = ['line 1\n', 'line 2\n', 'line 3\n', '']

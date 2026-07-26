@@ -747,3 +747,474 @@ class TestIsFeeAcceptable(object):
         """Test when fee exceeds limit"""
         result = SendTransactionAction.is_fee_acceptable(15000, 100000)  # 15%
         assert result == False
+
+
+class TestSendTransactionActionRunDeep(object):
+    """Tests for deeper run method paths"""
+
+    @mock.patch('action.sendtransactionaction.push_tx')
+    @mock.patch('action.sendtransactionaction.txhash', return_value='abc123')
+    @mock.patch('action.sendtransactionaction.make_custom_tx', return_value='deadbeef')
+    @mock.patch('action.sendtransactionaction.get_high_priority_fee', return_value=10)
+    @mock.patch('action.sendtransactionaction.get_private_key')
+    @mock.patch('action.sendtransactionaction.get_hot_wallet')
+    @mock.patch('action.sendtransactionaction.utxos')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.get_max_tx_fee_percentage', return_value=0)
+    def test_run_success_send_all(self, mock_max_fee, mock_valid_amount, mock_valid_address, mock_utxos,
+                                   mock_get_hot_wallet, mock_get_priv, mock_high_fee, mock_make_tx, mock_txhash, mock_push):
+        """Test successful run sending all funds"""
+        mock_utxos.return_value = {'utxos': [
+            {'value': 100000, 'output_hash': 'hash1', 'output_n': 0, 'confirmations': 6}
+        ]}
+        mock_valid_address.return_value = True
+        mock_valid_amount.return_value = True
+        mock_get_hot_wallet.return_value = {'1TestAddress': 'priv_key_1'}
+        mock_get_priv.return_value = {'1TestAddress': 'priv_key_1'}
+        mock_push.return_value = {'success': True}
+
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1TestAddress'
+        action.receiving_address = '1RecvAddress'
+        action.wallet_type = 'Single'
+        action.amount = 0
+        action.transaction_type = 'Send2Single'
+        result = action.run()
+        assert result == True
+        assert action.txid == 'abc123'
+
+    @mock.patch('action.sendtransactionaction.push_tx')
+    @mock.patch('action.sendtransactionaction.txhash', return_value='abc123')
+    @mock.patch('action.sendtransactionaction.make_custom_tx', return_value='deadbeef')
+    @mock.patch('action.sendtransactionaction.get_medium_priority_fee', return_value=5)
+    @mock.patch('action.sendtransactionaction.get_private_key')
+    @mock.patch('action.sendtransactionaction.get_hot_wallet')
+    @mock.patch('action.sendtransactionaction.utxos')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.get_max_tx_fee_percentage', return_value=0)
+    def test_run_success_medium_fee(self, mock_max_fee, mock_valid_amount, mock_valid_address, mock_utxos,
+                                     mock_get_hot_wallet, mock_get_priv, mock_med_fee, mock_make_tx, mock_txhash, mock_push):
+        """Test successful run with medium fee type"""
+        mock_utxos.return_value = {'utxos': [
+            {'value': 100000, 'output_hash': 'hash1', 'output_n': 0, 'confirmations': 6}
+        ]}
+        mock_valid_address.return_value = True
+        mock_valid_amount.return_value = True
+        mock_get_hot_wallet.return_value = {'1TestAddress': 'priv_key_1'}
+        mock_get_priv.return_value = {'1TestAddress': 'priv_key_1'}
+        mock_push.return_value = {'success': True}
+
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1TestAddress'
+        action.receiving_address = '1RecvAddress'
+        action.wallet_type = 'Single'
+        action.amount = 0
+        action.transaction_type = 'Send2Single'
+        action.tx_fee_type = 'Medium'
+        result = action.run()
+        assert result == True
+
+    @mock.patch('action.sendtransactionaction.push_tx')
+    @mock.patch('action.sendtransactionaction.txhash', return_value='abc123')
+    @mock.patch('action.sendtransactionaction.make_custom_tx', return_value='deadbeef')
+    @mock.patch('action.sendtransactionaction.get_low_priority_fee', return_value=2)
+    @mock.patch('action.sendtransactionaction.get_private_key')
+    @mock.patch('action.sendtransactionaction.get_hot_wallet')
+    @mock.patch('action.sendtransactionaction.utxos')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.get_max_tx_fee_percentage', return_value=0)
+    def test_run_success_low_fee(self, mock_max_fee, mock_valid_amount, mock_valid_address, mock_utxos,
+                                  mock_get_hot_wallet, mock_get_priv, mock_low_fee, mock_make_tx, mock_txhash, mock_push):
+        """Test successful run with low fee type"""
+        mock_utxos.return_value = {'utxos': [
+            {'value': 100000, 'output_hash': 'hash1', 'output_n': 0, 'confirmations': 6}
+        ]}
+        mock_valid_address.return_value = True
+        mock_valid_amount.return_value = True
+        mock_get_hot_wallet.return_value = {'1TestAddress': 'priv_key_1'}
+        mock_get_priv.return_value = {'1TestAddress': 'priv_key_1'}
+        mock_push.return_value = {'success': True}
+
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1TestAddress'
+        action.receiving_address = '1RecvAddress'
+        action.wallet_type = 'Single'
+        action.amount = 0
+        action.transaction_type = 'Send2Single'
+        action.tx_fee_type = 'Low'
+        result = action.run()
+        assert result == True
+
+    @mock.patch('action.sendtransactionaction.push_tx')
+    @mock.patch('action.sendtransactionaction.txhash', return_value='abc123')
+    @mock.patch('action.sendtransactionaction.make_custom_tx', return_value='deadbeef')
+    @mock.patch('action.sendtransactionaction.get_private_key')
+    @mock.patch('action.sendtransactionaction.get_hot_wallet')
+    @mock.patch('action.sendtransactionaction.utxos')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.get_max_tx_fee_percentage', return_value=0)
+    def test_run_success_fixed_fee(self, mock_max_fee, mock_valid_amount, mock_valid_address, mock_utxos,
+                                    mock_get_hot_wallet, mock_get_priv, mock_make_tx, mock_txhash, mock_push):
+        """Test successful run with fixed fee type"""
+        mock_utxos.return_value = {'utxos': [
+            {'value': 100000, 'output_hash': 'hash1', 'output_n': 0, 'confirmations': 6}
+        ]}
+        mock_valid_address.return_value = True
+        mock_valid_amount.return_value = True
+        mock_get_hot_wallet.return_value = {'1TestAddress': 'priv_key_1'}
+        mock_get_priv.return_value = {'1TestAddress': 'priv_key_1'}
+        mock_push.return_value = {'success': True}
+
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1TestAddress'
+        action.receiving_address = '1RecvAddress'
+        action.wallet_type = 'Single'
+        action.amount = 0
+        action.transaction_type = 'Send2Single'
+        action.tx_fee_type = 'Fixed'
+        action.tx_fee = 5
+        result = action.run()
+        assert result == True
+
+    @mock.patch('action.sendtransactionaction.make_custom_tx', return_value=None)
+    @mock.patch('action.sendtransactionaction.get_high_priority_fee', return_value=10)
+    @mock.patch('action.sendtransactionaction.get_private_key')
+    @mock.patch('action.sendtransactionaction.get_hot_wallet')
+    @mock.patch('action.sendtransactionaction.utxos')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.get_max_tx_fee_percentage', return_value=0)
+    def test_run_make_custom_tx_returns_none(self, mock_max_fee, mock_valid_amount, mock_valid_address, mock_utxos,
+                                              mock_get_hot_wallet, mock_get_priv, mock_high_fee, mock_make_tx):
+        """Test run when first make_custom_tx returns None"""
+        mock_utxos.return_value = {'utxos': [
+            {'value': 100000, 'output_hash': 'hash1', 'output_n': 0, 'confirmations': 6}
+        ]}
+        mock_valid_address.return_value = True
+        mock_valid_amount.return_value = True
+        mock_get_hot_wallet.return_value = {'1TestAddress': 'priv_key_1'}
+        mock_get_priv.return_value = {'1TestAddress': 'priv_key_1'}
+
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1TestAddress'
+        action.receiving_address = '1RecvAddress'
+        action.wallet_type = 'Single'
+        action.amount = 0
+        action.transaction_type = 'Send2Single'
+        result = action.run()
+        assert result == False
+
+    @mock.patch('action.sendtransactionaction.push_tx', return_value={'success': False, 'error': 'Broadcast failed'})
+    @mock.patch('action.sendtransactionaction.txhash', return_value='abc123')
+    @mock.patch('action.sendtransactionaction.make_custom_tx', return_value='deadbeef')
+    @mock.patch('action.sendtransactionaction.get_high_priority_fee', return_value=10)
+    @mock.patch('action.sendtransactionaction.get_private_key')
+    @mock.patch('action.sendtransactionaction.get_hot_wallet')
+    @mock.patch('action.sendtransactionaction.utxos')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.get_max_tx_fee_percentage', return_value=0)
+    def test_run_push_tx_fails(self, mock_max_fee, mock_valid_amount, mock_valid_address, mock_utxos,
+                                mock_get_hot_wallet, mock_get_priv, mock_high_fee, mock_make_tx, mock_txhash, mock_push):
+        """Test run when push_tx fails"""
+        mock_utxos.return_value = {'utxos': [
+            {'value': 100000, 'output_hash': 'hash1', 'output_n': 0, 'confirmations': 6}
+        ]}
+        mock_valid_address.return_value = True
+        mock_valid_amount.return_value = True
+        mock_get_hot_wallet.return_value = {'1TestAddress': 'priv_key_1'}
+        mock_get_priv.return_value = {'1TestAddress': 'priv_key_1'}
+
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1TestAddress'
+        action.receiving_address = '1RecvAddress'
+        action.wallet_type = 'Single'
+        action.amount = 0
+        action.transaction_type = 'Send2Single'
+        result = action.run()
+        assert result == False
+
+    @mock.patch('action.sendtransactionaction.utxos')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.get_max_tx_fee_percentage', return_value=0)
+    def test_run_no_receiving_outputs(self, mock_max_fee, mock_valid_amount, mock_valid_address, mock_utxos):
+        """Test run when receiving outputs is empty (all outputs below dust limit)"""
+        mock_utxos.return_value = {'utxos': [
+            {'value': 100000, 'output_hash': 'hash1', 'output_n': 0, 'confirmations': 6}
+        ]}
+        mock_valid_address.return_value = True
+        mock_valid_amount.return_value = True
+
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1TestAddress'
+        action.receiving_address = '1RecvAddress'
+        action.wallet_type = 'Single'
+        action.amount = 0
+        action.transaction_type = 'Send2Single'
+        action.minimum_output_value = 200000  # Higher than available
+        result = action.run()
+        assert result == False
+
+    @mock.patch('action.sendtransactionaction.get_private_key')
+    @mock.patch('action.sendtransactionaction.get_hot_wallet')
+    @mock.patch('action.sendtransactionaction.utxos')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.get_max_tx_fee_percentage', return_value=0)
+    def test_run_no_private_keys(self, mock_max_fee, mock_valid_amount, mock_valid_address, mock_utxos,
+                                  mock_get_hot_wallet, mock_get_priv):
+        """Test run when no private keys are found"""
+        mock_utxos.return_value = {'utxos': [
+            {'value': 100000, 'output_hash': 'hash1', 'output_n': 0, 'confirmations': 6}
+        ]}
+        mock_valid_address.return_value = True
+        mock_valid_amount.return_value = True
+        mock_get_hot_wallet.return_value = {}
+        mock_get_priv.return_value = {}
+
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1TestAddress'
+        action.receiving_address = '1RecvAddress'
+        action.wallet_type = 'Single'
+        action.amount = 0
+        action.transaction_type = 'Send2Single'
+        result = action.run()
+        assert result == False
+
+    @mock.patch('action.sendtransactionaction.push_tx')
+    @mock.patch('action.sendtransactionaction.txhash', return_value='abc123')
+    @mock.patch('action.sendtransactionaction.make_custom_tx', return_value='deadbeef')
+    @mock.patch('action.sendtransactionaction.get_high_priority_fee', return_value=10)
+    @mock.patch('action.sendtransactionaction.get_private_key')
+    @mock.patch('action.sendtransactionaction.get_hot_wallet')
+    @mock.patch('action.sendtransactionaction.utxos')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.get_max_tx_fee_percentage', return_value=0)
+    def test_run_success_specific_amount(self, mock_max_fee, mock_valid_amount, mock_valid_address, mock_utxos,
+                                          mock_get_hot_wallet, mock_get_priv, mock_high_fee, mock_make_tx, mock_txhash, mock_push):
+        """Test successful run with specific amount (not send-all)"""
+        mock_utxos.return_value = {'utxos': [
+            {'value': 100000, 'output_hash': 'hash1', 'output_n': 0, 'confirmations': 6}
+        ]}
+        mock_valid_address.return_value = True
+        mock_valid_amount.return_value = True
+        mock_get_hot_wallet.return_value = {'1TestAddress': 'priv_key_1'}
+        mock_get_priv.return_value = {'1TestAddress': 'priv_key_1'}
+        mock_push.return_value = {'success': True}
+
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1TestAddress'
+        action.receiving_address = '1RecvAddress'
+        action.wallet_type = 'Single'
+        action.amount = 50000
+        action.transaction_type = 'Send2Single'
+        result = action.run()
+        assert result == True
+
+    @mock.patch('action.sendtransactionaction.push_tx')
+    @mock.patch('action.sendtransactionaction.txhash', return_value='abc123')
+    @mock.patch('action.sendtransactionaction.make_custom_tx', return_value='deadbeef')
+    @mock.patch('action.sendtransactionaction.get_high_priority_fee', return_value=10)
+    @mock.patch('action.sendtransactionaction.get_private_key')
+    @mock.patch('action.sendtransactionaction.get_hot_wallet')
+    @mock.patch('action.sendtransactionaction.utxos')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.get_max_tx_fee_percentage', return_value=1)
+    def test_run_fee_too_high(self, mock_max_fee, mock_valid_amount, mock_valid_address, mock_utxos,
+                               mock_get_hot_wallet, mock_get_priv, mock_high_fee, mock_make_tx, mock_txhash, mock_push):
+        """Test run when transaction fee exceeds max percentage"""
+        mock_utxos.return_value = {'utxos': [
+            {'value': 100000, 'output_hash': 'hash1', 'output_n': 0, 'confirmations': 6}
+        ]}
+        mock_valid_address.return_value = True
+        mock_valid_amount.return_value = True
+        mock_get_hot_wallet.return_value = {'1TestAddress': 'priv_key_1'}
+        mock_get_priv.return_value = {'1TestAddress': 'priv_key_1'}
+        mock_push.return_value = {'success': True}
+
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1TestAddress'
+        action.receiving_address = '1RecvAddress'
+        action.wallet_type = 'Single'
+        action.amount = 0
+        action.transaction_type = 'Send2Single'
+        action.tx_fee_type = 'Fixed'
+        action.tx_fee = 10000  # Very high fee
+        result = action.run()
+        assert result == False
+
+
+class TestConstructTransactionInputs(object):
+    """Tests for construct_transaction_inputs method"""
+
+    def test_construct_transaction_inputs_with_utxos(self):
+        from action.sendtransactionaction import TransactionInput
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1TestAddress'
+        action.unspent_outputs = [
+            TransactionInput(address='1TestAddress', value=50000, output_hash='hash1', output_n=0, confirmations=6),
+            TransactionInput(address='1TestAddress', value=30000, output_hash='hash2', output_n=1, confirmations=3),
+        ]
+        tx_inputs = action.construct_transaction_inputs()
+        assert len(tx_inputs) == 2
+        assert tx_inputs[0]['address'] == '1TestAddress'
+        assert tx_inputs[0]['value'] == 50000
+        assert tx_inputs[0]['output'] == 'hash1:0'
+        assert tx_inputs[0]['confirmations'] == 6
+
+    def test_construct_transaction_inputs_empty(self):
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1TestAddress'
+        action.unspent_outputs = []
+        tx_inputs = action.construct_transaction_inputs()
+        assert tx_inputs == []
+
+
+class TestGetDistributionSend2LAL(object):
+    """Tests for Send2LAL distribution type"""
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_xpub')
+    @mock.patch('action.sendtransactionaction.valid_block_height')
+    @mock.patch('action.sendtransactionaction.get_lal')
+    @mock.patch('action.sendtransactionaction.prime_input_address')
+    def test_get_distribution_send2lal(self, mock_prime, mock_get_lal, mock_valid_height, mock_valid_xpub,
+                                        mock_valid_address, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        mock_valid_address.return_value = True
+        mock_valid_xpub.return_value = True
+        mock_valid_height.return_value = True
+        mock_get_lal.return_value = {'LAL': [('prime_addr1', 'linked_addr1')]}
+        mock_prime.return_value = {'prime_input_address': 'prime_addr1'}
+
+        from action.sendtransactionaction import TransactionInput
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1SendAddress'
+        action.registration_xpub = 'xpub123'
+        action.registration_block_height = 700000
+        action.unspent_outputs = [
+            TransactionInput(address='1SendAddress', value=50000, output_hash='hash1', output_n=0, confirmations=6),
+        ]
+        distribution = action.get_distribution('Send2LAL', 50000)
+        assert distribution == {'linked_addr1': 50000}
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_xpub')
+    @mock.patch('action.sendtransactionaction.valid_block_height')
+    @mock.patch('action.sendtransactionaction.get_lal')
+    @mock.patch('action.sendtransactionaction.prime_input_address')
+    def test_get_distribution_send2lal_no_linked(self, mock_prime, mock_get_lal, mock_valid_height, mock_valid_xpub,
+                                                  mock_valid_address, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        mock_valid_address.return_value = True
+        mock_valid_xpub.return_value = True
+        mock_valid_height.return_value = True
+        mock_get_lal.return_value = {'LAL': [('other_addr', 'linked_addr')]}
+        mock_prime.return_value = {'prime_input_address': 'prime_addr1'}
+
+        from action.sendtransactionaction import TransactionInput
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1SendAddress'
+        action.registration_xpub = 'xpub123'
+        action.registration_block_height = 700000
+        action.unspent_outputs = [
+            TransactionInput(address='1SendAddress', value=50000, output_hash='hash1', output_n=0, confirmations=6),
+        ]
+        with pytest.raises(Exception) as exc_info:
+            action.get_distribution('Send2LAL', 50000)
+        assert 'linked addresses' in str(exc_info.value)
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_xpub')
+    @mock.patch('action.sendtransactionaction.valid_block_height')
+    @mock.patch('action.sendtransactionaction.get_lal')
+    def test_get_distribution_send2lal_invalid_data(self, mock_get_lal, mock_valid_height, mock_valid_xpub,
+                                                     mock_valid_address, mock_valid_amount):
+        mock_valid_amount.return_value = True
+        mock_valid_address.return_value = True
+        mock_valid_xpub.return_value = True
+        mock_valid_height.return_value = True
+        mock_get_lal.return_value = {'error': 'LAL not found'}
+
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1SendAddress'
+        action.registration_xpub = 'xpub123'
+        action.registration_block_height = 700000
+        with pytest.raises(Exception) as exc_info:
+            action.get_distribution('Send2LAL', 50000)
+        assert 'invalid LAL' in str(exc_info.value)
+
+
+class TestGetReceivingOutputsRemaining(object):
+    """Tests for get_receiving_outputs with remaining amount handling"""
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_distribution')
+    def test_get_receiving_outputs_remaining_amount(self, mock_valid_distribution, mock_valid_amount):
+        """Test that remaining amount goes to first output"""
+        mock_valid_amount.return_value = True
+        mock_valid_distribution.return_value = True
+
+        action = SendTransactionAction('test_send_tx')
+        action.distribution = {'addr1': 50, 'addr2': 50}
+        action.transaction_type = 'Send2Many'
+        action.minimum_output_value = 1
+
+        outputs = action.get_receiving_outputs(101)  # Odd number to force rounding
+        total = sum(o.value for o in outputs)
+        assert total == 101
+
+
+class TestConfigureChangeAddress(object):
+    """Tests for change_address configuration"""
+
+    @mock.patch('action.sendtransactionaction.valid_address')
+    def test_configure_change_address(self, mock_valid_address):
+        mock_valid_address.return_value = True
+        action = SendTransactionAction('test_send_tx')
+        action.configure(change_address='1ChangeAddress')
+        assert action.receiving_address == '1ChangeAddress'
+
+
+class TestFixedFeeInvalid(object):
+    """Tests for invalid fixed fee"""
+
+    @mock.patch('action.sendtransactionaction.get_private_key')
+    @mock.patch('action.sendtransactionaction.get_hot_wallet')
+    @mock.patch('action.sendtransactionaction.utxos')
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.make_custom_tx', return_value='deadbeef')
+    @mock.patch('action.sendtransactionaction.get_max_tx_fee_percentage', return_value=0)
+    def test_run_fixed_fee_invalid_type(self, mock_max_fee, mock_make_tx, mock_valid_amount, mock_valid_address,
+                                         mock_utxos, mock_get_hot_wallet, mock_get_priv):
+        """Test run with Fixed fee type but non-int tx_fee raises exception"""
+        mock_utxos.return_value = {'utxos': [
+            {'value': 100000, 'output_hash': 'hash1', 'output_n': 0, 'confirmations': 6}
+        ]}
+        mock_valid_address.return_value = True
+        mock_valid_amount.return_value = True
+        mock_get_hot_wallet.return_value = {'1TestAddress': 'priv_key_1'}
+        mock_get_priv.return_value = {'1TestAddress': 'priv_key_1'}
+
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1TestAddress'
+        action.receiving_address = '1RecvAddress'
+        action.wallet_type = 'Single'
+        action.amount = 0
+        action.transaction_type = 'Send2Single'
+        action.tx_fee_type = 'Fixed'
+        action.tx_fee = 'not_an_int'
+        with pytest.raises(Exception) as exc_info:
+            action.run()
+        assert 'Invalid fixed transaction fee' in str(exc_info.value)

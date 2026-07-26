@@ -176,5 +176,150 @@ class TestDeepSeekLLM(unittest.TestCase):
         self.assertEqual(usage['prompt_tokens'], 10)
 
 
+class TestDeepSeekLLMAdvanced(unittest.TestCase):
+    """Advanced tests for deepseek_llm.py covering thinking_level and retry logic"""
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.deepseek_llm.OpenAI')
+    @patch('helpers.deepseek_llm.broadcast_message')
+    @patch('helpers.deepseek_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.deepseek_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.deepseek_llm.LOG')
+    def test_thinking_level_enabled(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_openai, mock_ws):
+        """Test that thinking_level enables thinking mode"""
+        from helpers.deepseek_llm import DeepSeekLLM
+
+        mock_chunk = MagicMock()
+        mock_chunk.choices = [MagicMock()]
+        mock_chunk.choices[0].delta.content = 'Hello!'
+        mock_chunk.choices[0].delta.reasoning_content = None
+        mock_chunk.usage = MagicMock()
+        mock_chunk.usage.prompt_tokens = 10
+        mock_chunk.usage.completion_tokens = 5
+        mock_chunk.usage.total_tokens = 15
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = iter([mock_chunk])
+        mock_openai.return_value = mock_client
+
+        llm = DeepSeekLLM(model_name='deepseek-reasoner', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages, thinking_level='medium')
+
+        call_kwargs = mock_client.chat.completions.create.call_args[1]
+        self.assertIsNotNone(call_kwargs['extra_body'])
+        self.assertEqual(call_kwargs['extra_body']['thinking']['type'], 'enabled')
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.deepseek_llm.OpenAI')
+    @patch('helpers.deepseek_llm.broadcast_message')
+    @patch('helpers.deepseek_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.deepseek_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.deepseek_llm.LOG')
+    def test_thinking_level_off(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_openai, mock_ws):
+        """Test that thinking_level='off' disables thinking mode"""
+        from helpers.deepseek_llm import DeepSeekLLM
+
+        mock_chunk = MagicMock()
+        mock_chunk.choices = [MagicMock()]
+        mock_chunk.choices[0].delta.content = 'Hello!'
+        mock_chunk.choices[0].delta.reasoning_content = None
+        mock_chunk.usage = MagicMock()
+        mock_chunk.usage.prompt_tokens = 10
+        mock_chunk.usage.completion_tokens = 5
+        mock_chunk.usage.total_tokens = 15
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = iter([mock_chunk])
+        mock_openai.return_value = mock_client
+
+        llm = DeepSeekLLM(model_name='deepseek-chat', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages, thinking_level='off')
+
+        call_kwargs = mock_client.chat.completions.create.call_args[1]
+        self.assertIsNone(call_kwargs['extra_body'])
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.deepseek_llm.OpenAI')
+    @patch('helpers.deepseek_llm.time.sleep')
+    @patch('helpers.deepseek_llm.broadcast_message')
+    @patch('helpers.deepseek_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.deepseek_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.deepseek_llm.LOG')
+    def test_api_connection_error_retry(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_sleep, mock_openai, mock_ws):
+        """Test APIConnectionError triggers retry logic"""
+        from helpers.deepseek_llm import DeepSeekLLM
+        from openai import APIConnectionError
+
+        mock_client = MagicMock()
+        # Fail twice then succeed
+        mock_chunk = MagicMock()
+        mock_chunk.choices = [MagicMock()]
+        mock_chunk.choices[0].delta.content = 'Hello!'
+        mock_chunk.choices[0].delta.reasoning_content = None
+        mock_chunk.usage = MagicMock()
+        mock_chunk.usage.prompt_tokens = 10
+        mock_chunk.usage.completion_tokens = 5
+        mock_chunk.usage.total_tokens = 15
+
+        mock_client.chat.completions.create.side_effect = [
+            APIConnectionError(request=MagicMock()),
+            APIConnectionError(request=MagicMock()),
+            iter([mock_chunk])
+        ]
+        mock_openai.return_value = mock_client
+
+        llm = DeepSeekLLM(model_name='deepseek-chat', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages)
+
+        self.assertEqual(result, 'Hello!')
+        self.assertEqual(mock_client.chat.completions.create.call_count, 3)
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.deepseek_llm.OpenAI')
+    @patch('helpers.deepseek_llm.time.sleep')
+    @patch('helpers.deepseek_llm.broadcast_message')
+    @patch('helpers.deepseek_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.deepseek_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.deepseek_llm.LOG')
+    def test_api_connection_error_all_retries_fail(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_sleep, mock_openai, mock_ws):
+        """Test APIConnectionError exhausts all retries"""
+        from helpers.deepseek_llm import DeepSeekLLM
+        from openai import APIConnectionError
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.side_effect = APIConnectionError(request=MagicMock())
+        mock_openai.return_value = mock_client
+
+        llm = DeepSeekLLM(model_name='deepseek-chat', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result = llm.get_completion_text(messages)
+
+        self.assertIn('Error', result)
+        self.assertEqual(mock_client.chat.completions.create.call_count, 3)
+
+
 if __name__ == '__main__':
     unittest.main()

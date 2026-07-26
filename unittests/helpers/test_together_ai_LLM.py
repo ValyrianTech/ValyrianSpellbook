@@ -236,5 +236,184 @@ class TestTogetherAILLM(unittest.TestCase):
         self.assertEqual(call_kwargs['presence_penalty'], 0.5)
 
 
+class TestTogetherAILLMAdvanced(unittest.TestCase):
+    """Advanced tests covering reasoning content, inline think tags, and thinking_level"""
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.together_ai_LLM.Together')
+    @patch('helpers.together_ai_LLM.broadcast_message')
+    @patch('helpers.together_ai_LLM.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.together_ai_LLM.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.together_ai_LLM.get_together_ai_bearer_token', return_value='test-token')
+    @patch('helpers.together_ai_LLM.LOG')
+    def test_thinking_level_mapped(self, mock_log, mock_get_token, mock_sender, mock_channel, mock_broadcast, mock_together, mock_ws):
+        """Test thinking_level is mapped to reasoning_effort"""
+        from helpers.together_ai_LLM import TogetherAILLM
+
+        mock_chunk = MagicMock()
+        mock_chunk.choices = [MagicMock()]
+        mock_chunk.choices[0].delta.content = 'Hello!'
+        mock_chunk.choices[0].delta.reasoning = None
+        mock_chunk.usage = None
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = iter([mock_chunk])
+        mock_together.return_value = mock_client
+
+        llm = TogetherAILLM(model_name='mistralai/Mixtral-8x7B', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages, thinking_level='medium')
+
+        call_kwargs = mock_client.chat.completions.create.call_args[1]
+        self.assertEqual(call_kwargs['reasoning_effort'], 'medium')
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.together_ai_LLM.Together')
+    @patch('helpers.together_ai_LLM.broadcast_message')
+    @patch('helpers.together_ai_LLM.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.together_ai_LLM.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.together_ai_LLM.get_together_ai_bearer_token', return_value='test-token')
+    @patch('helpers.together_ai_LLM.LOG')
+    def test_thinking_level_invalid(self, mock_log, mock_get_token, mock_sender, mock_channel, mock_broadcast, mock_together, mock_ws):
+        """Test invalid thinking_level is logged but not mapped"""
+        from helpers.together_ai_LLM import TogetherAILLM
+
+        mock_chunk = MagicMock()
+        mock_chunk.choices = [MagicMock()]
+        mock_chunk.choices[0].delta.content = 'Hello!'
+        mock_chunk.choices[0].delta.reasoning = None
+        mock_chunk.usage = None
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = iter([mock_chunk])
+        mock_together.return_value = mock_client
+
+        llm = TogetherAILLM(model_name='mistralai/Mixtral-8x7B', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages, thinking_level='invalid_level')
+
+        call_kwargs = mock_client.chat.completions.create.call_args[1]
+        self.assertNotIn('reasoning_effort', call_kwargs)
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.together_ai_LLM.Together')
+    @patch('helpers.together_ai_LLM.broadcast_message')
+    @patch('helpers.together_ai_LLM.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.together_ai_LLM.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.together_ai_LLM.get_together_ai_bearer_token', return_value='test-token')
+    @patch('helpers.together_ai_LLM.LOG')
+    def test_reasoning_content(self, mock_log, mock_get_token, mock_sender, mock_channel, mock_broadcast, mock_together, mock_ws):
+        """Test handling of reasoning content from delta.reasoning"""
+        from helpers.together_ai_LLM import TogetherAILLM
+
+        mock_chunk = MagicMock()
+        mock_chunk.choices = [MagicMock()]
+        mock_chunk.choices[0].delta.reasoning = 'Thinking deeply...'
+        mock_chunk.choices[0].delta.content = None
+        mock_chunk.usage = None
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = iter([mock_chunk])
+        mock_together.return_value = mock_client
+
+        llm = TogetherAILLM(model_name='mistralai/Mixtral-8x7B', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages)
+
+        self.assertIn('Thinking deeply...', result)
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.together_ai_LLM.Together')
+    @patch('helpers.together_ai_LLM.broadcast_message')
+    @patch('helpers.together_ai_LLM.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.together_ai_LLM.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.together_ai_LLM.get_together_ai_bearer_token', return_value='test-token')
+    @patch('helpers.together_ai_LLM.LOG')
+    def test_inline_think_tags(self, mock_log, mock_get_token, mock_sender, mock_channel, mock_broadcast, mock_together, mock_ws):
+        """Test handling of inline think tags in content"""
+        from helpers.together_ai_LLM import TogetherAILLM
+
+        chunk1 = MagicMock()
+        chunk1.choices = [MagicMock()]
+        chunk1.choices[0].delta.content = '<think>Thinking about this'
+        chunk1.choices[0].delta.reasoning = None
+        chunk1.usage = None
+
+        chunk2 = MagicMock()
+        chunk2.choices = [MagicMock()]
+        chunk2.choices[0].delta.content = ' more thinking</think>'
+        chunk2.choices[0].delta.reasoning = None
+        chunk2.usage = None
+
+        chunk3 = MagicMock()
+        chunk3.choices = [MagicMock()]
+        chunk3.choices[0].delta.content = 'Final answer!'
+        chunk3.choices[0].delta.reasoning = None
+        chunk3.usage = None
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = iter([chunk1, chunk2, chunk3])
+        mock_together.return_value = mock_client
+
+        llm = TogetherAILLM(model_name='mistralai/Mixtral-8x7B', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages)
+
+        self.assertIn('Final answer!', result)
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.together_ai_LLM.Together')
+    @patch('helpers.together_ai_LLM.broadcast_message')
+    @patch('helpers.together_ai_LLM.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.together_ai_LLM.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.together_ai_LLM.get_together_ai_bearer_token', return_value='test-token')
+    @patch('helpers.together_ai_LLM.LOG')
+    def test_no_usage_info(self, mock_log, mock_get_token, mock_sender, mock_channel, mock_broadcast, mock_together, mock_ws):
+        """Test completion when no usage info is provided"""
+        from helpers.together_ai_LLM import TogetherAILLM
+
+        mock_chunk = MagicMock()
+        mock_chunk.choices = [MagicMock()]
+        mock_chunk.choices[0].delta.content = 'Hello!'
+        mock_chunk.choices[0].delta.reasoning = None
+        mock_chunk.usage = None
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = iter([mock_chunk])
+        mock_together.return_value = mock_client
+
+        llm = TogetherAILLM(model_name='mistralai/Mixtral-8x7B', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages)
+
+        self.assertEqual(usage['prompt_tokens'], 0)
+        self.assertEqual(usage['completion_tokens'], 0)
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -487,5 +487,93 @@ class TestGetExtendedStatus(unittest.TestCase):
         self.assertEqual(result, mock_status)
 
 
+class TestUpdateStatus(unittest.TestCase):
+    """Test cases for update_status and update_status_with_media"""
+
+    @patch('helpers.twitterhelpers.api')
+    @patch('builtins.print')
+    def test_update_status(self, mock_print, mock_api):
+        """Test update_status function"""
+        from helpers.twitterhelpers import update_status
+
+        update_status(text='Hello world', url='http://example.com')
+
+        mock_api.update_status.assert_called_once_with(status='Hello world', attachment_url='http://example.com')
+
+    @patch('helpers.twitterhelpers.api', None)
+    @patch('builtins.print')
+    def test_update_status_no_api(self, mock_print):
+        """Test update_status when api is None"""
+        from helpers.twitterhelpers import update_status
+
+        # Should not raise an error
+        update_status(text='Hello world')
+
+    @patch('helpers.twitterhelpers.api')
+    @patch('helpers.twitterhelpers.requests.get')
+    @patch('builtins.open')
+    @patch('helpers.twitterhelpers.os.remove')
+    @patch('builtins.print')
+    def test_update_status_with_media_success(self, mock_print, mock_remove, mock_open, mock_get, mock_api):
+        """Test update_status_with_media with successful image download"""
+        from helpers.twitterhelpers import update_status_with_media
+
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.__iter__ = MagicMock(return_value=iter([b'imagedata']))
+        mock_get.return_value = mock_response
+
+        update_status_with_media(url='http://example.com/image.jpg', message='Check this out!')
+
+        mock_api.update_status_with_media.assert_called_once()
+        mock_remove.assert_called_once_with('temp.jpg')
+
+    @patch('helpers.twitterhelpers.api', None)
+    @patch('builtins.print')
+    def test_update_status_with_media_no_api(self, mock_print):
+        """Test update_status_with_media when api is None"""
+        from helpers.twitterhelpers import update_status_with_media
+
+        # Should not raise an error
+        result = update_status_with_media(url='http://example.com/image.jpg', message='test')
+        self.assertIsNone(result)
+
+    @patch('helpers.twitterhelpers.api')
+    @patch('helpers.twitterhelpers.requests.get')
+    @patch('builtins.print')
+    def test_update_status_with_media_download_fail(self, mock_print, mock_get, mock_api):
+        """Test update_status_with_media when image download fails"""
+        from helpers.twitterhelpers import update_status_with_media
+
+        mock_response = MagicMock()
+        mock_response.status_code = 404
+        mock_get.return_value = mock_response
+
+        update_status_with_media(url='http://example.com/image.jpg', message='test')
+
+        mock_api.update_status_with_media.assert_not_called()
+
+
+class TestGetTweets(unittest.TestCase):
+    """Test cases for get_tweets function"""
+
+    @patch('helpers.twitterhelpers.tweepy.Paginator')
+    def test_get_tweets(self, mock_paginator):
+        """Test get_tweets returns list of tweets"""
+        from helpers.twitterhelpers import get_tweets
+
+        mock_tweet1 = MagicMock()
+        mock_tweet2 = MagicMock()
+        mock_paginator_instance = MagicMock()
+        mock_paginator_instance.flatten.return_value = iter([mock_tweet1, mock_tweet2])
+        mock_paginator.return_value = mock_paginator_instance
+
+        result = get_tweets('bitcoin', limit=2)
+
+        self.assertEqual(len(result), 2)
+        self.assertIn(mock_tweet1, result)
+        self.assertIn(mock_tweet2, result)
+
+
 if __name__ == '__main__':
     unittest.main()

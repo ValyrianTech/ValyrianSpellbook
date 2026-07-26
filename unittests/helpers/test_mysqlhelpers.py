@@ -188,6 +188,62 @@ class TestMysqlHelpers(unittest.TestCase):
         mock_cursor.close.assert_called_once()
         mock_cnx.close.assert_called_once()
 
+    @patch('helpers.mysqlhelpers.create_tables')
+    @patch('helpers.mysqlhelpers.create_database')
+    @patch('helpers.mysqlhelpers.LOG')
+    def test_initialize_database_not_exists(self, mock_log, mock_create_db, mock_create_tables):
+        """Test initialize_database when database does not exist (ER_BAD_DB_ERROR)"""
+        import helpers.mysqlhelpers as mysql_module
+        from helpers.mysqlhelpers import initialize_database, errorcode
+
+        # Create a real exception class that mysql.connector.Error can match
+        class MockMySQLError(Exception):
+            pass
+
+        mock_cnx = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cnx.cursor.return_value = mock_cursor
+
+        # Create a real exception with errno set to ER_BAD_DB_ERROR
+        mock_error = MockMySQLError("Database not found")
+        mock_error.errno = errorcode.ER_BAD_DB_ERROR
+        mock_cursor.execute.side_effect = mock_error
+
+        with patch.object(mysql_module.mysql.connector, 'Error', MockMySQLError), \
+             patch.object(mysql_module, 'errorcode', errorcode), \
+             patch.object(mysql_module.mysql.connector, 'connect', return_value=mock_cnx):
+            initialize_database('test_db', {'users': 'CREATE TABLE users (id INT)'}, 'user', 'pass')
+
+        mock_create_db.assert_called_once()
+        mock_create_tables.assert_called_once()
+        mock_cursor.close.assert_called_once()
+        mock_cnx.close.assert_called_once()
+
+    @patch('helpers.mysqlhelpers.LOG')
+    def test_initialize_database_other_error(self, mock_log):
+        """Test initialize_database with non-ER_BAD_DB_ERROR error"""
+        import helpers.mysqlhelpers as mysql_module
+        from helpers.mysqlhelpers import initialize_database, errorcode
+
+        class MockMySQLError(Exception):
+            pass
+
+        mock_cnx = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cnx.cursor.return_value = mock_cursor
+
+        mock_error = MockMySQLError("Some other error")
+        mock_error.errno = 1234  # Not ER_BAD_DB_ERROR
+        mock_cursor.execute.side_effect = mock_error
+
+        with patch.object(mysql_module.mysql.connector, 'Error', MockMySQLError), \
+             patch.object(mysql_module, 'errorcode', errorcode), \
+             patch.object(mysql_module.mysql.connector, 'connect', return_value=mock_cnx):
+            initialize_database('test_db', {}, 'user', 'pass')
+
+        mock_cursor.close.assert_called_once()
+        mock_cnx.close.assert_called_once()
+
 
 
 if __name__ == '__main__':

@@ -142,5 +142,146 @@ class TestGroqLLM(unittest.TestCase):
         self.assertIn('<think>', result)
 
 
+class TestGroqLLMAdvanced(unittest.TestCase):
+    """Advanced test cases for groq_llm.py covering inline think tags and thinking_level"""
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.groq_llm.Groq')
+    @patch('helpers.groq_llm.broadcast_message')
+    @patch('helpers.groq_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.groq_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.groq_llm.LOG')
+    def test_thinking_level_ignored(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_groq, mock_ws):
+        """Test that thinking_level is ignored for Groq"""
+        from helpers.groq_llm import GroqLLM
+
+        mock_chunk = MagicMock()
+        mock_chunk.choices = [MagicMock()]
+        mock_chunk.choices[0].delta.content = 'Hello!'
+        mock_chunk.choices[0].delta.reasoning = None
+        mock_chunk.x_groq = None
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = iter([mock_chunk])
+        mock_groq.return_value = mock_client
+
+        llm = GroqLLM(model_name='llama-3', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages, thinking_level='high')
+
+        self.assertEqual(result, 'Hello!')
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.groq_llm.Groq')
+    @patch('helpers.groq_llm.broadcast_message')
+    @patch('helpers.groq_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.groq_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.groq_llm.LOG')
+    def test_inline_think_tags(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_groq, mock_ws):
+        """Test handling of inline think tags in content"""
+        from helpers.groq_llm import GroqLLM
+
+        chunk1 = MagicMock()
+        chunk1.choices = [MagicMock()]
+        chunk1.choices[0].delta.content = '<think>Thinking about this'
+        chunk1.choices[0].delta.reasoning = None
+        chunk1.x_groq = None
+
+        chunk2 = MagicMock()
+        chunk2.choices = [MagicMock()]
+        chunk2.choices[0].delta.content = ' more thinking</think>'
+        chunk2.choices[0].delta.reasoning = None
+        chunk2.x_groq = None
+
+        chunk3 = MagicMock()
+        chunk3.choices = [MagicMock()]
+        chunk3.choices[0].delta.content = 'Final answer!'
+        chunk3.choices[0].delta.reasoning = None
+        chunk3.x_groq = None
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = iter([chunk1, chunk2, chunk3])
+        mock_groq.return_value = mock_client
+
+        llm = GroqLLM(model_name='llama-3', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages)
+
+        self.assertIn('Final answer!', result)
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.groq_llm.Groq')
+    @patch('helpers.groq_llm.broadcast_message')
+    @patch('helpers.groq_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.groq_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.groq_llm.LOG')
+    def test_content_with_close_tag_only(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_groq, mock_ws):
+        """Test content that has a closing think tag without opening"""
+        from helpers.groq_llm import GroqLLM
+
+        mock_chunk = MagicMock()
+        mock_chunk.choices = [MagicMock()]
+        mock_chunk.choices[0].delta.content = '</think>Final answer'
+        mock_chunk.choices[0].delta.reasoning = None
+        mock_chunk.x_groq = None
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = iter([mock_chunk])
+        mock_groq.return_value = mock_client
+
+        llm = GroqLLM(model_name='llama-3', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages)
+
+        self.assertIn('Final answer', result)
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.groq_llm.Groq')
+    @patch('helpers.groq_llm.broadcast_message')
+    @patch('helpers.groq_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.groq_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.groq_llm.LOG')
+    def test_no_usage_info(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_groq, mock_ws):
+        """Test completion when no usage info is provided"""
+        from helpers.groq_llm import GroqLLM
+
+        mock_chunk = MagicMock()
+        mock_chunk.choices = [MagicMock()]
+        mock_chunk.choices[0].delta.content = 'Hello!'
+        mock_chunk.choices[0].delta.reasoning = None
+        mock_chunk.x_groq = None
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = iter([mock_chunk])
+        mock_groq.return_value = mock_client
+
+        llm = GroqLLM(model_name='llama-3', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages)
+
+        self.assertEqual(usage['prompt_tokens'], 0)
+        self.assertEqual(usage['completion_tokens'], 0)
+
+
 if __name__ == '__main__':
     unittest.main()
