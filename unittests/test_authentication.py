@@ -126,3 +126,45 @@ class TestSignature(object):
         result1 = authentication.signature(data, nonce, secret)
         result2 = authentication.signature(data, nonce, secret)
         assert result1 == result2
+
+
+class TestInitializeApiKeysFile(object):
+    """Tests for initialize_api_keys_file function"""
+
+    @mock.patch('builtins.open', new_callable=mock.mock_open)
+    @mock.patch('configparser.ConfigParser')
+    @mock.patch('authentication.save_to_json_file')
+    @mock.patch('os.makedirs')
+    @mock.patch('os.path.isdir', return_value=False)
+    def test_initialize_api_keys_file_dir_not_exists(self, mock_isdir, mock_makedirs, mock_save, mock_config_cls, mock_open):
+        authentication.initialize_api_keys_file()
+        mock_isdir.assert_called_once_with('json/private/')
+        mock_makedirs.assert_called_once_with('json/private')
+        mock_save.assert_called_once()
+        mock_config_cls.assert_called_once()
+
+    @mock.patch('builtins.open', new_callable=mock.mock_open)
+    @mock.patch('configparser.ConfigParser')
+    @mock.patch('authentication.save_to_json_file')
+    @mock.patch('os.makedirs')
+    @mock.patch('os.path.isdir', return_value=True)
+    def test_initialize_api_keys_file_dir_exists(self, mock_isdir, mock_makedirs, mock_save, mock_config_cls, mock_open):
+        authentication.initialize_api_keys_file()
+        mock_isdir.assert_called_once_with('json/private/')
+        mock_makedirs.assert_not_called()
+        mock_save.assert_called_once()
+        mock_config_cls.assert_called_once()
+
+    @mock.patch('builtins.open', new_callable=mock.mock_open)
+    @mock.patch('configparser.ConfigParser')
+    @mock.patch('authentication.save_to_json_file')
+    @mock.patch('os.path.isdir', return_value=True)
+    def test_initialize_api_keys_file_generates_valid_keys(self, mock_isdir, mock_save, mock_config_cls, mock_open):
+        authentication.initialize_api_keys_file()
+        saved_data = mock_save.call_args[0][1]
+        assert len(saved_data) == 1
+        api_key = list(saved_data.keys())[0]
+        assert len(api_key) == 16
+        assert 'secret' in saved_data[api_key]
+        assert len(saved_data[api_key]['secret']) == 16
+        assert saved_data[api_key]['permissions'] == 'all'

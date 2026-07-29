@@ -70,3 +70,22 @@ class TestExplorerAPI(object):
         api.get_latest_block = mock.MagicMock(return_value={})
         result = api.get_latest_block_height()
         assert result is None
+
+    def test_get_latest_block_height_missing_block_key(self):
+        api = ConcreteExplorerAPI()
+        api.get_latest_block = mock.MagicMock(return_value={'error': 'fail'})
+        result = api.get_latest_block_height()
+        assert result is None
+
+    def test_abstract_methods_return_none(self):
+        """Test that the abstract method 'pass' bodies are reachable"""
+        # In Python 3, __metaclass__ is ignored so ExplorerAPI can be instantiated directly
+        api = ExplorerAPI()
+        assert api.get_latest_block() is None
+        assert api.get_block_by_height(100) is None
+        assert api.get_block_by_hash('abc') is None
+        assert api.get_transactions('addr') is None
+        assert api.get_balance('addr') is None
+        assert api.get_utxos('addr') is None
+        assert api.get_transaction('txid') is None
+        assert api.get_prime_input_address('txid') is None

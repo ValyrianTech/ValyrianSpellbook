@@ -290,3 +290,20 @@ class TestDecodeOpReturn(object):
         hex_data = '6a1068656c6c6f'  # Says 16 (0x10) bytes but only 5
         result = TX.decode_op_return(hex_data)
         assert 'Unable to decode' in str(result)
+
+    def test_decode_op_return_cp1252_fallback(self):
+        # 0x80 is valid in cp1252 (Euro sign) but invalid in UTF-8
+        # OP_RETURN (6a) + length (01) + 0x80
+        hex_data = '6a0180'
+        result = TX.decode_op_return(hex_data)
+        # cp1252 decode of 0x80 is the Euro sign
+        assert result == '\u20ac'
+
+    @mock.patch('data.transaction.LOG')
+    def test_decode_op_return_both_decodings_fail(self, mock_log):
+        # 0x81 is undefined in cp1252 and invalid in UTF-8
+        # OP_RETURN (6a) + length (01) + 0x81
+        hex_data = '6a0181'
+        result = TX.decode_op_return(hex_data)
+        assert result == 'Unable to decode hex data'
+        mock_log.error.assert_called_once()
