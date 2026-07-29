@@ -1,13 +1,13 @@
 # Code Coverage Progress Tracker
 
-**Last updated:** 2026-07-29
+**Last updated:** 2026-07-30
 
 ## Current Status
 
 | Category | Lines | Status |
 |----------|-------|--------|
 | Measured + covered | 7,519 | 100% coverage |
-| Measured, partial | 661 | `transactionfactory.py` at 25% |
+| Measured, partial | 661 | `transactionfactory.py` at 99% |
 | No tests, not measured | ~10,511 | Need tests + coverage config |
 | **Total (excl. apps/)** | **~19,737** | |
 
@@ -15,7 +15,7 @@
 
 ## Measured Modules (in `pytest.ini` --cov)
 
-All at 100% coverage (except `transactionfactory.py` at 25%), 2159 tests passing.
+All at 100% coverage (except `transactionfactory.py` at 99%), 2159 tests passing.
 
 - [x] `action/` — 905 lines
 - [x] `bips/` — 301 lines
@@ -25,7 +25,7 @@ All at 100% coverage (except `transactionfactory.py` at 25%), 2159 tests passing
 - [x] `validators/` — 124 lines
 - [x] `authentication.py` — 131 lines
 - [x] `decorators.py` — 139 lines
-- [ ] `transactionfactory.py` — 661 lines — 25% coverage, 258 lines uncovered
+- [x] `transactionfactory.py` — 661 lines — 99% coverage, 3 lines uncovered (bugs in `add_op_return` and `sign` with bytes/dict inputs)
 
 ---
 
@@ -34,7 +34,7 @@ All at 100% coverage (except `transactionfactory.py` at 25%), 2159 tests passing
 All previously unmeasured modules with tests have now been added to `pytest.ini` coverage config.
 
 - [x] ~~`data/` — 2,415 lines — tests: `test_explorer.py`, `test_explorer_api.py`, `test_transaction.py`~~ → **100% coverage**
-- [ ] `transactionfactory.py` — 661 lines — tests: `test_transaction_factory.py` — **25% coverage, needs more tests**
+- [x] ~~`transactionfactory.py` — 661 lines — tests: `test_transaction_factory.py`~~ → **99% coverage**
 - [x] ~~`authentication.py` — 131 lines — tests: `test_authentication.py`~~ → **100% coverage**
 - [x] ~~`decorators.py` — 139 lines — tests: `test_decorators.py`~~ → **100% coverage**
 
