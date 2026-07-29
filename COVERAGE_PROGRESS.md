@@ -6,19 +6,21 @@
 
 | Category | Lines | Status |
 |----------|-------|--------|
-| Measured + covered | 7,519 | 100% coverage |
+| Measured + covered | 8,806 | 100% coverage |
 | Measured, partial | 661 | `transactionfactory.py` at 99% |
+| Darwin (now measured) | 8936 | 99% coverage (130 lines uncovered) |
 | No tests, not measured | ~10,511 | Need tests + coverage config |
-| **Total (excl. apps/)** | **~19,737** | |
+| **Total (excl. apps/)** | **~28,270** | **97% measured coverage** |
 
 ---
 
 ## Measured Modules (in `pytest.ini` --cov)
 
-All at 100% coverage (except `transactionfactory.py` at 99%), 2159 tests passing.
+All at 100% coverage (except `transactionfactory.py` at 99% and `darwin/` at 99%), 2553 tests passing.
 
 - [x] `action/` — 905 lines
 - [x] `bips/` — 301 lines
+- [x] `darwin/` — 8,936 lines — 99% coverage (130 lines uncovered: `darwin.py` main entry, `evolver.py` `start()` method, `population.py` unknown encoding raise)
 - [x] `data/` — 1,432 lines (block explorers, transactions, explorer API)
 - [x] `helpers/` — 3,849 lines
 - [x] `trigger/` — 576 lines
@@ -44,7 +46,7 @@ All previously unmeasured modules with tests have now been added to `pytest.ini`
 
 ### Packages
 
-- [ ] `darwin/` — 1,944 lines — Genetic algorithm framework (24+ files)
+- [x] ~~`darwin/` — 8,936 lines — Genetic algorithm framework (24+ files)~~ → **99% coverage** (commit `5d108b3`)
 - [ ] `webui/` — 1,240 lines — FastAPI web UI (routers, auth, api_client)
 - [ ] `listeners/` — 439 lines — Block/transaction listeners + watchlist
 - [ ] `spellbookscripts/` — 288 lines — Script execution framework (base + template)
