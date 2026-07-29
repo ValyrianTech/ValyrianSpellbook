@@ -238,3 +238,87 @@ class TestPrintSettings:
         evolver.print_settings()
         captured = capsys.readouterr()
         assert 'PARAMETERS' in captured.out
+
+
+class TestLoadScript:
+
+    def test_load_script_boolean_model(self, tmp_path):
+        evolver = Evolver()
+        model = evolver.load_script(script='model/booleantest.py',
+                                     script_class_name='BooleanTest')
+        assert model is not None
+        assert hasattr(model, 'SingleTrue')
+
+    def test_load_script_float_model(self):
+        evolver = Evolver()
+        model = evolver.load_script(script='model/floattest.py',
+                                     script_class_name='FloatTest')
+        assert model is not None
+        assert hasattr(model, 'Single42')
+
+    def test_load_script_integer_model(self):
+        evolver = Evolver()
+        model = evolver.load_script(script='model/integertest.py',
+                                     script_class_name='IntegerTest')
+        assert model is not None
+        assert hasattr(model, 'Single42')
+
+    def test_load_script_string_model(self):
+        evolver = Evolver()
+        model = evolver.load_script(script='model/stringtest.py',
+                                     script_class_name='StringTest')
+        assert model is not None
+        assert hasattr(model, 'HelloWorld')
+
+    def test_load_script_full_model(self):
+        evolver = Evolver()
+        model = evolver.load_script(script='model/fulltest.py',
+                                     script_class_name='FullTest')
+        assert model is not None
+        assert hasattr(model, 'SingleTrue')
+        assert hasattr(model, 'HelloWorld')
+
+    def test_load_script_rosettastone(self):
+        evolver = Evolver()
+        rs = evolver.load_script(script='rosettastone/fulltestrosettastone.py',
+                                 script_class_name='FullTestRosettaStone')
+        assert rs is not None
+
+    def test_load_script_fitness_function(self):
+        evolver = Evolver()
+        ff = evolver.load_script(script='fitnessfunction/booleantestfitnessfunction.py',
+                                 script_class_name='BooleanTestFitnessFunction')
+        assert ff is not None
+
+    def test_load_script_with_parameters(self):
+        evolver = Evolver()
+        evolver.parameters = {'name': 'custom_model'}
+        model = evolver.load_script(script='model/booleantest.py',
+                                    script_class_name='BooleanTest')
+        assert model.name == 'custom_model'
+
+    @patch('darwin.evolver.platform.system', return_value='Windows')
+    def test_load_script_windows(self, _mock_platform):
+        evolver = Evolver()
+        # On Windows, script paths use backslashes which get converted to dots.
+        # On Linux the file uses forward slashes, so the Windows path replacement
+        # only handles backslashes. The import will fail on Linux, which is expected.
+        result = evolver.load_script(script='model/booleantest.py',
+                                     script_class_name='BooleanTest')
+        assert result is None  # import fails because '/' isn't replaced on Windows path
+
+    @patch('darwin.evolver.platform.system', return_value='Mac')
+    def test_load_script_unsupported_platform(self, _mock_platform):
+        evolver = Evolver()
+        with pytest.raises(NotImplementedError, match='Unsupported platform'):
+            evolver.load_script(script='model/booleantest.py',
+                                script_class_name='BooleanTest')
+
+    @patch('darwin.evolver.importlib.import_module', side_effect=Exception('import error'))
+    def test_load_script_import_failure(self, _mock_import, capsys):
+        evolver = Evolver()
+        result = evolver.load_script(script='model/booleantest.py',
+                                     script_class_name='BooleanTest')
+        assert result is None
+        captured = capsys.readouterr()
+        assert 'Failed to load' in captured.out

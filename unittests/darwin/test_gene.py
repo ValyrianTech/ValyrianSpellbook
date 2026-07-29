@@ -285,3 +285,55 @@ class TestStringGene:
         chance.uniform = 50.0
         gene.apply_mutations(mutation_chance=chance)
         assert gene.data == 'xxxxx'
+
+    @patch('darwin.gene.random.uniform', side_effect=[100.0, 0.0, 100.0, 100.0, 100.0, 100.0])
+    @patch('darwin.gene.random.randint', return_value=0)
+    @patch('darwin.gene.random.choice', return_value='x')
+    def test_apply_mutations_bitstring_triggered(self, _mock_choice, _mock_randint, _mock_uniform):
+        gene = StringGene()
+        gene.data = 'hello'
+        chance = StringMutationChance()
+        chance.bitstring = 50.0
+        gene.apply_mutations(mutation_chance=chance)
+        assert gene.data == 'xello'
+
+    @patch('darwin.gene.random.uniform', side_effect=[100.0, 100.0, 0.0, 100.0, 100.0, 100.0])
+    def test_apply_mutations_duplication_triggered(self, _mock_uniform):
+        gene = StringGene()
+        gene.data = 'hello'
+        chance = StringMutationChance()
+        chance.duplication = 50.0
+        gene.apply_mutations(mutation_chance=chance)
+        assert gene.data == 'hellohello'
+
+    @patch('darwin.gene.random.uniform', side_effect=[100.0, 100.0, 100.0, 0.0, 100.0, 100.0])
+    @patch('darwin.gene.random.randint', side_effect=[2, 4])
+    def test_apply_mutations_deletion_triggered(self, _mock_randint, _mock_uniform):
+        gene = StringGene()
+        gene.data = 'hello'
+        chance = StringMutationChance()
+        chance.deletion = 50.0
+        gene.apply_mutations(mutation_chance=chance)
+        # deletion removes data[2:4] from 'hello' -> 'he' + 'o' = 'heo'
+        assert gene.data == 'heo'
+
+    @patch('darwin.gene.random.uniform', side_effect=[100.0, 100.0, 100.0, 100.0, 0.0, 100.0])
+    @patch('darwin.gene.random.randint', return_value=2)
+    @patch('darwin.gene.random.choice', return_value='x')
+    def test_apply_mutations_insertion_triggered(self, _mock_choice, _mock_randint, _mock_uniform):
+        gene = StringGene()
+        gene.data = 'hello'
+        chance = StringMutationChance()
+        chance.insertion = 50.0
+        gene.apply_mutations(mutation_chance=chance)
+        assert 'x' in gene.data
+
+    @patch('darwin.gene.random.uniform', side_effect=[100.0, 100.0, 100.0, 100.0, 100.0, 0.0])
+    @patch('darwin.gene.random.randint', side_effect=[0, 4])
+    def test_apply_mutations_swap_triggered(self, _mock_randint, _mock_uniform):
+        gene = StringGene()
+        gene.data = 'hello'
+        chance = StringMutationChance()
+        chance.swap = 50.0
+        gene.apply_mutations(mutation_chance=chance)
+        assert gene.data == 'oellh'
