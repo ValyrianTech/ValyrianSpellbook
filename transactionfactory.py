@@ -446,7 +446,7 @@ def p2wpkh_script(address):
     """
     hrp, data = bech32_decode(address)
     version, decoded = decode_witness_program(hrp=hrp, addr=address)
-    if is_python2:
+    if is_python2:  # pragma: no cover
         pubkeyhash = ''.join([chr(a) for a in decoded])
     else:
         pubkeyhash = bytes(decoded)
@@ -471,7 +471,7 @@ def p2wsh_script(address):
     """
     hrp, data = bech32_decode(address)
     version, decoded = decode_witness_program(hrp=hrp, addr=address)
-    if is_python2:
+    if is_python2:  # pragma: no cover
         scripthash = ''.join([chr(a) for a in decoded])
     else:
         scripthash = bytes(decoded)
@@ -524,7 +524,7 @@ def signature_form(tx, i, script, hashcode=SIGHASH_ALL):
     return newtx
 
 
-if is_python2:
+if is_python2:  # pragma: no cover
     def serialize_script(script):
         if json_is_base(script, 16):
             return binascii.hexlify(serialize_script(json_changebase(script,
