@@ -1,13 +1,13 @@
 # Code Coverage Progress Tracker
 
-**Last updated:** 2026-07-26
+**Last updated:** 2026-07-29
 
 ## Current Status
 
 | Category | Lines | Status |
 |----------|-------|--------|
-| Measured + covered | 5,755 | 100% coverage |
-| Has tests, not measured | ~3,471 | Tests exist, not in `--cov` config |
+| Measured + covered | 7,519 | 100% coverage |
+| Measured, partial | 661 | `transactionfactory.py` at 25% |
 | No tests, not measured | ~10,511 | Need tests + coverage config |
 | **Total (excl. apps/)** | **~19,737** | |
 
@@ -15,24 +15,28 @@
 
 ## Measured Modules (in `pytest.ini` --cov)
 
-All at 100% coverage, 1922 tests passing.
+All at 100% coverage (except `transactionfactory.py` at 25%), 2159 tests passing.
 
 - [x] `action/` — 905 lines
 - [x] `bips/` — 301 lines
+- [x] `data/` — 1,432 lines (block explorers, transactions, explorer API)
 - [x] `helpers/` — 3,849 lines
 - [x] `trigger/` — 576 lines
 - [x] `validators/` — 124 lines
+- [x] `authentication.py` — 131 lines
+- [x] `decorators.py` — 139 lines
+- [ ] `transactionfactory.py` — 661 lines — 25% coverage, 258 lines uncovered
 
 ---
 
 ## Has Tests but NOT in Coverage Config
 
-Quick win — just needs `--cov` flags added to `pytest.ini`.
+All previously unmeasured modules with tests have now been added to `pytest.ini` coverage config.
 
-- [ ] `data/` — 2,415 lines — tests: `test_explorer.py`, `test_explorer_api.py`, `test_transaction.py`
-- [ ] `transactionfactory.py` — 661 lines — tests: `test_transaction_factory.py`
-- [ ] `authentication.py` — 131 lines — tests: `test_authentication.py`
-- [ ] `decorators.py` — 139 lines — tests: `test_decorators.py`
+- [x] ~~`data/` — 2,415 lines — tests: `test_explorer.py`, `test_explorer_api.py`, `test_transaction.py`~~ → **100% coverage**
+- [ ] `transactionfactory.py` — 661 lines — tests: `test_transaction_factory.py` — **25% coverage, needs more tests**
+- [x] ~~`authentication.py` — 131 lines — tests: `test_authentication.py`~~ → **100% coverage**
+- [x] ~~`decorators.py` — 139 lines — tests: `test_decorators.py`~~ → **100% coverage**
 
 ---
 
