@@ -42,9 +42,9 @@ async def list_llms(request: Request):
                 })
     
     return templates.TemplateResponse(
+        request,
         "llms/list.html",
         {
-            "request": request,
             "llms": llm_details,
         }
     )
@@ -57,9 +57,9 @@ async def new_llm(request: Request):
         return RedirectResponse(url="/login", status_code=303)
     
     return templates.TemplateResponse(
+        request,
         "llms/form.html",
         {
-            "request": request,
             "llm": None,
             "llm_id": None,
             "is_new": True,
@@ -80,9 +80,9 @@ async def view_llm(request: Request, llm_id: str):
         llm = client.get_llm_config(llm_id) if client else {}
         
         return templates.TemplateResponse(
+            request,
             "llms/form.html",
             {
-                "request": request,
                 "llm": llm,
                 "llm_id": llm_id,
                 "is_new": False,
@@ -93,9 +93,9 @@ async def view_llm(request: Request, llm_id: str):
     llm = client.get_llm_config(llm_id) if client else {}
     
     return templates.TemplateResponse(
+        request,
         "llms/view.html",
         {
-            "request": request,
             "llm": llm,
             "llm_id": llm_id,
         }
@@ -121,9 +121,9 @@ async def save_llm(request: Request, llm_id: str):
     
     if isinstance(result, dict) and 'error' in result:
         return templates.TemplateResponse(
+            request,
             "llms/form.html",
             {
-                "request": request,
                 "llm": config,
                 "llm_id": llm_id,
                 "is_new": False,

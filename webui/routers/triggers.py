@@ -42,9 +42,9 @@ async def list_triggers(request: Request):
                 })
     
     return templates.TemplateResponse(
+        request,
         "triggers/list.html",
         {
-            "request": request,
             "triggers": trigger_details,
         }
     )
@@ -57,9 +57,9 @@ async def new_trigger(request: Request):
         return RedirectResponse(url="/login", status_code=303)
     
     return templates.TemplateResponse(
+        request,
         "triggers/form.html",
         {
-            "request": request,
             "trigger": None,
             "trigger_id": None,
             "is_new": True,
@@ -77,9 +77,9 @@ async def view_trigger(request: Request, trigger_id: str):
     trigger = client.get_trigger_config(trigger_id) if client else {}
     
     return templates.TemplateResponse(
+        request,
         "triggers/view.html",
         {
-            "request": request,
             "trigger": trigger,
             "trigger_id": trigger_id,
         }
@@ -96,9 +96,9 @@ async def edit_trigger(request: Request, trigger_id: str):
     trigger = client.get_trigger_config(trigger_id) if client else {}
     
     return templates.TemplateResponse(
+        request,
         "triggers/form.html",
         {
-            "request": request,
             "trigger": trigger,
             "trigger_id": trigger_id,
             "is_new": False,
@@ -125,9 +125,9 @@ async def save_trigger(request: Request, trigger_id: str):
     
     if 'error' in result:
         return templates.TemplateResponse(
+            request,
             "triggers/form.html",
             {
-                "request": request,
                 "trigger": config,
                 "trigger_id": trigger_id,
                 "is_new": False,

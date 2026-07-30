@@ -55,8 +55,9 @@ app.include_router(blockchain.router, prefix="/blockchain", tags=["blockchain"])
 @app.exception_handler(404)
 async def not_found_handler(request: Request, exc):
     return templates.TemplateResponse(
+        request,
         "errors/404.html",
-        {"request": request},
+        {},
         status_code=404
     )
 
@@ -64,8 +65,9 @@ async def not_found_handler(request: Request, exc):
 @app.exception_handler(500)
 async def server_error_handler(request: Request, exc):
     return templates.TemplateResponse(
+        request,
         "errors/500.html",
-        {"request": request, "error": str(exc)},
+        {"error": str(exc)},
         status_code=500
     )
 

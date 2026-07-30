@@ -43,9 +43,9 @@ async def index(request: Request):
     latest_block = client.get_latest_block()
     
     return templates.TemplateResponse(
+        request,
         "dashboard.html",
         {
-            "request": request,
             "trigger_count": len(triggers) if isinstance(triggers, list) else 0,
             "action_count": len(actions) if isinstance(actions, list) else 0,
             "llm_count": len(llms) if isinstance(llms, list) else 0,
@@ -63,8 +63,9 @@ async def login_page(request: Request):
         return RedirectResponse(url="/", status_code=303)
     
     return templates.TemplateResponse(
+        request,
         "login.html",
-        {"request": request, "error": None}
+        {"error": None}
     )
 
 
@@ -75,8 +76,9 @@ async def login(request: Request, api_key: str = Form(...), api_secret: str = Fo
         return RedirectResponse(url="/", status_code=303)
     
     return templates.TemplateResponse(
+        request,
         "login.html",
-        {"request": request, "error": "Invalid API key or secret"}
+        {"error": "Invalid API key or secret"}
     )
 
 

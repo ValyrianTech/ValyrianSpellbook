@@ -31,9 +31,9 @@ async def blockchain_index(request: Request):
     latest_block = client.get_latest_block() if client else {}
     
     return templates.TemplateResponse(
+        request,
         "blockchain/index.html",
         {
-            "request": request,
             "latest_block": latest_block,
         }
     )
@@ -56,9 +56,9 @@ async def view_block(request: Request, block_id: str):
         block = client.get_block_by_hash(block_id) if client else {}
     
     return templates.TemplateResponse(
+        request,
         "blockchain/block.html",
         {
-            "request": request,
             "block": block,
             "block_id": block_id,
         }
@@ -76,9 +76,9 @@ async def view_transaction(request: Request, txid: str):
     prime_input = client.get_prime_input_address(txid) if client else {}
     
     return templates.TemplateResponse(
+        request,
         "blockchain/transaction.html",
         {
-            "request": request,
             "transaction": transaction,
             "prime_input": prime_input,
             "txid": txid,
@@ -98,9 +98,9 @@ async def view_address(request: Request, address: str):
     utxos = client.get_utxos(address) if client else {}
     
     return templates.TemplateResponse(
+        request,
         "blockchain/address.html",
         {
-            "request": request,
             "address": address,
             "balance": balance,
             "transactions": transactions,

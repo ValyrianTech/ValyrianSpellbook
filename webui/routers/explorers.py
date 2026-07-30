@@ -42,9 +42,9 @@ async def list_explorers(request: Request):
                 })
     
     return templates.TemplateResponse(
+        request,
         "explorers/list.html",
         {
-            "request": request,
             "explorers": explorer_details,
         }
     )
@@ -57,9 +57,9 @@ async def new_explorer(request: Request):
         return RedirectResponse(url="/login", status_code=303)
     
     return templates.TemplateResponse(
+        request,
         "explorers/form.html",
         {
-            "request": request,
             "explorer": None,
             "explorer_id": None,
             "is_new": True,
@@ -77,9 +77,9 @@ async def view_explorer(request: Request, explorer_id: str):
     explorer = client.get_explorer_config(explorer_id) if client else {}
     
     return templates.TemplateResponse(
+        request,
         "explorers/view.html",
         {
-            "request": request,
             "explorer": explorer,
             "explorer_id": explorer_id,
         }
@@ -96,9 +96,9 @@ async def edit_explorer(request: Request, explorer_id: str):
     explorer = client.get_explorer_config(explorer_id) if client else {}
     
     return templates.TemplateResponse(
+        request,
         "explorers/form.html",
         {
-            "request": request,
             "explorer": explorer,
             "explorer_id": explorer_id,
             "is_new": False,
@@ -125,9 +125,9 @@ async def save_explorer(request: Request, explorer_id: str):
     
     if 'error' in result:
         return templates.TemplateResponse(
+            request,
             "explorers/form.html",
             {
-                "request": request,
                 "explorer": config,
                 "explorer_id": explorer_id,
                 "is_new": False,

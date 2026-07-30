@@ -42,9 +42,9 @@ async def list_actions(request: Request):
                 })
     
     return templates.TemplateResponse(
+        request,
         "actions/list.html",
         {
-            "request": request,
             "actions": action_details,
         }
     )
@@ -57,9 +57,9 @@ async def new_action(request: Request):
         return RedirectResponse(url="/login", status_code=303)
     
     return templates.TemplateResponse(
+        request,
         "actions/form.html",
         {
-            "request": request,
             "action": None,
             "action_id": None,
             "is_new": True,
@@ -77,9 +77,9 @@ async def view_action(request: Request, action_id: str):
     action = client.get_action_config(action_id) if client else {}
     
     return templates.TemplateResponse(
+        request,
         "actions/view.html",
         {
-            "request": request,
             "action": action,
             "action_id": action_id,
         }
@@ -96,9 +96,9 @@ async def edit_action(request: Request, action_id: str):
     action = client.get_action_config(action_id) if client else {}
     
     return templates.TemplateResponse(
+        request,
         "actions/form.html",
         {
-            "request": request,
             "action": action,
             "action_id": action_id,
             "is_new": False,
@@ -125,9 +125,9 @@ async def save_action(request: Request, action_id: str):
     
     if 'error' in result:
         return templates.TemplateResponse(
+            request,
             "actions/form.html",
             {
-                "request": request,
                 "action": config,
                 "action_id": action_id,
                 "is_new": False,
