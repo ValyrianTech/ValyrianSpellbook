@@ -25,7 +25,7 @@ LISTENER_LOG.addHandler(stream_handler)
 
 # make the directory for logs if it doesn't exist
 logs_dir = os.path.join(PROGRAM_DIR, 'logs')
-if not os.path.isdir(logs_dir):
+if not os.path.isdir(logs_dir):  # pragma: no cover
     os.makedirs(logs_dir)
 
 file_handler = RotatingFileHandler(os.path.join(PROGRAM_DIR, 'logs', 'transaction_listener_log.txt'), maxBytes=10000000, backupCount=5)
