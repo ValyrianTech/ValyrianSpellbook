@@ -6,17 +6,17 @@
 
 | Category | Lines | Status |
 |----------|-------|--------|
-| Measured + covered | 8,806 | 100% coverage |
+| Measured + covered | 10,046 | 100% coverage |
 | Measured, partial | 661 | `transactionfactory.py` at 99% |
-| Darwin (now measured) | 8936 | 99% coverage (130 lines uncovered) |
-| No tests, not measured | ~10,511 | Need tests + coverage config |
-| **Total (excl. apps/)** | **~28,270** | **97% measured coverage** |
+| Darwin (now measured) | 8,936 | 99% coverage (130 lines uncovered) |
+| No tests, not measured | ~9,271 | Need tests + coverage config |
+| **Total (excl. apps/)** | **~28,270** | **99% measured coverage** |
 
 ---
 
 ## Measured Modules (in `pytest.ini` --cov)
 
-All at 100% coverage (except `transactionfactory.py` at 99% and `darwin/` at 99%), 2553 tests passing.
+All at 100% coverage (except `transactionfactory.py` at 99% and `darwin/` at 99%), 2710 tests passing.
 
 - [x] `action/` — 905 lines
 - [x] `bips/` — 301 lines
@@ -28,6 +28,7 @@ All at 100% coverage (except `transactionfactory.py` at 99% and `darwin/` at 99%
 - [x] `authentication.py` — 131 lines
 - [x] `decorators.py` — 139 lines
 - [x] `transactionfactory.py` — 661 lines — 99% coverage, 3 lines uncovered (bugs in `add_op_return` and `sign` with bytes/dict inputs)
+- [x] `webui/` — 1,240 lines — 100% coverage (commit `8ba37cf`)
 
 ---
 
@@ -47,7 +48,7 @@ All previously unmeasured modules with tests have now been added to `pytest.ini`
 ### Packages
 
 - [x] ~~`darwin/` — 8,936 lines — Genetic algorithm framework (24+ files)~~ → **99% coverage** (commit `5d108b3`)
-- [ ] `webui/` — 1,240 lines — FastAPI web UI (routers, auth, api_client)
+- [x] ~~`webui/` — 1,240 lines — FastAPI web UI (routers, auth, api_client)~~ → **100% coverage** (commit `8ba37cf`)
 - [ ] `listeners/` — 439 lines — Block/transaction listeners + watchlist
 - [ ] `spellbookscripts/` — 288 lines — Script execution framework (base + template)
 - [ ] `inputs/` — 218 lines — Input processing
