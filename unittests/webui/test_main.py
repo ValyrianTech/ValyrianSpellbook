@@ -63,3 +63,15 @@ class TestMainModule:
     def test_static_mount(self, app):
         routes = [r.path for r in app.routes]
         assert "/static" in routes
+
+    def test_main_block_runs_uvicorn(self, mock_settings):
+        """Cover the if __name__ == '__main__' block."""
+        with patch("uvicorn.run") as mock_run:
+            import main as main_module
+            with open(main_module.__file__) as f:
+                code = f.read()
+            exec(compile(code, main_module.__file__, "exec"), {"__name__": "__main__", "__file__": main_module.__file__})
+            mock_run.assert_called_once()
+            call_kwargs = mock_run.call_args[1]
+            assert call_kwargs["host"] == "127.0.0.1"
+            assert call_kwargs["port"] == 5001
