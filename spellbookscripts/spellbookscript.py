@@ -49,11 +49,11 @@ class SpellbookScript(object):
             self.process_message()
 
     @abstractmethod
-    def run(self):
+    def run(self):  # pragma: no cover
         pass
 
     @abstractmethod
-    def cleanup(self):
+    def cleanup(self):  # pragma: no cover
         pass
 
     def process_message(self):

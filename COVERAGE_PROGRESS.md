@@ -1,22 +1,23 @@
 # Code Coverage Progress Tracker
 
-**Last updated:** 2026-07-30
+**Last updated:** 2026-07-31
 
 ## Current Status
 
 | Category | Lines | Status |
 |----------|-------|--------|
-| Measured + covered | 10,046 | 100% coverage |
+| Measured + covered | 10,188 | 100% coverage |
 | Measured, partial | 661 | `transactionfactory.py` at 99% |
 | Darwin (now measured) | 8,936 | 99% coverage (130 lines uncovered) |
-| No tests, not measured | ~8,832 | Need tests + coverage config |
-| **Total (excl. apps/)** | **~28,270** | **99% measured coverage** |
+| spellbookscripts (now measured) | 188 | 100% coverage |
+| No tests, not measured | ~8,644 | Need tests + coverage config |
+| **Total (excl. apps/)** | **~28,458** | **99% measured coverage** |
 
 ---
 
 ## Measured Modules (in `pytest.ini` --cov)
 
-All at 100% coverage (except `transactionfactory.py` at 99% and `darwin/` at 99%), 2745 tests passing.
+All at 100% coverage (except `transactionfactory.py` at 99% and `darwin/` at 99%), 2803 tests passing.
 
 - [x] `action/` — 905 lines
 - [x] `bips/` — 301 lines
@@ -30,6 +31,7 @@ All at 100% coverage (except `transactionfactory.py` at 99% and `darwin/` at 99%
 - [x] `transactionfactory.py` — 661 lines — 99% coverage, 3 lines uncovered (bugs in `add_op_return` and `sign` with bytes/dict inputs)
 - [x] `webui/` — 1,240 lines — 100% coverage (commit `8ba37cf`)
 - [x] `listeners/` — 133 lines — 100% coverage
+- [x] `spellbookscripts/` — 188 lines — 100% coverage
 
 ---
 
@@ -51,7 +53,7 @@ All previously unmeasured modules with tests have now been added to `pytest.ini`
 - [x] ~~`darwin/` — 8,936 lines — Genetic algorithm framework (24+ files)~~ → **99% coverage** (commit `5d108b3`)
 - [x] ~~`webui/` — 1,240 lines — FastAPI web UI (routers, auth, api_client)~~ → **100% coverage** (commit `8ba37cf`)
 - [x] ~~`listeners/` — 439 lines — Block/transaction listeners + watchlist~~ → **100% coverage**
-- [ ] `spellbookscripts/` — 288 lines — Script execution framework (base + template)
+- [x] ~~`spellbookscripts/` — 288 lines — Script execution framework (base + template)~~ → **100% coverage**
 - [ ] `inputs/` — 218 lines — Input processing
 - [ ] `randomaddress/` — 171 lines — Random address selection
 - [ ] `linker/` — 101 lines — Linked list implementations

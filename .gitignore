@@ -133,6 +133,9 @@ spellbookscripts/
 !spellbookscripts/spellbookscript.py
 !spellbookscripts/Template.py
 !spellbookscripts/Echo.py
+!unittests/spellbookscripts/
+!unittests/spellbookscripts/__init__.py
+!unittests/spellbookscripts/test_spellbookscripts.py
 
 # spellbookconfiguration
 configuration/spellbook.conf
