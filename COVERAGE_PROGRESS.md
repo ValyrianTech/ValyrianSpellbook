@@ -1,6 +1,6 @@
 # Code Coverage Progress Tracker
 
-**Last updated:** 2026-07-31
+**Last updated:** 2026-07-31 (updated)
 
 ## Current Status
 
@@ -10,14 +10,14 @@
 | Measured, partial | 661 | `transactionfactory.py` at 99% |
 | Darwin (now measured) | 8,936 | 99% coverage (130 lines uncovered) |
 | spellbookscripts (now measured) | 188 | 100% coverage |
-| No tests, not measured | ~8,644 | Need tests + coverage config |
+| No tests, not measured | ~8,155 | Need tests + coverage config |
 | **Total (excl. apps/)** | **~28,458** | **99% measured coverage** |
 
 ---
 
 ## Measured Modules (in `pytest.ini` --cov)
 
-All at 100% coverage (except `transactionfactory.py` at 99% and `darwin/` at 99%), 2803 tests passing.
+All at 100% coverage (except `transactionfactory.py` at 99% and `darwin/` at 99%), 2877 tests passing.
 
 - [x] `action/` — 905 lines
 - [x] `bips/` — 301 lines
@@ -32,6 +32,9 @@ All at 100% coverage (except `transactionfactory.py` at 99% and `darwin/` at 99%
 - [x] `webui/` — 1,240 lines — 100% coverage (commit `8ba37cf`)
 - [x] `listeners/` — 133 lines — 100% coverage
 - [x] `spellbookscripts/` — 188 lines — 100% coverage
+- [x] `inputs/` — 218 lines — 100% coverage
+- [x] `randomaddress/` — 172 lines — 100% coverage
+- [x] `linker/` — 101 lines — 100% coverage
 
 ---
 
@@ -54,9 +57,9 @@ All previously unmeasured modules with tests have now been added to `pytest.ini`
 - [x] ~~`webui/` — 1,240 lines — FastAPI web UI (routers, auth, api_client)~~ → **100% coverage** (commit `8ba37cf`)
 - [x] ~~`listeners/` — 439 lines — Block/transaction listeners + watchlist~~ → **100% coverage**
 - [x] ~~`spellbookscripts/` — 288 lines — Script execution framework (base + template)~~ → **100% coverage**
-- [ ] `inputs/` — 218 lines — Input processing
-- [ ] `randomaddress/` — 171 lines — Random address selection
-- [ ] `linker/` — 101 lines — Linked list implementations
+- [x] ~~`inputs/` — 218 lines — Input processing~~ → **100% coverage**
+- [x] ~~`randomaddress/` — 172 lines — Random address selection~~ → **100% coverage**
+- [x] ~~`linker/` — 101 lines — Linked list implementations~~ → **100% coverage**
 
 ### Top-level scripts
 
