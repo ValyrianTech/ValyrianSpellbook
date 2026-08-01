@@ -519,6 +519,14 @@ get_logs_parser.add_argument('filter_string', help='A filter string for the log 
 get_logs_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
 get_logs_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
 
+# Create parser for the get_hivemind subcommand
+get_hivemind_parser = subparsers.add_parser(name='get_hivemind',
+                                            help='Get information about a specific hivemind',
+                                            formatter_class=argparse.RawDescriptionHelpFormatter)
+get_hivemind_parser.add_argument('hivemind_id', help='The id of the hivemind')
+get_hivemind_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
+get_hivemind_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
+
 
 def add_authentication_headers(headers=None, data=None):
     """

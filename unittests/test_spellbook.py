@@ -1008,6 +1008,10 @@ class TestCommandDispatch(object):
         mock_get, _, _ = self._reload_with_command('get_explorer_config', ['blockstream'])
         mock_get.assert_called_once()
 
+    def test_dispatch_get_hivemind(self):
+        mock_get, _, _ = self._reload_with_command('get_hivemind', ['hive1'])
+        mock_get.assert_called_once()
+
     def test_dispatch_get_prime_input_address(self):
         mock_get, _, _ = self._reload_with_command('get_prime_input_address', ['abc123'])
         mock_get.assert_called_once()
