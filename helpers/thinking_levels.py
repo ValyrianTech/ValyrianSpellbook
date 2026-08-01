@@ -59,3 +59,14 @@ THINKING_LEVEL_GOOGLE = {
     'high': 'high',
     'xhigh': 'high'
 }
+
+# DeepSeek V4 uses thinking.type (enabled/disabled) + reasoning_effort (low/medium/high)
+# V4 models have thinking enabled by default, so 'off' must explicitly disable it
+THINKING_LEVEL_DEEPSEEK = {
+    'off': 'disabled',      # thinking.type = disabled
+    'minimal': 'low',       # reasoning_effort = low
+    'low': 'low',
+    'medium': 'medium',
+    'high': 'high',
+    'xhigh': 'high'
+}

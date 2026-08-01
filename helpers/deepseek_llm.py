@@ -6,6 +6,7 @@ from openai import APIConnectionError, OpenAI
 
 from helpers.llm_interface import LLMInterface
 from helpers.loghelpers import LOG
+from helpers.thinking_levels import THINKING_LEVEL_DEEPSEEK
 from helpers.websockethelpers import broadcast_message, get_broadcast_channel, get_broadcast_sender
 from .textgenerationhelpers import parse_generation
 
@@ -32,14 +33,16 @@ class DeepSeekLLM(LLMInterface):
         
         # Extract thinking_level from kwargs
         thinking_level = kwargs.pop('thinking_level', None)
-        
-        # DeepSeek thinking mode is binary: off or enabled
-        # Any thinking_level other than 'off' or None enables thinking mode
-        extra_body = None
+
+        # DeepSeek V4 models have thinking enabled by default, so we must
+        # explicitly send {"thinking": {"type": "disabled"}} to turn it off.
+        # When thinking is enabled, reasoning_effort controls depth (low/medium/high).
         if thinking_level is not None and thinking_level != 'off':
-            extra_body = {"thinking": {"type": "enabled"}}
-            LOG.info(f'Thinking level: {thinking_level} -> DeepSeek thinking mode enabled')
+            effort = THINKING_LEVEL_DEEPSEEK.get(thinking_level, 'medium')
+            extra_body = {"thinking": {"type": "enabled", "reasoning_effort": effort}}
+            LOG.info(f'Thinking level: {thinking_level} -> DeepSeek thinking mode enabled (reasoning_effort={effort})')
         else:
+            extra_body = {"thinking": {"type": "disabled"}}
             LOG.info(f'Thinking level: {thinking_level} -> DeepSeek thinking mode disabled')
         
         max_retries = 3

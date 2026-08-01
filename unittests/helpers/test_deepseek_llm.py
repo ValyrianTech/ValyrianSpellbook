@@ -214,6 +214,7 @@ class TestDeepSeekLLMAdvanced(unittest.TestCase):
         call_kwargs = mock_client.chat.completions.create.call_args[1]
         self.assertIsNotNone(call_kwargs['extra_body'])
         self.assertEqual(call_kwargs['extra_body']['thinking']['type'], 'enabled')
+        self.assertEqual(call_kwargs['extra_body']['thinking']['reasoning_effort'], 'medium')
 
     @patch('helpers.llm_interface.init_websocket_server')
     @patch('helpers.deepseek_llm.OpenAI')
@@ -248,7 +249,8 @@ class TestDeepSeekLLMAdvanced(unittest.TestCase):
         result, usage = llm.get_completion_text(messages, thinking_level='off')
 
         call_kwargs = mock_client.chat.completions.create.call_args[1]
-        self.assertIsNone(call_kwargs['extra_body'])
+        self.assertIsNotNone(call_kwargs['extra_body'])
+        self.assertEqual(call_kwargs['extra_body']['thinking']['type'], 'disabled')
 
     @patch('helpers.llm_interface.init_websocket_server')
     @patch('helpers.deepseek_llm.OpenAI')
