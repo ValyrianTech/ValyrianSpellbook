@@ -1,6 +1,6 @@
 # Code Coverage Progress Tracker
 
-**Last updated:** 2026-07-31 (updated)
+**Last updated:** 2026-08-01 (updated)
 
 ## Current Status
 
@@ -10,14 +10,15 @@
 | Measured, partial | 661 | `transactionfactory.py` at 99% |
 | Darwin (now measured) | 8,936 | 99% coverage (130 lines uncovered) |
 | spellbookscripts (now measured) | 188 | 100% coverage |
-| No tests, not measured | ~8,155 | Need tests + coverage config |
+| `spellbook.py` (now measured) | 604 | 99% coverage (1 line uncovered) |
+| No tests, not measured | ~7,551 | Need tests + coverage config |
 | **Total (excl. apps/)** | **~28,458** | **99% measured coverage** |
 
 ---
 
 ## Measured Modules (in `pytest.ini` --cov)
 
-All at 100% coverage (except `transactionfactory.py` at 99% and `darwin/` at 99%), 2877 tests passing.
+All at 100% coverage (except `transactionfactory.py` at 99%, `darwin/` at 99%, and `spellbook.py` at 99%), 2980 tests passing.
 
 - [x] `action/` — 905 lines
 - [x] `bips/` — 301 lines
@@ -35,6 +36,7 @@ All at 100% coverage (except `transactionfactory.py` at 99% and `darwin/` at 99%
 - [x] `inputs/` — 218 lines — 100% coverage
 - [x] `randomaddress/` — 172 lines — 100% coverage
 - [x] `linker/` — 101 lines — 100% coverage
+- [x] `spellbook.py` — 604 lines — 99% coverage (1 line uncovered: `get_hivemind` dispatch with no argparse subparser defined)
 
 ---
 
@@ -63,7 +65,7 @@ All previously unmeasured modules with tests have now been added to `pytest.ini`
 
 ### Top-level scripts
 
-- [ ] `spellbook.py` — 1,133 lines — CLI interface
+- [x] ~~`spellbook.py` — 604 lines — CLI interface~~ → **99% coverage** (103 tests, 1 line uncovered: `get_hivemind` dispatch unreachable via argparse)
 - [ ] `spellbookserver.py` — 944 lines — REST API server (Bottle)
 - [ ] `texts.py` — 631 lines — Text constants/messages
 - [ ] `backup_script.py` — 537 lines — GitHub→GitLab backup automation

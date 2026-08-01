@@ -4,3 +4,5 @@ omit =
     helpers/py2specials.py
     # Script only runs as __main__ - no importable functions
     helpers/notify_transaction.py
+    # Test files should not be measured for coverage
+    unittests/*
