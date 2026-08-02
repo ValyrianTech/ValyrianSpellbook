@@ -133,17 +133,17 @@ class SpellbookRESTAPI(Bottle):
 
         # Routes for managing blockexplorers
         self.route('/spellbook/explorers', method='GET', callback=self.get_explorers)
-        self.route('/spellbook/explorers/<explorer_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.save_explorer)
-        self.route('/spellbook/explorers/<explorer_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.get_explorer_config)
-        self.route('/spellbook/explorers/<explorer_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.delete_explorer)
+        self.route(r'/spellbook/explorers/<explorer_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.save_explorer)
+        self.route(r'/spellbook/explorers/<explorer_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.get_explorer_config)
+        self.route(r'/spellbook/explorers/<explorer_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.delete_explorer)
 
         # Routes for managing LLMs
         self.route('/spellbook/llms', method='GET', callback=self.get_llms)
         self.route('/spellbook/llms', method='OPTIONS', callback=self.get_llms)
-        self.route('/spellbook/llms/<llm_id:re:[a-zA-Z0-9_\-.:\/]+>', method='POST', callback=self.save_llm_config)
-        self.route('/spellbook/llms/<llm_id:re:[a-zA-Z0-9_\-.:\/]+>', method='GET', callback=self.get_llm_config)
-        self.route('/spellbook/llms/<llm_id:re:[a-zA-Z0-9_\-.:\/]+>', method='OPTIONS', callback=self.get_llm_config)
-        self.route('/spellbook/llms/<llm_id:re:[a-zA-Z0-9_\-.:\/]+>', method='DELETE', callback=self.delete_llm)
+        self.route(r'/spellbook/llms/<llm_id:re:[a-zA-Z0-9_\-.:\/]+>', method='POST', callback=self.save_llm_config)
+        self.route(r'/spellbook/llms/<llm_id:re:[a-zA-Z0-9_\-.:\/]+>', method='GET', callback=self.get_llm_config)
+        self.route(r'/spellbook/llms/<llm_id:re:[a-zA-Z0-9_\-.:\/]+>', method='OPTIONS', callback=self.get_llm_config)
+        self.route(r'/spellbook/llms/<llm_id:re:[a-zA-Z0-9_\-.:\/]+>', method='DELETE', callback=self.delete_llm)
 
         # Routes for retrieving data from the blockchain
         self.route('/spellbook/blocks/latest', method='GET', callback=self.get_latest_block)
@@ -179,46 +179,46 @@ class SpellbookRESTAPI(Bottle):
 
         # Routes for Triggers
         self.route('/spellbook/triggers', method='GET', callback=self.get_triggers)
-        self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.get_trigger)
-        self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.save_trigger)
-        self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.delete_trigger)
-        self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/activate', method='GET', callback=self.activate_trigger)
-        self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/message', method='POST', callback=self.verify_signed_message)
-        self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/get', method='GET', callback=self.http_get_request)
-        self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/post', method='POST', callback=self.http_post_request)
-        self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/delete', method='DELETE', callback=self.http_delete_request)
-        self.route('/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/check', method='GET', callback=self.check_trigger)
+        self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.get_trigger)
+        self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.save_trigger)
+        self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.delete_trigger)
+        self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/activate', method='GET', callback=self.activate_trigger)
+        self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/message', method='POST', callback=self.verify_signed_message)
+        self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/get', method='GET', callback=self.http_get_request)
+        self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/post', method='POST', callback=self.http_post_request)
+        self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/delete', method='DELETE', callback=self.http_delete_request)
+        self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/check', method='GET', callback=self.check_trigger)
         self.route('/spellbook/check_triggers', method='GET', callback=self.check_all_triggers)
 
         # Additional routes for Rest API endpoints
-        self.route('/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.http_get_request)
-        self.route('/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='OPTIONS', callback=self.http_options_request)
-        self.route('/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.http_post_request)
-        self.route('/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.http_delete_request)
-        self.route('/html/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.html_request)
-        self.route('/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>/message', method='POST', callback=self.verify_signed_message)
-        self.route('/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>/message', method='OPTIONS', callback=self.http_options_request)
+        self.route(r'/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.http_get_request)
+        self.route(r'/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='OPTIONS', callback=self.http_options_request)
+        self.route(r'/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.http_post_request)
+        self.route(r'/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.http_delete_request)
+        self.route(r'/html/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.html_request)
+        self.route(r'/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>/message', method='POST', callback=self.verify_signed_message)
+        self.route(r'/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>/message', method='OPTIONS', callback=self.http_options_request)
 
         self.route('/api/sign_message', method='POST', callback=self.sign_message)
 
         # Routes for file downloads
-        self.route('/files/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.file_download)
+        self.route(r'/files/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.file_download)
 
         # Routes for QR image generation
         self.route('/api/qr', method='GET', callback=self.qr)
 
         # Routes for Actions
         self.route('/spellbook/actions', method='GET', callback=self.get_actions)
-        self.route('/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.get_action)
-        self.route('/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.save_action)
-        self.route('/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.delete_action)
-        self.route('/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>/run', method='GET', callback=self.run_action)
+        self.route(r'/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.get_action)
+        self.route(r'/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.save_action)
+        self.route(r'/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.delete_action)
+        self.route(r'/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>/run', method='GET', callback=self.run_action)
 
         # Routes for retrieving log messages
         self.route('/spellbook/logs/<filter_string>', method='GET', callback=self.get_logs)
 
         # Routes for RevealSecret actions
-        self.route('/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>/reveal', method='GET', callback=self.get_reveal)
+        self.route(r'/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>/reveal', method='GET', callback=self.get_reveal)
 
         # Routes for uploading files
         self.route('/spellbook/upload', method='POST', callback=self.upload_file)
