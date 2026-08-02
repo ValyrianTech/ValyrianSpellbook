@@ -921,7 +921,7 @@ def convert_aac_to_opus(input_file, opus_file):
         pass
 
 
-if __name__ == "__main__":
+def main():
     # Check if the IP address in the configuration file is set, if not then set it
     configuration_file = os.path.join(PROGRAM_DIR, 'configuration', 'spellbook.conf')
     config = ConfigParser()
@@ -941,3 +941,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     SpellbookRESTAPI()
+
+
+if __name__ == "__main__":  # pragma: no cover
+    main()

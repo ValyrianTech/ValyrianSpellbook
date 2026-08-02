@@ -1,6 +1,6 @@
 # Code Coverage Progress Tracker
 
-**Last updated:** 2026-08-02 (updated)
+**Last updated:** 2026-08-02 (updated again)
 
 ## Current Status
 
@@ -11,7 +11,7 @@
 | Darwin (now measured) | 8,936 | 99% coverage (130 lines uncovered) |
 | spellbookscripts (now measured) | 188 | 100% coverage |
 | `spellbook.py` (now measured) | 608 | 100% coverage |
-| `spellbookserver.py` (now measured) | 678 | 95% coverage (35 lines uncovered) |
+| `spellbookserver.py` (now measured) | 678 | 100% coverage |
 | No tests, not measured | ~6,873 | Need tests + coverage config |
 | **Total (excl. apps/)** | **~28,458** | **99% measured coverage** |
 
@@ -19,7 +19,7 @@
 
 ## Measured Modules (in `pytest.ini` --cov)
 
-All at 100% coverage (except `transactionfactory.py` at 99%, `darwin/` at 99%, and `spellbookserver.py` at 95%), 3071 tests passing.
+All at 100% coverage (except `transactionfactory.py` at 99% and `darwin/` at 99%), 3082 tests passing.
 
 - [x] `action/` — 905 lines
 - [x] `bips/` — 301 lines
@@ -38,7 +38,7 @@ All at 100% coverage (except `transactionfactory.py` at 99%, `darwin/` at 99%, a
 - [x] `randomaddress/` — 172 lines — 100% coverage
 - [x] `linker/` — 101 lines — 100% coverage
 - [x] `spellbook.py` — 608 lines — 100% coverage
-- [x] `spellbookserver.py` — 678 lines — 95% coverage (35 lines uncovered: `__init__` wallet/SSL paths, `get_reveal` secret handling, `file_download` content type, `__main__` block partial)
+- [x] `spellbookserver.py` — 678 lines — 100% coverage (extracted `main()` function, added `TestSpellbookInit` for `__init__` paths, `# pragma: no cover` on `__main__` guard)
 
 ---
 
@@ -68,7 +68,7 @@ All previously unmeasured modules with tests have now been added to `pytest.ini`
 ### Top-level scripts
 
 - [x] ~~`spellbook.py` — 608 lines — CLI interface~~ → **100% coverage** (104 tests; fixed missing `get_hivemind` argparse subparser)
-- [x] ~~`spellbookserver.py` — 944 lines — REST API server (Bottle)~~ → **95% coverage** (90 tests; fixed `get_llm_config` NoneType bug)
+- [x] ~~`spellbookserver.py` — 944 lines — REST API server (Bottle)~~ → **100% coverage** (101 tests; fixed `get_llm_config` NoneType bug; extracted `main()` function; added `TestSpellbookInit` for `__init__` runtime paths)
 - [ ] `texts.py` — 631 lines — Text constants/messages
 - [ ] `backup_script.py` — 537 lines — GitHub→GitLab backup automation
 - [ ] `import_llm_configs.py` — 240 lines — Bulk LLM config importer

@@ -1250,19 +1250,99 @@ class TestSSLWebServer:
             mock_log.error.assert_called_once()
 
 
+class TestSpellbookInit:
+    """Tests for SpellbookRESTAPI.__init__ to cover uncovered runtime paths."""
+
+    @patch('spellbookserver.get_enable_ssl', return_value=False)
+    @patch('spellbookserver.get_enable_wallet', return_value=False)
+    @patch('spellbookserver.get_explorers', return_value={'blockstream': {}})
+    @patch('spellbookserver.get_host', return_value='localhost')
+    @patch('spellbookserver.get_port', return_value=8080)
+    @patch('spellbookserver.os.path.isfile', return_value=True)
+    @patch('bottle.Bottle.run')
+    @patch('spellbookserver.LOG')
+    def test_init_api_keys_not_present(self, mock_log, mock_run, mock_isfile, mock_port, mock_host, mock_explorers, mock_wallet, mock_ssl):
+        """Test __init__ generates API keys when file doesn't exist (lines 113-114)."""
+        mock_isfile.return_value = False
+        with patch('spellbookserver.initialize_api_keys_file') as mock_init:
+            SpellbookRESTAPI()
+            mock_init.assert_called_once()
+
+    @patch('spellbookserver.get_enable_ssl', return_value=False)
+    @patch('spellbookserver.get_explorers', return_value={'blockstream': {}})
+    @patch('spellbookserver.get_host', return_value='localhost')
+    @patch('spellbookserver.get_port', return_value=8080)
+    @patch('spellbookserver.os.path.isfile', return_value=True)
+    @patch('bottle.Bottle.run')
+    @patch('spellbookserver.LOG')
+    @patch('spellbookserver.get_hot_wallet', side_effect=Exception('decryption failed'))
+    @patch('spellbookserver.get_enable_wallet', return_value=True)
+    def test_init_wallet_decryption_failure(self, mock_wallet, mock_get_wallet, mock_log, mock_run, mock_isfile, mock_port, mock_host, mock_explorers, mock_ssl):
+        """Test __init__ handles hot wallet decryption failure (lines 120-123)."""
+        with pytest.raises(SystemExit) as exc_info:
+            SpellbookRESTAPI()
+        assert exc_info.value.code == 1
+
+    @patch('spellbookserver.get_enable_ssl', return_value=False)
+    @patch('spellbookserver.get_enable_wallet', return_value=False)
+    @patch('spellbookserver.get_explorers', return_value={})
+    @patch('spellbookserver.get_host', return_value='localhost')
+    @patch('spellbookserver.get_port', return_value=8080)
+    @patch('spellbookserver.os.path.isfile', return_value=True)
+    @patch('bottle.Bottle.run')
+    @patch('spellbookserver.LOG')
+    def test_init_no_explorers(self, mock_log, mock_run, mock_isfile, mock_port, mock_host, mock_explorers, mock_wallet, mock_ssl):
+        """Test __init__ warns when no explorers configured (line 231)."""
+        SpellbookRESTAPI()
+        mock_log.warning.assert_called_once_with('No block explorers configured!')
+
+    @patch('spellbookserver.get_enable_ssl', return_value=True)
+    @patch('spellbookserver.get_enable_wallet', return_value=False)
+    @patch('spellbookserver.get_explorers', return_value={'blockstream': {}})
+    @patch('spellbookserver.get_host', return_value='localhost')
+    @patch('spellbookserver.get_port', return_value=8080)
+    @patch('spellbookserver.os.path.isfile', return_value=True)
+    @patch('bottle.Bottle.run')
+    @patch('spellbookserver.LOG')
+    def test_init_ssl_enabled(self, mock_log, mock_run, mock_isfile, mock_port, mock_host, mock_explorers, mock_wallet, mock_ssl):
+        """Test __init__ starts SSL server when enabled (line 236)."""
+        SpellbookRESTAPI()
+        mock_run.assert_called_once_with(host='localhost', port=8080, debug=False, server='sslwebserver')
+
+    @patch('spellbookserver.get_enable_ssl', return_value=False)
+    @patch('spellbookserver.get_enable_wallet', return_value=False)
+    @patch('spellbookserver.get_explorers', return_value={'blockstream': {}})
+    @patch('spellbookserver.get_host', return_value='localhost')
+    @patch('spellbookserver.get_port', return_value=8080)
+    @patch('spellbookserver.os.path.isfile', return_value=True)
+    @patch('bottle.Bottle.run', side_effect=Exception('server crashed'))
+    @patch('spellbookserver.get_mail_on_exception', return_value=False)
+    @patch('spellbookserver.LOG')
+    def test_init_server_exception_no_mail(self, mock_log, mock_mail, mock_run, mock_isfile, mock_port, mock_host, mock_explorers, mock_wallet, mock_ssl):
+        """Test __init__ handles server exception without sending mail (lines 240-244)."""
+        SpellbookRESTAPI()
+        mock_log.error.assert_any_call('An exception occurred in the main loop: server crashed')
+
+    @patch('spellbookserver.get_enable_ssl', return_value=False)
+    @patch('spellbookserver.get_enable_wallet', return_value=False)
+    @patch('spellbookserver.get_explorers', return_value={'blockstream': {}})
+    @patch('spellbookserver.get_host', return_value='localhost')
+    @patch('spellbookserver.get_port', return_value=8080)
+    @patch('spellbookserver.os.path.isfile', return_value=True)
+    @patch('bottle.Bottle.run', side_effect=Exception('server crashed'))
+    @patch('spellbookserver.get_mail_on_exception', return_value=True)
+    @patch('spellbookserver.get_notification_email', return_value='admin@test.com')
+    @patch('spellbookserver.sendmail')
+    @patch('spellbookserver.LOG')
+    def test_init_server_exception_with_mail(self, mock_log, mock_sendmail, mock_email, mock_mail, mock_run, mock_isfile, mock_port, mock_host, mock_explorers, mock_wallet, mock_ssl):
+        """Test __init__ handles server exception and sends mail (lines 240-253)."""
+        SpellbookRESTAPI()
+        mock_log.error.assert_any_call('An exception occurred in the main loop: server crashed')
+        mock_sendmail.assert_called_once()
+
+
 class TestMainBlock:
-    """Tests for the __main__ block at the bottom of spellbookserver.py."""
-
-    _SERVER_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'spellbookserver.py')
-    with open(_SERVER_PATH) as _f:
-        _SOURCE = _f.read()
-    _MAIN_CODE = _SOURCE[_SOURCE.index('if __name__ == "__main__":'):]
-
-    def _exec_main_block(self):
-        """Exec just the __main__ block from spellbookserver.py."""
-        globals_dict = dict(srv.__dict__)
-        globals_dict['__name__'] = '__main__'
-        exec(compile(self._MAIN_CODE, self._SERVER_PATH, 'exec'), globals_dict)
+    """Tests for the main() function in spellbookserver.py."""
 
     @patch('spellbookserver.get_enable_ssl', return_value=False)
     @patch('spellbookserver.get_enable_wallet', return_value=False)
@@ -1278,7 +1358,7 @@ class TestMainBlock:
     @patch('builtins.open', mock_open())
     @patch('spellbookserver.LOG')
     def test_main_with_empty_host(self, mock_log, mock_isfile, mock_ip, mock_config_cls, mock_parser_cls, mock_run, mock_port, mock_host, mock_explorers, mock_transcribe, mock_wallet, mock_ssl):
-        """Test __main__ block when host is empty (sets IP from what_is_my_ip)."""
+        """Test main() when host is empty (sets IP from what_is_my_ip)."""
         mock_config = MagicMock()
         mock_config.get.return_value = ''
         mock_config_cls.return_value = mock_config
@@ -1286,7 +1366,7 @@ class TestMainBlock:
         original_argv = sys.argv
         try:
             sys.argv = ['spellbookserver.py']
-            self._exec_main_block()
+            srv.main()
         except SystemExit:
             pass
         finally:
@@ -1308,7 +1388,7 @@ class TestMainBlock:
     @patch('builtins.open', mock_open())
     @patch('spellbookserver.LOG')
     def test_main_with_host_set(self, mock_log, mock_isfile, mock_ip, mock_config_cls, mock_parser_cls, mock_run, mock_port, mock_host, mock_explorers, mock_transcribe, mock_wallet, mock_ssl):
-        """Test __main__ block when host is already set (no update needed)."""
+        """Test main() when host is already set (no update needed)."""
         mock_config = MagicMock()
         mock_config.get.return_value = '192.168.1.1'
         mock_config_cls.return_value = mock_config
@@ -1316,7 +1396,7 @@ class TestMainBlock:
         original_argv = sys.argv
         try:
             sys.argv = ['spellbookserver.py']
-            self._exec_main_block()
+            srv.main()
         except SystemExit:
             pass
         finally:
