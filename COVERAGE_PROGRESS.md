@@ -69,7 +69,7 @@ All previously unmeasured modules with tests have now been added to `pytest.ini`
 
 - [x] ~~`spellbook.py` — 608 lines — CLI interface~~ → **100% coverage** (104 tests; fixed missing `get_hivemind` argparse subparser)
 - [x] ~~`spellbookserver.py` — 944 lines — REST API server (Bottle)~~ → **100% coverage** (101 tests; fixed `get_llm_config` NoneType bug; extracted `main()` function; added `TestSpellbookInit` for `__init__` runtime paths)
-- [ ] `texts.py` — 631 lines — Text constants/messages
+- [x] `texts.py` — 631 lines — Text constants/messages — **100% coverage**
 - [ ] `backup_script.py` — 537 lines — GitHub→GitLab backup automation
 - [ ] `import_llm_configs.py` — 240 lines — Bulk LLM config importer
 - [ ] `hot_wallet.py` — 237 lines — Hot wallet management CLI
