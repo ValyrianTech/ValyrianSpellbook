@@ -303,6 +303,40 @@ class TestGetExplorerConfig:
             assert 'error' in result
 
 
+class TestSaveExplorer:
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.save_explorer')
+    @patch('spellbookserver.request')
+    def test_save_explorer(self, mock_req, mock_save, mock_resp):
+        mock_req.json = {'name': 'blockstream'}
+        with patch('decorators.check_authentication') as mock_dec:
+            mock_dec.return_value = 'OK'
+            SpellbookRESTAPI.save_explorer('blockstream')
+            mock_save.assert_called_once_with('blockstream', {'name': 'blockstream'})
+
+
+class TestDeleteExplorer:
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.delete_explorer')
+    def test_delete_explorer(self, mock_delete, mock_resp):
+        with patch('decorators.check_authentication') as mock_dec:
+            mock_dec.return_value = 'OK'
+            SpellbookRESTAPI.delete_explorer('blockstream')
+            mock_delete.assert_called_once_with('blockstream')
+
+
+class TestIndexAndFavicon:
+    def test_index(self):
+        instance = MagicMock(spec=SpellbookRESTAPI)
+        result = SpellbookRESTAPI.index(instance)
+        assert result is None
+
+    @patch('spellbookserver.static_file')
+    def test_get_favicon(self, mock_static):
+        SpellbookRESTAPI.get_favicon()
+        mock_static.assert_called_once_with('favicon.ico', root='.')
+
+
 class TestBlockchainEndpoints:
     @patch('spellbookserver.response')
     @patch('spellbookserver.latest_block')
@@ -1119,6 +1153,40 @@ class TestTranscribe:
             result = SpellbookRESTAPI.transcribe()
             mock_convert.assert_called_once()
             assert result['full_text'] == 'Converted audio'
+
+    @patch('spellbookserver.request')
+    @patch('spellbookserver.get_enable_transcribe', return_value=True)
+    @patch('spellbookserver.get_allowed_extensions_transcribe', return_value='mp3,mp4')
+    @patch('spellbookserver.get_max_file_size_transcribe', return_value=1000000)
+    @patch('spellbookserver.magic.Magic')
+    @patch('spellbookserver.os.path.exists', return_value=True)
+    @patch('spellbookserver.os.remove')
+    @patch('spellbookserver.convert_aac_to_opus')
+    @patch('spellbookserver.LOG')
+    def test_transcribe_mp4_cleanup_old_files(self, mock_log, mock_convert, mock_remove, mock_exists, mock_magic_cls, mock_max, mock_ext, mock_enable, mock_req):
+        """Test that old temp files are cleaned up before MP4 conversion (lines 875, 878)."""
+        mock_req.method = 'POST'
+        mock_file = MagicMock()
+        mock_file.filename = 'test.mp4'
+        mock_file.file.read.return_value = b'video_data'
+        mock_req.files.get.return_value = mock_file
+        mock_mime = MagicMock()
+        mock_mime.from_buffer.return_value = 'video/mp4'
+        mock_magic_cls.return_value = mock_mime
+
+        mock_segment1 = MagicMock()
+        mock_segment1.start = 0.0
+        mock_segment1.end = 2.0
+        mock_segment1.text = 'Converted audio'
+
+        with patch('spellbookserver.WHISPER_MODEL') as mock_whisper, \
+             patch('builtins.open', mock_open(read_data=b'opus_data')):
+            mock_whisper.transcribe.return_value = ([mock_segment1], MagicMock())
+            SpellbookRESTAPI.transcribe()
+            # Verify old files were removed
+            remove_calls = [str(c) for c in mock_remove.call_args_list]
+            assert any('tmp_audio.mp3' in c for c in remove_calls)
+            assert any('opus_audio.opus' in c for c in remove_calls)
 
 
 class TestConvertAacToOpus:
