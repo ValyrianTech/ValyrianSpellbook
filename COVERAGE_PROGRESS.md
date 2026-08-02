@@ -19,7 +19,7 @@
 
 ## Measured Modules (in `pytest.ini` --cov)
 
-All at 100% coverage (except `transactionfactory.py` at 99% and `darwin/` at 99%), 3082 tests passing.
+All at 100% coverage (except `transactionfactory.py` at 99% and `darwin/` at 99%), 3139 tests passing.
 
 - [x] `action/` — 905 lines
 - [x] `bips/` — 301 lines
@@ -71,7 +71,7 @@ All previously unmeasured modules with tests have now been added to `pytest.ini`
 - [x] ~~`spellbookserver.py` — 944 lines — REST API server (Bottle)~~ → **100% coverage** (101 tests; fixed `get_llm_config` NoneType bug; extracted `main()` function; added `TestSpellbookInit` for `__init__` runtime paths)
 - [x] `texts.py` — 631 lines — Text constants/messages — **100% coverage**
 - [ ] `backup_script.py` — 537 lines — GitHub→GitLab backup automation
-- [ ] `import_llm_configs.py` — 240 lines — Bulk LLM config importer
+- [x] `import_llm_configs.py` — 240 lines — Bulk LLM config importer — **100% coverage** (46 tests)
 - [ ] `hot_wallet.py` — 237 lines — Hot wallet management CLI
 - [ ] `quickstart.py` — 148 lines — Quickstart setup script
 - [ ] `uptime_check.py` — 108 lines — Uptime monitoring

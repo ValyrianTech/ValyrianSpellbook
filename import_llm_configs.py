@@ -236,5 +236,5 @@ def main():
     return 0 if success_count == total_count else 1
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     sys.exit(main())
