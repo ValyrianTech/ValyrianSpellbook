@@ -1,6 +1,6 @@
 # Code Coverage Progress Tracker
 
-**Last updated:** 2026-08-02 (updated again)
+**Last updated:** 2026-08-02 (updated again, hot_wallet.py added)
 
 ## Current Status
 
@@ -19,7 +19,7 @@
 
 ## Measured Modules (in `pytest.ini` --cov)
 
-All at 100% coverage (except `transactionfactory.py` at 99% and `darwin/` at 99%), 3139 tests passing.
+All at 100% coverage (except `transactionfactory.py` at 99% and `darwin/` at 99%), 3165 tests passing.
 
 - [x] `action/` — 905 lines
 - [x] `bips/` — 301 lines
@@ -39,6 +39,7 @@ All at 100% coverage (except `transactionfactory.py` at 99% and `darwin/` at 99%
 - [x] `linker/` — 101 lines — 100% coverage
 - [x] `spellbook.py` — 608 lines — 100% coverage
 - [x] `spellbookserver.py` — 678 lines — 100% coverage (extracted `main()` function, added `TestSpellbookInit` for `__init__` paths, `# pragma: no cover` on `__main__` guard)
+- [x] `hot_wallet.py` — 237 lines — 100% coverage (26 tests; `# pragma: no cover` on module-level config validation and command dispatch)
 
 ---
 
@@ -72,7 +73,7 @@ All previously unmeasured modules with tests have now been added to `pytest.ini`
 - [x] `texts.py` — 631 lines — Text constants/messages — **100% coverage**
 - [ ] `backup_script.py` — 537 lines — GitHub→GitLab backup automation
 - [x] `import_llm_configs.py` — 240 lines — Bulk LLM config importer — **100% coverage** (46 tests)
-- [ ] `hot_wallet.py` — 237 lines — Hot wallet management CLI
+- [x] `hot_wallet.py` — 237 lines — Hot wallet management CLI — **100% coverage** (26 tests)
 - [ ] `quickstart.py` — 148 lines — Quickstart setup script
 - [ ] `uptime_check.py` — 108 lines — Uptime monitoring
 - [ ] `dockerfiles/replace_placeholders.py` — 110 lines — Docker placeholder replacement

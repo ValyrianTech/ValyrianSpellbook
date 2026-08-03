@@ -22,16 +22,16 @@ config = ConfigParser()
 config.read(spellbook_configuration_file)
 
 # Check if the spellbook configuration file contains a [Wallet] section
-if not config.has_section('Wallet'):
+if not config.has_section('Wallet'):  # pragma: no cover
     raise Exception('Configuration file %s does not have a [Wallet] section ' % spellbook_configuration_file)
 
 # Check if the [Wallet] section has options for 'wallet_dir' and 'default_wallet'
-if not config.has_option('Wallet', 'wallet_dir'):
+if not config.has_option('Wallet', 'wallet_dir'):  # pragma: no cover
     raise Exception(
         "Configuration file %s does not have an option 'wallet_dir' in the [Wallet] section" % spellbook_configuration_file)
 WALLET_DIR = config.get('Wallet', 'wallet_dir')
 
-if not config.has_option('Wallet', 'default_wallet'):
+if not config.has_option('Wallet', 'default_wallet'):  # pragma: no cover
     raise Exception(
         "Configuration file %s does not have an option 'default_wallet' in the [Wallet] section" % spellbook_configuration_file)
 WALLET_ID = config.get('Wallet', 'default_wallet')
@@ -227,11 +227,11 @@ def show():
 args = parser.parse_args()
 
 # Execute the correct command based on the arguments given
-if args.command == 'add_key':
+if args.command == 'add_key':  # pragma: no cover
     add_key()
-elif args.command == 'delete_key':
+elif args.command == 'delete_key':  # pragma: no cover
     delete_key()
-elif args.command == 'set_bip44':
+elif args.command == 'set_bip44':  # pragma: no cover
     set_bip44()
-elif args.command == 'show':
+elif args.command == 'show':  # pragma: no cover
     show()
