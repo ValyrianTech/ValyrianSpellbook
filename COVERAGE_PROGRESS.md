@@ -12,8 +12,8 @@
 | spellbookscripts (now measured) | 188 | 100% coverage |
 | `spellbook.py` (now measured) | 608 | 100% coverage |
 | `spellbookserver.py` (now measured) | 678 | 100% coverage |
-| No tests, not measured | ~5,923 | Need tests + coverage config |
-| **Total (excl. apps/)** | **~28,458** | **99% measured coverage** |
+| No tests, not measured | ~5,312 | Need tests + coverage config |
+| **Total (excl. apps/)** | **~27,847** | **99% measured coverage** |
 
 ---
 
@@ -76,14 +76,10 @@ All previously unmeasured modules with tests have now been added to `pytest.ini`
 - [x] ~~`spellbook.py` — 608 lines — CLI interface~~ → **100% coverage** (104 tests; fixed missing `get_hivemind` argparse subparser)
 - [x] ~~`spellbookserver.py` — 944 lines — REST API server (Bottle)~~ → **100% coverage** (101 tests; fixed `get_llm_config` NoneType bug; extracted `main()` function; added `TestSpellbookInit` for `__init__` runtime paths)
 - [x] `texts.py` — 631 lines — Text constants/messages — **100% coverage**
-- [ ] `backup_script.py` — 537 lines — GitHub→GitLab backup automation
 - [x] `import_llm_configs.py` — 240 lines — Bulk LLM config importer — **100% coverage** (46 tests)
 - [x] `hot_wallet.py` — 237 lines — Hot wallet management CLI — **100% coverage** (26 tests)
 - [x] ~~`quickstart.py` — 148 lines — Quickstart setup script~~ → **74% coverage** (8 tests; commit `65c96e9`)
 - [x] ~~`uptime_check.py` — 108 lines — Uptime monitoring~~ → **88% coverage** (16 tests; commit `65c96e9`)
 - [x] ~~`dockerfiles/replace_placeholders.py` — 110 lines — Docker placeholder replacement~~ → **100% coverage** (12 tests; commit `65c96e9`)
 - [x] ~~`bitcoinwand.py` — 71 lines — Bitcoin wand utility~~ → **92% coverage** (11 tests; commit `65c96e9`)
-- [ ] `spellbookd.py` — 28 lines — Daemon launcher
-- [ ] `check_domains.py` — 33 lines — Domain checker
 - [x] ~~`AESCipher.py` — 31 lines — AES encryption~~ → **100% coverage** (14 tests; commit `65c96e9`; documents Python 3 `_pad` bug)
-- [ ] `test_client_cloud.py` — 17 lines — Cloud test client
