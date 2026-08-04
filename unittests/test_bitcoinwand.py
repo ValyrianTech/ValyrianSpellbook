@@ -21,13 +21,19 @@ VALID_ADDRESS = '1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2'
 PRIVATE_KEY = 'L4rK1yDtCWekvXuE6oXD9jCYZgns3P4LpMxWqBk5J9aY='
 
 
-def _import_bitcoinwand(message='hello', valid_addr=True, find_wallet=(0, 0), isfile=False, message_hash=None):
+def _import_bitcoinwand(message='hello', valid_addr=True, find_wallet=(0, 0), isfile=False, message_hash=None,
+                        post_side_effect=None):
     """Import bitcoinwand with mocked dependencies. Returns the module object."""
     if 'bitcoinwand' in sys.modules:
         del sys.modules['bitcoinwand']
 
     mock_response = mock.Mock()
     mock_response.text = 'OK'
+
+    if post_side_effect is not None:
+        post_patch = mock.patch('requests.post', side_effect=post_side_effect)
+    else:
+        post_patch = mock.patch('requests.post', return_value=mock_response)
 
     patches = [
         mock.patch('sys.argv', ['bitcoinwand.py', VALID_ADDRESS, message, 'http://example.com']),
@@ -37,7 +43,7 @@ def _import_bitcoinwand(message='hello', valid_addr=True, find_wallet=(0, 0), is
                    return_value={VALID_ADDRESS: PRIVATE_KEY}),
         mock.patch('os.path.isfile', return_value=isfile),
         mock.patch('helpers.messagehelpers.sign_message', return_value='signature'),
-        mock.patch('requests.post', return_value=mock_response),
+        post_patch,
     ]
 
     if message_hash is not None:
@@ -127,3 +133,12 @@ class TestBitcoinwandFileMessage:
         with mock.patch('builtins.open', new_callable=mock.mock_open, read_data=file_content):
             mod = _import_bitcoinwand(message='somefile.txt', isfile=True)
         assert mod.data['message'] == 'message from file'
+
+
+class TestBitcoinwandPostException:
+
+    def test_post_exception_exits(self):
+        """When requests.post raises an exception, the except block is entered and sys.exit(1) is called."""
+        with pytest.raises(SystemExit) as exc_info:
+            _import_bitcoinwand(message='hello', post_side_effect=Exception('Connection refused'))
+        assert exc_info.value.code == 1

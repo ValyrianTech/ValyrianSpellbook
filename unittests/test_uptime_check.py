@@ -9,8 +9,14 @@ get_recent_requests_log() with mocked dependencies.
 """
 import mock
 import pytest
+import os
+import sys
+import runpy
+import subprocess
 
 import uptime_check
+
+_UPTIME_CHECK_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'uptime_check.py')
 
 
 class TestUptimeCheckOnline:
@@ -202,3 +208,39 @@ class TestGetRecentLogs:
         with mock.patch('builtins.open', new_callable=mock.mock_open, read_data=''.join(lines)):
             result = uptime_check.get_recent_requests_log()
             assert 'req1' in result
+
+
+class TestUptimeCheckIpfsEmailFailure:
+
+    @mock.patch('uptime_check.psutil.virtual_memory')
+    @mock.patch('uptime_check.psutil.cpu_percent', return_value=10.0)
+    @mock.patch('uptime_check.requests.get')
+    @mock.patch('uptime_check.get_port', return_value=42069)
+    @mock.patch('uptime_check.get_host', return_value='1.2.3.4')
+    def test_ipfs_offline_email_failure(self, mock_host, mock_port, mock_get, mock_cpu, mock_ram):
+        mock_get.return_value.json.return_value = {'success': True}
+        with mock.patch('uptime_check.check_ipfs', side_effect=Exception('IPFS down')), \
+             mock.patch('uptime_check.sendmail', return_value=False) as mock_mail:
+            uptime_check.uptime_check(email='admin@example.com', ipfs=True)
+            mock_mail.assert_called_once()
+
+
+class TestUptimeCheckMainGuard:
+
+    def test_main_guard_help(self):
+        """Running with --help covers the argparse setup in the __main__ guard."""
+        result = subprocess.run([sys.executable, _UPTIME_CHECK_PATH, '--help'],
+                                capture_output=True, text=True)
+        assert result.returncode == 0
+        assert 'email' in result.stdout
+
+    def test_main_guard_full_run(self):
+        """Running via runpy with mocked deps covers the full __main__ guard."""
+        with mock.patch('sys.argv', ['uptime_check.py', 'admin@example.com']):
+            with mock.patch('helpers.configurationhelpers.get_host', return_value='1.2.3.4'), \
+                 mock.patch('helpers.configurationhelpers.get_port', return_value=42069), \
+                 mock.patch('requests.get') as mock_get, \
+                 mock.patch('psutil.virtual_memory'), \
+                 mock.patch('psutil.cpu_percent', return_value=10.0):
+                mock_get.return_value.json.return_value = {'success': True}
+                runpy.run_path(_UPTIME_CHECK_PATH, run_name='__main__')
