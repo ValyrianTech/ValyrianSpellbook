@@ -44,10 +44,9 @@ class TestGetLatestBlock(object):
     def test_request_error(self, mock_get):
         mock_get.side_effect = Exception('fail')
         api = ChainSoAPI()
-        # Source code has a format string bug: '... %s ... %s' % ex
-        # which raises TypeError when ex is a single argument
-        with pytest.raises(TypeError):
-            api.get_latest_block()
+        result = api.get_latest_block()
+        assert 'error' in result
+        assert 'Unable to get latest block from Chain.so' in result['error']
 
     @mock.patch('data.blockexplorers.chain_so.requests.get')
     def test_no_data_key(self, mock_get):

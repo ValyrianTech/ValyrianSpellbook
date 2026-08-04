@@ -81,8 +81,8 @@ class ChainSoAPI(ExplorerAPI):
             r = requests.get(url)
             data = r.json()
         except Exception as ex:
-            LOG.error('Unable to get latest block %s from Chain.so: %s' % ex)
-            return {'error': 'Unable to get latest block from Chain.so'}  # pragma: no cover
+            LOG.error('Unable to get latest block from Chain.so: %s' % ex)
+            return {'error': 'Unable to get latest block from Chain.so'}
 
         if 'data' not in data:
             LOG.error('Invalid response data from Chain.so: %s' % data)
