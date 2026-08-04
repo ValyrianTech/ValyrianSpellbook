@@ -1,25 +1,25 @@
 # Code Coverage Progress Tracker
 
-**Last updated:** 2026-08-02 (updated again, hot_wallet.py added)
+**Last updated:** 2026-08-04 (added AESCipher, bitcoinwand, quickstart, uptime_check, replace_placeholders)
 
 ## Current Status
 
 | Category | Lines | Status |
 |----------|-------|--------|
-| Measured + covered | 10,188 | 100% coverage |
-| Measured, partial | 661 | `transactionfactory.py` at 99% |
+| Measured + covered | 11,041 | 100% coverage |
+| Measured, partial | 872 | `transactionfactory.py` 99%, `quickstart.py` 74%, `uptime_check.py` 88%, `bitcoinwand.py` 92% |
 | Darwin (now measured) | 8,936 | 99% coverage (130 lines uncovered) |
 | spellbookscripts (now measured) | 188 | 100% coverage |
 | `spellbook.py` (now measured) | 608 | 100% coverage |
 | `spellbookserver.py` (now measured) | 678 | 100% coverage |
-| No tests, not measured | ~6,873 | Need tests + coverage config |
+| No tests, not measured | ~5,923 | Need tests + coverage config |
 | **Total (excl. apps/)** | **~28,458** | **99% measured coverage** |
 
 ---
 
 ## Measured Modules (in `pytest.ini` --cov)
 
-All at 100% coverage (except `transactionfactory.py` at 99% and `darwin/` at 99%), 3165 tests passing.
+All at 100% coverage (except `transactionfactory.py` at 99%, `darwin/` at 99%, `quickstart.py` at 74%, `uptime_check.py` at 88%, `bitcoinwand.py` at 92%), 3214 tests passing.
 
 - [x] `action/` — 905 lines
 - [x] `bips/` — 301 lines
@@ -40,6 +40,11 @@ All at 100% coverage (except `transactionfactory.py` at 99% and `darwin/` at 99%
 - [x] `spellbook.py` — 608 lines — 100% coverage
 - [x] `spellbookserver.py` — 678 lines — 100% coverage (extracted `main()` function, added `TestSpellbookInit` for `__init__` paths, `# pragma: no cover` on `__main__` guard)
 - [x] `hot_wallet.py` — 237 lines — 100% coverage (26 tests; `# pragma: no cover` on module-level config validation and command dispatch)
+- [x] `AESCipher.py` — 23 lines — 100% coverage (14 tests; documents Python 3 `_pad` bug)
+- [x] `bitcoinwand.py` — 37 lines — 92% coverage (11 tests; missing POST exception handler lines 69-71)
+- [x] `quickstart.py` — 96 lines — 74% coverage (8 tests; missing conditional branches for SMTP/IPFS/SSL/Twitter/OpenAI/Mastodon/Nostr enabled paths)
+- [x] `uptime_check.py` — 68 lines — 88% coverage (16 tests; missing `__main__` guard lines 98-108 and IPFS email failure line 79)
+- [x] `dockerfiles/replace_placeholders.py` — 13 lines — 100% coverage (12 tests)
 
 ---
 
@@ -74,11 +79,11 @@ All previously unmeasured modules with tests have now been added to `pytest.ini`
 - [ ] `backup_script.py` — 537 lines — GitHub→GitLab backup automation
 - [x] `import_llm_configs.py` — 240 lines — Bulk LLM config importer — **100% coverage** (46 tests)
 - [x] `hot_wallet.py` — 237 lines — Hot wallet management CLI — **100% coverage** (26 tests)
-- [ ] `quickstart.py` — 148 lines — Quickstart setup script
-- [ ] `uptime_check.py` — 108 lines — Uptime monitoring
-- [ ] `dockerfiles/replace_placeholders.py` — 110 lines — Docker placeholder replacement
-- [ ] `bitcoinwand.py` — 71 lines — Bitcoin wand utility
+- [x] ~~`quickstart.py` — 148 lines — Quickstart setup script~~ → **74% coverage** (8 tests; commit `65c96e9`)
+- [x] ~~`uptime_check.py` — 108 lines — Uptime monitoring~~ → **88% coverage** (16 tests; commit `65c96e9`)
+- [x] ~~`dockerfiles/replace_placeholders.py` — 110 lines — Docker placeholder replacement~~ → **100% coverage** (12 tests; commit `65c96e9`)
+- [x] ~~`bitcoinwand.py` — 71 lines — Bitcoin wand utility~~ → **92% coverage** (11 tests; commit `65c96e9`)
 - [ ] `spellbookd.py` — 28 lines — Daemon launcher
 - [ ] `check_domains.py` — 33 lines — Domain checker
-- [ ] `AESCipher.py` — 31 lines — AES encryption
+- [x] ~~`AESCipher.py` — 31 lines — AES encryption~~ → **100% coverage** (14 tests; commit `65c96e9`; documents Python 3 `_pad` bug)
 - [ ] `test_client_cloud.py` — 17 lines — Cloud test client
