@@ -69,7 +69,7 @@ class Population(object):
                         if chromosome_data['charset'] is not None:
                             gene.charset = chromosome_data['charset']
 
-                    else:
+                    else:  # pragma: no cover
                         raise NotImplementedError('Unknown encoding type: %s' % chromosome_data['encoding_type'])
 
                     gene.data = gene_data

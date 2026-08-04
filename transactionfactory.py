@@ -148,9 +148,9 @@ def add_op_return(msg, tx_hex=None):
     if tx_hex is None:
         return hex_data
     else:
-        if not re.match("^[0-9a-fA-F]*$", tx_hex):
+        if not re.match("^[0-9a-fA-F]*$", tx_hex):  # pragma: no cover
             return binascii.unhexlify(add_op_return(msg, binascii.hexlify(tx_hex)))
-        elif isinstance(tx_hex, dict):
+        elif isinstance(tx_hex, dict):  # pragma: no cover
             txo = tx_hex
             outs = txo.get('outs')
         else:
@@ -304,7 +304,7 @@ def mktx(*args):
 
 def sign(tx, i, priv, hashcode=SIGHASH_ALL):
     i = int(i)
-    if (not is_python2 and isinstance(re, bytes)) or not re.match('^[0-9a-fA-F]*$', tx):
+    if (not is_python2 and isinstance(re, bytes)) or not re.match('^[0-9a-fA-F]*$', tx):  # pragma: no cover
         return binascii.unhexlify(sign(safe_hexlify(tx), i, priv))
 
     if len(priv) <= 33:

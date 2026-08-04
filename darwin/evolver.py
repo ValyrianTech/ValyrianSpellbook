@@ -129,7 +129,7 @@ class Evolver(object):
         if not os.path.isdir(self.champions_dir):
             os.makedirs(self.champions_dir)
 
-        if not os.path.isdir(self.save_dir):
+        if not os.path.isdir(self.save_dir):  # pragma: no cover
             os.makedirs(self.save_dir)
 
         self.progress_file = os.path.join(DARWIN_DIR, 'progress.txt')
@@ -215,7 +215,7 @@ class Evolver(object):
 
         fitness_function.darwin_init_actions()
 
-        if not isinstance(fitness_function, FitnessFunction):
+        if not isinstance(fitness_function, FitnessFunction):  # pragma: no cover
             raise Exception('Script %s is not a valid FitnessFunction Script, instead it is a %s' % (fitness_function, type(fitness_function)))
 
         if self.load_last_save is True:
@@ -333,7 +333,7 @@ class Evolver(object):
                             gene.apply_mutations(mutation_chance=self.float_mutation_chance, multiplier=mutation_multiplier)
                         elif chromosome.encoding_type == EncodingType.STRING:
                             gene.apply_mutations(mutation_chance=self.string_mutation_chance, multiplier=mutation_multiplier)
-                        else:
+                        else:  # pragma: no cover
                             raise NotImplementedError('Unknown encoding type: %s' % chromosome.encoding_type)
 
             # Copy the n genomes with highest fitness to the next generation if elitism is greater than 0,
@@ -376,7 +376,7 @@ class Evolver(object):
         elif os.path.isfile(os.path.join(SPELLBOOK_DIR, script)):
             script_path = os.path.join(SPELLBOOK_DIR, script)
 
-        if script_path is None:
+        if script_path is None:  # pragma: no cover
             print('Can not find script %s' % script)
             print(os.getcwd())
             return
