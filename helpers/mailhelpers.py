@@ -8,10 +8,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.mime.base import MIMEBase
-try:
-    pass  # Python2.7
-except:
-    from email import encoders  # Python3
+from email import encoders
 
 
 from helpers.loghelpers import LOG
