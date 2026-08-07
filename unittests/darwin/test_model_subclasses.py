@@ -10,15 +10,15 @@ We inject the base class into the ``model`` package namespace so those imports s
 import darwin  # noqa: F401 - import side-effect: adds DARWIN_DIR to sys.path
 
 # Inject Model into the model package so 'from model import Model' works
-import model.model
-import model
+import model.model  # noqa: E402
+import model  # noqa: E402
 model.Model = model.model.Model
 
-from model.booleantest import BooleanTest
-from model.floattest import FloatTest
-from model.fulltest import FullTest
-from model.integertest import IntegerTest
-from model.stringtest import StringTest
+from model.booleantest import BooleanTest  # noqa: E402
+from model.floattest import FloatTest  # noqa: E402
+from model.fulltest import FullTest  # noqa: E402
+from model.integertest import IntegerTest  # noqa: E402
+from model.stringtest import StringTest  # noqa: E402
 
 
 class TestBooleanTest:

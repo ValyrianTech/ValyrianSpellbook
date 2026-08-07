@@ -13,7 +13,7 @@ from logging.handlers import RotatingFileHandler
 PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, PROGRAM_DIR)
 
-from helpers.runcommandprocess import RunCommandProcess
+from helpers.runcommandprocess import RunCommandProcess  # noqa: E402
 # import mysql.connector  # TODO re-enable mysql functionality
 
 

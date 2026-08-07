@@ -12,26 +12,26 @@ import pytest
 import darwin  # noqa: F401 - import side-effect: adds DARWIN_DIR to sys.path
 
 # Inject FitnessFunction into the fitnessfunction package
-import fitnessfunction.fitnessfunction
-import fitnessfunction
+import fitnessfunction.fitnessfunction  # noqa: E402
+import fitnessfunction  # noqa: E402
 fitnessfunction.FitnessFunction = fitnessfunction.fitnessfunction.FitnessFunction
 
 # Also inject Model into model package (needed by fitness functions that import models)
-import model.model
-import model
+import model.model  # noqa: E402
+import model  # noqa: E402
 model.Model = model.model.Model
 
-from fitnessfunction.booleantestfitnessfunction import BooleanTestFitnessFunction
-from fitnessfunction.floattestfitnessfunction import FloatTestFitnessFunction
-from fitnessfunction.fulltestfitnessfunction import FullTestFitnessFunction
-from fitnessfunction.integertestfitnessfunction import IntegerTestFitnessFunction
-from fitnessfunction.stringtestfitnessfunction import StringTestFitnessFunction
+from fitnessfunction.booleantestfitnessfunction import BooleanTestFitnessFunction  # noqa: E402
+from fitnessfunction.floattestfitnessfunction import FloatTestFitnessFunction  # noqa: E402
+from fitnessfunction.fulltestfitnessfunction import FullTestFitnessFunction  # noqa: E402
+from fitnessfunction.integertestfitnessfunction import IntegerTestFitnessFunction  # noqa: E402
+from fitnessfunction.stringtestfitnessfunction import StringTestFitnessFunction  # noqa: E402
 
-from model.booleantest import BooleanTest
-from model.floattest import FloatTest
-from model.fulltest import FullTest
-from model.integertest import IntegerTest
-from model.stringtest import StringTest
+from model.booleantest import BooleanTest  # noqa: E402
+from model.floattest import FloatTest  # noqa: E402
+from model.fulltest import FullTest  # noqa: E402
+from model.integertest import IntegerTest  # noqa: E402
+from model.stringtest import StringTest  # noqa: E402
 
 
 class TestBooleanTestFitnessFunction:

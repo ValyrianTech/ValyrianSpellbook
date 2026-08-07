@@ -24,8 +24,8 @@ _transcribe_patcher.start()
 _wallet_patcher = patch('spellbookserver.get_enable_wallet', return_value=False)
 _wallet_patcher.start()
 
-import spellbookserver as srv
-from spellbookserver import (
+import spellbookserver as srv  # noqa: E402
+from spellbookserver import (  # noqa: E402
     enable_cors,
     SpellbookRESTAPI,
     convert_aac_to_opus,
