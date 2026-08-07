@@ -16,8 +16,6 @@ from logging.handlers import RotatingFileHandler
 
 from bottle import Bottle, BaseRequest, request, response, static_file, ServerAdapter, server_names, HTTPResponse
 
-BaseRequest.MEMFILE_MAX = 10 * 1024 * 1024  # 10MB — override default 100KB for large AddMessage payloads
-
 from authentication import initialize_api_keys_file
 from data.data import get_explorers, get_explorer_config, save_explorer, delete_explorer
 from data.data import latest_block, block_by_height, block_by_hash, prime_input_address, transaction
@@ -39,6 +37,8 @@ from randomaddress.randomaddress import random_address_from_sil, random_address_
     random_address_from_lsl
 from helpers.qrhelpers import generate_qr
 from helpers.llmhelpers import load_llms, get_llm_config, save_llm_config, delete_llm
+
+BaseRequest.MEMFILE_MAX = 10 * 1024 * 1024  # 10MB — override default 100KB for large AddMessage payloads
 
 # Make sure the current working directory is correct
 PROGRAM_DIR = os.path.abspath(os.path.dirname(__file__))
