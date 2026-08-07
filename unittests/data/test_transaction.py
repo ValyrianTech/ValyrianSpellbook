@@ -63,7 +63,7 @@ class TestTxOutput(object):
         assert result['n'] == 1
         assert result['script'] == 'output_script'
         assert result['op_return'] == 'OP_RETURN data'
-        assert result['spent'] == True
+        assert result['spent']
 
 
 class TestTX(object):
@@ -112,7 +112,7 @@ class TestTX(object):
         input1.address = 'other_address'
         tx.inputs = [input1]
 
-        assert tx.is_receiving_tx('my_address') == True
+        assert tx.is_receiving_tx('my_address')
 
     def test_tx_is_receiving_tx_false(self):
         tx = TX()
@@ -120,7 +120,7 @@ class TestTX(object):
         input1.address = 'my_address'
         tx.inputs = [input1]
 
-        assert tx.is_receiving_tx('my_address') == False
+        assert not tx.is_receiving_tx('my_address')
 
     def test_tx_sent_value(self):
         tx = TX()
@@ -146,7 +146,7 @@ class TestTX(object):
         input1.address = 'my_address'
         tx.inputs = [input1]
 
-        assert tx.is_sending_tx('my_address') == True
+        assert tx.is_sending_tx('my_address')
 
     def test_tx_is_sending_tx_false(self):
         tx = TX()
@@ -154,7 +154,7 @@ class TestTX(object):
         input1.address = 'other_address'
         tx.inputs = [input1]
 
-        assert tx.is_sending_tx('my_address') == False
+        assert not tx.is_sending_tx('my_address')
 
     def test_tx_to_dict_receiving(self):
         tx = TX()
@@ -176,7 +176,7 @@ class TestTX(object):
 
         result = tx.to_dict('my_address')
         assert result['txid'] == 'test_txid'
-        assert result['receiving'] == True
+        assert result['receiving']
         assert result['receivedValue'] == 50000
         assert 'sentValue' not in result
 
@@ -200,7 +200,7 @@ class TestTX(object):
 
         result = tx.to_dict('my_address')
         assert result['txid'] == 'test_txid'
-        assert result['receiving'] == False
+        assert not result['receiving']
         assert result['sentValue'] == 100000
         assert 'receivedValue' not in result
 

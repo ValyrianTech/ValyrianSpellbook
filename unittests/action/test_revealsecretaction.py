@@ -15,7 +15,7 @@ class TestRevealSecretAction(object):
         assert action.action_type == ActionType.REVEALSECRET
         assert action.reveal_text is None
         assert action.reveal_link is None
-        assert action.allow_reveal == False
+        assert not action.allow_reveal
 
     def test_revealsecretaction_configure(self):
         action = RevealSecretAction('test_reveal_action')
@@ -26,14 +26,14 @@ class TestRevealSecretAction(object):
         )
         assert action.reveal_text == 'secret message'
         assert action.reveal_link == 'http://secret.link'
-        assert action.allow_reveal == True
+        assert action.allow_reveal
 
     def test_revealsecretaction_configure_partial(self):
         action = RevealSecretAction('test_reveal_action')
         action.configure(reveal_text='only text')
         assert action.reveal_text == 'only text'
         assert action.reveal_link is None
-        assert action.allow_reveal == False
+        assert not action.allow_reveal
 
     def test_revealsecretaction_json_encodable(self):
         action = RevealSecretAction('test_reveal_action')
@@ -48,13 +48,13 @@ class TestRevealSecretAction(object):
         assert result['action_type'] == ActionType.REVEALSECRET
         assert result['reveal_text'] == 'secret'
         assert result['reveal_link'] == 'http://link.com'
-        assert result['allow_reveal'] == True
+        assert result['allow_reveal']
 
     @mock.patch.object(RevealSecretAction, 'save')
     def test_revealsecretaction_run(self, mock_save):
         action = RevealSecretAction('test_reveal_action')
         action.allow_reveal = False
         result = action.run()
-        assert result == True
-        assert action.allow_reveal == True
+        assert result
+        assert action.allow_reveal
         mock_save.assert_called_once()

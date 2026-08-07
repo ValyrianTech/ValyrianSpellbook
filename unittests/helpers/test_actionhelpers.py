@@ -159,7 +159,7 @@ class TestActionHelpers(object):
         result = run_action('test_action')
         
         mock_action.run.assert_called_once()
-        assert result == True
+        assert result
 
     @mock.patch('helpers.actionhelpers.get_action')
     def test_get_reveal_not_allowed(self, mock_get_action):

@@ -30,7 +30,7 @@ class TestManualTrigger(object):
 
     def test_manualtrigger_conditions_fulfilled(self):
         trigger = ManualTrigger('test_manual')
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
 
 
 class TestBalanceTrigger(object):
@@ -63,12 +63,12 @@ class TestBalanceTrigger(object):
     def test_balancetrigger_conditions_fulfilled_no_address(self):
         trigger = BalanceTrigger('test_balance')
         trigger.amount = 50000
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
 
     def test_balancetrigger_conditions_fulfilled_no_amount(self):
         trigger = BalanceTrigger('test_balance')
         trigger.address = '1TestAddress'
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
 
     @mock.patch('trigger.balancetrigger.balance')
     def test_balancetrigger_conditions_fulfilled_true(self, mock_balance):
@@ -76,7 +76,7 @@ class TestBalanceTrigger(object):
         trigger = BalanceTrigger('test_balance')
         trigger.address = '1TestAddress'
         trigger.amount = 50000
-        assert trigger.conditions_fulfilled() == True
+        assert trigger.conditions_fulfilled()
 
     @mock.patch('trigger.balancetrigger.balance')
     def test_balancetrigger_conditions_fulfilled_false(self, mock_balance):
@@ -84,7 +84,7 @@ class TestBalanceTrigger(object):
         trigger = BalanceTrigger('test_balance')
         trigger.address = '1TestAddress'
         trigger.amount = 50000
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
 
     @mock.patch('trigger.balancetrigger.balance')
     def test_balancetrigger_conditions_fulfilled_error(self, mock_balance):
@@ -92,7 +92,7 @@ class TestBalanceTrigger(object):
         trigger = BalanceTrigger('test_balance')
         trigger.address = '1TestAddress'
         trigger.amount = 50000
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
 
 
 class TestBlockHeightTrigger(object):
@@ -124,7 +124,7 @@ class TestBlockHeightTrigger(object):
 
     def test_blockheighttrigger_conditions_fulfilled_no_height(self):
         trigger = BlockHeightTrigger('test_blockheight')
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
 
     @mock.patch('trigger.blockheighttrigger.latest_block')
     def test_blockheighttrigger_conditions_fulfilled_true(self, mock_latest):
@@ -132,7 +132,7 @@ class TestBlockHeightTrigger(object):
         trigger = BlockHeightTrigger('test_blockheight')
         trigger.block_height = 700000
         trigger.confirmations = 6
-        assert trigger.conditions_fulfilled() == True
+        assert trigger.conditions_fulfilled()
 
     @mock.patch('trigger.blockheighttrigger.latest_block')
     def test_blockheighttrigger_conditions_fulfilled_false(self, mock_latest):
@@ -140,14 +140,14 @@ class TestBlockHeightTrigger(object):
         trigger = BlockHeightTrigger('test_blockheight')
         trigger.block_height = 700000
         trigger.confirmations = 6
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
 
     @mock.patch('trigger.blockheighttrigger.latest_block')
     def test_blockheighttrigger_conditions_fulfilled_error(self, mock_latest):
         mock_latest.return_value = {'error': 'API error'}
         trigger = BlockHeightTrigger('test_blockheight')
         trigger.block_height = 700000
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
 
 
 class TestTimestampTrigger(object):
@@ -174,17 +174,17 @@ class TestTimestampTrigger(object):
 
     def test_timestamptrigger_conditions_fulfilled_no_timestamp(self):
         trigger = TimestampTrigger('test_timestamp')
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
 
     def test_timestamptrigger_conditions_fulfilled_true(self):
         trigger = TimestampTrigger('test_timestamp')
         trigger.timestamp = int(time.time()) - 100  # 100 seconds ago
-        assert trigger.conditions_fulfilled() == True
+        assert trigger.conditions_fulfilled()
 
     def test_timestamptrigger_conditions_fulfilled_false(self):
         trigger = TimestampTrigger('test_timestamp')
         trigger.timestamp = int(time.time()) + 3600  # 1 hour in future
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
 
 
 class TestRecurringTrigger(object):
@@ -207,7 +207,7 @@ class TestRecurringTrigger(object):
         assert trigger.interval == 3600
         assert trigger.begin_time == begin
         assert trigger.end_time == begin + 86400
-        assert trigger.multi == True
+        assert trigger.multi
         assert trigger.next_activation == begin
 
     def test_recurringtrigger_json_encodable(self):
@@ -222,19 +222,19 @@ class TestRecurringTrigger(object):
     def test_recurringtrigger_conditions_fulfilled_no_interval(self):
         trigger = RecurringTrigger('test_recurring')
         trigger.begin_time = int(time.time())
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
 
     def test_recurringtrigger_conditions_fulfilled_no_begin(self):
         trigger = RecurringTrigger('test_recurring')
         trigger.interval = 3600
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
 
     def test_recurringtrigger_conditions_fulfilled_no_end(self):
         trigger = RecurringTrigger('test_recurring')
         trigger.interval = 3600
         trigger.begin_time = int(time.time()) - 100
         trigger.next_activation = int(time.time()) - 50
-        assert trigger.conditions_fulfilled() == True
+        assert trigger.conditions_fulfilled()
 
     @mock.patch('trigger.recurringtrigger.Trigger.save')
     def test_recurringtrigger_conditions_fulfilled_past_end(self, mock_save):
@@ -243,7 +243,7 @@ class TestRecurringTrigger(object):
         trigger.begin_time = int(time.time()) - 7200
         trigger.end_time = int(time.time()) - 3600  # ended 1 hour ago
         trigger.next_activation = int(time.time()) - 50
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
         assert trigger.status == 'Succeeded'
 
     def test_recurringtrigger_conditions_fulfilled_within_window(self):
@@ -252,7 +252,7 @@ class TestRecurringTrigger(object):
         trigger.begin_time = int(time.time()) - 100
         trigger.end_time = int(time.time()) + 3600
         trigger.next_activation = int(time.time()) - 50
-        assert trigger.conditions_fulfilled() == True
+        assert trigger.conditions_fulfilled()
 
     @mock.patch('trigger.recurringtrigger.Trigger.save')
     @mock.patch('trigger.recurringtrigger.Trigger.activate')
@@ -304,7 +304,7 @@ class TestTriggerStatusTrigger(object):
 
     def test_triggerstatustrigger_conditions_fulfilled_no_previous(self):
         trigger = TriggerStatusTrigger('test_status')
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
 
     @mock.patch('helpers.triggerhelpers.get_trigger')
     def test_triggerstatustrigger_conditions_fulfilled_true(self, mock_get_trigger):
@@ -316,7 +316,7 @@ class TestTriggerStatusTrigger(object):
         trigger = TriggerStatusTrigger('test_status')
         trigger.previous_trigger = 'other_trigger'
         trigger.previous_trigger_status = 'Succeeded'
-        assert trigger.conditions_fulfilled() == True
+        assert trigger.conditions_fulfilled()
 
     @mock.patch('helpers.triggerhelpers.get_trigger')
     def test_triggerstatustrigger_conditions_fulfilled_false(self, mock_get_trigger):
@@ -328,7 +328,7 @@ class TestTriggerStatusTrigger(object):
         trigger = TriggerStatusTrigger('test_status')
         trigger.previous_trigger = 'other_trigger'
         trigger.previous_trigger_status = 'Succeeded'
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
 
 
 class TestReceivedTrigger(object):
@@ -360,7 +360,7 @@ class TestReceivedTrigger(object):
 
     def test_receivedtrigger_conditions_fulfilled_no_config(self):
         trigger = ReceivedTrigger('test_received')
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
 
     @mock.patch('trigger.receivedtrigger.balance')
     def test_receivedtrigger_conditions_fulfilled_true(self, mock_balance):
@@ -368,7 +368,7 @@ class TestReceivedTrigger(object):
         trigger = ReceivedTrigger('test_received')
         trigger.address = '1TestAddress'
         trigger.amount = 50000
-        assert trigger.conditions_fulfilled() == True
+        assert trigger.conditions_fulfilled()
 
     @mock.patch('trigger.receivedtrigger.balance')
     def test_receivedtrigger_conditions_fulfilled_false(self, mock_balance):
@@ -376,7 +376,7 @@ class TestReceivedTrigger(object):
         trigger = ReceivedTrigger('test_received')
         trigger.address = '1TestAddress'
         trigger.amount = 50000
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
 
     @mock.patch('trigger.receivedtrigger.balance')
     def test_receivedtrigger_conditions_fulfilled_error(self, mock_balance):
@@ -384,7 +384,7 @@ class TestReceivedTrigger(object):
         trigger = ReceivedTrigger('test_received')
         trigger.address = '1TestAddress'
         trigger.amount = 50000
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
 
 
 class TestSentTrigger(object):
@@ -416,7 +416,7 @@ class TestSentTrigger(object):
 
     def test_senttrigger_conditions_fulfilled_no_config(self):
         trigger = SentTrigger('test_sent')
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
 
     @mock.patch('trigger.senttrigger.balance')
     def test_senttrigger_conditions_fulfilled_true(self, mock_balance):
@@ -424,7 +424,7 @@ class TestSentTrigger(object):
         trigger = SentTrigger('test_sent')
         trigger.address = '1TestAddress'
         trigger.amount = 50000
-        assert trigger.conditions_fulfilled() == True
+        assert trigger.conditions_fulfilled()
 
     @mock.patch('trigger.senttrigger.balance')
     def test_senttrigger_conditions_fulfilled_false(self, mock_balance):
@@ -432,7 +432,7 @@ class TestSentTrigger(object):
         trigger = SentTrigger('test_sent')
         trigger.address = '1TestAddress'
         trigger.amount = 50000
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
 
     @mock.patch('trigger.senttrigger.balance')
     def test_senttrigger_conditions_fulfilled_error(self, mock_balance):
@@ -440,7 +440,7 @@ class TestSentTrigger(object):
         trigger = SentTrigger('test_sent')
         trigger.address = '1TestAddress'
         trigger.amount = 50000
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
 
 
 class TestTxConfirmationTrigger(object):
@@ -472,7 +472,7 @@ class TestTxConfirmationTrigger(object):
 
     def test_txconfirmationtrigger_conditions_fulfilled_no_txid(self):
         trigger = TxConfirmationTrigger('test_txconf')
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
 
     @mock.patch('trigger.txconfirmationtrigger.transaction')
     def test_txconfirmationtrigger_conditions_fulfilled_true(self, mock_tx):
@@ -480,7 +480,7 @@ class TestTxConfirmationTrigger(object):
         trigger = TxConfirmationTrigger('test_txconf')
         trigger.txid = 'abc123'
         trigger.confirmations = 6
-        assert trigger.conditions_fulfilled() == True
+        assert trigger.conditions_fulfilled()
 
     @mock.patch('trigger.txconfirmationtrigger.transaction')
     def test_txconfirmationtrigger_conditions_fulfilled_false(self, mock_tx):
@@ -488,14 +488,14 @@ class TestTxConfirmationTrigger(object):
         trigger = TxConfirmationTrigger('test_txconf')
         trigger.txid = 'abc123'
         trigger.confirmations = 6
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
 
     @mock.patch('trigger.txconfirmationtrigger.transaction')
     def test_txconfirmationtrigger_conditions_fulfilled_error(self, mock_tx):
         mock_tx.return_value = {'error': 'API error'}
         trigger = TxConfirmationTrigger('test_txconf')
         trigger.txid = 'abc123'
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
 
 
 class TestDeadMansSwitchTrigger(object):
@@ -530,7 +530,7 @@ class TestDeadMansSwitchTrigger(object):
         trigger.triggered = 1
         trigger.status = 'Failed'
         trigger.configure(reset=True)
-        assert trigger.triggered == False
+        assert not trigger.triggered
         assert trigger.status == 'Active'
         assert trigger.phase == 1
 
@@ -545,7 +545,7 @@ class TestDeadMansSwitchTrigger(object):
 
     def test_deadmansswitchtrigger_conditions_fulfilled_no_config(self):
         trigger = DeadMansSwitchTrigger('test_dms')
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
 
     @mock.patch('trigger.deadmansswitchtrigger.sendmail')
     @mock.patch('trigger.deadmansswitchtrigger.DeadMansSwitchTrigger.save')
@@ -569,7 +569,7 @@ class TestDeadMansSwitchTrigger(object):
         trigger.activation_time = int(time.time()) + 400  # 60% remaining, so 40% passed > 50% threshold
         result = trigger.conditions_fulfilled()
         assert trigger.phase == SwitchPhase.PHASE_2
-        assert result == False
+        assert not result
 
     @mock.patch('trigger.deadmansswitchtrigger.sendmail')
     @mock.patch('trigger.deadmansswitchtrigger.DeadMansSwitchTrigger.save')
@@ -581,7 +581,7 @@ class TestDeadMansSwitchTrigger(object):
         trigger.activation_time = int(time.time()) + 200  # 20% remaining, so 80% passed > 75% threshold
         result = trigger.conditions_fulfilled()
         assert trigger.phase == SwitchPhase.PHASE_3
-        assert result == False
+        assert not result
 
     @mock.patch('trigger.deadmansswitchtrigger.sendmail')
     @mock.patch('trigger.deadmansswitchtrigger.DeadMansSwitchTrigger.save')
@@ -593,7 +593,7 @@ class TestDeadMansSwitchTrigger(object):
         trigger.activation_time = int(time.time()) + 50  # 5% remaining, so 95% passed > 90% threshold
         result = trigger.conditions_fulfilled()
         assert trigger.phase == SwitchPhase.PHASE_4
-        assert result == False
+        assert not result
 
     @mock.patch('trigger.deadmansswitchtrigger.sendmail')
     @mock.patch('trigger.deadmansswitchtrigger.DeadMansSwitchTrigger.save')
@@ -605,7 +605,7 @@ class TestDeadMansSwitchTrigger(object):
         trigger.activation_time = int(time.time()) - 10  # activation time passed
         result = trigger.conditions_fulfilled()
         assert trigger.phase == SwitchPhase.PHASE_5
-        assert result == True
+        assert result
 
     def test_switchphase_constants(self):
         assert SwitchPhase.PHASE_0 == 0
@@ -640,7 +640,7 @@ class TestSignedMessageTrigger(object):
 
     def test_signedmessagetrigger_conditions_fulfilled(self):
         trigger = SignedMessageTrigger('test_signed')
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
 
     def test_signedmessagetrigger_json_encodable(self):
         trigger = SignedMessageTrigger('test_signed')
@@ -702,7 +702,7 @@ class TestHTTPGetRequestTrigger(object):
 
     def test_httpgetrequesttrigger_conditions_fulfilled(self):
         trigger = HTTPGetRequestTrigger('test_httpget')
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
 
     def test_httpgetrequesttrigger_configure(self):
         trigger = HTTPGetRequestTrigger('test_httpget')
@@ -739,7 +739,7 @@ class TestHTTPPostRequestTrigger(object):
 
     def test_httppostrequesttrigger_conditions_fulfilled(self):
         trigger = HTTPPostRequestTrigger('test_httppost')
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
 
     def test_httppostrequesttrigger_configure(self):
         trigger = HTTPPostRequestTrigger('test_httppost')
@@ -776,7 +776,7 @@ class TestHTTPDeleteRequestTrigger(object):
 
     def test_httpdeleterequesttrigger_conditions_fulfilled(self):
         trigger = HTTPDeleteRequestTrigger('test_httpdelete')
-        assert trigger.conditions_fulfilled() == False
+        assert not trigger.conditions_fulfilled()
 
     def test_httpdeleterequesttrigger_configure(self):
         trigger = HTTPDeleteRequestTrigger('test_httpdelete')

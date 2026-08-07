@@ -41,13 +41,13 @@ class TestExplorerAPI(object):
         assert api.error == ''
         assert api.url == ''
         assert api.key == ''
-        assert api.testnet == False
+        assert not api.testnet
 
     def test_explorer_api_init_with_params(self):
         api = ConcreteExplorerAPI(url='https://test.com', key='api_key', testnet=True)
         assert api.url == 'https://test.com'
         assert api.key == 'api_key'
-        assert api.testnet == True
+        assert api.testnet
 
     def test_get_block_by_height(self):
         api = ConcreteExplorerAPI()

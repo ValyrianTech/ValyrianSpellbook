@@ -216,7 +216,7 @@ class TestSendTransactionAction(object):
     def test_sendtransactionaction_run_no_sending_address(self):
         action = SendTransactionAction('test_send_tx')
         result = action.run()
-        assert result == False
+        assert not result
 
     def test_sendtransactionaction_calculate_spellbook_fee_no_fee(self):
         action = SendTransactionAction('test_send_tx')
@@ -259,9 +259,9 @@ class TestSendTransactionAction(object):
         # Default max fee percentage from config
         with mock.patch('action.sendtransactionaction.get_max_tx_fee_percentage', return_value=10):
             # 5% fee should be acceptable
-            assert action.is_fee_acceptable(5000, 100000) == True
+            assert action.is_fee_acceptable(5000, 100000)
             # 15% fee should not be acceptable
-            assert action.is_fee_acceptable(15000, 100000) == False
+            assert not action.is_fee_acceptable(15000, 100000)
 
     def test_sendtransactionaction_log_transaction_info(self):
         action = SendTransactionAction('test_send_tx')
@@ -376,7 +376,7 @@ class TestSendTransactionActionRun(object):
         action = SendTransactionAction('test_send_tx')
         action.sending_address = '1TestAddress'
         result = action.run()
-        assert result == False
+        assert not result
 
     @mock.patch('action.sendtransactionaction.utxos')
     def test_run_no_utxos(self, mock_utxos):
@@ -385,7 +385,7 @@ class TestSendTransactionActionRun(object):
         action = SendTransactionAction('test_send_tx')
         action.sending_address = '1TestAddress'
         result = action.run()
-        assert result == False
+        assert not result
 
     @mock.patch('action.sendtransactionaction.utxos')
     def test_run_minimum_amount_not_met(self, mock_utxos):
@@ -397,7 +397,7 @@ class TestSendTransactionActionRun(object):
         action.sending_address = '1TestAddress'
         action.minimum_amount = 10000
         result = action.run()
-        assert result == False
+        assert not result
 
     @mock.patch('action.sendtransactionaction.utxos')
     @mock.patch('action.sendtransactionaction.valid_address')
@@ -415,7 +415,7 @@ class TestSendTransactionActionRun(object):
         action.fee_percentage = 200  # 200% fee
         action.amount = 0
         result = action.run()
-        assert result == False
+        assert not result
 
     @mock.patch('action.sendtransactionaction.utxos')
     @mock.patch('action.sendtransactionaction.valid_address')
@@ -433,7 +433,7 @@ class TestSendTransactionActionRun(object):
         action.fee_percentage = 10
         action.amount = 15000  # More than available
         result = action.run()
-        assert result == False
+        assert not result
 
 
 class TestTransactionInput(object):
@@ -734,19 +734,19 @@ class TestIsFeeAcceptable(object):
     def test_is_fee_acceptable_no_limit(self, mock_max_fee):
         """Test when max fee percentage is 0 (no limit)"""
         result = SendTransactionAction.is_fee_acceptable(50000, 100000)
-        assert result == True
+        assert result
 
     @mock.patch('action.sendtransactionaction.get_max_tx_fee_percentage', return_value=10)
     def test_is_fee_acceptable_within_limit(self, mock_max_fee):
         """Test when fee is within limit"""
         result = SendTransactionAction.is_fee_acceptable(5000, 100000)  # 5%
-        assert result == True
+        assert result
 
     @mock.patch('action.sendtransactionaction.get_max_tx_fee_percentage', return_value=10)
     def test_is_fee_acceptable_exceeds_limit(self, mock_max_fee):
         """Test when fee exceeds limit"""
         result = SendTransactionAction.is_fee_acceptable(15000, 100000)  # 15%
-        assert result == False
+        assert not result
 
 
 class TestSendTransactionActionRunDeep(object):
@@ -781,7 +781,7 @@ class TestSendTransactionActionRunDeep(object):
         action.amount = 0
         action.transaction_type = 'Send2Single'
         result = action.run()
-        assert result == True
+        assert result
         assert action.txid == 'abc123'
 
     @mock.patch('action.sendtransactionaction.push_tx')
@@ -814,7 +814,7 @@ class TestSendTransactionActionRunDeep(object):
         action.transaction_type = 'Send2Single'
         action.tx_fee_type = 'Medium'
         result = action.run()
-        assert result == True
+        assert result
 
     @mock.patch('action.sendtransactionaction.push_tx')
     @mock.patch('action.sendtransactionaction.txhash', return_value='abc123')
@@ -846,7 +846,7 @@ class TestSendTransactionActionRunDeep(object):
         action.transaction_type = 'Send2Single'
         action.tx_fee_type = 'Low'
         result = action.run()
-        assert result == True
+        assert result
 
     @mock.patch('action.sendtransactionaction.push_tx')
     @mock.patch('action.sendtransactionaction.txhash', return_value='abc123')
@@ -878,7 +878,7 @@ class TestSendTransactionActionRunDeep(object):
         action.tx_fee_type = 'Fixed'
         action.tx_fee = 5
         result = action.run()
-        assert result == True
+        assert result
 
     @mock.patch('action.sendtransactionaction.make_custom_tx', return_value=None)
     @mock.patch('action.sendtransactionaction.get_high_priority_fee', return_value=10)
@@ -906,7 +906,7 @@ class TestSendTransactionActionRunDeep(object):
         action.amount = 0
         action.transaction_type = 'Send2Single'
         result = action.run()
-        assert result == False
+        assert not result
 
     @mock.patch('action.sendtransactionaction.push_tx', return_value={'success': False, 'error': 'Broadcast failed'})
     @mock.patch('action.sendtransactionaction.txhash', return_value='abc123')
@@ -936,7 +936,7 @@ class TestSendTransactionActionRunDeep(object):
         action.amount = 0
         action.transaction_type = 'Send2Single'
         result = action.run()
-        assert result == False
+        assert not result
 
     @mock.patch('action.sendtransactionaction.utxos')
     @mock.patch('action.sendtransactionaction.valid_address')
@@ -958,7 +958,7 @@ class TestSendTransactionActionRunDeep(object):
         action.transaction_type = 'Send2Single'
         action.minimum_output_value = 200000  # Higher than available
         result = action.run()
-        assert result == False
+        assert not result
 
     @mock.patch('action.sendtransactionaction.get_private_key')
     @mock.patch('action.sendtransactionaction.get_hot_wallet')
@@ -984,7 +984,7 @@ class TestSendTransactionActionRunDeep(object):
         action.amount = 0
         action.transaction_type = 'Send2Single'
         result = action.run()
-        assert result == False
+        assert not result
 
     @mock.patch('action.sendtransactionaction.push_tx')
     @mock.patch('action.sendtransactionaction.txhash', return_value='abc123')
@@ -1015,7 +1015,7 @@ class TestSendTransactionActionRunDeep(object):
         action.amount = 50000
         action.transaction_type = 'Send2Single'
         result = action.run()
-        assert result == True
+        assert result
 
     @mock.patch('action.sendtransactionaction.push_tx')
     @mock.patch('action.sendtransactionaction.txhash', return_value='abc123')
@@ -1048,7 +1048,7 @@ class TestSendTransactionActionRunDeep(object):
         action.tx_fee_type = 'Fixed'
         action.tx_fee = 10000  # Very high fee
         result = action.run()
-        assert result == False
+        assert not result
 
 
 class TestConstructTransactionInputs(object):
@@ -1547,7 +1547,7 @@ class TestRunEdgeCases(object):
         action.fee_address = '1FeeAddress'
         action.fee_percentage = 5
         result = action.run()
-        assert result == True
+        assert result
 
     @mock.patch('action.sendtransactionaction.get_private_key')
     @mock.patch('action.sendtransactionaction.get_hot_wallet')
@@ -1605,7 +1605,7 @@ class TestRunEdgeCases(object):
         action.transaction_type = 'Send2Single'
         # transaction_size = len('deadbeef')/2 = 4, fee = 4 * 100000 = 400000 > 100000
         result = action.run()
-        assert result == False
+        assert not result
 
     @mock.patch('action.sendtransactionaction.make_custom_tx', return_value='deadbeef')
     @mock.patch('action.sendtransactionaction.get_high_priority_fee', return_value=10)
@@ -1639,7 +1639,7 @@ class TestRunEdgeCases(object):
         # addr2 = 1000 < 200000 -> should fail
         mock_high_fee.return_value = 100000
         result = action.run()
-        assert result == False
+        assert not result
 
     @mock.patch('action.sendtransactionaction.make_custom_tx', return_value='deadbeef')
     @mock.patch('action.sendtransactionaction.get_high_priority_fee', return_value=10)
@@ -1668,7 +1668,7 @@ class TestRunEdgeCases(object):
         action.transaction_type = 'Send2Single'
         # change = 100000 - 99990 - 0 = 10, fee = 4 * 10 = 40, 10 < 40 -> fail
         result = action.run()
-        assert result == False
+        assert not result
 
     @mock.patch('action.sendtransactionaction.make_custom_tx', return_value='deadbeef')
     @mock.patch('action.sendtransactionaction.get_high_priority_fee', return_value=1000)
@@ -1701,7 +1701,7 @@ class TestRunEdgeCases(object):
         # tx_size=4 bytes, fee=4*1000=4000, total=100000 >= 4000 (passes line 294)
         # fee_share=4000/2=2000, addr2=1000 < 2000 -> hits line 301-302
         result = action.run()
-        assert result == False
+        assert not result
 
     @mock.patch('action.sendtransactionaction.push_tx')
     @mock.patch('action.sendtransactionaction.txhash', return_value='abc123')
@@ -1732,4 +1732,4 @@ class TestRunEdgeCases(object):
         action.amount = 0
         action.transaction_type = 'Send2Single'
         result = action.run()
-        assert result == False
+        assert not result

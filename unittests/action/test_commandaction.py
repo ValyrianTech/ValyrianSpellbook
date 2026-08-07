@@ -39,31 +39,31 @@ class TestCommandAction(object):
 
     def test_commandaction_run_with_no_command(self):
         action = CommandAction('test_command_action')
-        assert action.run() == False
+        assert not action.run()
 
     def test_commandaction_run_with_empty_command(self):
         action = CommandAction('test_command_action')
         action.run_command = ''
-        assert action.run() == False
+        assert not action.run()
 
     def test_commandaction_run_success(self):
         action = CommandAction('test_command_action')
         action.configure(run_command='echo hello')
         result = action.run()
-        assert result[0] == True
+        assert result[0]
         assert b'hello' in result[1]
 
     def test_commandaction_run_with_error(self):
         action = CommandAction('test_command_action')
         action.configure(run_command='ls /nonexistent_directory_12345')
         result = action.run()
-        assert result[0] == False
+        assert not result[0]
 
     def test_commandaction_run_with_placeholders(self):
         action = CommandAction('test_command_action')
         action.configure(run_command='echo {MESSAGE}')
         result = action.run(placeholders={'{MESSAGE}': 'test_placeholder'})
-        assert result[0] == True
+        assert result[0]
         assert b'test_placeholder' in result[1]
 
     def test_commandaction_run_with_working_dir(self):
@@ -71,7 +71,7 @@ class TestCommandAction(object):
         action.configure(run_command='pwd', working_dir='/tmp')
         original_dir = os.getcwd()
         result = action.run()
-        assert result[0] == True
+        assert result[0]
         assert b'/tmp' in result[1]
         # Verify we're back to original directory
         assert os.getcwd() == original_dir

@@ -1,17 +1,16 @@
 # Linting Progress Tracker
 
-**Last updated:** 2026-08-07 — **348 errors resolved, 265 remaining**
+**Last updated:** 2026-08-07 — **504 errors resolved, 109 remaining**
 
 ## Current Status
 
-**265 lint errors remaining across 3 rule categories — 0 auto-fixable**
+**109 lint errors remaining across 2 rule categories — 0 auto-fixable**
 
 | Rule | Count | Description | Fixable? |
 |------|-------|-------------|----------|
-| E712 | 156 | `== False` / `== True` comparisons | Unsafe fix |
 | F841 | 61 | Unused local variables | Manual |
 | E402 | 48 | Module-level import not at top of file | Manual |
-| **Total** | **265** | | **0 auto-fixable** |
+| **Total** | **109** | | **0 auto-fixable** |
 
 ---
 
@@ -53,6 +52,11 @@
   - Replaced `type(x) != type(y)` with `type(x) is not type(y)` in `integrationtests/compare_explorers.py` (3 occurrences)
   - Replaced `string_types == str` with `string_types is str` in `unittests/helpers/test_py3specials.py`
   - Files changed: `helpers/llmhelpers.py`, `helpers/ollama_chat_llm.py`, `helpers/ollama_llm.py`, `helpers/self_hosted_LLM.py`, `helpers/textgenerationwebui_llm.py`, `helpers/vLLM_llm.py`, `integrationtests/compare_explorers.py`, `unittests/helpers/test_py3specials.py`
+- [x] **156 errors resolved: E712 true/false comparisons eliminated** (2026-08-07)
+  - E712: 156 → 0
+  - Applied `ruff --unsafe-fixes` to replace `== False` with `not` and `== True` with truthy checks
+  - All 3244 unit tests pass after fixes
+  - Files changed: 19 files across `unittests/` (test assertions) and `integrationtests/`
 
 ---
 
@@ -91,11 +95,6 @@
 
 ## Category Breakdown & Strategy
 
-### E712 — True/False Comparisons (156 errors)
-**Files:** Mostly in `unittests/` (test assertions using `== False` / `== True`)
-
-**Strategy:** Replace `assert x == False` with `assert not x` and `assert x == True` with `assert x`. Available as `--unsafe-fix` but needs careful review with mock objects.
-
 ### F841 — Unused Variables (61 errors)
 **Files:** `webui/routers/`, `unittests/`, `spellbookserver.py`, various
 
@@ -116,4 +115,4 @@
 
 ## Summary
 
-The Valyrian Spellbook repository had **613 lint errors** initially. Ruff's `--fix` resolved 150 auto-fixable issues. Two regressions from the auto-fix were identified and corrected. An additional 16 errors across 7 small categories were manually resolved. All 166 F403/F405 star import errors were eliminated by replacing `import *` with explicit imports. All 16 E721 type comparison errors were resolved by replacing `type() ==` with `isinstance()` and `type() != type()` with `type() is not type()`. **265 errors remain**, primarily true/false comparisons (E712) and unused variables (F841). All 3,244 unit tests continue to pass with 100% coverage.
+The Valyrian Spellbook repository had **613 lint errors** initially. Ruff's `--fix` resolved 150 auto-fixable issues. Two regressions from the auto-fix were identified and corrected. An additional 16 errors across 7 small categories were manually resolved. All 166 F403/F405 star import errors were eliminated by replacing `import *` with explicit imports. All 16 E721 type comparison errors were resolved by replacing `type() ==` with `isinstance()` and `type() != type()` with `type() is not type()`. All 156 E712 true/false comparison errors were resolved by replacing `== False` with `not` and `== True` with truthy checks via `ruff --unsafe-fixes`. **109 errors remain**, primarily unused variables (F841) and import ordering (E402). All 3,244 unit tests continue to pass with 100% coverage.

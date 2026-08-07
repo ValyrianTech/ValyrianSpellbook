@@ -45,7 +45,7 @@ class TestTrigger(object):
         assert trigger.trigger_type is None
         assert trigger.script is None
         assert trigger.triggered == 0
-        assert trigger.multi == False
+        assert not trigger.multi
         assert trigger.actions == []
 
     def test_trigger_configure_created_timestamp(self):
@@ -80,7 +80,7 @@ class TestTrigger(object):
     def test_trigger_configure_multi(self):
         trigger = ConcreteTrigger('test_trigger_id')
         trigger.configure(multi=True)
-        assert trigger.multi == True
+        assert trigger.multi
 
     @mock.patch('trigger.trigger.valid_status', return_value=True)
     def test_trigger_configure_status(self, mock_valid):
@@ -148,7 +148,7 @@ class TestTrigger(object):
     def test_trigger_configure_destruct_actions(self):
         trigger = ConcreteTrigger('test_trigger_id')
         trigger.configure(destruct_actions=True)
-        assert trigger.destruct_actions == True
+        assert trigger.destruct_actions
 
     def test_trigger_json_encodable(self):
         trigger = ConcreteTrigger('test_trigger_id')

@@ -32,13 +32,13 @@ class TestDeleteTriggerAction(object):
         action = DeleteTriggerAction('test_delete_action')
         action.trigger_ids = None
         result = action.run()
-        assert result == False
+        assert not result
 
     def test_deletetriggeraction_run_with_empty_trigger_ids(self):
         action = DeleteTriggerAction('test_delete_action')
         action.trigger_ids = []
         result = action.run()
-        assert result == False
+        assert not result
 
     @mock.patch('helpers.triggerhelpers.delete_trigger')
     @mock.patch('helpers.triggerhelpers.get_triggers')
@@ -49,7 +49,7 @@ class TestDeleteTriggerAction(object):
         action.configure(trigger_ids=['trigger1', 'trigger2'])
         result = action.run()
 
-        assert result == True
+        assert result
         assert mock_delete_trigger.call_count == 2
         mock_delete_trigger.assert_any_call(trigger_id='trigger1')
         mock_delete_trigger.assert_any_call(trigger_id='trigger2')
@@ -63,6 +63,6 @@ class TestDeleteTriggerAction(object):
         action.configure(trigger_ids=['trigger1', 'unknown_trigger'])
         result = action.run()
 
-        assert result == True
+        assert result
         # Only trigger1 should be deleted, unknown_trigger is skipped
         mock_delete_trigger.assert_called_once_with(trigger_id='trigger1')

@@ -501,6 +501,6 @@ class TestValidators(object):
 
     def test_valid_bech32_address_non_string(self):
         helpers.configurationhelpers.get_use_testnet = mock.MagicMock(return_value=False)
-        assert validators.valid_bech32_address(12345) == False
-        assert validators.valid_bech32_address(None) == False
-        assert validators.valid_bech32_address(['bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4']) == False
+        assert not validators.valid_bech32_address(12345)
+        assert not validators.valid_bech32_address(None)
+        assert not validators.valid_bech32_address(['bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4'])

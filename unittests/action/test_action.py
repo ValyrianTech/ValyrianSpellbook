@@ -113,7 +113,7 @@ class TestAction(object):
 
     def test_action_run(self):
         action = ConcreteAction('test_action_id')
-        assert action.run() == True
+        assert action.run()
 
     def test_action_run_abstract_body(self):
         """Test that the abstract run method body (pass) can be called directly"""

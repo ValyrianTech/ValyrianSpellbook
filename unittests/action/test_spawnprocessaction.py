@@ -39,12 +39,12 @@ class TestSpawnProcessAction(object):
 
     def test_spawnprocessaction_run_with_no_command(self):
         action = SpawnProcessAction('test_spawn_action')
-        assert action.run() == False
+        assert not action.run()
 
     def test_spawnprocessaction_run_with_empty_command(self):
         action = SpawnProcessAction('test_spawn_action')
         action.run_command = ''
-        assert action.run() == False
+        assert not action.run()
 
     @mock.patch('action.spawnprocessaction.RunCommandProcess')
     def test_spawnprocessaction_run_success(self, mock_process_class):
@@ -55,7 +55,7 @@ class TestSpawnProcessAction(object):
         action.configure(run_command='echo hello', working_dir='/tmp')
         result = action.run()
 
-        assert result == True
+        assert result
         mock_process_class.assert_called_once_with(command='echo hello', working_dir='/tmp')
         mock_process.start.assert_called_once()
 
@@ -67,4 +67,4 @@ class TestSpawnProcessAction(object):
         action.configure(run_command='echo hello')
         result = action.run()
 
-        assert result == False
+        assert not result

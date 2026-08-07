@@ -79,7 +79,7 @@ class TestSendMailAction(object):
             mail_body_template='template.html'
         )
         result = action.run()
-        assert result == True
+        assert result
         mock_sendmail.assert_called_once_with(
             recipients='test@example.com',
             subject='Subject',

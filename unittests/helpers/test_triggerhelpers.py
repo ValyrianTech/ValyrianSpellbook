@@ -467,21 +467,21 @@ class TestSignMessage(object):
     def test_sign_message_missing_keys(self):
         """Test sign_message with missing keys"""
         result = sign_message(address='addr')
-        assert result['success'] == False
+        assert not result['success']
         assert 'required keys' in result['error']
 
     @mock.patch('helpers.triggerhelpers.valid_address', return_value=False)
     def test_sign_message_invalid_address(self, mock_valid):
         """Test sign_message with invalid address"""
         result = sign_message(address='invalid', message='test')
-        assert result['success'] == False
+        assert not result['success']
         assert 'Invalid address' in result['error']
 
     @mock.patch('helpers.triggerhelpers.valid_address', return_value=True)
     def test_sign_message_too_long(self, mock_valid):
         """Test sign_message with message too long"""
         result = sign_message(address='addr', message='x' * 300)
-        assert result['success'] == False
+        assert not result['success']
         assert 'too long' in result['error']
 
     @mock.patch('helpers.triggerhelpers.valid_address', return_value=True)
@@ -490,7 +490,7 @@ class TestSignMessage(object):
     def test_sign_message_address_not_found(self, mock_find_single, mock_find, mock_valid):
         """Test sign_message when address not in wallet"""
         result = sign_message(address='addr', message='test')
-        assert result['success'] == False
+        assert not result['success']
         assert 'not found in hot wallet' in result['error']
 
     @mock.patch('helpers.triggerhelpers.valid_address', return_value=True)
@@ -500,7 +500,7 @@ class TestSignMessage(object):
     def test_sign_message_success(self, mock_sign, mock_get_key, mock_find, mock_valid):
         """Test successful sign_message"""
         result = sign_message(address='addr', message='test')
-        assert result['success'] == True
+        assert result['success']
         assert result['signature'] == 'signature'
 
     @mock.patch('helpers.triggerhelpers.valid_address', return_value=True)
@@ -510,7 +510,7 @@ class TestSignMessage(object):
     def test_sign_message_single_address(self, mock_sign, mock_find_single, mock_find, mock_valid):
         """Test sign_message with single address wallet"""
         result = sign_message(address='addr', message='test')
-        assert result['success'] == True
+        assert result['success']
 
     @mock.patch('helpers.triggerhelpers.valid_address', return_value=True)
     @mock.patch('helpers.triggerhelpers.find_address_in_wallet', return_value=(0, 0))
@@ -519,7 +519,7 @@ class TestSignMessage(object):
     def test_sign_message_error(self, mock_sign, mock_get_key, mock_find, mock_valid):
         """Test sign_message when signing fails"""
         result = sign_message(address='addr', message='test')
-        assert result['success'] == False
+        assert not result['success']
         assert 'Unable to sign' in result['error']
 
 

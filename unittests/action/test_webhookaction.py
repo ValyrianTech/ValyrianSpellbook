@@ -54,7 +54,7 @@ class TestWebhookAction(object):
 
     def test_webhookaction_run_with_no_webhook(self):
         action = WebhookAction('test_webhook_action')
-        assert action.run() == False
+        assert not action.run()
 
     @mock.patch('action.webhookaction.requests.get')
     def test_webhookaction_run_get_success(self, mock_get):
@@ -103,7 +103,7 @@ class TestWebhookAction(object):
         action.webhook = 'http://example.com/webhook'
         action.request_type = 'PUT'
         result = action.run()
-        assert result == False
+        assert not result
 
     @mock.patch('action.webhookaction.requests.get')
     def test_webhookaction_run_exception(self, mock_get):
@@ -112,4 +112,4 @@ class TestWebhookAction(object):
         action = WebhookAction('test_webhook_action')
         action.configure(webhook='http://example.com/webhook')
         result = action.run()
-        assert result == False
+        assert not result

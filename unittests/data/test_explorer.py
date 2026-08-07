@@ -25,7 +25,7 @@ class TestExplorer(object):
         assert explorer.url == ''
         assert explorer.explorer_type is None
         assert explorer.priority == 0
-        assert explorer.testnet == False
+        assert not explorer.testnet
 
     def test_explorer_json_encodable(self):
         explorer = Explorer()
@@ -40,7 +40,7 @@ class TestExplorer(object):
         assert result['priority'] == 1
         assert result['url'] == 'https://blockstream.info'
         assert result['api_key'] == 'test_key'
-        assert result['testnet'] == True
+        assert result['testnet']
 
     def test_explorer_json_encodable_defaults(self):
         explorer = Explorer()
@@ -49,4 +49,4 @@ class TestExplorer(object):
         assert result['priority'] == 0
         assert result['url'] == ''
         assert result['api_key'] == ''
-        assert result['testnet'] == False
+        assert not result['testnet']

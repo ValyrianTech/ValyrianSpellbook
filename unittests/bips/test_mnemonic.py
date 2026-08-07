@@ -131,20 +131,20 @@ class TestMnemonic(object):
         m = Mnemonic('english')
         # Generate a valid mnemonic
         mnemonic = m.generate(strength=128)
-        assert m.check(mnemonic) == True
+        assert m.check(mnemonic)
 
     def test_mnemonic_check_invalid_word_count(self):
         m = Mnemonic('english')
-        assert m.check("abandon ability able") == False
+        assert not m.check("abandon ability able")
 
     def test_mnemonic_check_invalid_word(self):
         m = Mnemonic('english')
-        assert m.check("abandon ability able about above absent absorb abstract absurd abuse access xyznotaword") == False
+        assert not m.check("abandon ability able about above absent absorb abstract absurd abuse access xyznotaword")
 
     def test_mnemonic_check_invalid_checksum(self):
         m = Mnemonic('english')
         # This mnemonic has wrong checksum
-        assert m.check("abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon") == False
+        assert not m.check("abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon")
 
     def test_mnemonic_expand_word_exact_match(self):
         m = Mnemonic('english')

@@ -23,7 +23,7 @@ class TestCreateTweetAction(object):
         assert action.action_type == ActionType.CREATE_TWEET
         assert action.text is None
         assert action.in_reply_to_tweet_id is None
-        assert action.user_auth == True
+        assert action.user_auth
 
     def test_createtweetaction_configure(self):
         action = CreateTweetAction('test_tweet_action')
@@ -52,9 +52,9 @@ class TestCreateTweetAction(object):
         assert action.media_tagged_user_ids == ['media_user1']
         assert action.media_ids == ['media1']
         assert action.place_id == 'place123'
-        assert action.for_super_followers_only == True
+        assert action.for_super_followers_only
         assert action.direct_message_deep_link == 'https://dm.link'
-        assert action.user_auth == False
+        assert not action.user_auth
 
     def test_createtweetaction_json_encodable(self):
         action = CreateTweetAction('test_tweet_action')
@@ -69,7 +69,7 @@ class TestCreateTweetAction(object):
         action = CreateTweetAction('test_tweet_action')
         action.configure(text='Hello world')
         result = action.run()
-        assert result == True
+        assert result
         mock_create_tweet.assert_called_once()
 
     @mock.patch('action.create_tweet_action.create_tweet')
@@ -78,7 +78,7 @@ class TestCreateTweetAction(object):
         action = CreateTweetAction('test_tweet_action')
         action.configure(text='Hello world')
         result = action.run()
-        assert result == False
+        assert not result
 
 
 class TestDeleteTweetAction(object):
@@ -104,14 +104,14 @@ class TestDeleteTweetAction(object):
     def test_deletetweetaction_run_no_tweet_id(self):
         action = DeleteTweetAction('test_delete_tweet')
         result = action.run()
-        assert result == False
+        assert not result
 
     @mock.patch('action.delete_tweet_action.delete_tweet')
     def test_deletetweetaction_run_success(self, mock_delete_tweet):
         action = DeleteTweetAction('test_delete_tweet')
         action.configure(tweet_id='123456')
         result = action.run()
-        assert result == True
+        assert result
         mock_delete_tweet.assert_called_once_with(tweet_id='123456')
 
     @mock.patch('action.delete_tweet_action.delete_tweet')
@@ -120,7 +120,7 @@ class TestDeleteTweetAction(object):
         action = DeleteTweetAction('test_delete_tweet')
         action.configure(tweet_id='123456')
         result = action.run()
-        assert result == False
+        assert not result
 
 
 class TestLikeTweetAction(object):
@@ -146,14 +146,14 @@ class TestLikeTweetAction(object):
     def test_liketweetaction_run_no_tweet_id(self):
         action = LikeTweetAction('test_like_tweet')
         result = action.run()
-        assert result == False
+        assert not result
 
     @mock.patch('action.like_tweet_action.like_tweet')
     def test_liketweetaction_run_success(self, mock_like_tweet):
         action = LikeTweetAction('test_like_tweet')
         action.configure(tweet_id='123456')
         result = action.run()
-        assert result == True
+        assert result
         mock_like_tweet.assert_called_once_with(tweet_id='123456')
 
     @mock.patch('action.like_tweet_action.like_tweet')
@@ -162,7 +162,7 @@ class TestLikeTweetAction(object):
         action = LikeTweetAction('test_like_tweet')
         action.configure(tweet_id='123456')
         result = action.run()
-        assert result == False
+        assert not result
 
 
 class TestUnlikeTweetAction(object):
@@ -188,14 +188,14 @@ class TestUnlikeTweetAction(object):
     def test_unliketweetaction_run_no_tweet_id(self):
         action = UnlikeTweetAction('test_unlike_tweet')
         result = action.run()
-        assert result == False
+        assert not result
 
     @mock.patch('action.unlike_tweet_action.unlike_tweet')
     def test_unliketweetaction_run_success(self, mock_unlike_tweet):
         action = UnlikeTweetAction('test_unlike_tweet')
         action.configure(tweet_id='123456')
         result = action.run()
-        assert result == True
+        assert result
         mock_unlike_tweet.assert_called_once_with(tweet_id='123456')
 
     @mock.patch('action.unlike_tweet_action.unlike_tweet')
@@ -204,7 +204,7 @@ class TestUnlikeTweetAction(object):
         action = UnlikeTweetAction('test_unlike_tweet')
         action.configure(tweet_id='123456')
         result = action.run()
-        assert result == False
+        assert not result
 
 
 class TestRetweetAction(object):
@@ -230,14 +230,14 @@ class TestRetweetAction(object):
     def test_retweetaction_run_no_tweet_id(self):
         action = RetweetAction('test_retweet')
         result = action.run()
-        assert result == False
+        assert not result
 
     @mock.patch('action.retweet_action.retweet')
     def test_retweetaction_run_success(self, mock_retweet):
         action = RetweetAction('test_retweet')
         action.configure(tweet_id='123456')
         result = action.run()
-        assert result == True
+        assert result
         mock_retweet.assert_called_once_with(tweet_id='123456')
 
     @mock.patch('action.retweet_action.retweet')
@@ -246,7 +246,7 @@ class TestRetweetAction(object):
         action = RetweetAction('test_retweet')
         action.configure(tweet_id='123456')
         result = action.run()
-        assert result == False
+        assert not result
 
 
 class TestUnretweetAction(object):
@@ -272,14 +272,14 @@ class TestUnretweetAction(object):
     def test_unretweetaction_run_no_tweet_id(self):
         action = UnretweetAction('test_unretweet')
         result = action.run()
-        assert result == False
+        assert not result
 
     @mock.patch('action.unretweet_action.retweet')
     def test_unretweetaction_run_success(self, mock_retweet):
         action = UnretweetAction('test_unretweet')
         action.configure(tweet_id='123456')
         result = action.run()
-        assert result == True
+        assert result
         mock_retweet.assert_called_once_with(tweet_id='123456')
 
     @mock.patch('action.unretweet_action.retweet')
@@ -288,7 +288,7 @@ class TestUnretweetAction(object):
         action = UnretweetAction('test_unretweet')
         action.configure(tweet_id='123456')
         result = action.run()
-        assert result == False
+        assert not result
 
 
 class TestFollowOnTwitterAction(object):
@@ -314,14 +314,14 @@ class TestFollowOnTwitterAction(object):
     def test_followontwitteraction_run_no_user_id(self):
         action = FollowOnTwitterAction('test_follow')
         result = action.run()
-        assert result == False
+        assert not result
 
     @mock.patch('action.follow_on_twitter_action.follow_user')
     def test_followontwitteraction_run_success(self, mock_follow):
         action = FollowOnTwitterAction('test_follow')
         action.configure(user_id='user123')
         result = action.run()
-        assert result == True
+        assert result
         mock_follow.assert_called_once_with(target_user_id='user123')
 
     @mock.patch('action.follow_on_twitter_action.follow_user')
@@ -330,7 +330,7 @@ class TestFollowOnTwitterAction(object):
         action = FollowOnTwitterAction('test_follow')
         action.configure(user_id='user123')
         result = action.run()
-        assert result == False
+        assert not result
 
 
 class TestUnfollowOnTwitterAction(object):
@@ -356,14 +356,14 @@ class TestUnfollowOnTwitterAction(object):
     def test_unfollowontwitteraction_run_no_user_id(self):
         action = UnfollowOnTwitterAction('test_unfollow')
         result = action.run()
-        assert result == False
+        assert not result
 
     @mock.patch('action.unfollow_on_twitter_action.unfollow_user')
     def test_unfollowontwitteraction_run_success(self, mock_unfollow):
         action = UnfollowOnTwitterAction('test_unfollow')
         action.configure(user_id='user123')
         result = action.run()
-        assert result == True
+        assert result
         mock_unfollow.assert_called_once_with(target_user_id='user123')
 
     @mock.patch('action.unfollow_on_twitter_action.unfollow_user')
@@ -372,7 +372,7 @@ class TestUnfollowOnTwitterAction(object):
         action = UnfollowOnTwitterAction('test_unfollow')
         action.configure(user_id='user123')
         result = action.run()
-        assert result == False
+        assert not result
 
 
 class TestSendDMTwitterAction(object):
@@ -386,7 +386,7 @@ class TestSendDMTwitterAction(object):
         assert action.participant_id is None
         assert action.media_id is None
         assert action.text is None
-        assert action.user_auth == True
+        assert action.user_auth
 
     def test_senddmtwitteraction_configure(self):
         action = SendDMTwitterAction('test_dm')
@@ -401,7 +401,7 @@ class TestSendDMTwitterAction(object):
         assert action.participant_id == 'user123'
         assert action.media_id == 'media456'
         assert action.text == 'Hello!'
-        assert action.user_auth == False
+        assert not action.user_auth
 
     def test_senddmtwitteraction_json_encodable(self):
         action = SendDMTwitterAction('test_dm')
@@ -415,7 +415,7 @@ class TestSendDMTwitterAction(object):
         action = SendDMTwitterAction('test_dm')
         action.configure(participant_id='user123', text='Hello!')
         result = action.run()
-        assert result == True
+        assert result
         mock_create_dm.assert_called_once()
 
     @mock.patch('action.send_dm_twitter_action.create_direct_message')
@@ -424,4 +424,4 @@ class TestSendDMTwitterAction(object):
         action = SendDMTwitterAction('test_dm')
         action.configure(participant_id='user123', text='Hello!')
         result = action.run()
-        assert result == False
+        assert not result
