@@ -4,9 +4,6 @@ from __future__ import unicode_literals
 import binascii
 from helpers.loghelpers import LOG
 
-from helpers.py2specials import *
-from helpers.py3specials import *
-
 
 class TX(object):
     def __init__(self):

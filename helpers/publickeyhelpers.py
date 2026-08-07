@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from .py3specials import *
+import binascii
+import hashlib
+
+from .py3specials import bin_to_b58check, decode, encode, four, from_byte_to_int, from_int_to_byte, safe_from_hex, three, two
 
 from .jacobianhelpers import fast_add, A, B, P
 from .py_ripemd160 import ripemd160

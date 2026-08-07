@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import re
-from .py3specials import *
+from .py3specials import bin_dbl_sha256, bin_to_b58check, changebase, decode, encode
 
 from .jacobianhelpers import fast_multiply, N, G
 from .publickeyhelpers import encode_pubkey, pubkey_to_address

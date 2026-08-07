@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import re
+import hashlib
 import hmac
+import re
 
-from helpers.py2specials import *
-from helpers.py3specials import *
+from helpers.py3specials import bin_dbl_sha256, changebase, decode, encode, from_byte_to_int, from_int_to_byte, from_string_to_bytes, safe_hexlify
 from helpers.privatekeyhelpers import privkey_to_pubkey, add_privkeys
 from helpers.publickeyhelpers import add_pubkeys, compress, bin_hash160
 

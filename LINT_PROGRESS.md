@@ -1,20 +1,18 @@
 # Linting Progress Tracker
 
-**Last updated:** 2026-08-07 — **166 errors resolved, 447 remaining**
+**Last updated:** 2026-08-07 — **332 errors resolved, 281 remaining**
 
 ## Current Status
 
-**447 lint errors remaining across 6 rule categories — 0 auto-fixable**
+**281 lint errors remaining across 4 rule categories — 0 auto-fixable**
 
 | Rule | Count | Description | Fixable? |
 |------|-------|-------------|----------|
-| F405 | 158 | `import *` with undefined names used | Manual (needs explicit imports) |
 | E712 | 156 | `== False` / `== True` comparisons | Unsafe fix |
 | F841 | 61 | Unused local variables | Manual |
 | E402 | 48 | Module-level import not at top of file | Manual |
 | E721 | 16 | `type() ==` comparisons | Manual |
-| F403 | 8 | `from module import *` | Manual |
-| **Total** | **447** | | **0 auto-fixable** |
+| **Total** | **281** | | **0 auto-fixable** |
 
 ---
 
@@ -44,6 +42,12 @@
   - F401: Added noqa for intentionally kept imports in `py3specials.py` and `test_OpenAIhelpers.py` (2 → 0)
   - E741: Renamed ambiguous variable `I` to `hmac_digest` in `bips/BIP32.py` (3 → 0)
   - F811: Removed 4 shadowed test methods in `test_mysqlhelpers.py`, merged duplicate class in `test_websockethelpers.py` (5 → 0)
+- [x] **166 errors resolved: F403 + F405 star imports eliminated** (2026-08-07)
+  - F403: 8 → 0, F405: 158 → 0
+  - Replaced all `from helpers.py2specials import *` and `from helpers.py3specials import *` with explicit imports
+  - Files changed: `bips/BIP32.py`, `data/transaction.py`, `helpers/privatekeyhelpers.py`, `helpers/publickeyhelpers.py`, `transactionfactory.py`
+  - Added missing direct stdlib imports (`hashlib`, `binascii`, `re`, `sys`, `functools.reduce`) that were leaking through star imports
+  - `data/transaction.py` had unused star imports removed entirely
 
 ---
 
@@ -51,16 +55,12 @@
 
 | File | Errors | Primary Issues |
 |------|--------|----------------|
-| `transactionfactory.py` | 97 | F405 (star import from py3specials), E712 |
 | `unittests/trigger/test_triggers.py` | 44 | E712 (`== False`/`== True`) |
 | `unittests/action/test_twitter_actions.py` | 30 | E712 |
-| `helpers/publickeyhelpers.py` | 30 | F405, E721 |
 | `unittests/action/test_sendtransactionaction.py` | 27 | E712 |
-| `bips/BIP32.py` | 21 | F405, E402 |
-| `spellbookserver.py` | 21 | F405, E402 |
+| `spellbookserver.py` | 21 | E402, F841 |
 | `unittests/helpers/test_twitterhelpers.py` | 17 | E712 |
 | `unittests/helpers/test_llmhelpers.py` | 17 | E712 |
-| `helpers/privatekeyhelpers.py` | 17 | F405, E721 |
 | `unittests/test_spellbookserver.py` | 12 | E712 |
 | `unittests/darwin/test_fitness_function_subclasses.py` | 12 | E712 |
 | `unittests/helpers/test_triggerhelpers.py` | 7 | E712 |
@@ -69,19 +69,22 @@
 | `unittests/action/test_revealsecretaction.py` | 6 | E712 |
 | `unittests/action/test_commandaction.py` | 6 | E712 |
 | `unittests/trigger/test_trigger.py` | 5 | E712 |
-| `unittests/helpers/test_mysqlhelpers.py` | 0 | (F811 fixed) |
 | `unittests/darwin/test_model_subclasses.py` | 5 | E712 |
-| `integrationtests/compare_explorers.py` | 3 | E712 |
-| Other files (≤4 each) | 96 | Various |
+| `helpers/llmhelpers.py` | 5 | E402, E721 |
+| `unittests/bips/test_mnemonic.py` | 4 | E712 |
+| `unittests/action/test_spawnprocessaction.py` | 4 | E712 |
+| `unittests/action/test_deletetriggeraction.py` | 4 | E712 |
+| `helpers/ollama_chat_llm.py` | 4 | E402, E721 |
+| `helpers/ollama_llm.py` | 4 | E402, E721 |
+| `helpers/self_hosted_LLM.py` | 4 | E402, E721 |
+| `helpers/textgenerationwebui_llm.py` | 4 | E402, E721 |
+| `helpers/vLLM_llm.py` | 4 | E402, E721 |
+| `integrationtests/compare_explorers.py` | 6 | E712, E721 |
+| Other files (≤3 each) | 48 | Various |
 
 ---
 
 ## Category Breakdown & Strategy
-
-### F405 + F403 — Star Imports (166 errors)
-**Files:** `transactionfactory.py`, `helpers/publickeyhelpers.py`, `helpers/privatekeyhelpers.py`, `bips/BIP32.py`, `spellbookserver.py`, `helpers/py2specials.py`
-
-**Strategy:** Replace `from module import *` with explicit imports of only the names actually used. This is the largest category but concentrated in a few files.
 
 ### E712 — True/False Comparisons (156 errors)
 **Files:** Mostly in `unittests/` (test assertions using `== False` / `== True`)
@@ -89,19 +92,19 @@
 **Strategy:** Replace `assert x == False` with `assert not x` and `assert x == True` with `assert x`. Available as `--unsafe-fix` but needs careful review with mock objects.
 
 ### F841 — Unused Variables (61 errors)
-**Files:** `webui/routers/`, `unittests/`, various
+**Files:** `webui/routers/`, `unittests/`, `spellbookserver.py`, various
 
 **Strategy:** Remove assignments to unused variables or prefix with `_`. Many are `result = ...` where only the side effect matters.
 
 ### E402 — Import Not At Top (48 errors)
-**Files:** `transactionfactory.py`, `bips/BIP32.py`, `spellbookserver.py`, various
+**Files:** `spellbookserver.py`, `helpers/llmhelpers.py`, `helpers/ollama_*.py`, `helpers/self_hosted_LLM.py`, `helpers/vLLM_llm.py`, `helpers/textgenerationwebui_llm.py`, `darwin/darwin.py`, various
 
 **Strategy:** Caused by `sys.path` manipulation before imports. Can be fixed by reorganizing or adding `# noqa: E402` where the pattern is intentional.
 
 ### E721 — Type Comparisons (16 errors)
-**Files:** `helpers/publickeyhelpers.py`, `helpers/privatekeyhelpers.py`
+**Files:** `helpers/llmhelpers.py`, `helpers/ollama_chat_llm.py`, `helpers/ollama_llm.py`, `helpers/self_hosted_LLM.py`, `helpers/textgenerationwebui_llm.py`, `helpers/vLLM_llm.py`, `integrationtests/compare_explorers.py`, `unittests/helpers/test_py3specials.py`
 
-**Strategy:** Replace `type(x) == bytes` with `isinstance(x, bytes)`.
+**Strategy:** Replace `type(x) == str` with `isinstance(x, str)` and `type(x) != type(y)` with `type(x) is not type(y)`.
 
 ---
 
@@ -115,4 +118,4 @@
 
 ## Summary
 
-The Valyrian Spellbook repository had **613 lint errors** initially. Ruff's `--fix` resolved 150 auto-fixable issues. Two regressions from the auto-fix were identified and corrected. An additional 16 errors across 7 small categories were manually resolved. **447 errors remain**, primarily star imports (F405/F403) and true/false comparisons (E712), concentrated in a small number of files. All 3,244 unit tests continue to pass with 100% coverage.
+The Valyrian Spellbook repository had **613 lint errors** initially. Ruff's `--fix` resolved 150 auto-fixable issues. Two regressions from the auto-fix were identified and corrected. An additional 16 errors across 7 small categories were manually resolved. All 166 F403/F405 star import errors were eliminated by replacing `import *` with explicit imports. **281 errors remain**, primarily true/false comparisons (E712) and unused variables (F841). All 3,244 unit tests continue to pass with 100% coverage.

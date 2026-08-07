@@ -1,10 +1,27 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import hmac
+import binascii
 import copy
+import hashlib
+import hmac
+import re
+import sys
+from functools import reduce
 
-from helpers.py2specials import *
-from helpers.py3specials import *
+from helpers.py3specials import (
+    bin_dbl_sha256,
+    changebase,
+    decode,
+    encode,
+    from_byte_to_int,
+    from_int_to_byte,
+    from_string_to_bytes,
+    get_code_string,
+    int_types,
+    safe_hexlify,
+    string_or_bytes_types,
+    string_types,
+)
 
 from helpers.privatekeyhelpers import privkey_to_pubkey, decode_privkey, get_privkey_format, encode_privkey
 from helpers.publickeyhelpers import pubkey_to_address
