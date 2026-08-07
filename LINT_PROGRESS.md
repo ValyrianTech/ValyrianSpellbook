@@ -1,15 +1,15 @@
 # Linting Progress Tracker
 
-**Last updated:** 2026-08-07 — **565 errors resolved, 48 remaining**
+**Last updated:** 2026-08-07 — **613 errors resolved, 0 remaining**
 
 ## Current Status
 
-**48 lint errors remaining across 1 rule category — 0 auto-fixable**
+**0 lint errors remaining — repository is fully lint-clean**
 
 | Rule | Count | Description | Fixable? |
 |------|-------|-------------|----------|
-| E402 | 48 | Module-level import not at top of file | Manual |
-| **Total** | **48** | | **0 auto-fixable** |
+| E402 | 0 | Module-level import not at top of file | ✅ Resolved |
+| **Total** | **0** | | **0 auto-fixable** |
 
 ---
 
@@ -61,6 +61,16 @@
   - Applied `ruff --unsafe-fixes --fix` to remove unused variable assignments
   - All 3244 unit tests pass after fixes
   - Files changed: 17 files across `unittests/`, `helpers/`, `spellbookserver.py`, `webui/routers/`
+- [x] **19 errors resolved: E402 in `spellbookserver.py`** (2026-08-07, commit `c71ebe3`)
+  - E402: 19 → 0 in `spellbookserver.py`
+  - Moved `BaseRequest.MEMFILE_MAX` assignment below all imports (was between import blocks, triggering E402 for all 19 project imports below it)
+  - All 3244 unit tests pass after fix
+- [x] **29 errors resolved: E402 noqa for intentional import ordering** (2026-08-07, commit `94a80b5`)
+  - E402: 29 → 0 across 6 files
+  - Added `# noqa: E402` to imports after `sys.path` manipulation (3 errors: `darwin/darwin.py`, `listeners/transaction_listener.py`)
+  - Added `# noqa: E402` to imports after monkey-patch injection (24 errors: 3 darwin test files)
+  - Added `# noqa: E402` to imports after mock patchers (2 errors: `unittests/test_spellbookserver.py`)
+  - All 3244 unit tests pass after fixes
 
 ---
 
@@ -99,10 +109,8 @@
 
 ## Category Breakdown & Strategy
 
-### E402 — Import Not At Top (48 errors)
-**Files:** `spellbookserver.py`, `helpers/llmhelpers.py`, `helpers/ollama_*.py`, `helpers/self_hosted_LLM.py`, `helpers/vLLM_llm.py`, `helpers/textgenerationwebui_llm.py`, `darwin/darwin.py`, various
-
-**Strategy:** Caused by `sys.path` manipulation before imports. Can be fixed by reorganizing or adding `# noqa: E402` where the pattern is intentional.
+### E402 — Import Not At Top (0 errors — fully resolved)
+**Resolution:** 19 errors fixed structurally by moving `BaseRequest.MEMFILE_MAX` assignment below imports in `spellbookserver.py`. 29 errors fixed with `# noqa: E402` comments where import ordering is intentional (`sys.path` manipulation, monkey-patch injection, mock patching before import).
 
 ## Bug Fixes During Linting Work
 
@@ -114,4 +122,4 @@
 
 ## Summary
 
-The Valyrian Spellbook repository had **613 lint errors** initially. Ruff's `--fix` resolved 150 auto-fixable issues. Two regressions from the auto-fix were identified and corrected. An additional 16 errors across 7 small categories were manually resolved. All 166 F403/F405 star import errors were eliminated by replacing `import *` with explicit imports. All 16 E721 type comparison errors were resolved by replacing `type() ==` with `isinstance()` and `type() != type()` with `type() is not type()`. All 156 E712 true/false comparison errors were resolved by replacing `== False` with `not` and `== True` with truthy checks via `ruff --unsafe-fixes`. All 61 F841 unused variable errors were resolved by removing unused assignments via `ruff --unsafe-fixes --fix`. **48 errors remain**, all E402 import ordering issues. All 3,244 unit tests continue to pass with 100% coverage.
+The Valyrian Spellbook repository had **613 lint errors** initially. Ruff's `--fix` resolved 150 auto-fixable issues. Two regressions from the auto-fix were identified and corrected. An additional 16 errors across 7 small categories were manually resolved. All 166 F403/F405 star import errors were eliminated by replacing `import *` with explicit imports. All 16 E721 type comparison errors were resolved by replacing `type() ==` with `isinstance()` and `type() != type()` with `type() is not type()`. All 156 E712 true/false comparison errors were resolved by replacing `== False` with `not` and `== True` with truthy checks via `ruff --unsafe-fixes`. All 61 F841 unused variable errors were resolved by removing unused assignments via `ruff --unsafe-fixes --fix`. All 48 E402 import ordering errors were resolved — 19 by moving an assignment below imports in `spellbookserver.py`, and 29 with `# noqa: E402` comments for intentional patterns (`sys.path` manipulation, monkey-patch injection, mock patching). **0 errors remain.** All 3,244 unit tests continue to pass with 100% coverage.
