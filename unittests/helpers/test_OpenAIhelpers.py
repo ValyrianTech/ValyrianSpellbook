@@ -31,7 +31,7 @@ class TestOpenAIHelpersInitialization(unittest.TestCase):
                  patch('helpers.configurationhelpers.get_openai_api_key', return_value='test-api-key'):
                 
                 # Import fresh - this will execute lines 7-9
-                import helpers.OpenAIhelpers
+                import helpers.OpenAIhelpers  # noqa: F401 - side-effect import for module initialization test
 
                 # Verify the openai module was configured
                 self.assertEqual(openai.organization, 'test-org')

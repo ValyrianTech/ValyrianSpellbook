@@ -94,7 +94,7 @@ class Comparison(object):
             if not all(n_txs[0] == item for item in n_txs):
                 print('different number of transactions by some explorers')
                 for explorer in self.responses:
-                    print('%s: %' % (explorer, len(self.responses[explorer])[0]['transactions']))
+                    print('%s: %s' % (explorer, len(self.responses[explorer])[0]['transactions']))
 
             if all_ok is True:
                 print('All transactions are the same on all explorers')
@@ -114,7 +114,7 @@ class Comparison(object):
             if not all(n_txs[0] == item for item in n_txs):
                 print('different number of utxos by some explorers')
                 for explorer in self.responses:
-                    print('%s: %' % (explorer, len(self.responses[explorer])[0]['utxos']))
+                    print('%s: %s' % (explorer, len(self.responses[explorer])[0]['utxos']))
 
         elif args[0] in ['get_block', 'get_latest_block']:
             print('\n------------------------------------------------------------------')

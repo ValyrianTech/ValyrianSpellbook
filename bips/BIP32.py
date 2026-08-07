@@ -147,18 +147,18 @@ def raw_bip32_ckd(rawtuple, i):
     if i >= 2**31:
         if vbytes in PUBLIC:
             raise Exception("Can't do private derivation on public key!")
-        I = hmac.new(chaincode, b'\x00'+priv[:32]+encode(i, 256, 4), hashlib.sha512).digest()
+        hmac_digest = hmac.new(chaincode, b'\x00'+priv[:32]+encode(i, 256, 4), hashlib.sha512).digest()
     else:
-        I = hmac.new(chaincode, pub+encode(i, 256, 4), hashlib.sha512).digest()
+        hmac_digest = hmac.new(chaincode, pub+encode(i, 256, 4), hashlib.sha512).digest()
 
     if vbytes in PRIVATE:
-        newkey = add_privkeys(I[:32]+B'\x01', priv)
+        newkey = add_privkeys(hmac_digest[:32]+B'\x01', priv)
         fingerprint = bin_hash160(privkey_to_pubkey(key))[:4]
     if vbytes in PUBLIC:
-        newkey = add_pubkeys(compress(privkey_to_pubkey(I[:32])), key)
+        newkey = add_pubkeys(compress(privkey_to_pubkey(hmac_digest[:32])), key)
         fingerprint = bin_hash160(key)[:4]
 
-    return vbytes, depth + 1, fingerprint, i, I[32:], newkey
+    return vbytes, depth + 1, fingerprint, i, hmac_digest[32:], newkey
 
 
 def hash_to_int(x):
@@ -171,12 +171,12 @@ def hash_to_int(x):
 
 
 def bip32_master_key(seed, vbytes=MAINNET_PRIVATE):
-    I = hmac.new(
+    hmac_digest = hmac.new(
             from_string_to_bytes("Bitcoin seed"),
             from_string_to_bytes(seed),
             hashlib.sha512
         ).digest()
-    return bip32_serialize((vbytes, 0, b'\x00'*4, 0, I[32:], I[:32]+b'\x01'))
+    return bip32_serialize((vbytes, 0, b'\x00'*4, 0, hmac_digest[32:], hmac_digest[:32]+b'\x01'))
 
 # ----------------------------------------------------------------------------------------------------------------------
 

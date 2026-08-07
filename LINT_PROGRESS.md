@@ -1,10 +1,10 @@
 # Linting Progress Tracker
 
-**Last updated:** 2026-08-07 — **150 auto-fixable errors resolved, 463 remaining**
+**Last updated:** 2026-08-07 — **166 errors resolved, 447 remaining**
 
 ## Current Status
 
-**463 lint errors remaining across 12 rule categories — 2 auto-fixable**
+**447 lint errors remaining across 6 rule categories — 0 auto-fixable**
 
 | Rule | Count | Description | Fixable? |
 |------|-------|-------------|----------|
@@ -14,14 +14,7 @@
 | E402 | 48 | Module-level import not at top of file | Manual |
 | E721 | 16 | `type() ==` comparisons | Manual |
 | F403 | 8 | `from module import *` | Manual |
-| F811 | 5 | Redefined while unused | Manual |
-| E741 | 3 | Ambiguous variable names (`l`, `I`, `O`) | Manual |
-| F401 | 2 | Unused imports | Auto-fixable |
-| F501 | 2 | Invalid percent-format string | Manual |
-| F821 | 2 | Undefined names | Manual |
-| E701 | 1 | Multiple statements on one line | Manual |
-| F633 | 1 | Invalid print syntax | Manual |
-| **Total** | **463** | | **2 auto-fixable** |
+| **Total** | **447** | | **0 auto-fixable** |
 
 ---
 
@@ -43,6 +36,14 @@
   - Restored `from functools import reduce` needed by `transactionfactory.py` via `import *`
 - [x] **Restored side-effect import in `test_OpenAIhelpers.py`** (2026-08-07, commit `4d7e6a6`)
   - Ruff removed `import helpers.OpenAIhelpers` that was needed for module initialization test
+- [x] **16 errors resolved across 7 small categories** (2026-08-07)
+  - E701: Split multiple statements on one line in `transactionfactory.py` (1 → 0)
+  - F633: Added noqa for Python 2 print syntax in `helpers/py2specials.py` (1 → 0)
+  - F501: Fixed incomplete `%s: %` format strings in `integrationtests/compare_explorers.py` (2 → 0)
+  - F821: Added noqa for Python 2 builtins (`unicode`, `long`) in `helpers/py2specials.py` (2 → 0)
+  - F401: Added noqa for intentionally kept imports in `py3specials.py` and `test_OpenAIhelpers.py` (2 → 0)
+  - E741: Renamed ambiguous variable `I` to `hmac_digest` in `bips/BIP32.py` (3 → 0)
+  - F811: Removed 4 shadowed test methods in `test_mysqlhelpers.py`, merged duplicate class in `test_websockethelpers.py` (5 → 0)
 
 ---
 
@@ -55,7 +56,7 @@
 | `unittests/action/test_twitter_actions.py` | 30 | E712 |
 | `helpers/publickeyhelpers.py` | 30 | F405, E721 |
 | `unittests/action/test_sendtransactionaction.py` | 27 | E712 |
-| `bips/BIP32.py` | 24 | F405, E402 |
+| `bips/BIP32.py` | 21 | F405, E402 |
 | `spellbookserver.py` | 21 | F405, E402 |
 | `unittests/helpers/test_twitterhelpers.py` | 17 | E712 |
 | `unittests/helpers/test_llmhelpers.py` | 17 | E712 |
@@ -68,9 +69,9 @@
 | `unittests/action/test_revealsecretaction.py` | 6 | E712 |
 | `unittests/action/test_commandaction.py` | 6 | E712 |
 | `unittests/trigger/test_trigger.py` | 5 | E712 |
-| `unittests/helpers/test_mysqlhelpers.py` | 5 | E712 |
+| `unittests/helpers/test_mysqlhelpers.py` | 0 | (F811 fixed) |
 | `unittests/darwin/test_model_subclasses.py` | 5 | E712 |
-| `integrationtests/compare_explorers.py` | 5 | E712 |
+| `integrationtests/compare_explorers.py` | 3 | E712 |
 | Other files (≤4 each) | 96 | Various |
 
 ---
@@ -114,4 +115,4 @@
 
 ## Summary
 
-The Valyrian Spellbook repository had **613 lint errors** initially. Ruff's `--fix` resolved 150 auto-fixable issues. Two regressions from the auto-fix were identified and corrected. **463 errors remain**, primarily star imports (F405/F403) and true/false comparisons (E712), concentrated in a small number of files. All 3,243 unit tests continue to pass with 100% coverage.
+The Valyrian Spellbook repository had **613 lint errors** initially. Ruff's `--fix` resolved 150 auto-fixable issues. Two regressions from the auto-fix were identified and corrected. An additional 16 errors across 7 small categories were manually resolved. **447 errors remain**, primarily star imports (F405/F403) and true/false comparisons (E712), concentrated in a small number of files. All 3,244 unit tests continue to pass with 100% coverage.

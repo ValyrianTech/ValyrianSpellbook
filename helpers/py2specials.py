@@ -8,9 +8,9 @@ import hashlib
 
 
 if sys.version_info.major == 2:
-    string_types = (str, unicode)
+    string_types = (str, unicode)  # noqa: F821
     string_or_bytes_types = string_types
-    int_types = (int, float, long)
+    int_types = (int, float, long)  # noqa: F821
 
     # Base switching
     code_strings = {
@@ -106,4 +106,4 @@ if sys.version_info.major == 2:
         return os.urandom(x)
 
     def print_to_stderr(message):
-        print >> sys.stderr, message
+        print >> sys.stderr, message  # noqa: F633

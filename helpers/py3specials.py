@@ -5,7 +5,7 @@ import sys
 import os
 import binascii
 import hashlib
-from functools import reduce
+from functools import reduce  # noqa: F401 - needed by transactionfactory.py via import *
 
 
 if sys.version_info.major == 3:

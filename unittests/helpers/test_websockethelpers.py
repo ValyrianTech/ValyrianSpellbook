@@ -191,17 +191,6 @@ class TestStartWebsocketServer(unittest.TestCase):
         mock_set_loop.assert_called_once()
 
 
-class TestInitWebsocketServer(unittest.TestCase):
-    """Test cases for init_websocket_server function"""
-
-    def test_init_websocket_server_function_exists(self):
-        """Test init_websocket_server function is importable"""
-        from helpers.websockethelpers import init_websocket_server
-        
-        # Verify the function exists and is callable
-        self.assertTrue(callable(init_websocket_server))
-
-
 class TestWebSocketHandlerHandler(unittest.TestCase):
     """Test cases for WebSocketHandler.handler method"""
 
@@ -370,6 +359,13 @@ class TestStartWebsocketServerError(unittest.TestCase):
 
 class TestInitWebsocketServer(unittest.TestCase):
     """Test cases for init_websocket_server function"""
+
+    def test_init_websocket_server_function_exists(self):
+        """Test init_websocket_server function is importable"""
+        from helpers.websockethelpers import init_websocket_server
+
+        # Verify the function exists and is callable
+        self.assertTrue(callable(init_websocket_server))
 
     @patch('helpers.websockethelpers.threading.Thread')
     @patch('helpers.websockethelpers.LOG')

@@ -262,7 +262,8 @@ def mktx(*args):
     ins, outs = [], []
     for arg in args:
         if isinstance(arg, list):
-            for a in arg: (ins if is_inp(a) else outs).append(a)
+            for a in arg:
+                (ins if is_inp(a) else outs).append(a)
         else:
             (ins if is_inp(arg) else outs).append(arg)
 
