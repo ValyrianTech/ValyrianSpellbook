@@ -14,7 +14,7 @@ def deep_diff(d1, d2, prefix='root'):
     values_changed = {}
     type_changes = {}
 
-    if type(d1) != type(d2):
+    if type(d1) is not type(d2):
         return {'values_changed': values_changed, 'type_changes': type_changes}
 
     if isinstance(d1, dict):
@@ -31,7 +31,7 @@ def deep_diff(d1, d2, prefix='root'):
                 values_changed.update(sub['values_changed'])
                 type_changes.update(sub.get('type_changes', {}))
             elif v1 != v2:
-                if type(v1) != type(v2):
+                if type(v1) is not type(v2):
                     type_changes[path] = {'old_type': type(v1), 'new_type': type(v2), 'old_value': v1, 'new_value': v2}
                 else:
                     values_changed[path] = {'old_value': v1, 'new_value': v2}
@@ -50,7 +50,7 @@ def deep_diff(d1, d2, prefix='root'):
                 values_changed.update(sub['values_changed'])
                 type_changes.update(sub.get('type_changes', {}))
             elif v1 != v2:
-                if type(v1) != type(v2):
+                if type(v1) is not type(v2):
                     type_changes[path] = {'old_type': type(v1), 'new_type': type(v2), 'old_value': v1, 'new_value': v2}
                 else:
                     values_changed[path] = {'old_value': v1, 'new_value': v2}

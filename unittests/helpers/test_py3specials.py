@@ -17,7 +17,7 @@ class TestConstants(object):
     """Tests for module constants"""
 
     def test_string_types(self):
-        assert string_types == str
+        assert string_types is str
 
     def test_string_or_bytes_types(self):
         assert string_or_bytes_types == (str, bytes)

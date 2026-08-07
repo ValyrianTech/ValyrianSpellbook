@@ -392,9 +392,9 @@ class LLM(object):
             available_llms = get_available_llms()
             prompt = ''
             content = messages[0].get('content', '')
-            if type(content) == str:
+            if isinstance(content, str):
                 prompt = content
-            elif type(content) == list:
+            elif isinstance(content, list):
                 prompt = content[0].get('text', '')
 
             routing_prompt = llm_router_prompt(prompt=prompt, available_llms=available_llms[0])

@@ -31,9 +31,9 @@ class TextGenerationWebuiLLM(LLMInterface):
             prompt = messages[0].get('content', '')
         else:
             for message in messages:
-                if type(message['content']) == str:
+                if isinstance(message['content'], str):
                     prompt += message['content'] + '\n'
-                elif type(message['content']) == list:
+                elif isinstance(message['content'], list):
                     for part in message['content']:
                         if 'text' in part:
                             prompt += part['text'] + '\n'
