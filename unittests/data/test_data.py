@@ -4,7 +4,7 @@ import pytest
 import mock
 
 from data import data
-from data.explorer import Explorer, ExplorerType
+from data.explorer import ExplorerType
 
 
 class TestInitializeExplorersFile(object):

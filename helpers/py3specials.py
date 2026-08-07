@@ -1,7 +1,8 @@
 # Code copied from Vitalik Buterin's pybitcointools (library is no longer maintained)
 from __future__ import print_function
 
-import sys, os
+import sys
+import os
 import binascii
 import hashlib
 from functools import reduce

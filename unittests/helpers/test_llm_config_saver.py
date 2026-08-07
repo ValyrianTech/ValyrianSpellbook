@@ -4,7 +4,7 @@ import unittest
 import os
 import json
 import tempfile
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from helpers.llm_config_saver import (
     load_from_json_file, save_to_json_file, get_llms_file_path,

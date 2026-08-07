@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import pytest
-import mock
 
 from bips.BIP44 import (
     get_address_from_xpub,

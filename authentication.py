@@ -117,7 +117,7 @@ def check_authentication(headers, data):
 
     try:
         nonce = int(headers['API_Nonce'])
-    except Exception as ex:
+    except Exception:
         return AuthenticationStatus.INVALID_NONCE
 
     if api_key in LAST_NONCES and LAST_NONCES[api_key] >= nonce:

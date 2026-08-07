@@ -296,7 +296,7 @@ class TestMysqlHelpers(unittest.TestCase):
     def test_create_tables_other_error(self, mock_log):
         """Test create_tables with other mysql error (lines 40-41)"""
         import helpers.mysqlhelpers as mysql_module
-        from helpers.mysqlhelpers import create_tables, errorcode
+        from helpers.mysqlhelpers import create_tables
 
         class MockMySQLError(Exception):
             pass

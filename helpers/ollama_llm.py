@@ -7,7 +7,6 @@ from helpers.llm_interface import LLMInterface
 from helpers.loghelpers import LOG
 from helpers.websockethelpers import broadcast_message, get_broadcast_channel, get_broadcast_sender
 from .textgenerationhelpers import parse_generation
-from .thinking_levels import THINKING_LEVEL_OLLAMA
 
 
 class OllamaLLM(LLMInterface):

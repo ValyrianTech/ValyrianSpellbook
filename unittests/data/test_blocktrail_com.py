@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import pytest
 import mock
 
 from data.blockexplorers.blocktrail_com import BlocktrailComAPI

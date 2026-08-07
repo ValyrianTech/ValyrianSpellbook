@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 import os
 import simplejson
-import pytest
 from unittest.mock import patch, MagicMock
 
 import listeners.block_listener as block_listener

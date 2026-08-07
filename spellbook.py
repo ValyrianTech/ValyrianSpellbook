@@ -646,8 +646,6 @@ def get_balance():
 
 def get_utxos():
     url = '{spellbook_uri}/spellbook/addresses/{address}/utxos?confirmations={confirmations}'.format(spellbook_uri=get_spellbook_uri(),
-                                                                                                     host=host,
-                                                                                                     port=port,
                                                                                                      address=args.address,
                                                                                                      confirmations=args.confirmations)
     do_get_request(url=url)

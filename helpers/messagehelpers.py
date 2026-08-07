@@ -7,7 +7,6 @@ from bitcoin.wallet import CBitcoinSecret
 from bitcoin.signmessage import BitcoinMessage, VerifyMessage, SignMessage
 from helpers.hotwallethelpers import get_address_from_wallet, get_private_key_from_wallet
 from helpers.configurationhelpers import get_use_testnet
-from helpers.loghelpers import LOG
 
 bitcoin.SelectParams(name='testnet' if get_use_testnet() is True else 'mainnet')
 
@@ -20,7 +19,7 @@ def sign_message(message, private_key):
 def verify_message(address, message, signature):
     try:
         return VerifyMessage(address=address, message=BitcoinMessage(message), sig=signature)
-    except Exception as ex:
+    except Exception:
         return False
 
 

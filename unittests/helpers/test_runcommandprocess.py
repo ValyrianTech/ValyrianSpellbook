@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import pytest
 import mock
-import os
 
 from helpers.runcommandprocess import RunCommandProcess, PROCESS_LOG
 

@@ -880,7 +880,7 @@ class SpellbookRESTAPI(Bottle):
             # Reset the file pointer to the beginning
             uploaded_file.file.seek(0)
             uploaded_file.save('tmp_audio.mp3')
-            LOG.info(f"Saved temporary file to disk: tmp_audio.mp3")
+            LOG.info("Saved temporary file to disk: tmp_audio.mp3")
 
             convert_aac_to_opus('tmp_audio.mp3', 'opus_audio.opus')
 

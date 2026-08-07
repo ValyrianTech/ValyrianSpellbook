@@ -11,7 +11,7 @@ from darwin.fitnessfunction.fitnessfunction import FitnessFunction
 from darwin.rosettastone.rosettastone import RosettaStone
 from darwin.model.model import Model
 
-from helpers.jsonhelpers import load_from_json_file, save_to_json_file
+from helpers.jsonhelpers import save_to_json_file
 from darwin.mutationchance import BooleanMutationChance, IntegerMutationChance, FloatMutationChance, StringMutationChance, ChromosomeMutationChance
 from darwin.parentselection import roulette_wheel_selection, rank_selection, stochastic_universal_sampling, tournament_selection
 from darwin.population import Population

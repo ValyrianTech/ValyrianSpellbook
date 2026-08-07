@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import unittest
-import os
-import tempfile
 from unittest.mock import patch, MagicMock
 
 

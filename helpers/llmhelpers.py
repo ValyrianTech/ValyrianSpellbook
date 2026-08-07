@@ -1,15 +1,14 @@
 import base64
 import os
-import random
 import sys
 import time
 
 import simplejson
-from dotenv import load_dotenv, set_key
+from dotenv import load_dotenv
 
 from typing import List, Any, Dict
 
-from .configurationhelpers import get_enable_openai, get_openai_api_key, spellbook_config, CONFIGURATION_FILE, get_llms_default_model, get_enable_together_ai, get_enable_oobabooga, get_app_data_dir
+from .configurationhelpers import get_enable_openai, get_openai_api_key, spellbook_config, CONFIGURATION_FILE, get_llms_default_model, get_enable_oobabooga, get_app_data_dir
 
 from langchain_community.llms import OpenAI
 from langchain_openai import ChatOpenAI
@@ -52,7 +51,7 @@ def get_llm(model_name: str = 'default_model', temperature: float = 0.0):
         return llm
 
     if model_name == 'auto':
-        LOG.info(f'Auto routing to the best suited LLM model')
+        LOG.info('Auto routing to the best suited LLM model')
         llm = LLMInterface(model_name=model_name, auto_routing=True)
         return llm
     elif model_name.startswith('auto:'):
@@ -450,7 +449,7 @@ class LLM(object):
             selection = int(text_completion[0])
         except Exception as e:
             LOG.error(f"Unable to parse generation: {e}")
-            LOG.error(f"Defaulting to default model")
+            LOG.error("Defaulting to default model")
             return llm_config_name
 
         if 0 <= selection < len(llm_names):
@@ -487,7 +486,7 @@ class LLM(object):
         best_n = int(as_json.get('best_n', 0))
 
         if best_n >= len(generations):
-            LOG.error(f"best_n is greater than the number of generations, defaulting to first generation")
+            LOG.error("best_n is greater than the number of generations, defaulting to first generation")
             return 0
 
         return best_n

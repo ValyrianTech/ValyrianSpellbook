@@ -24,7 +24,7 @@ class DeepSeekLLM(LLMInterface):
         LOG.info(f'stop: {stop}')
 
         client = OpenAI(
-            base_url=f"https://api.deepseek.com",
+            base_url="https://api.deepseek.com",
             api_key=self.api_key
         )
 

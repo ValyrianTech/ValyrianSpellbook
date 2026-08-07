@@ -13,7 +13,6 @@ import os
 import sys
 
 import mock
-import pytest
 from configparser import ConfigParser
 
 _REPLACE_PH_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),

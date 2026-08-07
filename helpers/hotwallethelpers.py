@@ -25,7 +25,7 @@ def get_hot_wallet():
                 encrypted_data = input_file.read()
                 return simplejson.loads(cipher.decrypt(encrypted_data))
 
-        except Exception as ex:
+        except Exception:
             prompt_decryption_password()
 
     try:

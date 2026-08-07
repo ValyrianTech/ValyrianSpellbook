@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 
 class TestOpenAIHelpersInitialization(unittest.TestCase):
@@ -14,7 +14,6 @@ class TestOpenAIHelpersInitialization(unittest.TestCase):
         with mocked configuration functions that return True/test values.
         """
         import sys
-        import importlib
         import openai
         
         # Save original values
@@ -33,7 +32,7 @@ class TestOpenAIHelpersInitialization(unittest.TestCase):
                 
                 # Import fresh - this will execute lines 7-9
                 import helpers.OpenAIhelpers
-                
+
                 # Verify the openai module was configured
                 self.assertEqual(openai.organization, 'test-org')
                 self.assertEqual(openai.api_key, 'test-api-key')

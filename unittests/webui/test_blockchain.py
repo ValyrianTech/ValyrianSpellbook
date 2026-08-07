@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Tests for webui.routers.blockchain."""
-import pytest
 from unittest.mock import patch, MagicMock
 
 

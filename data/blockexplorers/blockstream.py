@@ -7,7 +7,6 @@ from helpers.loghelpers import LOG
 from data.transaction import TX, TxInput, TxOutput
 from data.explorer_api import ExplorerAPI
 
-from pprint import pprint
 
 
 class BlockstreamAPI(ExplorerAPI):

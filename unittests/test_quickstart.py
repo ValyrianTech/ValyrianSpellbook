@@ -12,7 +12,6 @@ import os
 import sys
 
 import mock
-import pytest
 from configparser import ConfigParser
 
 _QUICKSTART_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'quickstart.py')

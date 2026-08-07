@@ -6,7 +6,7 @@ import hmac
 from helpers.py2specials import *
 from helpers.py3specials import *
 from helpers.privatekeyhelpers import privkey_to_pubkey, add_privkeys
-from helpers.publickeyhelpers import add_pubkeys, compress, bin_hash160, encode_pubkey, pubkey_to_address
+from helpers.publickeyhelpers import add_pubkeys, compress, bin_hash160
 
 from helpers.configurationhelpers import get_use_testnet
 

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import unittest
-from unittest.mock import patch, MagicMock
 
 from helpers.qrhelpers import generate_qr
 

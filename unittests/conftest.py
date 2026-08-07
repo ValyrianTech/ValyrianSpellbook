@@ -6,7 +6,6 @@ Pytest configuration and fixtures for the Valyrian Spellbook test suite.
 from unittest.mock import patch
 
 # Import helpers.websockethelpers before patching so the module attribute exists.
-import helpers.websockethelpers  # noqa: E402
 
 # Patch the websocket server initialization before any imports that might trigger it.
 # The llm_interface module calls init_websocket_server() at import time, which tries

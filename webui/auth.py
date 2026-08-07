@@ -7,9 +7,8 @@ Authentication helpers for the Valyrian Spellbook Web UI
 import os
 import sys
 from functools import wraps
-from typing import Optional
 
-from fastapi import Request, HTTPException
+from fastapi import Request
 from fastapi.responses import RedirectResponse
 
 # Add parent directory to path for imports

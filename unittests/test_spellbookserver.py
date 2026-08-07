@@ -6,16 +6,10 @@ Tests for spellbookserver.py — the Valyrian Spellbook REST API server (Bottle)
 The SpellbookRESTAPI.__init__ starts a web server via self.run(), so we mock
 that out and test the endpoint callbacks as static methods.
 """
-import importlib
-import json
 import logging
-import os
 import sys
-import time
-import uuid
-from unittest.mock import patch, MagicMock, mock_open, call
+from unittest.mock import patch, MagicMock, mock_open
 
-import mock
 import pytest
 
 # --- Module loading -----------------------------------------------------------

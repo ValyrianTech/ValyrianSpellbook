@@ -3,7 +3,7 @@
 import unittest
 import os
 import tempfile
-from unittest.mock import patch, MagicMock, mock_open
+from unittest.mock import patch, MagicMock
 
 
 class TestLoadSmtpSettings(unittest.TestCase):
@@ -61,7 +61,7 @@ class TestSendmail(unittest.TestCase):
     @patch('helpers.mailhelpers.smtplib.SMTP')
     def test_sendmail_with_txt_template(self, mock_smtp, mock_log, mock_load, mock_enable):
         """Test sendmail with txt template"""
-        from helpers.mailhelpers import sendmail, TEMPLATE_DIR
+        from helpers.mailhelpers import sendmail
         
         with tempfile.TemporaryDirectory() as temp_dir:
             # Create a temporary template file

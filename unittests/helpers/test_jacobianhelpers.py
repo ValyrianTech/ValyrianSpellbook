@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import pytest
 
 from helpers.jacobianhelpers import (
     fast_add, fast_multiply, from_jacobian, to_jacobian,

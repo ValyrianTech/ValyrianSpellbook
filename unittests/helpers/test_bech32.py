@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import pytest
 
 from helpers.bech32 import (
     bech32_polymod, bech32_hrp_expand, bech32_verify_checksum,

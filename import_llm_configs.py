@@ -12,7 +12,7 @@ import sys
 import csv
 import json
 import argparse
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 # Add the current directory to the path to import Spellbook modules
 sys.path.append(os.path.dirname(__file__))
@@ -170,7 +170,7 @@ def main():
     
     args = parser.parse_args()
     
-    print(f"Valyrian Spellbook LLM Config Import Tool")
+    print("Valyrian Spellbook LLM Config Import Tool")
     print(f"CSV file: {args.csv_file}")
     if args.dry_run:
         print("DRY RUN MODE - No actual changes will be made")
@@ -225,7 +225,7 @@ def main():
                 success_count += 1
     
     # Summary
-    print(f"\n" + "=" * 50)
+    print("\n" + "=" * 50)
     if args.dry_run:
         print(f"DRY RUN COMPLETE: Would have imported {success_count}/{total_count} models")
     else:

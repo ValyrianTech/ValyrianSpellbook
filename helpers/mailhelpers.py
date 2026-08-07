@@ -9,7 +9,7 @@ from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.mime.base import MIMEBase
 try:
-    from email import Encoders  # Python2.7
+    pass  # Python2.7
 except:
     from email import encoders  # Python3
 

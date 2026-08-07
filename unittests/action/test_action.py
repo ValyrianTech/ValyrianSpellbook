@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import pytest
 import mock
 import time
 from datetime import datetime
 
-from action.action import Action, ACTIONS_DIR
+from action.action import Action
 from action.actiontype import ActionType
 from action.transactiontype import TransactionType
 

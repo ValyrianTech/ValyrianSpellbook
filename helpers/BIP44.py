@@ -4,7 +4,7 @@ from bips.BIP32 import bip32_ckd, bip32_privtopub, bip32_master_key, bip32_extra
 from bips.BIP39 import get_seed
 from bips.BIP44 import get_addresses_from_xpub, get_change_addresses_from_xpub, get_xpriv_keys, get_xpub_keys, get_private_key
 from helpers.publickeyhelpers import pubkey_to_address
-from helpers.privatekeyhelpers import privkey_to_address, privkey_to_pubkey, encode_privkey
+from helpers.privatekeyhelpers import privkey_to_pubkey, encode_privkey
 
 from binascii import hexlify, unhexlify
 import requests

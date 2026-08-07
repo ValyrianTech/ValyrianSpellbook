@@ -2,10 +2,9 @@
 # -*- coding: utf-8 -*-
 import pytest
 import mock
-import time
 from datetime import datetime
 
-from trigger.trigger import Trigger, TRIGGERS_DIR
+from trigger.trigger import Trigger
 from trigger.triggertype import TriggerType
 
 

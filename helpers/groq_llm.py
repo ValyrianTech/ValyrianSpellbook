@@ -1,5 +1,4 @@
 import json
-import re
 import sys
 
 from groq import Groq
@@ -7,7 +6,6 @@ from groq import Groq
 from helpers.llm_interface import LLMInterface
 from helpers.loghelpers import LOG
 from helpers.websockethelpers import broadcast_message, get_broadcast_channel, get_broadcast_sender
-from helpers.configurationhelpers import get_openai_api_key
 from .textgenerationhelpers import parse_generation
 
 

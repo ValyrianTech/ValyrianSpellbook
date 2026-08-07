@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from helpers.setupscripthelpers import spellbook_call
-from helpers.hotwallethelpers import get_address_from_wallet
 
 print('Starting Spellbook integration test: data')
 print('----------------------------------------------\n')

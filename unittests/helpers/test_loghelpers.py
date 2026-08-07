@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import pytest
-import os
-import tempfile
 
 from helpers.loghelpers import get_logs, LOG, REQUESTS_LOG
 

@@ -19,7 +19,6 @@ from helpers.triggerhelpers import (
     http_options_request,
     signed_message_request,
     file_download,
-    TRIGGERS_DIR,
 )
 from trigger.triggertype import TriggerType
 
@@ -621,7 +620,6 @@ class TestHttpOptionsRequest(object):
     @mock.patch('helpers.triggerhelpers.get_triggers', return_value=[])
     def test_http_options_request_unknown(self, mock_get_triggers):
         """Test HTTP OPTIONS request with unknown trigger"""
-        from helpers.triggerhelpers import http_options_request
         result = http_options_request('unknown')
         assert 'error' in result
 
@@ -629,7 +627,6 @@ class TestHttpOptionsRequest(object):
     @mock.patch('helpers.triggerhelpers.get_trigger')
     def test_http_options_request_wrong_type(self, mock_get_trigger, mock_get_triggers):
         """Test HTTP OPTIONS request with wrong trigger type"""
-        from helpers.triggerhelpers import http_options_request
         mock_trigger = mock.MagicMock()
         mock_trigger.trigger_type = TriggerType.MANUAL
         mock_get_trigger.return_value = mock_trigger
@@ -641,7 +638,6 @@ class TestHttpOptionsRequest(object):
     @mock.patch('helpers.triggerhelpers.get_trigger')
     def test_http_options_request_success(self, mock_get_trigger, mock_get_triggers):
         """Test successful HTTP OPTIONS request"""
-        from helpers.triggerhelpers import http_options_request
         mock_trigger = mock.MagicMock()
         mock_trigger.trigger_type = TriggerType.HTTPOPTIONSREQUEST
         mock_trigger.status = 'Active'
@@ -655,7 +651,6 @@ class TestHttpOptionsRequest(object):
     @mock.patch('helpers.triggerhelpers.get_trigger')
     def test_http_options_request_no_data(self, mock_get_trigger, mock_get_triggers):
         """Test HTTP OPTIONS request without data"""
-        from helpers.triggerhelpers import http_options_request
         mock_trigger = mock.MagicMock()
         mock_trigger.trigger_type = TriggerType.HTTPOPTIONSREQUEST
         mock_trigger.status = 'Active'

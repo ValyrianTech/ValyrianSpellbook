@@ -6,7 +6,6 @@ import sys
 import requests
 
 from helpers.ipfshelpers import add_json
-from helpers.configurationhelpers import get_ipfs_api_host, get_ipfs_api_port
 from helpers.hotwallethelpers import get_private_key_from_wallet, find_address_in_wallet
 from helpers.messagehelpers import sign_message
 from validators.validators import valid_address

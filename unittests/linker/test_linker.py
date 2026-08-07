@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import pytest
 from unittest.mock import patch
 
 from linker.linker import get_lal, get_lbl, get_lrl, get_lsl

@@ -29,7 +29,7 @@ assert response is None
 
 print('Checking if trigger has not been triggered yet')
 response = spellbook_call('get_trigger_config', trigger_id)
-assert response['triggered'] is 0
+assert response['triggered'] == 0
 assert response['trigger_type'] == trigger_type
 
 print('Activating HTTP POST request trigger with data')

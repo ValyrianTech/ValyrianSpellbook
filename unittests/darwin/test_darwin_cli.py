@@ -11,7 +11,6 @@ import sys
 import runpy
 from unittest.mock import patch, MagicMock
 
-import pytest
 
 _DARWIN_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
                             'darwin', 'darwin.py')

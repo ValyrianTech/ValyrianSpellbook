@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from darwin.chromosome import Chromosome
 from darwin.encodingtype import EncodingType
-from darwin.gene import Gene, BooleanGene, IntegerGene, FloatGene, StringGene
+from darwin.gene import BooleanGene, IntegerGene, FloatGene, StringGene
 from darwin.mutationchance import ChromosomeMutationChance
 
 

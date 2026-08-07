@@ -40,4 +40,4 @@ assert response['mail_body_template'] == mail_body_template
 # --------------------------------------------------------------------------------------------------------
 print('Running the action we just created')
 response = spellbook_call('run_action', action_name)
-assert response is 'true' if mail_recipients != 'someone@example.com' else 'false'  # example.com is a reserved domain, so will always fail
+assert response == 'true' if mail_recipients != 'someone@example.com' else 'false'  # example.com is a reserved domain, so will always fail

@@ -8,7 +8,6 @@ side effects. We test uptime_check(), get_recent_spellbook_log(), and
 get_recent_requests_log() with mocked dependencies.
 """
 import mock
-import pytest
 import os
 import sys
 import runpy

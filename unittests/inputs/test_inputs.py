@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import pytest
 from unittest.mock import patch
 
 from inputs.inputs import get_sil, txs_2_sil, get_profile, txs_to_profile, get_sul, utxos_to_sul, get_sil_section

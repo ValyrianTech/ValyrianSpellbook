@@ -5,7 +5,7 @@ import simplejson
 import pytest
 from unittest.mock import patch, mock_open
 
-from listeners.watchlist import Watchlist, WATCHLIST_FILE
+from listeners.watchlist import Watchlist
 
 
 @pytest.fixture

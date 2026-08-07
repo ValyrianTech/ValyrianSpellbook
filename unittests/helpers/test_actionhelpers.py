@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import pytest
-import os
-import tempfile
 import mock
 
 from helpers.actionhelpers import (
@@ -13,7 +11,6 @@ from helpers.actionhelpers import (
     delete_action,
     run_action,
     get_reveal,
-    ACTIONS_DIR,
 )
 from action.actiontype import ActionType
 

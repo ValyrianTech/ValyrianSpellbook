@@ -23,7 +23,7 @@ class GoogleLLM(LLMInterface):
         LOG.info(f'stop: {stop}')
 
         client = OpenAI(
-            base_url=f"https://generativelanguage.googleapis.com/v1beta/openai/",
+            base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
             api_key=self.api_key
         )
 

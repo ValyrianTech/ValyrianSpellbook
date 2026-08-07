@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import requests
-from datetime import datetime
-import calendar
 from time import sleep
 
 from helpers.loghelpers import LOG

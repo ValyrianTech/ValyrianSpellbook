@@ -6,7 +6,6 @@ from helpers.publickeyhelpers import (
     get_pubkey_format, encode_pubkey, decode_pubkey,
     add_pubkeys, compress, pubkey_to_address, bin_hash160
 )
-from helpers.py3specials import from_int_to_byte
 
 
 class TestGetPubkeyFormat(object):

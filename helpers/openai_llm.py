@@ -108,7 +108,7 @@ class OpenAILLM(LLMInterface):
                         # Check for stop sequences after adding new content
                         if stop and any(stop_seq in completion for stop_seq in stop):
                             stop_sequence_detected = True
-                            LOG.info(f'Stop sequence detected in completion. Continuing to track usage for token waste analysis.')
+                            LOG.info('Stop sequence detected in completion. Continuing to track usage for token waste analysis.')
                         
                         # Print and broadcast the content
                         print(response_text, end='')

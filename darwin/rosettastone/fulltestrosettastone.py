@@ -4,7 +4,6 @@
 from rosettastone import RosettaStone
 
 from genome import Genome
-from chromosome import Chromosome
 from encodingtype import EncodingType
 
 

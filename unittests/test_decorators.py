@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 import pytest
 import mock
-import time
 
 from decorators import (
     authentication_required,
