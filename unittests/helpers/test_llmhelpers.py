@@ -463,7 +463,7 @@ class TestGetLlm(unittest.TestCase):
         mock_llm_instance = MagicMock()
         mock_openai_llm.return_value = mock_llm_instance
         
-        result = get_llm('default_model', 0.5)
+        get_llm('default_model', 0.5)
         
         mock_default.assert_called_once()
         mock_openai_llm.assert_called_once()
@@ -608,7 +608,7 @@ class TestGetLlm(unittest.TestCase):
         mock_llm_instance = MagicMock()
         mock_self_hosted.return_value = mock_llm_instance
         
-        result = get_llm('self-hosted:auto', 0.5)
+        get_llm('self-hosted:auto', 0.5)
         
         mock_self_hosted.assert_called_once_with(mixture_of_experts=True, model_name='auto')
 
@@ -627,7 +627,7 @@ class TestGetLlm(unittest.TestCase):
         mock_llm_instance = MagicMock()
         mock_self_hosted.return_value = mock_llm_instance
         
-        result = get_llm('self-hosted:test-model', 0.5)
+        get_llm('self-hosted:test-model', 0.5)
         
         mock_self_hosted.assert_called_once_with(host='localhost', port=5000, mixture_of_experts=False, model_name='test-model')
 
@@ -646,7 +646,7 @@ class TestGetLlm(unittest.TestCase):
         mock_llm_instance = MagicMock()
         mock_ollama.return_value = mock_llm_instance
         
-        result = get_llm('self-hosted:test-model', 0.5)
+        get_llm('self-hosted:test-model', 0.5)
         
         mock_ollama.assert_called_once_with(model_name='llama2', host='localhost', port=11434)
 
@@ -665,7 +665,7 @@ class TestGetLlm(unittest.TestCase):
         mock_llm_instance = MagicMock()
         mock_ollama_chat.return_value = mock_llm_instance
         
-        result = get_llm('self-hosted:test-model', 0.5)
+        get_llm('self-hosted:test-model', 0.5)
         
         mock_ollama_chat.assert_called_once_with(model_name='llama2', host='localhost', port=11434)
 
@@ -684,7 +684,7 @@ class TestGetLlm(unittest.TestCase):
         mock_llm_instance = MagicMock()
         mock_vllm.return_value = mock_llm_instance
         
-        result = get_llm('self-hosted:test-model', 0.5)
+        get_llm('self-hosted:test-model', 0.5)
         
         mock_vllm.assert_called_once_with(model_name='mistral', host='localhost', port=8000)
 
@@ -703,7 +703,7 @@ class TestGetLlm(unittest.TestCase):
         mock_llm_instance = MagicMock()
         mock_vllm_chat.return_value = mock_llm_instance
         
-        result = get_llm('self-hosted:test-model', 0.5)
+        get_llm('self-hosted:test-model', 0.5)
         
         mock_vllm_chat.assert_called_once_with(model_name='mistral', host='localhost', port=8000)
 
@@ -720,7 +720,7 @@ class TestGetLlm(unittest.TestCase):
         mock_llm_instance = MagicMock()
         mock_self_hosted.return_value = mock_llm_instance
         
-        result = get_llm('self-hosted:unknown-model', 0.5)
+        get_llm('self-hosted:unknown-model', 0.5)
         
         mock_self_hosted.assert_called_once_with(mixture_of_experts=False, model_name='unknown-model')
 
@@ -752,7 +752,7 @@ class TestGetLlm(unittest.TestCase):
         mock_llm_instance = MagicMock()
         mock_openai.return_value = mock_llm_instance
         
-        result = get_llm('text-davinci-003', 0.5)
+        get_llm('text-davinci-003', 0.5)
         
         mock_openai.assert_called_once()
 
@@ -769,7 +769,7 @@ class TestGetLlm(unittest.TestCase):
         mock_llm_instance = MagicMock()
         mock_chat_openai.return_value = mock_llm_instance
         
-        result = get_llm('gpt-3.5-turbo', 0.5)
+        get_llm('gpt-3.5-turbo', 0.5)
         
         mock_chat_openai.assert_called_once()
 
@@ -797,7 +797,7 @@ class TestGetLlm(unittest.TestCase):
         mock_llm_instance = MagicMock()
         mock_openai.return_value = mock_llm_instance
         
-        result = get_llm('auto:OpenAI:gpt-4', 0.5)
+        get_llm('auto:OpenAI:gpt-4', 0.5)
 
         mock_openai.assert_called_once_with(model_name='gpt-4', api_key='test-key')
 
@@ -816,7 +816,7 @@ class TestGetLlm(unittest.TestCase):
         mock_llm_instance = MagicMock()
         mock_textgen.return_value = mock_llm_instance
 
-        result = get_llm('self-hosted:test-model', 0.5)
+        get_llm('self-hosted:test-model', 0.5)
 
         mock_textgen.assert_called_once_with(model_name='mistral', host='localhost', port=5000)
 
@@ -835,7 +835,7 @@ class TestGetLlm(unittest.TestCase):
         mock_llm_instance = MagicMock()
         mock_textgen_chat.return_value = mock_llm_instance
 
-        result = get_llm('self-hosted:test-model', 0.5)
+        get_llm('self-hosted:test-model', 0.5)
 
         mock_textgen_chat.assert_called_once_with(model_name='mistral', host='localhost', port=5000)
 
@@ -855,7 +855,7 @@ class TestGetLlm(unittest.TestCase):
         mock_llm_instance = MagicMock()
         mock_openrouter.return_value = mock_llm_instance
 
-        result = get_llm('self-hosted:test-model', 0.5)
+        get_llm('self-hosted:test-model', 0.5)
 
         mock_openrouter.assert_called_once_with(model_name='mistral', api_key='test-key')
 
@@ -893,7 +893,7 @@ class TestLLMGenerateWithThinkingLevel(unittest.TestCase):
         client = LLM(model_name='OpenAI:gpt-4', thinking_level='medium')
         from langchain.schema import HumanMessage
         messages = [HumanMessage(content="Test")]
-        result = client.generate(messages)
+        client.generate(messages)
 
         # Check that thinking_level was passed in kwargs
         call_kwargs = mock_llm_instance.generate.call_args
@@ -969,7 +969,7 @@ class TestLLMClass(unittest.TestCase):
         llm = LLM('text-davinci-003', 0.5)
         messages = [HumanMessage(content="Hello")]
         
-        result = llm.generate(messages)
+        llm.generate(messages)
         
         mock_llm_instance.generate.assert_called_once()
         # Check that prompts list was passed
@@ -991,7 +991,7 @@ class TestLLMClass(unittest.TestCase):
         llm = LLM('OpenAI:gpt-4', 0.5)
         messages = [HumanMessage(content="Hello")]
         
-        result = llm.generate(messages)
+        llm.generate(messages)
         
         mock_llm_instance.generate.assert_called_once()
 

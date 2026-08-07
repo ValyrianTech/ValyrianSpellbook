@@ -563,7 +563,6 @@ class TestEvolverStart:
 
         evolver = self._setup_evolver(tmp_path)
         # Override the rosetta stone to return mixed encoding types
-        original_load = evolver.load_script
         rs = MixedRosettaStone()
         evolver.load_script = MagicMock(side_effect=lambda script, script_class_name: {
             evolver.model_script: self._make_mock_model(),

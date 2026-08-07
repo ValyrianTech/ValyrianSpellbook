@@ -156,7 +156,7 @@ class TestSignData(unittest.TestCase):
         mock_sign.return_value = 'sig'
         mock_verify.return_value = True
         
-        result = sign_data({'test': 'data'}, account=5, index=10)
+        sign_data({'test': 'data'}, account=5, index=10)
         
         mock_get_addr.assert_called_once_with(account=5, index=10)
         mock_get_priv.assert_called_once_with(account=5, index=10)

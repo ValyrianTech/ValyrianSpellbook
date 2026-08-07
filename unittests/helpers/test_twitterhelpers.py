@@ -140,7 +140,7 @@ class TestGetTweetsById(unittest.TestCase):
         
         mock_client.get_tweets.return_value = {'data': [{'id': '123'}]}
         
-        result = get_tweets_by_id(['123', '456'])
+        get_tweets_by_id(['123', '456'])
         
         mock_client.get_tweets.assert_called_once()
 
@@ -208,7 +208,7 @@ class TestGetUser(unittest.TestCase):
         
         mock_client.get_user.return_value = {'data': {'id': '123'}}
         
-        result = get_user(user_id='123')
+        get_user(user_id='123')
         
         mock_client.get_user.assert_called_once()
 
@@ -219,7 +219,7 @@ class TestGetUser(unittest.TestCase):
         
         mock_client.get_user.return_value = {'data': {'username': 'testuser'}}
         
-        result = get_user(user_name='testuser')
+        get_user(user_name='testuser')
         
         mock_client.get_user.assert_called_once()
 
@@ -234,7 +234,7 @@ class TestTwitterActions(unittest.TestCase):
         
         mock_client.follow_user.return_value = {'following': True, 'pending_follow': False}
         
-        result = follow_user('123')
+        follow_user('123')
         
         mock_client.follow_user.assert_called_once_with(target_user_id='123', user_auth=True)
 
@@ -245,7 +245,7 @@ class TestTwitterActions(unittest.TestCase):
         
         mock_client.unfollow_user.return_value = {'following': False}
         
-        result = unfollow_user('123')
+        unfollow_user('123')
         
         mock_client.unfollow_user.assert_called_once_with(target_user_id='123', user_auth=True)
 
@@ -256,7 +256,7 @@ class TestTwitterActions(unittest.TestCase):
         
         mock_client.like.return_value = {'liked': True}
         
-        result = like_tweet('123')
+        like_tweet('123')
         
         mock_client.like.assert_called_once_with(tweet_id='123', user_auth=True)
 
@@ -267,7 +267,7 @@ class TestTwitterActions(unittest.TestCase):
         
         mock_client.unlike.return_value = {'liked': False}
         
-        result = unlike_tweet('123')
+        unlike_tweet('123')
         
         mock_client.unlike.assert_called_once_with(tweet_id='123', user_auth=True)
 
@@ -278,7 +278,7 @@ class TestTwitterActions(unittest.TestCase):
         
         mock_client.delete_tweet.return_value = {'deleted': True}
         
-        result = delete_tweet('123')
+        delete_tweet('123')
         
         mock_client.delete_tweet.assert_called_once_with(id='123', user_auth=True)
 
@@ -289,7 +289,7 @@ class TestTwitterActions(unittest.TestCase):
         
         mock_client.retweet.return_value = {'retweeted': True}
         
-        result = retweet('123')
+        retweet('123')
         
         mock_client.retweet.assert_called_once_with(tweet_id='123', user_auth=True)
 
@@ -300,7 +300,7 @@ class TestTwitterActions(unittest.TestCase):
         
         mock_client.unretweet.return_value = {'retweeted': False}
         
-        result = unretweet('123')
+        unretweet('123')
         
         mock_client.unretweet.assert_called_once_with(source_tweet_id='123', user_auth=True)
 
@@ -315,7 +315,7 @@ class TestCreateTweet(unittest.TestCase):
         
         mock_client.create_tweet.return_value = {'id': '123', 'text': 'Hello'}
         
-        result = create_tweet(text='Hello')
+        create_tweet(text='Hello')
         
         mock_client.create_tweet.assert_called_once()
 
@@ -326,7 +326,7 @@ class TestCreateTweet(unittest.TestCase):
         
         mock_client.create_tweet.return_value = {'id': '456', 'text': 'Reply'}
         
-        result = create_tweet(text='Reply', in_reply_to_tweet_id='123')
+        create_tweet(text='Reply', in_reply_to_tweet_id='123')
         
         call_kwargs = mock_client.create_tweet.call_args[1]
         self.assertEqual(call_kwargs['in_reply_to_tweet_id'], '123')
@@ -338,7 +338,7 @@ class TestCreateTweet(unittest.TestCase):
         
         mock_client.create_tweet.return_value = {'id': '789'}
         
-        result = create_tweet(
+        create_tweet(
             text='Poll question',
             poll_options=['Option 1', 'Option 2'],
             poll_duration_minutes=60
@@ -359,7 +359,7 @@ class TestDirectMessages(unittest.TestCase):
         
         mock_client.get_direct_message_events.return_value = [{'id': '123'}]
         
-        result = get_direct_message_events()
+        get_direct_message_events()
         
         mock_client.get_direct_message_events.assert_called_once()
 
@@ -370,7 +370,7 @@ class TestDirectMessages(unittest.TestCase):
         
         mock_client.get_direct_message_events.return_value = [{'id': '123'}]
         
-        result = get_direct_message_events(dm_conversation_id='conv123')
+        get_direct_message_events(dm_conversation_id='conv123')
         
         call_kwargs = mock_client.get_direct_message_events.call_args[1]
         self.assertEqual(call_kwargs['dm_conversation_id'], 'conv123')
@@ -382,7 +382,7 @@ class TestDirectMessages(unittest.TestCase):
         
         mock_client.create_direct_message.return_value = {'id': '123'}
         
-        result = create_direct_message(participant_id='456', text='Hello')
+        create_direct_message(participant_id='456', text='Hello')
         
         call_kwargs = mock_client.create_direct_message.call_args[1]
         self.assertEqual(call_kwargs['participant_id'], '456')
@@ -464,7 +464,7 @@ class TestTrendingTopics(unittest.TestCase):
             'trends': [{'name': '#Test', 'tweet_volume': 100, 'query': 'test', 'url': 'http://...'}]
         }]
         
-        result = get_trending_topics()
+        get_trending_topics()
         
         mock_choice.assert_called_once()
 

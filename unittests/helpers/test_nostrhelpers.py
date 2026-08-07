@@ -29,7 +29,7 @@ class TestNostrHelpers(unittest.TestCase):
         mock_pk = MagicMock()
         PrivateKey.from_nsec.return_value = mock_pk
         
-        result = get_nostr_private_key()
+        get_nostr_private_key()
         
         PrivateKey.from_nsec.assert_called_with('nsec1test123456789')
 

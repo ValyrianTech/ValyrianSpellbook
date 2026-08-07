@@ -80,7 +80,7 @@ class TestUseExplorer(object):
         def test_func():
             return {'data': 'test'}
 
-        result = test_func()
+        test_func()
         mock_set.assert_not_called()
         mock_clear.assert_called_once()
 

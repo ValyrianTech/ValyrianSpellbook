@@ -92,7 +92,7 @@ class TestMysqlHelpers(unittest.TestCase):
         with patch.object(mysql_module.mysql.connector, 'connect', return_value=mock_cnx):
             from helpers.mysqlhelpers import mysql_cursor
             
-            with mysql_cursor('user', 'pass', 'db', commit=True) as cursor:
+            with mysql_cursor('user', 'pass', 'db', commit=True):
                 pass
             
             mock_cnx.commit.assert_called_once()

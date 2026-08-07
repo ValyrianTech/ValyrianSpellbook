@@ -91,7 +91,7 @@ class TestFeeHelpers(object):
         }
         mock_get.return_value = mock_response
         
-        result = get_recommended_fee_blockcypher()
+        get_recommended_fee_blockcypher()
         mock_get.assert_called_with(url='https://api.blockcypher.com/v1/btc/test3')
 
     @mock.patch('helpers.feehelpers.get_use_testnet', return_value=False)

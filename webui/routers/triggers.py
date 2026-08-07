@@ -157,7 +157,7 @@ async def activate_trigger(request: Request, trigger_id: str):
         return RedirectResponse(url="/login", status_code=303)
     
     client = get_api_client(request)
-    result = client.activate_trigger(trigger_id) if client else {'error': 'Not authenticated'}
+    client.activate_trigger(trigger_id) if client else {'error': 'Not authenticated'}
     
     return RedirectResponse(url=f"/triggers/{trigger_id}", status_code=303)
 
@@ -169,6 +169,6 @@ async def check_trigger(request: Request, trigger_id: str):
         return RedirectResponse(url="/login", status_code=303)
     
     client = get_api_client(request)
-    result = client.check_trigger(trigger_id) if client else {'error': 'Not authenticated'}
+    client.check_trigger(trigger_id) if client else {'error': 'Not authenticated'}
     
     return RedirectResponse(url=f"/triggers/{trigger_id}", status_code=303)

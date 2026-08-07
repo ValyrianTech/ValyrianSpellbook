@@ -1,16 +1,15 @@
 # Linting Progress Tracker
 
-**Last updated:** 2026-08-07 — **504 errors resolved, 109 remaining**
+**Last updated:** 2026-08-07 — **565 errors resolved, 48 remaining**
 
 ## Current Status
 
-**109 lint errors remaining across 2 rule categories — 0 auto-fixable**
+**48 lint errors remaining across 1 rule category — 0 auto-fixable**
 
 | Rule | Count | Description | Fixable? |
 |------|-------|-------------|----------|
-| F841 | 61 | Unused local variables | Manual |
 | E402 | 48 | Module-level import not at top of file | Manual |
-| **Total** | **109** | | **0 auto-fixable** |
+| **Total** | **48** | | **0 auto-fixable** |
 
 ---
 
@@ -57,6 +56,11 @@
   - Applied `ruff --unsafe-fixes` to replace `== False` with `not` and `== True` with truthy checks
   - All 3244 unit tests pass after fixes
   - Files changed: 19 files across `unittests/` (test assertions) and `integrationtests/`
+- [x] **61 errors resolved: F841 unused variables eliminated** (2026-08-07)
+  - F841: 61 → 0
+  - Applied `ruff --unsafe-fixes --fix` to remove unused variable assignments
+  - All 3244 unit tests pass after fixes
+  - Files changed: 17 files across `unittests/`, `helpers/`, `spellbookserver.py`, `webui/routers/`
 
 ---
 
@@ -95,11 +99,6 @@
 
 ## Category Breakdown & Strategy
 
-### F841 — Unused Variables (61 errors)
-**Files:** `webui/routers/`, `unittests/`, `spellbookserver.py`, various
-
-**Strategy:** Remove assignments to unused variables or prefix with `_`. Many are `result = ...` where only the side effect matters.
-
 ### E402 — Import Not At Top (48 errors)
 **Files:** `spellbookserver.py`, `helpers/llmhelpers.py`, `helpers/ollama_*.py`, `helpers/self_hosted_LLM.py`, `helpers/vLLM_llm.py`, `helpers/textgenerationwebui_llm.py`, `darwin/darwin.py`, various
 
@@ -115,4 +114,4 @@
 
 ## Summary
 
-The Valyrian Spellbook repository had **613 lint errors** initially. Ruff's `--fix` resolved 150 auto-fixable issues. Two regressions from the auto-fix were identified and corrected. An additional 16 errors across 7 small categories were manually resolved. All 166 F403/F405 star import errors were eliminated by replacing `import *` with explicit imports. All 16 E721 type comparison errors were resolved by replacing `type() ==` with `isinstance()` and `type() != type()` with `type() is not type()`. All 156 E712 true/false comparison errors were resolved by replacing `== False` with `not` and `== True` with truthy checks via `ruff --unsafe-fixes`. **109 errors remain**, primarily unused variables (F841) and import ordering (E402). All 3,244 unit tests continue to pass with 100% coverage.
+The Valyrian Spellbook repository had **613 lint errors** initially. Ruff's `--fix` resolved 150 auto-fixable issues. Two regressions from the auto-fix were identified and corrected. An additional 16 errors across 7 small categories were manually resolved. All 166 F403/F405 star import errors were eliminated by replacing `import *` with explicit imports. All 16 E721 type comparison errors were resolved by replacing `type() ==` with `isinstance()` and `type() != type()` with `type() is not type()`. All 156 E712 true/false comparison errors were resolved by replacing `== False` with `not` and `== True` with truthy checks via `ruff --unsafe-fixes`. All 61 F841 unused variable errors were resolved by removing unused assignments via `ruff --unsafe-fixes --fix`. **48 errors remain**, all E402 import ordering issues. All 3,244 unit tests continue to pass with 100% coverage.

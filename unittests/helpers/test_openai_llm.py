@@ -27,7 +27,7 @@ class TestOpenAILLM(unittest.TestCase):
         """Test OpenAILLM initialization without API key uses default"""
         from helpers.openai_llm import OpenAILLM
         
-        llm = OpenAILLM(model_name='gpt-4')
+        OpenAILLM(model_name='gpt-4')
         
         mock_get_key.assert_called_once()
 

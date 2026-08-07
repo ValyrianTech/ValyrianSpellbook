@@ -157,6 +157,6 @@ async def run_action(request: Request, action_id: str):
         return RedirectResponse(url="/login", status_code=303)
     
     client = get_api_client(request)
-    result = client.run_action(action_id) if client else {'error': 'Not authenticated'}
+    client.run_action(action_id) if client else {'error': 'Not authenticated'}
     
     return RedirectResponse(url=f"/actions/{action_id}", status_code=303)

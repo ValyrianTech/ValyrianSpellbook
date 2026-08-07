@@ -58,7 +58,7 @@ def get_llm(model_name: str = 'default_model', temperature: float = 0.0):
         model_name = model_name[5:]
 
     models_file = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")), 'configuration', 'LLMs.json')
-    model_configs = load_from_json_file(filename=models_file) if os.path.exists(models_file) else {}
+    load_from_json_file(filename=models_file) if os.path.exists(models_file) else {}
 
     if model_name.startswith('self-hosted'):
         self_hosted_models = load_from_json_file(filename=models_file) if os.path.exists(models_file) else {}

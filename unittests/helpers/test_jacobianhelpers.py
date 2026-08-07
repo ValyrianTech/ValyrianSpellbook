@@ -205,7 +205,7 @@ class TestFastMultiply(object):
         # (2 * 3) * G == 2 * (3 * G)
         result1 = fast_multiply(G, 6)
         intermediate = fast_multiply(G, 3)
-        result2 = fast_multiply(intermediate, 2)
+        fast_multiply(intermediate, 2)
         # Note: This tests scalar multiplication, not point multiplication
         # 2 * (3G) is not the same as 6G in general
         # But 3G + 3G = 6G

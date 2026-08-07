@@ -95,7 +95,7 @@ class TestLogToLogger:
         with patch('spellbookserver.request') as mock_req, \
              patch('spellbookserver.response') as mock_resp, \
              patch('spellbookserver.REQUESTS_LOG') as mock_req_log, \
-             patch('spellbookserver.LOG') as mock_log:
+             patch('spellbookserver.LOG'):
             mock_req.remote_addr = '127.0.0.1'
             mock_req.method = 'GET'
             mock_req.url = 'http://localhost/ping'
@@ -134,7 +134,7 @@ class TestLogToLogger:
         """Test log_to_logger handles exceptions and logs them."""
         with patch('spellbookserver.request') as mock_req, \
              patch('spellbookserver.response') as mock_resp, \
-             patch('spellbookserver.REQUESTS_LOG') as mock_req_log, \
+             patch('spellbookserver.REQUESTS_LOG'), \
              patch('spellbookserver.LOG') as mock_log, \
              patch('spellbookserver.get_mail_on_exception', return_value=False):
             mock_req.remote_addr = '127.0.0.1'
@@ -441,7 +441,7 @@ class TestInputEndpoints:
         mock_req.query.explorer = ''
         mock_req.json = {'block_height': 800000}
         mock_sil.return_value = {'sil': []}
-        result = SpellbookRESTAPI.get_sil('1abc')
+        SpellbookRESTAPI.get_sil('1abc')
         mock_sil.assert_called_once_with('1abc', 800000)
 
     @patch('spellbookserver.response')
@@ -679,7 +679,7 @@ class TestHttpRequestEndpoints:
         mock_req.json = {'key': 'val'}
         mock_req.query = {}
         mock_get.return_value = {'data': 'ok'}
-        result = SpellbookRESTAPI.http_get_request('trig1')
+        SpellbookRESTAPI.http_get_request('trig1')
         mock_get.assert_called_once_with('trig1', key='val')
 
     @patch('spellbookserver.response')
@@ -689,7 +689,7 @@ class TestHttpRequestEndpoints:
         mock_req.json = {'key': 'val'}
         mock_req.query = {}
         mock_post.return_value = {'data': 'ok'}
-        result = SpellbookRESTAPI.http_post_request('trig1')
+        SpellbookRESTAPI.http_post_request('trig1')
         mock_post.assert_called_once_with('trig1', key='val')
 
     @patch('spellbookserver.response')
@@ -699,7 +699,7 @@ class TestHttpRequestEndpoints:
         mock_req.json = {'key': 'val'}
         mock_req.query = {}
         mock_del.return_value = {'data': 'ok'}
-        result = SpellbookRESTAPI.http_delete_request('trig1')
+        SpellbookRESTAPI.http_delete_request('trig1')
         mock_del.assert_called_once_with('trig1', key='val')
 
     @patch('spellbookserver.response')
@@ -709,7 +709,7 @@ class TestHttpRequestEndpoints:
         mock_req.json = {'key': 'val'}
         mock_req.query = {}
         mock_opt.return_value = {'data': 'ok'}
-        result = SpellbookRESTAPI.http_options_request('trig1')
+        SpellbookRESTAPI.http_options_request('trig1')
         mock_opt.assert_called_once_with('trig1', key='val')
 
     @patch('spellbookserver.response')
@@ -846,7 +846,7 @@ class TestLogsEndpoint:
         with patch('decorators.check_authentication') as mock_dec:
             mock_dec.return_value = 'OK'
             mock_get_logs.return_value = ['log1', 'log2']
-            result = SpellbookRESTAPI.get_logs('error')
+            SpellbookRESTAPI.get_logs('error')
             mock_get_logs.assert_called_once_with(filter_string='error')
 
 
@@ -875,7 +875,7 @@ class TestCheckTriggers:
             mock_dec.return_value = 'OK'
             mock_req.query.explorer = ''
             mock_check.return_value = {'triggered': True}
-            result = SpellbookRESTAPI.check_trigger('trig1')
+            SpellbookRESTAPI.check_trigger('trig1')
             mock_check.assert_called_once_with('trig1')
 
     @patch('spellbookserver.response')
@@ -889,7 +889,7 @@ class TestCheckTriggers:
             mock_dec.return_value = 'OK'
             mock_req.query.explorer = ''
             mock_check.return_value = {'triggered': []}
-            result = SpellbookRESTAPI.check_all_triggers()
+            SpellbookRESTAPI.check_all_triggers()
             mock_check.assert_called_once_with()
 
 

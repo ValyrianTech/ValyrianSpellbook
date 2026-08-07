@@ -298,7 +298,7 @@ class TestTrigger(object):
             trigger = ConcreteTrigger('test_trigger_id')
             trigger.configure(created=1609459200)
             trigger.script = 'testscript.py'
-            result = trigger.load_script()
+            trigger.load_script()
         
         mock_import.assert_called_once()
 
@@ -329,7 +329,7 @@ class TestTrigger(object):
             
             with mock.patch('trigger.trigger.isinstance', return_value=True):
                 trigger.configure(created=1609459200)
-                result = trigger.load_script()
+                trigger.load_script()
             
             # Verify Windows path handling
             call_args = mock_import.call_args[0][0]

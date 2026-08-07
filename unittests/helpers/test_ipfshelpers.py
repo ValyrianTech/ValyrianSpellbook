@@ -79,7 +79,7 @@ class TestGetJson(unittest.TestCase):
         mock_ipfs_dict.items.return_value = [('key1', 'value1'), ('key2', 'value2')]
         mock_ipfs_dict_class.return_value = mock_ipfs_dict
         
-        result = get_json('QmTestHash123')
+        get_json('QmTestHash123')
         
         mock_ipfs_dict_class.assert_called_once_with(cid='QmTestHash123')
 

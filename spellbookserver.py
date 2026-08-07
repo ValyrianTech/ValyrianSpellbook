@@ -917,7 +917,7 @@ def convert_aac_to_opus(input_file, opus_file):
     command = f"ffmpeg -i {input_file} -c:a libopus {opus_file}"
     subprocess.run(command, shell=True)
     # Ensure the file is closed after it's used
-    with open(opus_file, 'rb') as file:
+    with open(opus_file, 'rb'):
         pass
 
 
@@ -938,7 +938,7 @@ def main():
     # parser.add_argument('-s', '--ssl', help='Run spellbook server with SSL', action='store_true')
 
     # Parse the command line arguments
-    args = parser.parse_args()
+    parser.parse_args()
 
     SpellbookRESTAPI()
 
