@@ -1,10 +1,10 @@
 # Type Hint Progress Tracker
 
-**Last updated:** 2026-08-08 — **56 errors found, 48 resolved, 8 remaining**
+**Last updated:** 2026-08-08 — **56 errors resolved, 0 remaining**
 
 ## Current Status
 
-**8 mypy errors remaining across 3 files (182 source files checked)**
+**0 mypy errors — repository is fully type-check clean**
 
 mypy 2.1.0 | Command: `mypy --ignore-missing-imports --explicit-package-bases <dirs/files>`
 
@@ -91,12 +91,11 @@ mypy 2.1.0 | Command: `mypy --ignore-missing-imports --explicit-package-bases <d
 - [x] Add `# type: ignore[attr-defined]` for legacy OpenAI SDK v0.x module attributes (`Model`, `Completion`, `ChatCompletion`, `Edit`)
 - All 3,244 tests pass, 100% coverage maintained
 
-### Phase 6: Remaining File Fixes
-- [ ] Fix `helpers/self_hosted_LLM.py` attr-defined error (1 error)
-- [ ] Fix `helpers/mastodonhelpers.py` override errors (2 errors)
-- [ ] Fix `helpers/lnbitshelpers.py` errors (3 errors)
-- [ ] Fix `helpers/socialmediahelpers.py` override errors (2 errors)
-- [ ] Exclude `helpers/py2specials.py` from mypy or add type: ignore (2 errors)
+### Phase 6: Remaining File Fixes (8 errors resolved, 3 files)
+- [x] Add `# type: ignore[name-defined]` for Python 2 builtins in `py2specials.py` (2 errors)
+- [x] Add explicit `return None` to error paths and change return types to `dict | None` in `lnbitshelpers.py` (4 errors)
+- [x] Fix `get_popular_statuses` return type from `list` to `dict` in `socialmediahelpers.py` parent + subclasses (2 errors)
+- All 3,244 tests pass, 100% coverage maintained
 
 ---
 

@@ -5,7 +5,7 @@ import requests
 LNBITS_URL = 'https://legend.lnbits.com'
 
 
-def get_wallet_details(api_key: str) -> dict:
+def get_wallet_details(api_key: str) -> dict | None:
     """Get wallet details
 
     :param api_key: <string> API key of the wallet
@@ -21,9 +21,10 @@ def get_wallet_details(api_key: str) -> dict:
     else:
         print(f'{response.text}')
         print(f'Request failed with status {response.status_code}')
+        return None
 
 
-def create_invoice(api_key: str, amount: int, memo: str, expiry: int, unit: str = 'btc', webhook: str | None = None, internal: bool = False) -> dict:
+def create_invoice(api_key: str, amount: int, memo: str, expiry: int, unit: str = 'btc', webhook: str | None = None, internal: bool = False) -> dict | None:
     """Create invoice
 
     :param api_key: <string> API key of the wallet
@@ -55,9 +56,10 @@ def create_invoice(api_key: str, amount: int, memo: str, expiry: int, unit: str 
     else:
         print(f'{response.text}')
         print(f'Request failed with status {response.status_code}')
+        return None
 
 
-def decode_invoice(api_key: str, invoice: str) -> dict:
+def decode_invoice(api_key: str, invoice: str) -> dict | None:
     """Decode invoice
 
     :param api_key: <string> API key of the wallet
@@ -74,9 +76,10 @@ def decode_invoice(api_key: str, invoice: str) -> dict:
     else:
         print(f'{response.text}')
         print(f'Request failed with status {response.status_code}')
+        return None
 
 
-def check_invoice(api_key: str, payment_hash: str) -> dict:
+def check_invoice(api_key: str, payment_hash: str) -> dict | None:
     """Check invoice
 
     :param api_key: <string> API key of the wallet
@@ -94,3 +97,4 @@ def check_invoice(api_key: str, payment_hash: str) -> dict:
     else:
         print(f'{response.text}')
         print(f'Request failed with status {response.status_code}')
+        return None

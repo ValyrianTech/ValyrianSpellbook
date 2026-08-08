@@ -24,7 +24,7 @@ class SocialMedia(object):
         pass
 
     @abstractmethod
-    def get_popular_statuses(self, topic: str, limit: int) -> list:
+    def get_popular_statuses(self, topic: str, limit: int) -> dict:
         pass
 
 
