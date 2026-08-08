@@ -19,7 +19,7 @@ from config import settings
 class SpellbookAPIClient:
     """Client for the Spellbook REST API"""
     
-    def __init__(self, api_key: str = None, api_secret: str = None):
+    def __init__(self, api_key: str | None = None, api_secret: str | None = None):
         self.base_url = settings.SPELLBOOK_API_URL
         self.api_key = api_key
         self.api_secret = api_secret

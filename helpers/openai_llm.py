@@ -12,7 +12,7 @@ from .thinking_levels import THINKING_LEVEL_OPENAI
 
 
 class OpenAILLM(LLMInterface):
-    def __init__(self, model_name: str, api_key: str = None):
+    def __init__(self, model_name: str, api_key: str | None = None):
         super().__init__(model_name)
 
         if api_key is not None:

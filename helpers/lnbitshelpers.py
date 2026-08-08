@@ -23,7 +23,7 @@ def get_wallet_details(api_key: str) -> dict:
         print(f'Request failed with status {response.status_code}')
 
 
-def create_invoice(api_key: str, amount: int, memo: str, expiry: int, unit: str = 'btc', webhook: str = None, internal: bool = False) -> dict:
+def create_invoice(api_key: str, amount: int, memo: str, expiry: int, unit: str = 'btc', webhook: str | None = None, internal: bool = False) -> dict:
     """Create invoice
 
     :param api_key: <string> API key of the wallet

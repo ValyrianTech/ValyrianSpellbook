@@ -81,7 +81,7 @@ def get_toots_by_id(toot_ids: List) -> dict:
     return {'data': toots}
 
 
-def post_toot(text: str, media_ids: List = None, sensitive: bool = False, spoiler_text: str = None, visibility: str = 'public'):
+def post_toot(text: str, media_ids: List | None = None, sensitive: bool = False, spoiler_text: str | None = None, visibility: str = 'public'):
     """
     Post a toot
 

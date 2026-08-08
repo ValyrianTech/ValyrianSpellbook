@@ -29,7 +29,7 @@ def get_default_llm_host():
 
 
 class SelfHostedLLM(LLMInterface):
-    def __init__(self, host: str = None, port: int = None, mixture_of_experts=False, model_name: str = None):
+    def __init__(self, host: str | None = None, port: int | None = None, mixture_of_experts=False, model_name: str | None = None):
         super().__init__(model_name)
         if host is None:
             host = get_default_llm_host()

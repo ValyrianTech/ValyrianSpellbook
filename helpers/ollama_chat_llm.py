@@ -13,7 +13,7 @@ from .thinking_levels import THINKING_LEVEL_OLLAMA
 class OllamaChatLLM(LLMInterface):
     """Ollama Chat LLM using native Ollama API (/api/chat) for full feature support including thinking levels."""
     
-    def __init__(self, model_name: str, host: str, port: int = None):
+    def __init__(self, model_name: str, host: str, port: int | None = None):
         self.model_name = model_name
         self.host = host.rstrip('/')  # Remove trailing slash if present
         self.port = port

@@ -344,12 +344,12 @@ Please respond with only the json object inside a markdown code block, and nothi
 
 class LLM(object):
     llm = None
-    model_name: str = None
+    model_name: str | None = None
     temperature: float = 0.0
-    thinking_level: str = None  # Controls reasoning verbosity: off/minimal/low/medium/high/xhigh
+    thinking_level: str | None = None  # Controls reasoning verbosity: off/minimal/low/medium/high/xhigh
     chat: bool = False  # indicates whether to use chat.completions or completions
 
-    def __init__(self, model_name: str, temperature: float = 0.0, thinking_level: str = None):
+    def __init__(self, model_name: str, temperature: float = 0.0, thinking_level: str | None = None):
         self.model_name = model_name
         self.temperature = temperature
         self.thinking_level = thinking_level
@@ -361,7 +361,7 @@ class LLM(object):
         self.chat = llm_config.get('chat', False)
         self.max_tokens = llm_config.get('max_tokens', 4096)
 
-    def generate(self, messages: List[BaseMessage], stop=None, max_tokens: int = None):
+    def generate(self, messages: List[BaseMessage], stop=None, max_tokens: int | None = None):
         if max_tokens is None:
             max_tokens = self.max_tokens
         kwargs = {'temperature': self.temperature, 'max_tokens': max_tokens}
@@ -574,7 +574,7 @@ def encode_image(image_path):
         return base64.b64encode(image_file.read()).decode('utf-8')
 
 
-def construct_user_messages(text: str, image_paths: List[str] = None):
+def construct_user_messages(text: str, image_paths: List[str] | None = None):
     if image_paths is None:
         image_paths = []
 

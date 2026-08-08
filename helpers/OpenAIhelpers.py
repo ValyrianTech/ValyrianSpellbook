@@ -30,7 +30,7 @@ def get_model_ids() -> List:
 
 def openai_complete(prompt: Union[str, List[str], None],
                     model: str = 'text-davinci-003',
-                    suffix: str = None,
+                    suffix: str | None = None,
                     max_tokens: int = 64,
                     temperature: float = 1,
                     top_p: float = 1,
