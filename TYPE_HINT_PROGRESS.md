@@ -1,10 +1,10 @@
 # Type Hint Progress Tracker
 
-**Last updated:** 2026-08-08 — **56 errors found, 40 resolved, 16 remaining**
+**Last updated:** 2026-08-08 — **56 errors found, 44 resolved, 12 remaining**
 
 ## Current Status
 
-**16 mypy errors remaining across 5 files (182 source files checked)**
+**12 mypy errors remaining across 4 files (182 source files checked)**
 
 mypy 2.1.0 | Command: `mypy --ignore-missing-imports --explicit-package-bases <dirs/files>`
 
@@ -83,9 +83,9 @@ mypy 2.1.0 | Command: `mypy --ignore-missing-imports --explicit-package-bases <d
 - [x] Fix `comparison_prompt` operator error with `str()` conversion (1 error)
 - All 3,244 tests pass, 100% coverage maintained
 
-### Phase 4: `webui/api_client.py` Fixes (6 errors)
-- [ ] Fix return type mismatches (4 errors)
-- [ ] Fix missing return statements (2 errors)
+### Phase 4: `webui/api_client.py` Fixes (4 errors resolved, 1 file)
+- [x] Fix return type mismatches: `get_llms()`, `get_explorers()`, `get_triggers()`, `get_actions()` changed from `List[str]` to `Dict[str, Any]` to match `_request()` return type
+- All 3,244 tests pass, 100% coverage maintained
 
 ### Phase 5: `helpers/OpenAIhelpers.py` Fixes (5 errors)
 - [ ] Fix LangChain module attribute errors (`Model`, `Edit`, `Completion`)

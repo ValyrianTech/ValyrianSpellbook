@@ -66,7 +66,7 @@ class SpellbookAPIClient:
     
     # ==================== LLMs ====================
     
-    def get_llms(self) -> List[str]:
+    def get_llms(self) -> Dict[str, Any]:
         """Get list of configured LLMs"""
         return self._request('GET', '/spellbook/llms')
     
@@ -84,7 +84,7 @@ class SpellbookAPIClient:
     
     # ==================== Explorers ====================
     
-    def get_explorers(self) -> List[str]:
+    def get_explorers(self) -> Dict[str, Any]:
         """Get list of configured explorers"""
         return self._request('GET', '/spellbook/explorers')
     
@@ -102,7 +102,7 @@ class SpellbookAPIClient:
     
     # ==================== Triggers ====================
     
-    def get_triggers(self) -> List[str]:
+    def get_triggers(self) -> Dict[str, Any]:
         """Get list of configured triggers"""
         return self._request('GET', '/spellbook/triggers')
     
@@ -132,7 +132,7 @@ class SpellbookAPIClient:
     
     # ==================== Actions ====================
     
-    def get_actions(self) -> List[str]:
+    def get_actions(self) -> Dict[str, Any]:
         """Get list of configured actions"""
         return self._request('GET', '/spellbook/actions')
     
