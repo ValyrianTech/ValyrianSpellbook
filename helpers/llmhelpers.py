@@ -52,7 +52,7 @@ def get_llm(model_name: str = 'default_model', temperature: float = 0.0):
 
     if model_name == 'auto':
         LOG.info('Auto routing to the best suited LLM model')
-        llm = LLMInterface(model_name=model_name, auto_routing=True)
+        llm = LLMInterface(model_name=model_name, auto_routing=True)  # type: ignore[abstract]
         return llm
     elif model_name.startswith('auto:'):
         model_name = model_name[5:]
@@ -165,7 +165,7 @@ def get_llm(model_name: str = 'default_model', temperature: float = 0.0):
         if model_name == 'text-davinci-003':
             llm = OpenAI(model_name=model_name, temperature=temperature, openai_api_key=get_openai_api_key(), request_timeout=300)
         else:
-            llm = ChatOpenAI(model_name=model_name, temperature=temperature, openai_api_key=get_openai_api_key(), request_timeout=300, streaming=True, callbacks=[CustomStreamingCallbackHandler()])
+            llm = ChatOpenAI(model_name=model_name, temperature=temperature, openai_api_key=get_openai_api_key(), request_timeout=300, streaming=True, callbacks=[CustomStreamingCallbackHandler()])  # type: ignore[call-arg, assignment]
 
     else:
         raise Exception("OpenAI is not enabled")
@@ -308,7 +308,7 @@ def get_role(message: BaseMessage):
 def comparison_prompt(messages: List[BaseMessage], generations: List[LLMResult]):
     original_prompt = ''
     for message in messages:
-        original_prompt += message.content
+        original_prompt += str(message.content)
 
     all_generations = ''
     for i, generation in enumerate(generations):
@@ -343,8 +343,8 @@ Please respond with only the json object inside a markdown code block, and nothi
 
 
 class LLM(object):
-    llm = None
-    model_name: str | None = None
+    llm: Any = None
+    model_name: str = ''
     temperature: float = 0.0
     thinking_level: str | None = None  # Controls reasoning verbosity: off/minimal/low/medium/high/xhigh
     chat: bool = False  # indicates whether to use chat.completions or completions
@@ -371,7 +371,7 @@ class LLM(object):
             prompts = []
             prompt = ''
             for message in messages:
-                prompt += message.content + '\n'
+                prompt += str(message.content) + '\n'
 
             prompts.append(prompt)
             return self.llm.generate(prompts, stop=stop, **kwargs)
@@ -391,7 +391,7 @@ class LLM(object):
         if self.model_name == 'auto':
             available_llms = get_available_llms()
             prompt = ''
-            content = messages[0].get('content', '')
+            content = messages[0].get('content', '')  # type: ignore[attr-defined]
             if isinstance(content, str):
                 prompt = content
             elif isinstance(content, list):
@@ -578,7 +578,7 @@ def construct_user_messages(text: str, image_paths: List[str] | None = None):
     if image_paths is None:
         image_paths = []
 
-    content = []
+    content: list[dict[str, Any]] = []
 
     # Add image messages if image_paths is not empty
     for image_path in image_paths:

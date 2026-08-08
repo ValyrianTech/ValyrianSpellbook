@@ -30,7 +30,7 @@ def get_default_llm_host():
 
 class SelfHostedLLM(LLMInterface):
     def __init__(self, host: str | None = None, port: int | None = None, mixture_of_experts=False, model_name: str | None = None):
-        super().__init__(model_name)
+        super().__init__(model_name if model_name is not None else '')
         if host is None:
             host = get_default_llm_host()
 
@@ -234,7 +234,7 @@ class SelfHostedLLM(LLMInterface):
         expert_llm = 0
         if len(parsed) > 0 and parsed[0].__class__.__name__ == 'CodeGeneration':
             try:
-                json_data = simplejson.loads(parsed[0].content)
+                json_data = simplejson.loads(parsed[0].content)  # type: ignore[attr-defined]
             except Exception as e:
                 LOG.error(f'Error parsing JSON to choose expert LLM: {e}')
                 LOG.error('Setting expert to default LLM')

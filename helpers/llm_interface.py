@@ -13,6 +13,7 @@ if not os.environ.get('SKIP_WEBSOCKET_SERVER'):
 
 class LLMInterface(object):
     __metaclass__ = ABCMeta
+    temperature: float = 0.0
 
     def __init__(self, model_name: str, auto_routing=False):
         self.auto_routing = auto_routing
