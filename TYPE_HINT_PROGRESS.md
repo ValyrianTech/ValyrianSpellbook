@@ -1,10 +1,10 @@
 # Type Hint Progress Tracker
 
-**Last updated:** 2026-08-08 — **56 errors found, 22 resolved, 34 remaining**
+**Last updated:** 2026-08-08 — **56 errors found, 25 resolved, 33 remaining**
 
 ## Current Status
 
-**34 mypy errors remaining across 9 files (182 source files checked)**
+**33 mypy errors remaining across 7 files (182 source files checked)**
 
 mypy 2.1.0 | Command: `mypy --ignore-missing-imports --explicit-package-bases <dirs/files>`
 
@@ -62,10 +62,12 @@ mypy 2.1.0 | Command: `mypy --ignore-missing-imports --explicit-package-bases <d
 - Files: `vLLM_llm.py`, `vLLMchat_llm.py`, `together_ai_LLM.py`, `textgenerationwebui_llm.py`, `textgenerationwebui_chat_llm.py`, `openrouter_llm.py`, `openai_llm.py`, `ollama_llm.py`, `ollama_chat_llm.py`, `self_hosted_LLM.py`, `llmhelpers.py`, `webui/api_client.py`, `helpers/lnbitshelpers.py`, `helpers/mastodonhelpers.py`, `helpers/OpenAIhelpers.py`
 - All 3,244 tests pass, 100% coverage maintained
 
-### Phase 2: Module-Level Variable Annotations (3 errors, 3 files)
-- [ ] Add type annotations for `CLIENTS` in `llmhelpers.py`
-- [ ] Add type annotation for `WATCHLIST` in `listeners/transaction_listener.py`
-- [ ] Add type annotation for `LAST_NONCES` in `authentication.py`
+### Phase 2: Module-Level Variable Annotations (3 errors resolved, 3 files)
+- [x] Add type annotation for `CLIENTS` in `llmhelpers.py` (`dict[str, LLMInterface]`)
+- [x] Add type annotation for `WATCHLIST` in `listeners/transaction_listener.py` (`dict[str, dict[str, str]]`)
+- [x] Add type annotation for `LAST_NONCES` in `authentication.py` (`dict[str, int]`)
+- Note: CLIENTS annotation surfaced 2 pre-existing errors (now visible in Phase 3 scope)
+- All 3,244 tests pass, 100% coverage maintained
 
 ### Phase 3: `helpers/llmhelpers.py` Deep Fix (15 errors)
 - [ ] Fix LangChain `ChatOpenAI` call-arg errors (3 errors)

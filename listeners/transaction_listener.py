@@ -37,7 +37,7 @@ LISTENER_LOG.setLevel(logging.WARNING)
 WEBSOCKET_LOG = logging.getLogger('websocket')
 WEBSOCKET_LOG.addHandler(stream_handler)
 
-WATCHLIST = {}
+WATCHLIST: dict[str, dict[str, str]] = {}
 EXIT_ON_EVENT = False
 EXIT_ON_TIMEOUT = None
 

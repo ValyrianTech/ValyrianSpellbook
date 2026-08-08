@@ -36,7 +36,7 @@ from .openrouter_llm import OpenRouterLLM
 from .textgenerationwebui_llm import TextGenerationWebuiLLM
 from .textgenerationwebui_chat_llm import TextGenerationWebuiChatLLM
 
-CLIENTS = {}
+CLIENTS: dict[str, LLMInterface] = {}
 
 
 def get_llm(model_name: str = 'default_model', temperature: float = 0.0):
