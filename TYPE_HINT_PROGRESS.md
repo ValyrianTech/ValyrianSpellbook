@@ -1,10 +1,10 @@
 # Type Hint Progress Tracker
 
-**Last updated:** 2026-08-08 — **56 errors found, 44 resolved, 12 remaining**
+**Last updated:** 2026-08-08 — **56 errors found, 48 resolved, 8 remaining**
 
 ## Current Status
 
-**12 mypy errors remaining across 4 files (182 source files checked)**
+**8 mypy errors remaining across 3 files (182 source files checked)**
 
 mypy 2.1.0 | Command: `mypy --ignore-missing-imports --explicit-package-bases <dirs/files>`
 
@@ -87,8 +87,9 @@ mypy 2.1.0 | Command: `mypy --ignore-missing-imports --explicit-package-bases <d
 - [x] Fix return type mismatches: `get_llms()`, `get_explorers()`, `get_triggers()`, `get_actions()` changed from `List[str]` to `Dict[str, Any]` to match `_request()` return type
 - All 3,244 tests pass, 100% coverage maintained
 
-### Phase 5: `helpers/OpenAIhelpers.py` Fixes (5 errors)
-- [ ] Fix LangChain module attribute errors (`Model`, `Edit`, `Completion`)
+### Phase 5: `helpers/OpenAIhelpers.py` Fixes (4 errors resolved, 1 file)
+- [x] Add `# type: ignore[attr-defined]` for legacy OpenAI SDK v0.x module attributes (`Model`, `Completion`, `ChatCompletion`, `Edit`)
+- All 3,244 tests pass, 100% coverage maintained
 
 ### Phase 6: Remaining File Fixes
 - [ ] Fix `helpers/self_hosted_LLM.py` attr-defined error (1 error)

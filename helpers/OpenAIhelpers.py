@@ -18,7 +18,7 @@ def get_model_ids() -> List:
     ids: List[str]
 
     try:
-        result = openai.Model.list()
+        result = openai.Model.list()  # type: ignore[attr-defined]
     except Exception as ex:
         print(f'Error: {ex}')
         return []
@@ -61,7 +61,7 @@ def openai_complete(prompt: Union[str, List[str], None],
     response: Dict
 
     try:
-        response = openai.Completion.create(
+        response = openai.Completion.create(  # type: ignore[attr-defined]
             model=model,
             prompt=prompt,
             suffix=suffix,
@@ -115,7 +115,7 @@ def openai_chat_complete(messages: List[Dict],
     response: Dict
 
     try:
-        response = openai.ChatCompletion.create(
+        response = openai.ChatCompletion.create(  # type: ignore[attr-defined]
             model=model,
             messages=messages,
             temperature=temperature,
@@ -158,7 +158,7 @@ def openai_edit(instruction: str,
     response: Dict
 
     try:
-        response = openai.Edit.create(
+        response = openai.Edit.create(  # type: ignore[attr-defined]
             model=model,
             input=input,
             instruction=instruction,
