@@ -1,13 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Action that deletes a trigger from the Spellbook."""
+
 from helpers.loghelpers import LOG
 from .action import Action
 from .actiontype import ActionType
 
 
 class DeleteTriggerAction(Action):
+    """Action that deletes a trigger from the Spellbook."""
     def __init__(self, action_id):
+        """  init  ."""
         super(DeleteTriggerAction, self).__init__(action_id=action_id)
         self.action_type = ActionType.DELETETRIGGER
         self.trigger_ids = []

@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Action that creates a tweet on Twitter."""
+
 from typing import Union, List
 
 from helpers.loghelpers import LOG
@@ -9,7 +11,9 @@ from helpers.twitterhelpers import create_tweet
 
 
 class CreateTweetAction(Action):
+    """Action that creates a tweet on Twitter."""
     def __init__(self, action_id: str) -> None:
+        """  init  ."""
         super(CreateTweetAction, self).__init__(action_id=action_id)
         self.action_type = ActionType.CREATE_TWEET
 

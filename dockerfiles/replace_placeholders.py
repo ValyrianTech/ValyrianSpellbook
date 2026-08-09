@@ -1,3 +1,5 @@
+"""Script for replacing placeholders in Docker configuration files."""
+
 import configparser
 import os
 

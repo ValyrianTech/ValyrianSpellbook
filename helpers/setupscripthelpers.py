@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Helper functions for setup scripts that invoke the Spellbook CLI."""
 import os
 from subprocess import Popen, PIPE
 import sys
@@ -12,6 +13,7 @@ PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 
 def spellbook_call(*args):
+    """Invoke the Spellbook CLI with the given arguments and return the parsed JSON response."""
     args = [str(arg) for arg in args]
     spellbook_args = [get_python_exe(), os.path.join(PROGRAM_DIR, 'spellbook.py')]
     spellbook_args.extend(args)
@@ -35,6 +37,7 @@ def spellbook_call(*args):
 
 
 def bitcoinwand_call(address, message, url):
+    """Invoke the BitcoinWand script with address, message, and URL, returning the parsed response."""
     bitcoinwand_args = [get_python_exe(), os.path.join(PROGRAM_DIR, 'bitcoinwand.py'), address, message, url]
 
     print('\nCALL: %s' % ' '.join(bitcoinwand_args))
@@ -56,6 +59,7 @@ def bitcoinwand_call(address, message, url):
 
 
 def clean_up_triggers(trigger_ids):
+    """Delete the specified trigger IDs from the Spellbook if they exist."""
     print('Cleaning up triggers: %s' % trigger_ids)
     print('Getting the list of configured triggers')
     configured_trigger_ids = spellbook_call('get_triggers')
@@ -67,6 +71,7 @@ def clean_up_triggers(trigger_ids):
 
 
 def clean_up_actions(action_ids):
+    """Delete the specified action IDs from the Spellbook if they exist."""
     print('Cleaning up actions: %s' % action_ids)
     print('Getting the list of configured actions')
     configured_action_ids = spellbook_call('get_actions')

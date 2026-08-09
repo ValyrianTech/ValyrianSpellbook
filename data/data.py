@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Blockchain data access layer with multi-explorer fallback support."""
 
 import os
 

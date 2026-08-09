@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Transaction listener that monitors incoming transactions."""
+
 import websocket
 import simplejson
 import argparse

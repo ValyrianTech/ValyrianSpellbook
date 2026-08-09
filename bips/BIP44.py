@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""BIP44 multi-account hierarchy for HD wallets."""
+
 from binascii import hexlify, unhexlify
 
 

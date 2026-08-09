@@ -1,3 +1,5 @@
+"""OpenRouter LLM client implementation."""
+
 import sys
 from pprint import pprint
 
@@ -13,6 +15,7 @@ from .thinking_levels import THINKING_LEVEL_OPENROUTER
 
 
 class OpenRouterLLM(LLMInterface):
+    """OpenRouter LLM client implementation."""
 
     def __init__(self, model_name: str, api_key: str | None = None):
         super().__init__(model_name)

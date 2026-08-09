@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Helper functions for creating, configuring, checking, and activating triggers."""
 
 import glob
 import os
@@ -167,6 +168,12 @@ def activate_trigger(trigger_id):
 
 
 def check_triggers(trigger_id=None):
+    """Check all active triggers and activate those whose conditions are fulfilled.
+
+    Also handles self-destruct logic for triggers that have reached their expiry time.
+
+    :param trigger_id: If given, only check the specified trigger (optional)
+    """
     # Get a list of all trigger_ids that are configured
     triggers = get_triggers()
 
@@ -199,6 +206,12 @@ def check_triggers(trigger_id=None):
 
 
 def verify_signed_message(trigger_id, **data):
+    """Verify a signed message and activate the corresponding SignedMessage trigger.
+
+    :param trigger_id: The id of the trigger
+    :param data: Must contain 'address', 'message', and 'signature' keys
+    :return: A dict with the activation result or an error message
+    """
     if not all(key in data for key in ['address', 'message', 'signature']):
         return {'error': 'Request data does not contain all required keys: address, message and signature'}
 
@@ -231,6 +244,11 @@ def verify_signed_message(trigger_id, **data):
 
 
 def sign_message(**data):
+    """Sign a message using a private key from the hot wallet.
+
+    :param data: Must contain 'address' and 'message' keys
+    :return: A dict with 'success', 'signature', 'address', and 'message' or an error
+    """
     if not all(key in data for key in ['address', 'message']):
         return {'success': False, 'error': 'Request data does not contain all required keys: address, message'}
 
@@ -264,6 +282,12 @@ def sign_message(**data):
 
 
 def http_options_request(trigger_id, **data):
+    """Handle an HTTP OPTIONS request for a trigger.
+
+    :param trigger_id: The id of the trigger
+    :param data: Optional data to pass to the trigger
+    :return: A dict with the activation result or an error message
+    """
     triggers = get_triggers()
     if trigger_id not in triggers:
         return {'error': 'Unknown trigger id: %s' % trigger_id}
@@ -280,6 +304,12 @@ def http_options_request(trigger_id, **data):
 
 
 def http_get_request(trigger_id, **data):
+    """Handle an HTTP GET request for a trigger.
+
+    :param trigger_id: The id of the trigger
+    :param data: Optional data to pass to the trigger
+    :return: A dict with the activation result or an error message
+    """
     triggers = get_triggers()
     if trigger_id not in triggers:
         return {'error': 'Unknown trigger id: %s' % trigger_id}
@@ -296,6 +326,12 @@ def http_get_request(trigger_id, **data):
 
 
 def http_post_request(trigger_id, **data):
+    """Handle an HTTP POST request for a trigger.
+
+    :param trigger_id: The id of the trigger
+    :param data: Optional data to pass to the trigger
+    :return: A dict with the activation result or an error message
+    """
     triggers = get_triggers()
     if trigger_id not in triggers:
         return {'error': 'Unknown trigger id: %s' % trigger_id}
@@ -312,6 +348,12 @@ def http_post_request(trigger_id, **data):
 
 
 def http_delete_request(trigger_id, **data):
+    """Handle an HTTP DELETE request for a trigger.
+
+    :param trigger_id: The id of the trigger
+    :param data: Optional data to pass to the trigger
+    :return: A dict with the activation result or an error message
+    """
     triggers = get_triggers()
     if trigger_id not in triggers:
         return {'error': 'Unknown trigger id: %s' % trigger_id}
@@ -328,6 +370,12 @@ def http_delete_request(trigger_id, **data):
 
 
 def signed_message_request(trigger_id, **data):
+    """Handle a SignedMessage request for a trigger.
+
+    :param trigger_id: The id of the trigger
+    :param data: Optional data including 'message', 'message_address', and 'message_signature'
+    :return: A dict with the activation result or an error message
+    """
     triggers = get_triggers()
     if trigger_id not in triggers:
         return {'error': 'Unknown trigger id: %s' % trigger_id}
@@ -352,6 +400,12 @@ def signed_message_request(trigger_id, **data):
         return trigger.activate()
 
 def file_download(trigger_id, **data):
+    """Handle a file download request for an HTTP GET trigger.
+
+    :param trigger_id: The id of the trigger
+    :param data: Optional data to pass to the trigger
+    :return: A dict with the activation result or an error message
+    """
     triggers = get_triggers()
     if trigger_id not in triggers:
         return {'error': 'Unknown trigger id: %s' % trigger_id}

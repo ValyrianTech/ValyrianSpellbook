@@ -1,3 +1,4 @@
+"""LLM interface for text-generation-webui chat completions via OpenAI-compatible API."""
 import json
 import sys
 
@@ -11,6 +12,7 @@ from .thinking_levels import THINKING_LEVEL_OPENAI
 
 
 class TextGenerationWebuiChatLLM(LLMInterface):
+    """LLM interface for text-generation-webui using the OpenAI-compatible chat completions API."""
     def __init__(self, model_name: str, host: str, port: int | None = None):
         self.model_name = model_name
         self.host = host
@@ -19,6 +21,7 @@ class TextGenerationWebuiChatLLM(LLMInterface):
         LOG.info(f'Text-generation-webui chat LLM initialized for model {self.model_name}')
 
     def get_completion_text(self, messages, stop=None, **kwargs):
+        """Generate completion text via text-generation-webui chat API with streaming support."""
         LOG.info(f'Generating with text-generation-webui chat with model {self.model_name}')
         LOG.info(f'kwargs: {kwargs}')
         LOG.info(f'stop: {stop}')

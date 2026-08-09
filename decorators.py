@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Decorators for authentication, explorer selection, JSON output, config verification, and logging."""
 import functools
 import os
 import simplejson
@@ -24,6 +25,7 @@ def authentication_required(f):
     """
 
     def decorated_function(*args, **kwargs):
+        """Execute the decorated function if authentication succeeds."""
         authentication_status = check_authentication(request.headers, request.json)
         if authentication_status == AuthenticationStatus.OK:
             return f(*args, **kwargs)
@@ -43,6 +45,7 @@ def use_explorer(f):
     """
 
     def decorated_function(*args, **kwargs):
+        """Set explorer, execute function, and append explorer info to the result."""
         if request.query.explorer != '':
             set_explorer(request.query.explorer)
 
@@ -65,6 +68,7 @@ def output_json(f):
     """
 
     def decorated_function(*args, **kwargs):
+        """Execute function and return its output as a JSON string."""
         output = f(*args, **kwargs)
         if output is not None:
             return simplejson.dumps(output, indent=4, sort_keys=True)
@@ -83,8 +87,10 @@ def verify_config(section, option):
     """
 
     def decorated_function(f):
+        """Wrap the function with config verification logic."""
         @wraps(f)
         def wrapper(*args, **kwargs):
+            """Execute the function after verifying config section and option exist."""
             # Read the spellbook configuration file
             config = ConfigParser()
             config.read(CONFIGURATION_FILE)
@@ -110,6 +116,7 @@ def log_runtime(f):
     """
 
     def decorated_function(*args, **kwargs):
+        """Execute function and log its runtime."""
         start_time = time.time()
         output = f(*args, **kwargs)
         end_time = time.time()
@@ -122,9 +129,12 @@ def log_runtime(f):
 
 
 def retry(retries=3):
+    """Decorator that retries a function up to `retries` times on exception."""
     def decorator_retry(func):
+        """Inner decorator that wraps the function with retry logic."""
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
+            """Execute the function, retrying on failure with a 1-second delay."""
             for attempt in range(retries):
                 try:
                     result = func(*args, **kwargs)

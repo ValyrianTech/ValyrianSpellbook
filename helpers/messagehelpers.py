@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Helper functions for signing and verifying Bitcoin messages."""
 import hashlib
 import bitcoin
 import simplejson
@@ -12,11 +13,13 @@ bitcoin.SelectParams(name='testnet' if get_use_testnet() is True else 'mainnet')
 
 
 def sign_message(message, private_key):
+    """Sign a message with a private key and return the signature as a string."""
     key = CBitcoinSecret(private_key)
     return SignMessage(key=key, message=BitcoinMessage(message)).decode()
 
 
 def verify_message(address, message, signature):
+    """Verify that a signature was produced by the owner of the given address."""
     try:
         return VerifyMessage(address=address, message=BitcoinMessage(message), sig=signature)
     except Exception:
@@ -24,6 +27,7 @@ def verify_message(address, message, signature):
 
 
 def sign_and_verify(private_key, message, address):
+    """Sign a message and immediately verify it, returning the signature."""
     key = CBitcoinSecret(private_key)
     signature = SignMessage(key=key, message=BitcoinMessage(message))
     assert VerifyMessage(address=address, message=BitcoinMessage(message), sig=signature)

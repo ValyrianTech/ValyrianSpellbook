@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Base script execution framework for Spellbook scripts."""
+
 import hashlib
 
 import simplejson
@@ -11,9 +13,11 @@ from helpers.ipfshelpers import get_json, add_json
 
 
 class SpellbookScript(object):
+    """Base script execution framework for Spellbook scripts."""
     __metaclass__ = ABCMeta
 
     def __init__(self, *args, **kwargs):
+        """  init  ."""
         self.address = kwargs['address'] if 'address' in kwargs else None
         if self.address is not None and not valid_address(self.address):
             raise Exception('%s is not a valid address!' % self.address)
@@ -50,13 +54,16 @@ class SpellbookScript(object):
 
     @abstractmethod
     def run(self):  # pragma: no cover
+        """Run."""
         pass
 
     @abstractmethod
     def cleanup(self):  # pragma: no cover
+        """Cleanup."""
         pass
 
     def process_message(self):
+        """Process message."""
         if self.message[:6] == '/ipfs/':
             self.ipfs_hash = self.message[6:]
             LOG.info('Message contains a IPFS hash: %s' % self.ipfs_hash)
@@ -82,6 +89,7 @@ class SpellbookScript(object):
                 return self.process_text(self.message)
 
     def process_ipfs_hash(self, ipfs_hash):
+        """Process ipfs hash."""
         # if ipfs_hash does not start with '/ipfs/' add it
         if ipfs_hash[:6] != '/ipfs/':
             ipfs_hash = '/ipfs/' + ipfs_hash
@@ -109,6 +117,7 @@ class SpellbookScript(object):
             return
 
     def process_sha256_hash(self, sha256_hash):
+        """Process sha256 hash."""
         if self.data is None:
             LOG.warning('SHA256 hash given, but no data to check against')  # This can happen when the trigger is created by another trigger
             return False
@@ -138,10 +147,12 @@ class SpellbookScript(object):
 
 
     def process_json_data(self, json_data):
+        """Process json data."""
         LOG.info('Processing JSON data')
         self.json = json_data
 
     def process_text(self, text):
+        """Process text."""
         LOG.info('Processing text data')
         self.text = text
 

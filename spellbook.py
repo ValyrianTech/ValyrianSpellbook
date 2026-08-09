@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Command-line interface for the Valyrian Spellbook."""
+
 import argparse
 import os
 import sys

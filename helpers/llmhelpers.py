@@ -1,3 +1,5 @@
+"""Helper functions for LLM configuration, loading, and API key management."""
+
 import base64
 import os
 import sys

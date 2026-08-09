@@ -1,3 +1,4 @@
+"""Helper functions for interacting with the Twitter API via tweepy."""
 from typing import Union, List, Dict
 
 import tweepy
@@ -38,7 +39,7 @@ def get_twitter_api():
 
 
 def update_status(text, url=None):
-    """Deprecated: use create_tweet instead"""
+    """Deprecated: post a new tweet with optional attachment URL."""
     if api is not None:
         print('\nPosting new tweet:')
         print('text: %s' % text)
@@ -232,6 +233,11 @@ def get_popular_tweet_ids(searchtext: str, sort_by: str, limit: int = 100) -> Li
 
 
 def get_tweets_by_id(tweet_ids: List[str]) -> Dict:
+    """Retrieve multiple tweets by their IDs.
+
+    :param tweet_ids: A list of tweet ID strings
+    :return: A dict of tweet data as returned by the Twitter API
+    """
     if not tweet_ids:
         return {}
 
@@ -244,6 +250,11 @@ def get_tweets_by_id(tweet_ids: List[str]) -> Dict:
 
 
 def get_users(ids):
+    """Retrieve user information for up to 100 user IDs.
+
+    :param ids: A list of user IDs
+    :return: A list of user objects or an empty list if out of range
+    """
     client = tweepy.Client(bearer_token=get_twitter_bearer_token())
 
     if 1 <= len(ids) <= 100:
@@ -299,6 +310,11 @@ def get_trending_topics(woeid: Union[int, None] = None) -> List[tuple]:
 
 
 def get_extended_status(status_id):
+    """Retrieve an extended status (full text) tweet by its ID.
+
+    :param status_id: The tweet ID
+    :return: The status object with extended tweet mode
+    """
     status = api.get_status(id=status_id, tweet_mode='extended')
     return status
 

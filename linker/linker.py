@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Linked list implementation for the Spellbook."""
+
 from data.data import balance
 from bips.BIP44 import get_addresses_from_xpub
 from inputs.inputs import get_sil

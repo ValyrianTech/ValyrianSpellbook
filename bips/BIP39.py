@@ -1,3 +1,5 @@
+"""BIP39 mnemonic seed phrase generation and validation."""
+
 from .mnemonic import Mnemonic
 
 

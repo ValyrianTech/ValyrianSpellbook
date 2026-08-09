@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Helper functions for spawning and managing external command processes."""
 
 import sys
 import os
@@ -31,13 +32,16 @@ PROCESS_LOG.setLevel(logging.INFO)
 
 
 class RunCommandProcess(multiprocessing.Process):
+    """Multiprocessing process that runs a shell command and logs its output."""
     def __init__(self, command, working_dir=None):
+        """Initialize the process with a command and optional working directory."""
         multiprocessing.Process.__init__(self)
 
         self.command = command
         self.working_dir = working_dir
 
     def run(self):
+        """Execute the command, stream stdout/stderr to the process logger, then restore cwd."""
         current_run_dir = os.getcwd()
         if self.working_dir is not None and current_run_dir != self.working_dir:
             os.chdir(self.working_dir)

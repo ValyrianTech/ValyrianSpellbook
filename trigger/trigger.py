@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Base Trigger class and registry for all Spellbook triggers."""
+
 import importlib
 import os
 import platform
@@ -20,9 +22,11 @@ TRIGGERS_DIR = 'json/public/triggers'
 
 
 class Trigger(object):
+    """Base trigger class and registry for all Spellbook triggers."""
     __metaclass__ = ABCMeta
 
     def __init__(self, trigger_id):
+        """  init  ."""
         self.id = trigger_id
         self.trigger_type = None
         self.script = None
@@ -41,6 +45,7 @@ class Trigger(object):
         self.destruct_actions = False  # When self-destructing, also destruct the attached actions?
 
     def configure(self, **config):
+        """Configure."""
         self.created = datetime.fromtimestamp(config['created']) if 'created' in config else datetime.now()
 
         if 'trigger_type' in config and valid_trigger_type(config['trigger_type']):
@@ -150,12 +155,15 @@ class Trigger(object):
             return script.http_response
 
     def get_script_variables(self):
+        """Get script variables."""
         return self.json_encodable()
 
     def save(self):
+        """Save."""
         save_to_json_file(os.path.join(TRIGGERS_DIR, '%s.json' % self.id), self.json_encodable())
 
     def json_encodable(self):
+        """Json encodable."""
         return {'trigger_id': self.id,
                 'trigger_type': self.trigger_type,
                 'script': self.script,
@@ -174,6 +182,7 @@ class Trigger(object):
                 'destruct_actions': self.destruct_actions}
 
     def load_script(self):
+        """Load script."""
         if self.script is not None:
             if not valid_script(self.script):
                 return

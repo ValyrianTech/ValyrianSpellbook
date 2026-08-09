@@ -1,3 +1,5 @@
+"""Mistral AI LLM client implementation with reasoning content support."""
+
 import json
 import sys
 
@@ -10,6 +12,7 @@ from .textgenerationhelpers import parse_generation
 
 
 class MistralLLM(LLMInterface):
+    """Mistral AI LLM client with reasoning content support."""
     def __init__(self, model_name: str, api_key: str):
         self.model_name = model_name
         self.api_key = api_key

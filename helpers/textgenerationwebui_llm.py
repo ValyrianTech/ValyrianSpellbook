@@ -1,3 +1,5 @@
+"""Text-generation-webui (Oobabooga) LLM client using the OpenAI-compatible API."""
+
 from pprint import pprint
 
 import requests
@@ -13,6 +15,7 @@ from helpers.websockethelpers import broadcast_message, get_broadcast_channel, g
 
 
 class TextGenerationWebuiLLM(LLMInterface):
+    """Text-generation-webui LLM client using the OpenAI-compatible API."""
     def __init__(self, model_name: str, host: str, port: int | None = None):
         self.model_name = model_name
         self.host = host

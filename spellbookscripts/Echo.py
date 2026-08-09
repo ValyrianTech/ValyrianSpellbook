@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Echo script example for the Spellbook script framework."""
+
 import os
 
 from .spellbookscript import SpellbookScript
@@ -8,9 +10,11 @@ from helpers.loghelpers import LOG
 
 class Echo(SpellbookScript):
     def __init__(self, *args, **kwargs):
+        """  init  ."""
         super(Echo, self).__init__(*args, **kwargs)
 
     def run(self):
+        """Run."""
         LOG.info('Running Spellbook Script: %s' % os.path.splitext(os.path.basename(__file__))[0])
 
         LOG.info('id: %s' % self.trigger_id)
@@ -39,6 +43,7 @@ class Echo(SpellbookScript):
             self.http_response = self.data
 
     def cleanup(self):
+        """Cleanup."""
         pass
 
 

@@ -1,10 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Boolean test model for Darwin."""
+
 from model import Model
 
 
 class BooleanTest(Model):
+    """Boolean test model for Darwin."""
     def __init__(self, name=None):
+        """  init  ."""
         super(BooleanTest, self).__init__(name=name)
         self.SingleTrue = None
         self.SingleFalse = None

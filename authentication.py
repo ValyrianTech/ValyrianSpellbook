@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Authentication helpers for verifying API requests."""
+
 import configparser
 import os
 import base64
@@ -17,6 +19,7 @@ LAST_NONCES: dict[str, int] = {}
 
 
 class AuthenticationStatus(object):
+    """Authentication helpers for verifying API requests."""
     OK = 'OK'
     INVALID_API_KEY = 'Invalid API key'
     NO_API_KEY = 'No API key supplied'

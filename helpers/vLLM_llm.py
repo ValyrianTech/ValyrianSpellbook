@@ -1,3 +1,5 @@
+"""vLLM LLM client implementation using the OpenAI-compatible API."""
+
 import json
 import sys
 
@@ -10,6 +12,7 @@ from .textgenerationhelpers import parse_generation
 
 
 class VLLMLLM(LLMInterface):
+    """vLLM LLM client using the OpenAI-compatible API."""
     def __init__(self, model_name: str, host: str, port: int | None = None):
         self.model_name = model_name
         self.host = host

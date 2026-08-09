@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Action that sends data to a webhook URL."""
+
 import requests
 
 from helpers.loghelpers import LOG
@@ -10,7 +12,9 @@ from validators.validators import valid_url
 
 
 class WebhookAction(Action):
+    """Action that sends data to a webhook URL."""
     def __init__(self, action_id):
+        """  init  ."""
         super(WebhookAction, self).__init__(action_id=action_id)
         self.action_type = ActionType.WEBHOOK
         self.webhook = None

@@ -1,3 +1,4 @@
+"""Helper functions for interacting with the Nostr protocol via pynostr."""
 import time
 import uuid
 from pynostr.event import Event
@@ -8,12 +9,14 @@ from helpers.configurationhelpers import get_nostr_nsec
 
 
 def get_nostr_private_key() -> PrivateKey:
+    """Retrieve the Nostr private key from configuration."""
     private_key = PrivateKey.from_nsec(get_nostr_nsec())
 
     return private_key
 
 
 def get_nostr_public_key() -> PublicKey:
+    """Derive the Nostr public key from the configured private key."""
     private_key = get_nostr_private_key()
     public_key = private_key.public_key
 
@@ -21,6 +24,7 @@ def get_nostr_public_key() -> PublicKey:
 
 
 def post_note(text: str) -> None:
+    """Post a text note to Nostr relays."""
 
     relay_manager = RelayManager(timeout=6)
     relay_manager.add_relay("wss://nostr-pub.wellorder.net")

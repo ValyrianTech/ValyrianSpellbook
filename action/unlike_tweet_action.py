@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Action that unlikes a tweet on Twitter."""
+
 from helpers.loghelpers import LOG
 from .action import Action
 from .actiontype import ActionType
@@ -8,7 +10,9 @@ from helpers.twitterhelpers import unlike_tweet
 
 
 class UnlikeTweetAction(Action):
+    """Action that unlikes a tweet on Twitter."""
     def __init__(self, action_id):
+        """  init  ."""
         super(UnlikeTweetAction, self).__init__(action_id=action_id)
         self.action_type = ActionType.UNLIKE_TWEET
         self.tweet_id = None

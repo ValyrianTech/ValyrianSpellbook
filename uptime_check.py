@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Standalone uptime monitoring script for the Spellbook server."""
+
 import os
 import argparse
 import requests

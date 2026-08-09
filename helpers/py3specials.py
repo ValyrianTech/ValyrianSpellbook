@@ -1,3 +1,4 @@
+"""Python 3 compatibility helpers copied from Vitalik Buterin's pybitcointools."""
 # Code copied from Vitalik Buterin's pybitcointools (library is no longer maintained)
 from __future__ import print_function
 
@@ -28,26 +29,31 @@ if sys.version_info.major == 3:
     four = 4
 
     def bin_dbl_sha256(s):
+        """Double SHA-256 hash of the input bytes."""
         bytes_to_hash = from_string_to_bytes(s)
         return hashlib.sha256(hashlib.sha256(bytes_to_hash).digest()).digest()
 
     def lpad(msg, symbol, length):
+        """Left-pad msg with symbol to reach the given length."""
         if len(msg) >= length:
             return msg
         return symbol * (length - len(msg)) + msg
 
     def get_code_string(base):
+        """Return the character set for the given base encoding."""
         if base in code_strings:
             return code_strings[base]
         else:
             raise ValueError("Invalid base!")
 
     def changebase(string, frm, to, minlen=0):
+        """Convert a string from one base encoding to another."""
         if frm == to:
             return lpad(string, get_code_string(frm)[0], minlen)
         return encode(decode(string, frm), to, minlen)
 
     def bin_to_b58check(inp, magicbyte=0):
+        """Convert bytes to a Base58Check-encoded string with optional magic byte prefix."""
         if magicbyte == 0:
             inp = from_int_to_byte(0) + inp
         while magicbyte > 0:
@@ -64,30 +70,38 @@ if sys.version_info.major == 3:
         return '1' * leadingzbytes + changebase(inp+checksum, 256, 58)
 
     def bytes_to_hex_string(b):
+        """Convert bytes to a hex string."""
         if isinstance(b, str):
             return b
 
         return ''.join('{:02x}'.format(y) for y in b)
 
     def safe_from_hex(s):
+        """Decode a hex string to bytes."""
         return bytes.fromhex(s)
 
     def from_int_representation_to_bytes(a):
+        """Convert an integer to its UTF-8 bytes representation."""
         return bytes(str(a), 'utf-8')
 
     def from_int_to_byte(a):
+        """Convert an integer (0-255) to a single byte."""
         return bytes([a])
 
     def from_byte_to_int(a):
+        """Convert a single byte to its integer value."""
         return a
 
     def from_string_to_bytes(a):
+        """Convert a string to bytes, encoding as UTF-8 if necessary."""
         return a if isinstance(a, bytes) else bytes(a, 'utf-8')
 
     def safe_hexlify(a):
+        """Hex-encode the input and return a safe UTF-8 hex string."""
         return str(binascii.hexlify(a), 'utf-8')
 
     def encode(val, base, minlen=0):
+        """Encode an integer to a string in the given base with optional minimum length."""
         base, minlen = int(base), int(minlen)
         code_string = get_code_string(base)
         result_bytes = bytes()
@@ -109,6 +123,7 @@ if sys.version_info.major == 3:
         return result
 
     def decode(string, base):
+        """Decode a string in the given base to an integer."""
         if base == 256 and isinstance(string, str):
             string = bytes(bytearray.fromhex(string))
         base = int(base)
@@ -130,7 +145,9 @@ if sys.version_info.major == 3:
         return result
 
     def random_string(x):
+        """Return x random bytes as a string."""
         return str(os.urandom(x))
 
     def print_to_stderr(message):
+        """Print a message to stderr."""
         print(message, file=sys.stderr)

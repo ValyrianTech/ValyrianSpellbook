@@ -11,12 +11,14 @@ from data.explorer_api import ExplorerAPI
 
 class BTCComAPI(ExplorerAPI):
     def __init__(self, url='', key='', testnet=False):
+        """Initialize the API client with URL, optional key, and testnet flag."""
         super(BTCComAPI, self).__init__(key=key, testnet=testnet)
 
         # Set the url of the api depending on testnet or mainnet
         self.url = 'https://tchain.api.btc.com/v3' if self.testnet is True else 'https://chain.api.btc.com/v3'
 
     def get_latest_block(self):
+        """Retrieve the latest block from the blockchain explorer."""
         url = '{api_url}/block/latest'.format(api_url=self.url)
         try:
             LOG.info('GET %s' % url)
@@ -39,6 +41,7 @@ class BTCComAPI(ExplorerAPI):
             return {'error': 'Received invalid data: %s' % data}
 
     def get_block_by_height(self, height):
+        """Retrieve a block by its height from the blockchain explorer."""
         url = '{api_url}/block/{height}'.format(api_url=self.url, height=height)
         try:
             LOG.info('GET %s' % url)
@@ -61,6 +64,7 @@ class BTCComAPI(ExplorerAPI):
             return {'error': 'Received invalid data: %s' % data}
 
     def get_block_by_hash(self, block_hash):
+        """Retrieve a block by its hash from the blockchain explorer."""
         url = '{api_url}/block/{hash}'.format(api_url=self.url, hash=block_hash)
         try:
             LOG.info('GET %s' % url)
@@ -83,6 +87,7 @@ class BTCComAPI(ExplorerAPI):
             return {'error': 'Received invalid data: %s' % data}
 
     def get_transactions(self, address):
+        """Retrieve all transactions for a given address from the explorer."""
         pagesize = 50  # max 50 for BTC.com
         n_tx = None
         transactions = []
@@ -156,6 +161,7 @@ class BTCComAPI(ExplorerAPI):
             return {'transactions': txs}
 
     def get_balance(self, address):
+        """Retrieve the balance (final, received, sent) for a given address."""
         url = '{api_url}/address/{address}'.format(api_url=self.url, address=address)
         try:
             LOG.info('GET %s' % url)
@@ -176,6 +182,7 @@ class BTCComAPI(ExplorerAPI):
             return {'error': 'Received invalid data: %s' % data}
 
     def get_transaction(self, txid):
+        """Retrieve a single transaction by its txid from the explorer."""
         url = '{api_url}/tx/{txid}?verbose=3'.format(api_url=self.url, txid=txid)
         try:
             LOG.info('GET %s' % url)
@@ -222,6 +229,7 @@ class BTCComAPI(ExplorerAPI):
         return {'transaction': tx.json_encodable()}
 
     def get_prime_input_address(self, txid):
+        """Retrieve the prime input address of a transaction by txid."""
 
         transaction_data = self.get_transaction(txid=txid)
 
@@ -239,6 +247,7 @@ class BTCComAPI(ExplorerAPI):
         return {'error': 'Received invalid data: %s' % transaction_data}
 
     def get_utxos(self, address, confirmations=3):
+        """Retrieve unspent transaction outputs (UTXOs) for a given address."""
         pagesize = 50  # max 200 for BTC.com
         n_outputs = None
         unspent_outputs = []

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Helper functions for encoding, decoding, and manipulating Bitcoin public keys."""
 import binascii
 import hashlib
 
@@ -10,6 +11,7 @@ from .py_ripemd160 import ripemd160
 
 
 def get_pubkey_format(pub):
+    """Detect the format of a public key (decimal, bin, hex, compressed, electrum)."""
     if isinstance(pub, (tuple, list)):
         return 'decimal'
     elif len(pub) == 65 and pub[0] == four:
@@ -29,6 +31,7 @@ def get_pubkey_format(pub):
 
 
 def encode_pubkey(pub, formt):
+    """Encode a public key (x, y) tuple into the requested format."""
     if not isinstance(pub, (tuple, list)):
         pub = decode_pubkey(pub)
     if formt == 'decimal':
@@ -50,6 +53,7 @@ def encode_pubkey(pub, formt):
 
 
 def decode_pubkey(pub, formt=None):
+    """Decode a public key from any supported format to an (x, y) tuple."""
     if not formt:
         formt = get_pubkey_format(pub)
 
@@ -75,11 +79,13 @@ def decode_pubkey(pub, formt=None):
 
 
 def add_pubkeys(p1, p2):
+    """Add two public keys on the secp256k1 curve."""
     f1, f2 = get_pubkey_format(p1), get_pubkey_format(p2)
     return encode_pubkey(fast_add(decode_pubkey(p1, f1), decode_pubkey(p2, f2)), f1)
 
 
 def compress(pubkey):
+    """Convert a public key to compressed format."""
     f = get_pubkey_format(pubkey)
     if 'compressed' in f:
         return pubkey
@@ -107,6 +113,7 @@ def pubkey_to_address(pubkey, magicbyte=0):
 
 
 def bin_hash160(string):
+    """Compute the RIPEMD160(SHA256(string)) hash of the input bytes."""
     intermed = hashlib.sha256(string).digest()
     try:
         digest = ripemd160(intermed)

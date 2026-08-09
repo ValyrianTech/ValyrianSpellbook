@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Population management for the Darwin evolutionary framework."""
+
 import os
 import glob
 import shutil
@@ -12,19 +14,24 @@ from helpers.jsonhelpers import save_to_json_file, load_from_json_file
 
 
 class Population(object):
+    """Population management for the Darwin evolutionary framework."""
     def __init__(self):
+        """Initialize an empty population."""
         self.genomes = []
 
     def add_genome(self, genome):
+        """Add genome."""
         self.genomes.append(genome)
 
     def save(self, directory):
+        """Save."""
         shutil.rmtree(directory)
         time.sleep(1)
         for genome in self.genomes:
             save_to_json_file(os.path.join(directory, '%s.json' % genome.id()), data=genome.to_dict())
 
     def load_directory(self, directory):
+        """Load directory."""
         filenames = glob.glob(os.path.join(directory, '*.json'))
 
         for filename in filenames:
@@ -32,47 +39,47 @@ class Population(object):
             self.load_genome(genome_data=genome_data)
 
     def load_genome(self, genome_data):
+        """Load genome."""
+        genome = Genome()
 
-            genome = Genome()
+        for chromosome_id, chromosome_data in genome_data['chromosomes'].items():
+            genome.add_chromosome(chromosome_id=chromosome_id,
+                                  encoding_type=chromosome_data['encoding_type'],
+                                  n_genes=chromosome_data['n_genes'],
+                                  min_value=chromosome_data['min'],
+                                  max_value=chromosome_data['max'],
+                                  charset=chromosome_data['charset'])
 
-            for chromosome_id, chromosome_data in genome_data['chromosomes'].items():
-                genome.add_chromosome(chromosome_id=chromosome_id,
-                                      encoding_type=chromosome_data['encoding_type'],
-                                      n_genes=chromosome_data['n_genes'],
-                                      min_value=chromosome_data['min'],
-                                      max_value=chromosome_data['max'],
-                                      charset=chromosome_data['charset'])
+            genome.chromosomes[chromosome_id].genes = []
 
-                genome.chromosomes[chromosome_id].genes = []
+            for gene_data in chromosome_data['genes']:
 
-                for gene_data in chromosome_data['genes']:
+                if chromosome_data['encoding_type'] == 'Boolean':
+                    gene = BooleanGene()
 
-                    if chromosome_data['encoding_type'] == 'Boolean':
-                        gene = BooleanGene()
+                elif chromosome_data['encoding_type'] == 'Integer':
+                    gene = IntegerGene()
+                    if chromosome_data['min'] is not None:
+                        gene.min = chromosome_data['min']
+                    if chromosome_data['max'] is not None:
+                        gene.max = chromosome_data['max']
 
-                    elif chromosome_data['encoding_type'] == 'Integer':
-                        gene = IntegerGene()
-                        if chromosome_data['min'] is not None:
-                            gene.min = chromosome_data['min']
-                        if chromosome_data['max'] is not None:
-                            gene.max = chromosome_data['max']
+                elif chromosome_data['encoding_type'] == 'Float':
+                    gene = FloatGene()
+                    if chromosome_data['min'] is not None:
+                        gene.min = chromosome_data['min']
+                    if chromosome_data['max'] is not None:
+                        gene.max = chromosome_data['max']
 
-                    elif chromosome_data['encoding_type'] == 'Float':
-                        gene = FloatGene()
-                        if chromosome_data['min'] is not None:
-                            gene.min = chromosome_data['min']
-                        if chromosome_data['max'] is not None:
-                            gene.max = chromosome_data['max']
+                elif chromosome_data['encoding_type'] == 'String':
+                    gene = StringGene()
+                    if chromosome_data['charset'] is not None:
+                        gene.charset = chromosome_data['charset']
 
-                    elif chromosome_data['encoding_type'] == 'String':
-                        gene = StringGene()
-                        if chromosome_data['charset'] is not None:
-                            gene.charset = chromosome_data['charset']
+                else:  # pragma: no cover
+                    raise NotImplementedError('Unknown encoding type: %s' % chromosome_data['encoding_type'])
 
-                    else:  # pragma: no cover
-                        raise NotImplementedError('Unknown encoding type: %s' % chromosome_data['encoding_type'])
+                gene.data = gene_data
+                genome.chromosomes[chromosome_id].genes.append(gene)
 
-                    gene.data = gene_data
-                    genome.chromosomes[chromosome_id].genes.append(gene)
-
-            self.genomes.append(genome)
+        self.genomes.append(genome)

@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Base Action class and registry for all Spellbook actions."""
+
 import os
 import time
 from abc import abstractmethod, ABCMeta
@@ -14,6 +16,7 @@ ACTIONS_DIR = 'json/public/actions'
 
 
 class Action(object):
+    """Base action class and registry for all Spellbook actions."""
     __metaclass__ = ABCMeta
 
     def __init__(self, action_id: str) -> None:

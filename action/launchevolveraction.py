@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Action that launches a Darwin evolutionary process."""
+
 import os
 import platform
 
@@ -18,7 +20,9 @@ else:
 
 
 class LaunchEvolverAction(SpawnProcessAction):
+    """Action that launches a Darwin evolutionary process."""
     def __init__(self, action_id):
+        """  init  ."""
         super(LaunchEvolverAction, self).__init__(action_id=action_id)
         self.action_type = ActionType.LAUNCHEVOLVER
         self.job_config = None
@@ -46,6 +50,7 @@ class LaunchEvolverAction(SpawnProcessAction):
         return ret
 
     def run(self):
+        """Run."""
         self.run_command = 'python3.7 "%s" %s' % (DARWIN_PROGRAM, self.job_config)
         LOG.info('Launching evolver with command: %s' % self.run_command)
         super(LaunchEvolverAction, self).run()

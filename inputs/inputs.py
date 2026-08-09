@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Functions for building Simplified Inputs Lists (SIL), profiles, and Simplified UTXO Lists (SUL) from blockchain data."""
 
 import re
 from data import data
@@ -144,6 +145,12 @@ def txs_to_profile(txs, address, block_height=0):
 
 
 def get_sul(address, confirmations=1):
+    """Get the Simplified UTXO List (SUL) of an address.
+
+    :param address: The address
+    :param confirmations: The minimum number of confirmations (default: 1)
+    :return: A dict containing the SUL or an error message
+    """
     if not valid_address(address):
         return {'error': 'Invalid address: ' + address}
 
@@ -156,6 +163,11 @@ def get_sul(address, confirmations=1):
 
 
 def utxos_to_sul(utxos):
+    """Convert UTXOs to a Simplified UTXO List (SUL).
+
+    :param utxos: A list of UTXO dicts as received from an explorer
+    :return: A list of [prime_input_address, total_value, share] entries or a dict with an error
+    """
     sul = []
 
     for utxo in utxos:

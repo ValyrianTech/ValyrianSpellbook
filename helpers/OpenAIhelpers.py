@@ -1,4 +1,4 @@
-# Helper functions for Large Language Models like GPT-3
+"""Helper functions for interacting with OpenAI's Large Language Models like GPT-3."""
 from typing import List, Dict, Union
 from helpers.configurationhelpers import get_enable_openai, get_openai_api_key, get_openai_organization
 

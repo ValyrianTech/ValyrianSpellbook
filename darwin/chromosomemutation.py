@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Chromosome-level mutation operations for Darwin."""
+
 import random
 from copy import deepcopy
 
@@ -8,22 +10,27 @@ from darwin.encodingtype import EncodingType
 
 
 class ChromosomeMutation(object):
+    """Chromosome-level mutation operations for Darwin."""
     def __init__(self, chromosome):
+        """  init  ."""
         self.chromosome = chromosome
 
     def duplication(self):
+        """Duplication."""
         # Duplicate a random gene in a chromosome
         if self.chromosome.n_genes is None and 0 < len(self.chromosome.genes) < 1000:
             index = random.randint(0, len(self.chromosome.genes)-1)
             self.chromosome.genes.insert(index, deepcopy(self.chromosome.genes[index]))
 
     def deletion(self):
+        """Deletion."""
         # Delete a random gene in a chromosome
         if self.chromosome.n_genes is None and len(self.chromosome.genes) > 1:
             random_gene = random.choice(self.chromosome.genes)
             self.chromosome.genes.remove(random_gene)
 
     def insertion(self):
+        """Insertion."""
         # Insert a random gene in a chromosome
         if self.chromosome.n_genes is None:
             if self.chromosome.encoding_type == EncodingType.BOOLEAN:
@@ -57,6 +64,7 @@ class ChromosomeMutation(object):
             self.chromosome.genes.insert(random.randint(0, len(self.chromosome.genes)), gene)
 
     def swap(self):
+        """Swap."""
         # Swap 2 random genes in a chromosome
         n_genes = len(self.chromosome.genes)
         if n_genes >= 2:
@@ -65,6 +73,7 @@ class ChromosomeMutation(object):
             self.chromosome.genes[i], self.chromosome.genes[j] = self.chromosome.genes[j], self.chromosome.genes[i]
 
     def split(self):
+        """Split."""
         # Split a string gene in 2 genes
         if not self.chromosome.encoding_type == EncodingType.STRING:
             return
@@ -81,6 +90,7 @@ class ChromosomeMutation(object):
                 self.chromosome.genes.insert(i+1, gene)
 
     def merge(self):
+        """Merge."""
         # Merge 2 genes together
         if not self.chromosome.encoding_type == EncodingType.STRING:
             return

@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Utilities for selecting random Bitcoin addresses."""
+
 from validators.validators import valid_address, valid_xpub
 from data.data import block_by_height, latest_block
 from inputs.inputs import get_sil, get_sul
@@ -89,12 +91,15 @@ def random_address_from_lsl(address, xpub, sil_block_height=0, rng_block_height=
 
 
 class RandomAddress(object):
+    """Utilities for selecting random Bitcoin addresses."""
     def __init__(self, address, sil_block_height=0, xpub=None):
+        """  init  ."""
         self.address = address
         self.block_height = sil_block_height
         self.xpub = xpub
 
     def get(self, source, rng_block_height=0):
+        """Get."""
         distribution = self.get_distribution(source)
         random_number = random_number_from_blockhash(rng_block_height)
 

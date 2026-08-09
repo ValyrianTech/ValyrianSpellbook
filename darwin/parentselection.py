@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Parent selection strategies for the Darwin evolutionary framework."""
+
 import numpy
 
 

@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 
+"""Constants for transaction types."""
+
 class TransactionType(object):
     SEND2SINGLE = 'Send2Single'  # A transaction sent to a single address (might still include a change address and/or a spellbook fee)
     SEND2MANY = 'Send2Many'  # A transaction with many outputs where the amount is distributed based on a custom distribution

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Helper functions for encoding, decoding, and manipulating Bitcoin private keys."""
 import re
 from .py3specials import bin_dbl_sha256, bin_to_b58check, changebase, decode, encode
 
@@ -14,7 +15,9 @@ base64_regex = '^[-A-Za-z0-9+=]{1,50}|=[^=]|={3,}$'
 
 
 class PrivateKey(object):
+    """Represents a Bitcoin private key in multiple formats (WIF, hex, decimal, binary)."""
     def __init__(self, private_key, testnet=False):
+        """Initialize the private key from any supported format, deriving all representations."""
         vbyte = 0 if testnet is False else 111
 
         self.decimal = encode_privkey(private_key=private_key, formt='decimal', vbyte=vbyte)
@@ -39,6 +42,7 @@ class PrivateKey(object):
 
 
 def encode_privkey(private_key, formt, vbyte=0):
+    """Encode a private key integer into the requested format (decimal, bin, hex, wif, etc.)."""
     if not isinstance(private_key, (int, float)):
         return encode_privkey(decode_privkey(private_key), formt, vbyte)
 
@@ -61,6 +65,7 @@ def encode_privkey(private_key, formt, vbyte=0):
 
 
 def decode_privkey(private_key, formt=None):
+    """Decode a private key from any supported format to a decimal integer."""
     if not formt:
         formt = get_privkey_format(private_key)
 
@@ -83,6 +88,7 @@ def decode_privkey(private_key, formt=None):
 
 
 def get_privkey_format(private_key):
+    """Detect the format of a private key (decimal, bin, hex, wif, etc.)."""
     if isinstance(private_key, (int, float)):
         return 'decimal'
     elif len(private_key) == 32:
@@ -104,6 +110,7 @@ def get_privkey_format(private_key):
 
 
 def b58check_to_bin(private_key):
+    """Convert a Base58Check-encoded private key to raw bytes (stripping prefix and checksum)."""
     leadingzbytes = len(re.match('^1*', private_key).group(0))
     data = b'\x00' * leadingzbytes + changebase(private_key, 58, 256)
     assert bin_dbl_sha256(data[:-4])[:4] == data[-4:]
@@ -111,6 +118,7 @@ def b58check_to_bin(private_key):
 
 
 def privkey_to_pubkey(privkey):
+    """Derive the public key from a private key by scalar multiplication of the generator point."""
     f = get_privkey_format(privkey)
     privkey = decode_privkey(privkey, f)
     if privkey >= N:
@@ -122,9 +130,11 @@ def privkey_to_pubkey(privkey):
 
 
 def add_privkeys(p1, p2):
+    """Add two private keys together modulo the curve order N."""
     f1, f2 = get_privkey_format(p1), get_privkey_format(p2)
     return encode_privkey((decode_privkey(p1, f1) + decode_privkey(p2, f2)) % N, f1)
 
 
 def privkey_to_address(priv, magicbyte=0):
+    """Derive a Bitcoin address from a private key."""
     return pubkey_to_address(privkey_to_pubkey(priv), magicbyte)

@@ -154,6 +154,7 @@ def read_csv_models(csv_file_path: str) -> list:
 
 
 def main():
+    """Parse command-line arguments and import LLM configurations from the CSV file."""
     parser = argparse.ArgumentParser(description='Import LLM configurations from CSV file')
     parser.add_argument('--csv-file', 
                        default='preconfigured_llm_models.csv',

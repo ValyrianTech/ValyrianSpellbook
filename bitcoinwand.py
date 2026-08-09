@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""BitcoinWand script for signing and verifying messages on behalf of an address."""
+
 import argparse
 import os
 import sys

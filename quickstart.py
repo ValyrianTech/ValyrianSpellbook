@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Quickstart script for setting up a basic Spellbook configuration."""
+
 import os
 from configparser import ConfigParser
 from helpers.jsonhelpers import load_from_json_file

@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Evolver process that drives the evolutionary loop in Darwin."""
+
 import os
 import platform
 import importlib
@@ -23,7 +25,9 @@ SPELLBOOK_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 
 class Evolver(object):
+    """Evolver process that drives the evolutionary loop in Darwin."""
     def __init__(self):
+        """  init  ."""
         self.title = 'Title of this job'
         self.description = 'A more detailed description of this job.'
         self.dir = r'D:\darwin'
@@ -78,6 +82,7 @@ class Evolver(object):
         self.chromosome_mutation_chance = ChromosomeMutationChance()
 
     def load_config(self, config):
+        """Load config."""
         if not isinstance(config, dict):
             raise Exception('config is not a dict!')
 
@@ -135,6 +140,7 @@ class Evolver(object):
         self.progress_file = os.path.join(DARWIN_DIR, 'progress.txt')
 
     def save_config(self, filename):
+        """Save config."""
 
         config = {'title': self.title,
                   'description': self.description,
@@ -172,6 +178,7 @@ class Evolver(object):
         save_to_json_file(filename=filename, data=config)
 
     def print_settings(self):
+        """Print settings."""
         pprint(self.__dict__)
         pprint('Mutations')
         pprint('Boolean')
@@ -190,6 +197,7 @@ class Evolver(object):
             pprint(self.parameters)
 
     def start(self):
+        """Start."""
         population = Population()
 
         # Load the Model script
@@ -367,6 +375,7 @@ class Evolver(object):
         return champion.fitness
 
     def load_script(self, script, script_class_name):
+        """Load script."""
         script_name = script[:-3]  # script name without the .py extension
         script_path = os.path.join(SPELLBOOK_DIR, script)
 
@@ -404,6 +413,7 @@ class Evolver(object):
         return loaded_script
 
     def termination(self):
+        """Termination."""
         if 0 < self.max_generations <= self.current_generation:
             print('Maximum number of generations has been reached, stopping now')
             return True

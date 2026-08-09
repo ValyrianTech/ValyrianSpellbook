@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Template script for creating new Spellbook scripts."""
+
 import os
 
 from helpers.loghelpers import LOG
@@ -19,11 +21,13 @@ class Template(SpellbookScript):
     subdirectories are allowed, just remember when saving a trigger with a script, you must include the subdirectories in the script name
     """
     def __init__(self, *args, **kwargs):
+        """  init  ."""
         super(Template, self).__init__(*args, **kwargs)
 
         # If you need to initialize a few things, it is recommended to to this here after the super call
 
     def run(self):
+        """Run."""
         # Here you can write your code that will be executed when the trigger is activated. This happens before any actions are done.
         LOG.info('Running Spellbook Script: %s' % os.path.splitext(os.path.basename(__file__))[0])
 
@@ -75,5 +79,6 @@ class Template(SpellbookScript):
         my_trigger.save()
 
     def cleanup(self):
+        """Cleanup."""
         # Here you can write any code that will be executed after all actions are done.
         LOG.info('Cleaning up...')

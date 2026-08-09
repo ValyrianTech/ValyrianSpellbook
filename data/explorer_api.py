@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Abstract base class for blockchain explorer API implementations."""
 
 from abc import abstractmethod, ABCMeta
 
 
 class ExplorerAPI(object):
+    """Abstract base class defining the interface for blockchain explorer APIs."""
     __metaclass__ = ABCMeta
 
     def __init__(self, url='', key='', testnet=False):

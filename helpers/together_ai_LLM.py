@@ -1,3 +1,5 @@
+"""Together.ai LLM client implementation using the official Together SDK."""
+
 import sys
 from pprint import pprint
 
@@ -13,6 +15,7 @@ from .thinking_levels import THINKING_LEVEL_OPENAI
 
 
 class TogetherAILLM(LLMInterface):
+    """Together.ai LLM client using the official Together SDK."""
 
     def __init__(self, model_name: str, api_key: str | None = None):
         super().__init__(model_name)

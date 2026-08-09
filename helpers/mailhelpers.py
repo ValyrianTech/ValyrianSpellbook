@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Helper functions for sending templated emails via SMTP."""
 
 import os
 import smtplib
@@ -28,6 +29,7 @@ APPS_DIR = os.path.join(PROGRAM_DIR, 'apps')
 
 
 def load_smtp_settings():
+    """Load SMTP settings from the Spellbook configuration into module-level globals."""
     global FROM_ADDRESS, HOST, PORT, USER, PASSWORD
     FROM_ADDRESS = get_smtp_from_address()
     HOST = get_smtp_host()

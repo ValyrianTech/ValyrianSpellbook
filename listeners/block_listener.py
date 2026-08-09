@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Block listener that monitors new blocks on the blockchain."""
+
 import websocket
 import simplejson
 

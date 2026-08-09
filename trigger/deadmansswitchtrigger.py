@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Dead man's switch trigger that activates when check-ins stop."""
+
 import time
 from datetime import datetime
 
@@ -11,7 +13,9 @@ from validators.validators import valid_phase, valid_email, valid_amount, valid_
 
 
 class DeadMansSwitchTrigger(Trigger):
+    """Dead man's switch trigger that activates when check-ins stop."""
     def __init__(self, trigger_id):
+        """  init  ."""
         super(DeadMansSwitchTrigger, self).__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.DEADMANSSWITCH
         self.timeout = None
@@ -20,6 +24,7 @@ class DeadMansSwitchTrigger(Trigger):
         self.activation_time = None
 
     def conditions_fulfilled(self):
+        """Conditions fulfilled."""
         if self.timeout is None or self.activation_time is None or self.warning_email is None:
             return False
 
@@ -56,6 +61,7 @@ class DeadMansSwitchTrigger(Trigger):
         return self.phase == SwitchPhase.PHASE_5
 
     def arm(self):
+        """Arm."""
         if self.phase == SwitchPhase.PHASE_0:
             self.phase = SwitchPhase.PHASE_1
             self.activation_time = int(time.time()) + self.timeout
@@ -65,6 +71,7 @@ class DeadMansSwitchTrigger(Trigger):
             self.save()
 
     def configure(self, **config):
+        """Configure."""
         super(DeadMansSwitchTrigger, self).configure(**config)
 
         if 'timeout' in config and valid_amount(config['timeout']):
@@ -91,6 +98,7 @@ class DeadMansSwitchTrigger(Trigger):
                     self.id, self.timeout, datetime.fromtimestamp(self.activation_time)))
 
     def json_encodable(self):
+        """Json encodable."""
         ret = super(DeadMansSwitchTrigger, self).json_encodable()
 
         ret.update({

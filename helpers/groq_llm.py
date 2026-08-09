@@ -1,3 +1,4 @@
+"""Groq LLM client implementation with reasoning content support."""
 import json
 import sys
 
@@ -10,7 +11,9 @@ from .textgenerationhelpers import parse_generation
 
 
 class GroqLLM(LLMInterface):
+    """Groq LLM client with streaming and reasoning content support."""
     def __init__(self, model_name: str, api_key: str = ''):
+        """Initialize the Groq client with model name and optional API key."""
         super().__init__(model_name)
 
         self.client = Groq(api_key=api_key)
@@ -18,6 +21,7 @@ class GroqLLM(LLMInterface):
         LOG.info(f'Groq LLM initialized for model {self.model_name}')
 
     def get_completion_text(self, messages, stop=None, **kwargs):
+        """Generate completion text via Groq streaming API with reasoning content handling."""
         LOG.info(f'Generating with Groq LLM with model {self.model_name}')
         LOG.info(f'kwargs: {kwargs}')
         LOG.info(f'stop: {stop}')

@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Action that follows a user on Twitter."""
+
 from helpers.loghelpers import LOG
 from .action import Action
 from .actiontype import ActionType
@@ -8,7 +10,9 @@ from helpers.twitterhelpers import follow_user
 
 
 class FollowOnTwitterAction(Action):
+    """Action that follows a user on Twitter."""
     def __init__(self, action_id):
+        """  init  ."""
         super(FollowOnTwitterAction, self).__init__(action_id=action_id)
         self.action_type = ActionType.FOLLOW_ON_TWITTER
         self.user_id = None

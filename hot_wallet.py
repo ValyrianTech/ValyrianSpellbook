@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""CLI tool for managing the encrypted hot wallet."""
+
 import os
 import sys
 import argparse

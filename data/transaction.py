@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Transaction data model for blockchain data representation."""
+
 from __future__ import unicode_literals
 import binascii
 from helpers.loghelpers import LOG
 
 
 class TX(object):
+    """Transaction data model for blockchain data representation."""
     def __init__(self):
         """
         Constructor of a TX object
@@ -165,6 +168,7 @@ class TX(object):
         return unhex_data
 
     def json_encodable(self):
+        """Json encodable."""
         return {'txid': self.txid,
                 'wtxid': self.wtxid,
                 'lock_time': self.lock_time,
@@ -176,7 +180,9 @@ class TX(object):
 
 
 class TxInput(object):
+    """Transaction input data model."""
     def __init__(self):
+        """  init  ."""
         self.address = None
         self.value = None
         self.txid = None
@@ -185,6 +191,7 @@ class TxInput(object):
         self.sequence = None
 
     def json_encodable(self):
+        """Json encodable."""
         return {'address': self.address,
                 'value': self.value,
                 'txid': self.txid,
@@ -194,7 +201,9 @@ class TxInput(object):
 
 
 class TxOutput(object):
+    """Transaction output data model."""
     def __init__(self):
+        """  init  ."""
         self.address = None
         self.value = None
         self.n = None
@@ -203,6 +212,7 @@ class TxOutput(object):
         self.spent = None
 
     def json_encodable(self):
+        """Json encodable."""
         return {'address': self.address,
                 'value': self.value,
                 'n': self.n,

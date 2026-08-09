@@ -9,8 +9,10 @@ from data.explorer_api import ExplorerAPI
 
 
 class InsightAPI(ExplorerAPI):
+    """Insight block explorer API client."""
 
     def get_latest_block(self):
+        """Retrieve the latest block from the blockchain explorer."""
         url = self.url + '/status?q=getBestBlockHash'
         try:
             LOG.info('GET %s' % url)
@@ -26,6 +28,7 @@ class InsightAPI(ExplorerAPI):
             return {'error': 'Received invalid data: %s' % data}
 
     def get_block_by_hash(self, block_hash):
+        """Retrieve a block by its hash from the blockchain explorer."""
         url = self.url + '/block/' + block_hash
         try:
             LOG.info('GET %s' % url)
@@ -47,6 +50,7 @@ class InsightAPI(ExplorerAPI):
             return {'error': 'Received invalid data: %s' % data}
 
     def get_block_by_height(self, height):
+        """Retrieve a block by its height from the blockchain explorer."""
         url = self.url + '/block-index/' + str(height)
         try:
             LOG.info('GET %s' % url)
@@ -62,6 +66,7 @@ class InsightAPI(ExplorerAPI):
             return {'error': 'Received invalid data: %s' % data}
 
     def get_transactions(self, address):
+        """Retrieve all transactions for a given address from the explorer."""
         limit = 10  # number of tx given by insight is 10
         n_tx = None
         transactions = []
@@ -131,6 +136,7 @@ class InsightAPI(ExplorerAPI):
             return {'transactions': txs}
 
     def get_balance(self, address):
+        """Retrieve the balance (final, received, sent) for a given address."""
         url = '{api_url}/addr/{address}/balance'.format(api_url=self.url, address=address)
         try:
             LOG.info('GET %s' % url)
@@ -192,6 +198,7 @@ class InsightAPI(ExplorerAPI):
         #     return {'error': 'Received invalid data: %s' % data}
 
     def get_transaction(self, txid):
+        """Retrieve a single transaction by its txid from the explorer."""
         url = self.url + '/tx/' + str(txid)
         try:
             LOG.info('GET %s' % url)
@@ -236,6 +243,7 @@ class InsightAPI(ExplorerAPI):
         return {'transaction': tx.json_encodable()}
 
     def get_prime_input_address(self, txid):
+        """Retrieve the prime input address of a transaction by txid."""
         url = self.url + '/tx/' + str(txid)
         try:
             LOG.info('GET %s' % url)
@@ -259,6 +267,7 @@ class InsightAPI(ExplorerAPI):
         return {'error': 'Received invalid data: %s' % data}
 
     def get_utxos(self, address, confirmations=3):
+        """Retrieve unspent transaction outputs (UTXOs) for a given address."""
         url = self.url + '/addrs/' + address + '/utxo?noCache=1'
         try:
             LOG.info('GET %s' % url)
@@ -283,6 +292,7 @@ class InsightAPI(ExplorerAPI):
         return {'utxos': sorted(utxos, key=lambda k: (k['confirmations'], k['output_hash'], k['output_n']))}
 
     def push_tx(self, tx):
+        """Broadcast a signed raw transaction to the blockchain network."""
         url = '{api_url}/tx/send'.format(api_url=self.url)
         LOG.info('POST %s' % url)
         try:

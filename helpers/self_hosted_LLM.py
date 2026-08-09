@@ -1,3 +1,4 @@
+"""Self-hosted LLM client implementation for Oobabooga/text-generation-webui servers."""
 from pprint import pprint
 
 import requests
@@ -15,6 +16,7 @@ from helpers.websockethelpers import broadcast_message, get_broadcast_channel, g
 
 
 def get_default_llm_host():
+    """Return the host of the default self-hosted LLM from configuration."""
 
     llms = load_llms()
     default_model = get_llms_default_model()
@@ -29,7 +31,9 @@ def get_default_llm_host():
 
 
 class SelfHostedLLM(LLMInterface):
+    """Self-hosted LLM client for Oobabooga/text-generation-webui with SSE streaming."""
     def __init__(self, host: str | None = None, port: int | None = None, mixture_of_experts=False, model_name: str | None = None):
+        """Initialize the self-hosted LLM with host, port, and optional mixture-of-experts routing."""
         super().__init__(model_name if model_name is not None else '')
         if host is None:
             host = get_default_llm_host()
@@ -99,6 +103,7 @@ class SelfHostedLLM(LLMInterface):
     #         yield 'Error: Self-hosted LLM is not running.\n'
 
     def get_completion_text(self, messages, stop=None, **kwargs):
+        """Generate completion text via SSE streaming from the text-generation-webui server."""
         LOG.info(f'Generating with Text-generation-webui with model {self.model_name}')
         LOG.info(f'kwargs: {kwargs}')
         LOG.info(f'stop: {stop}')
@@ -225,6 +230,7 @@ class SelfHostedLLM(LLMInterface):
     #     return llm_result
 
     def set_expert_model(self, prompt: str):  # TODO fix this
+        """Use mixture-of-experts routing to select the best LLM host for the given prompt."""
         available_llms = get_available_llms()
         router_prompt = llm_router_prompt(prompt=prompt, available_llms=available_llms[0])
         print(f'router_prompt: {router_prompt}')

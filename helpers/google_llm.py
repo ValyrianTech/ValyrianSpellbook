@@ -1,3 +1,4 @@
+"""Google Gemini LLM client implementation using the OpenAI-compatible API."""
 import json
 import sys
 
@@ -11,13 +12,16 @@ from .thinking_levels import THINKING_LEVEL_GOOGLE
 
 
 class GoogleLLM(LLMInterface):
+    """Google Gemini LLM client using the OpenAI-compatible API."""
     def __init__(self, model_name: str, api_key: str):
+        """Initialize the Google Gemini client with model name and API key."""
         self.model_name = model_name
         self.api_key = api_key
         super().__init__(model_name)
         LOG.info(f'Google initialized for model {self.model_name}')
 
     def get_completion_text(self, messages, stop=None, **kwargs):
+        """Generate completion text via Google Gemini streaming API."""
         LOG.info(f'Generating with Google with model {self.model_name}')
         LOG.info(f'kwargs: {kwargs}')
         LOG.info(f'stop: {stop}')

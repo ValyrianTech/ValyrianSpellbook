@@ -2,11 +2,16 @@
 # -*- coding: utf-8 -*-
 
 
+"""Constants for mutation probability thresholds in Darwin."""
+
 class MutationChance(object):
+    """Constants for mutation probability thresholds in Darwin."""
     def __init__(self):
+        """  init  ."""
         pass
 
     def load(self, config):
+        """Load."""
         if not isinstance(config, dict):
             raise Exception('config is not a dict!')
 
@@ -17,6 +22,7 @@ class MutationChance(object):
 
 class BooleanMutationChance(MutationChance):
     def __init__(self):
+        """  init  ."""
         super(BooleanMutationChance, self).__init__()
 
         self.uniform = 0.0
@@ -25,6 +31,7 @@ class BooleanMutationChance(MutationChance):
 
 class IntegerMutationChance(MutationChance):
     def __init__(self):
+        """  init  ."""
         super(IntegerMutationChance, self).__init__()
 
         self.uniform = 0.0
@@ -35,6 +42,7 @@ class IntegerMutationChance(MutationChance):
 
 class FloatMutationChance(MutationChance):
     def __init__(self):
+        """  init  ."""
         super(FloatMutationChance, self).__init__()
 
         self.uniform = 0.0
@@ -45,6 +53,7 @@ class FloatMutationChance(MutationChance):
 
 class StringMutationChance(MutationChance):
     def __init__(self):
+        """  init  ."""
         super(StringMutationChance, self).__init__()
 
         self.uniform = 0.0
@@ -57,6 +66,7 @@ class StringMutationChance(MutationChance):
 
 class ChromosomeMutationChance(MutationChance):
     def __init__(self):
+        """  init  ."""
         super(ChromosomeMutationChance, self).__init__()
 
         self.uniform = 0.0

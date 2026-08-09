@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Action that spawns a new system process."""
+
 from .action import Action
 from .actiontype import ActionType
 from helpers.loghelpers import LOG
@@ -8,7 +10,9 @@ from helpers.runcommandprocess import RunCommandProcess
 
 
 class SpawnProcessAction(Action):
+    """Action that spawns a new system process."""
     def __init__(self, action_id):
+        """  init  ."""
         super(SpawnProcessAction, self).__init__(action_id=action_id)
         self.action_type = ActionType.SPAWNPROCESS
         self.run_command = None

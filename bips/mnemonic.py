@@ -19,6 +19,7 @@
 # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+"""BIP39 mnemonic code implementation for generating and validating seed phrases."""
 
 import binascii
 import bisect
@@ -34,18 +35,22 @@ PBKDF2_ROUNDS = 2048
 
 
 class ConfigurationError(Exception):
+    """Raised when the mnemonic configuration is invalid."""
     pass
 
 
 # From <http://tinyurl.com/p54ocsk>
 def binary_search(a, x, lo=0, hi=None):                # can't use a to specify default for hi
+    """Binary search for x in sorted list a, returning index or -1."""
     hi = hi if hi is not None else len(a)              # hi defaults to len(a)
     pos = bisect.bisect_left(a, x, lo, hi)             # find insertion position
     return (pos if pos != hi and a[pos] == x else -1)  # don't walk off the end
 
 
 class Mnemonic(object):
+    """BIP39 mnemonic code generator and validator."""
     def __init__(self, language):
+        """Load the wordlist for the given language."""
         self.radix = 2048
         with open('%s/%s.txt' % (self._get_directory(), language), 'r', encoding='utf-8') as f:
             self.wordlist = [w.strip() for w in f.readlines()]
@@ -54,14 +59,17 @@ class Mnemonic(object):
 
     @classmethod
     def _get_directory(cls):
+        """Return the path to the wordlist directory."""
         return os.path.join(os.path.dirname(__file__), 'wordlist')
 
     @classmethod
     def list_languages(cls):
+        """Return a list of available language codes."""
         return [f.split('.')[0] for f in os.listdir(cls._get_directory()) if f.endswith('.txt')]
 
     @classmethod
     def normalize_string(cls, txt):
+        """Normalize a string to NFKD form."""
         if isinstance(txt, bytes):
             utxt = txt.decode('utf8')
         elif isinstance(txt, str):  # noqa: F821
@@ -73,6 +81,7 @@ class Mnemonic(object):
 
     @classmethod
     def detect_language(cls, code):
+        """Detect the language of a mnemonic phrase by looking up the first word."""
         code = cls.normalize_string(code)
         first = code.split(' ')[0]
         languages = cls.list_languages()
@@ -85,12 +94,14 @@ class Mnemonic(object):
         raise ConfigurationError("Language not detected")
 
     def generate(self, strength=128):
+        """Generate a random mnemonic phrase with the given entropy strength (in bits)."""
         if strength not in [128, 160, 192, 224, 256]:
             raise ValueError('Strength should be one of the following [128, 160, 192, 224, 256], but it is not (%d).' % strength)
         return self.to_mnemonic(os.urandom(strength // 8))
 
     # Adapted from <http://tinyurl.com/oxmn476>
     def to_entropy(self, words):
+        """Convert a mnemonic phrase back to its original entropy bytes."""
         if not isinstance(words, list):
             words = words.split(' ')
         if len(words) not in [12, 15, 18, 21, 24]:
@@ -134,6 +145,7 @@ class Mnemonic(object):
         return entropy
 
     def to_mnemonic(self, data):
+        """Convert entropy bytes to a mnemonic phrase."""
         if len(data) not in [16, 20, 24, 28, 32]:
             raise ValueError('Data length should be one of the following: [16, 20, 24, 28, 32], but it is not (%d).' % len(data))
         h = hashlib.sha256(data).hexdigest()
@@ -150,6 +162,7 @@ class Mnemonic(object):
         return result_phrase
 
     def check(self, mnemonic):
+        """Check whether a mnemonic phrase is valid (correct checksum)."""
         mnemonic = self.normalize_string(mnemonic).split(' ')
         # list of valid mnemonic lengths
         if len(mnemonic) not in [12, 15, 18, 21, 24]:
@@ -167,6 +180,7 @@ class Mnemonic(object):
         return h == nh
 
     def expand_word(self, prefix):
+        """Try to expand a prefix to a full word in the wordlist."""
         if prefix in self.wordlist:
             return prefix
         else:
@@ -179,16 +193,19 @@ class Mnemonic(object):
                 return prefix
 
     def expand(self, mnemonic):
+        """Expand each word in a mnemonic phrase to its full form."""
         return ' '.join(map(self.expand_word, mnemonic.split(' ')))
 
     @classmethod
     def to_seed(cls, mnemonic, passphrase=''):
+        """Derive a 64-byte seed from a mnemonic and passphrase using PBKDF2."""
         mnemonic = cls.normalize_string(mnemonic)
         passphrase = cls.normalize_string(passphrase)
         return PBKDF2(mnemonic, u'mnemonic' + passphrase, iterations=PBKDF2_ROUNDS, macmodule=hmac, digestmodule=hashlib.sha512).read(64)
 
 
 def main():
+    """CLI entry point: read hex data from stdin/argv and print the mnemonic."""
     import binascii
     import sys
     if len(sys.argv) > 1:

@@ -1,3 +1,4 @@
+"""WebSocket server helpers for real-time message broadcasting."""
 import asyncio
 import websockets
 import threading
@@ -30,12 +31,15 @@ def get_broadcast_sender() -> str:
 
 
 class WebSocketHandler:
+    """Manages WebSocket connections and channel-based message broadcasting."""
     def __init__(self):
+        """Initialize the handler with empty connection and subscription sets."""
         self.connected = set()
         self.subscriptions = {}
         self.lock = asyncio.Lock()
 
     async def handler(self, websocket):
+        """Handle a WebSocket connection: register, process messages, and unregister on close."""
         try:
             # Register.
             async with self.lock:
@@ -63,6 +67,7 @@ class WebSocketHandler:
             LOG.debug(f'Connection closed: {websocket.remote_address}')
 
     async def broadcast(self, message, channel='general'):
+        """Broadcast a message to all connected clients subscribed to the given channel."""
         async with self.lock:
             if self.connected:  # asyncio.wait doesn't accept an empty list
                 tasks = [asyncio.create_task(user.send(message)) for user in self.connected if channel in self.subscriptions[user]]
@@ -74,6 +79,7 @@ LOOP = asyncio.new_event_loop()
 
 
 def broadcast_message(message: str, channel: str = 'general'):
+    """Thread-safe wrapper to broadcast a message via the websocket server's event loop."""
     # If the websocket server was never started (e.g. standalone scripts that set
     # SKIP_WEBSOCKET_SERVER), the LOOP is not running. Scheduling a coroutine on a
     # non-running loop leaves it un-awaited and triggers a RuntimeWarning, so skip it.
@@ -99,6 +105,7 @@ async def run_websocket_server(host: str, port: int):
 
 
 def start_websocket_server(host: str, port: int):
+    """Start the websocket server on the given host and port in the current thread."""
     LOG.info(f'Initializing websocket server on {host}:{port} ...')
     asyncio.set_event_loop(LOOP)
     try:
@@ -110,6 +117,7 @@ def start_websocket_server(host: str, port: int):
 
 
 def init_websocket_server(host: str = 'localhost', port: int = 8765):  # pragma: no cover
+    """Start the websocket server in a background daemon thread."""
     # Create a separate thread for the websocket server
     websocket_thread = threading.Thread(target=start_websocket_server, args=(host, port))
 

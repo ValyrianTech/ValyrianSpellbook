@@ -1,13 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Action that sends an email via SMTP."""
+
 from .action import Action
 from .actiontype import ActionType
 from helpers.mailhelpers import sendmail
 
 
 class SendMailAction(Action):
+    """Action that sends an email via SMTP."""
     def __init__(self, action_id):
+        """  init  ."""
         super(SendMailAction, self).__init__(action_id=action_id)
         self.action_type = ActionType.SENDMAIL
         self.mail_recipients = None

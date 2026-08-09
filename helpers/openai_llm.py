@@ -1,3 +1,5 @@
+"""OpenAI LLM client implementation with streaming support."""
+
 import json
 import sys
 
@@ -12,6 +14,7 @@ from .thinking_levels import THINKING_LEVEL_OPENAI
 
 
 class OpenAILLM(LLMInterface):
+    """OpenAI LLM client with streaming support."""
     def __init__(self, model_name: str, api_key: str | None = None):
         super().__init__(model_name)
 

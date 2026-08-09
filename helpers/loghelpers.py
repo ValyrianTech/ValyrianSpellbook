@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Logging configuration and helpers for the Valyrian Spellbook."""
 
 import os
 import io

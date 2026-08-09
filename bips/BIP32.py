@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""BIP32 hierarchical deterministic wallet key derivation."""
+
 import hashlib
 import hmac
 import re

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Helper functions for MySQL database operations."""
 import mysql.connector
 from mysql.connector import errorcode
 
@@ -101,6 +102,7 @@ class mysql_cursor(object):
         self.commit = commit
 
     def __enter__(self):
+        """Create and return a MySQL cursor when entering a 'with' block."""
         LOG.info('Creating mysql cursor to database %s @ %s:%s' % (self.database, self.host, self.port))
         self.cnx = mysql.connector.connect(user=self.user,
                                            password=self.password,
@@ -111,6 +113,7 @@ class mysql_cursor(object):
         return self.cursor
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """Commit (if enabled) and close the cursor and connection when exiting a 'with' block."""
         # Make sure data is committed to the database
         if self.commit is True:
             LOG.info('Committing data')

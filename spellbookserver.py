@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""REST API server for the Valyrian Spellbook built on Bottle."""
+
 import argparse
 import logging
 import os
@@ -55,6 +57,7 @@ if get_enable_transcribe() is True:
 
 def enable_cors(fn):
     def _enable_cors(*args, **kwargs):
+        """ enable cors endpoint."""
         # set CORS headers
         response.headers['Access-Control-Allow-Origin'] = '*'
         response.headers['Access-Control-Allow-Credentials'] = True
@@ -97,7 +100,9 @@ server_names['sslwebserver'] = SSLWebServer
 
 
 class SpellbookRESTAPI(Bottle):
+    """REST API server for the Valyrian Spellbook built on Bottle."""
     def __init__(self):
+        """  init   endpoint."""
         super(SpellbookRESTAPI, self).__init__()
 
         # Initialize variables
@@ -253,14 +258,17 @@ class SpellbookRESTAPI(Bottle):
                          variables=variables)
 
     def index(self):
+        """Serve the main dashboard page."""
         return
 
     @staticmethod
     def get_favicon():
+        """Serve the favicon.ico file."""
         return static_file('favicon.ico', root='.')
 
     @staticmethod
     def initialize_requests_log(logs_dir):
+        """Initialize the requests logging mechanism."""
         # Create a log file for the http requests to the REST API
         logger = logging.getLogger('api_requests')
 
@@ -273,8 +281,10 @@ class SpellbookRESTAPI(Bottle):
         return logger
 
     def log_to_logger(self, fn):
+        """Log HTTP requests to the application logger."""
         @wraps(fn)
         def _log_to_logger(*args, **kwargs):
+            """ log to logger endpoint."""
             start_time = int(round(time.time() * 1000))
             request_time = datetime.now()
 
@@ -328,6 +338,7 @@ class SpellbookRESTAPI(Bottle):
     @staticmethod
     @output_json
     def ping():
+        """Return a simple pong response for health checks."""
         LOG.info('Pong')
         response.content_type = 'application/json'
         return {'success': True}
@@ -336,6 +347,7 @@ class SpellbookRESTAPI(Bottle):
     @enable_cors
     @output_json
     def get_llms():
+        """Return all configured LLMs as JSON."""
         response.content_type = 'application/json'
         llms = load_llms()
         if llms is not None:
@@ -347,6 +359,7 @@ class SpellbookRESTAPI(Bottle):
     @enable_cors
     @output_json
     def get_llm_config(llm_id):
+        """Return the configuration for a specific LLM."""
         response.content_type = 'application/json'
         llm_config = get_llm_config(llm_id)
 
@@ -363,17 +376,20 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @authentication_required
     def save_llm_config(llm_id):
+        """Save or update an LLM configuration."""
         save_llm_config(llm_id, request.json)
 
     @staticmethod
     @output_json
     @authentication_required
     def delete_llm(llm_id):
+        """Delete an LLM configuration by name."""
         delete_llm(llm_id)
 
     @staticmethod
     @output_json
     def get_explorers():
+        """Return all configured blockchain explorers as JSON."""
         response.content_type = 'application/json'
         explorers = get_explorers()
         if explorers is not None:
@@ -384,12 +400,14 @@ class SpellbookRESTAPI(Bottle):
     @staticmethod
     @authentication_required
     def save_explorer(explorer_id):
+        """Save or update a blockchain explorer configuration."""
         save_explorer(explorer_id, request.json)
 
     @staticmethod
     @output_json
     @authentication_required
     def get_explorer_config(explorer_id):
+        """Return the configuration for a specific explorer."""
         response.content_type = 'application/json'
         explorer_config = get_explorer_config(explorer_id)
         if explorer_config is not None:
@@ -400,12 +418,14 @@ class SpellbookRESTAPI(Bottle):
     @staticmethod
     @authentication_required
     def delete_explorer(explorer_id):
+        """Delete a blockchain explorer configuration."""
         delete_explorer(explorer_id)
 
     @staticmethod
     @output_json
     @use_explorer
     def get_latest_block():
+        """Return the latest block from the blockchain."""
         response.content_type = 'application/json'
         return latest_block()
 
@@ -413,6 +433,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_block_by_height(height):
+        """Return a block by its height."""
         response.content_type = 'application/json'
         return block_by_height(height)
 
@@ -420,6 +441,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_block_by_hash(block_hash):
+        """Return a block by its hash."""
         response.content_type = 'application/json'
         return block_by_hash(block_hash)
 
@@ -427,6 +449,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_prime_input_address(txid):
+        """Return the prime input address of a transaction."""
         response.content_type = 'application/json'
         return prime_input_address(txid)
 
@@ -434,6 +457,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_transaction(txid):
+        """Return a single transaction by txid."""
         response.content_type = 'application/json'
         return transaction(txid)
 
@@ -441,6 +465,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_transactions(address):
+        """Return all transactions for a given address."""
         response.content_type = 'application/json'
         return transactions(address)
 
@@ -448,6 +473,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_balance(address):
+        """Return the balance for a given address."""
         response.content_type = 'application/json'
         return balance(address)
 
@@ -455,6 +481,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_utxos(address):
+        """Return unspent transaction outputs for a given address."""
         response.content_type = 'application/json'
         return utxos(address, int(request.query.confirmations))
 
@@ -462,6 +489,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_sil(address):
+        """Return the Signed Input List (SIL)."""
         response.content_type = 'application/json'
         block_height = int(request.json['block_height'])
         return get_sil(address, block_height)
@@ -470,6 +498,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_profile(address):
+        """Return the profile for a given address."""
         response.content_type = 'application/json'
         block_height = int(request.json['block_height'])
         return get_profile(address, block_height)
@@ -478,6 +507,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_sul(address):
+        """Return the Signed Unsigned List (SUL)."""
         response.content_type = 'application/json'
         confirmations = int(request.json['confirmations'])
         return get_sul(address, confirmations)
@@ -486,6 +516,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_lal(address):
+        """Return the Linked Address List (LAL)."""
         response.content_type = 'application/json'
         block_height = int(request.json['block_height'])
         xpub = request.json['xpub']
@@ -495,6 +526,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_lbl(address):
+        """Return the Linked Block List (LBL)."""
         response.content_type = 'application/json'
         block_height = int(request.json['block_height'])
         xpub = request.json['xpub']
@@ -504,6 +536,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_lrl(address):
+        """Return the Linked Request List (LRL)."""
         response.content_type = 'application/json'
         block_height = int(request.json['block_height'])
         xpub = request.json['xpub']
@@ -513,6 +546,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_lsl(address):
+        """Return the Linked Script List (LSL)."""
         response.content_type = 'application/json'
         block_height = int(request.json['block_height'])
         xpub = request.json['xpub']
@@ -522,6 +556,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_random_address_from_sil(address):
+        """get random address from sil endpoint."""
         response.content_type = 'application/json'
         rng_block_height = int(request.json['rng_block_height'])
         sil_block_height = int(request.json['sil_block_height'])
@@ -531,6 +566,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_random_address_from_lbl(address):
+        """get random address from lbl endpoint."""
         response.content_type = 'application/json'
         rng_block_height = int(request.json['rng_block_height'])
         sil_block_height = int(request.json['sil_block_height'])
@@ -541,6 +577,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_random_address_from_lrl(address):
+        """get random address from lrl endpoint."""
         response.content_type = 'application/json'
         rng_block_height = int(request.json['rng_block_height'])
         sil_block_height = int(request.json['sil_block_height'])
@@ -551,6 +588,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @use_explorer
     def get_random_address_from_lsl(address):
+        """get random address from lsl endpoint."""
         response.content_type = 'application/json'
         rng_block_height = int(request.json['rng_block_height'])
         sil_block_height = int(request.json['sil_block_height'])
@@ -560,6 +598,7 @@ class SpellbookRESTAPI(Bottle):
     @staticmethod
     @output_json
     def get_triggers():
+        """Return all configured triggers as JSON."""
         response.content_type = 'application/json'
         triggers = get_triggers()
         if triggers is not None:
@@ -571,6 +610,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @authentication_required
     def get_trigger(trigger_id):
+        """Return the configuration for a specific trigger."""
         response.content_type = 'application/json'
         trigger_config = get_trigger_config(trigger_id)
         if trigger_config is not None:
@@ -582,6 +622,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @authentication_required
     def save_trigger(trigger_id):
+        """Save or update a trigger configuration."""
         response.content_type = 'application/json'
         return save_trigger(trigger_id, **request.json)
 
@@ -589,6 +630,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @authentication_required
     def delete_trigger(trigger_id):
+        """Delete a trigger by ID."""
         response.content_type = 'application/json'
         return delete_trigger(trigger_id)
 
@@ -596,6 +638,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @authentication_required
     def activate_trigger(trigger_id):
+        """Activate a trigger manually."""
         response.content_type = 'application/json'
         return activate_trigger(trigger_id)
 
@@ -603,6 +646,7 @@ class SpellbookRESTAPI(Bottle):
     @enable_cors
     @output_json
     def verify_signed_message(trigger_id):
+        """verify signed message endpoint."""
         response.content_type = 'application/json'
         data = request.json if request.json is not None else {}
 
@@ -616,6 +660,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @authentication_required
     def sign_message():
+        """Sign a message with a private key."""
         LOG.info('Sign message request received')
         LOG.info(f'request json: {request.json}')
         response.content_type = 'application/json'
@@ -625,6 +670,7 @@ class SpellbookRESTAPI(Bottle):
     @enable_cors
     @output_json
     def http_options_request(trigger_id):
+        """http options request endpoint."""
         response.content_type = 'application/json'
         data = request.json if request.json is not None else {}
 
@@ -638,6 +684,7 @@ class SpellbookRESTAPI(Bottle):
     @enable_cors
     @output_json
     def http_get_request(trigger_id):
+        """http get request endpoint."""
         response.content_type = 'application/json'
         data = request.json if request.json is not None else {}
 
@@ -651,6 +698,7 @@ class SpellbookRESTAPI(Bottle):
     @enable_cors
     @output_json
     def http_post_request(trigger_id):
+        """http post request endpoint."""
         response.content_type = 'application/json'
         data = request.json if request.json is not None else {}
 
@@ -663,6 +711,7 @@ class SpellbookRESTAPI(Bottle):
     @staticmethod
     @output_json
     def http_delete_request(trigger_id):
+        """http delete request endpoint."""
         response.content_type = 'application/json'
         data = request.json if request.json is not None else {}
 
@@ -674,6 +723,7 @@ class SpellbookRESTAPI(Bottle):
 
     @staticmethod
     def html_request(trigger_id):
+        """html request endpoint."""
         response.content_type = 'text/html'
         data = request.json if request.json is not None else {}
 
@@ -685,6 +735,7 @@ class SpellbookRESTAPI(Bottle):
 
     @staticmethod
     def qr():
+        """qr endpoint."""
         response.content_type = 'image/png'
         data = request.json if request.json is not None else {}
 
@@ -699,6 +750,7 @@ class SpellbookRESTAPI(Bottle):
     @use_explorer
     @authentication_required
     def check_trigger(trigger_id):
+        """check trigger endpoint."""
         response.content_type = 'application/json'
         return check_triggers(trigger_id)
 
@@ -707,12 +759,14 @@ class SpellbookRESTAPI(Bottle):
     @use_explorer
     @authentication_required
     def check_all_triggers():
+        """check all triggers endpoint."""
         response.content_type = 'application/json'
         return check_triggers()
 
     @staticmethod
     @output_json
     def get_actions():
+        """Return all configured actions as JSON."""
         response.content_type = 'application/json'
         actions = get_actions()
         if actions is not None:
@@ -724,6 +778,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @authentication_required
     def get_action(action_id):
+        """Return the configuration for a specific action."""
         response.content_type = 'application/json'
         action_config = get_action_config(action_id)
         if action_config is not None:
@@ -735,6 +790,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @authentication_required
     def save_action(action_id):
+        """Save or update an action configuration."""
         response.content_type = 'application/json'
         return save_action(action_id, **request.json)
 
@@ -742,6 +798,7 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @authentication_required
     def delete_action(action_id):
+        """Delete an action by ID."""
         response.content_type = 'application/json'
         return delete_action(action_id)
 
@@ -749,12 +806,14 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @authentication_required
     def run_action(action_id):
+        """Run an action by ID."""
         response.content_type = 'application/json'
         return run_action(action_id)
 
     @staticmethod
     @output_json
     def get_reveal(action_id):
+        """Return the reveal secret for a RevealSecretAction."""
         response.content_type = 'application/json'
         return get_reveal(action_id)
 
@@ -762,12 +821,14 @@ class SpellbookRESTAPI(Bottle):
     @output_json
     @authentication_required
     def get_logs(filter_string):
+        """Return the application logs."""
         response.content_type = 'application/json'
         return get_logs(filter_string=filter_string)
 
     @staticmethod
     @enable_cors
     def file_download(trigger_id):
+        """file download endpoint."""
         response.content_type = 'image/png'
         data = request.json if request.json is not None else {}
 
@@ -780,6 +841,7 @@ class SpellbookRESTAPI(Bottle):
     @staticmethod
     @enable_cors
     def upload_file():
+        """upload file endpoint."""
         if get_enable_uploads() is False:
             LOG.error("File uploads are not enabled")
             response.status = 403
@@ -839,6 +901,7 @@ class SpellbookRESTAPI(Bottle):
     @staticmethod
     @enable_cors
     def transcribe():
+        """transcribe endpoint."""
         # Handle OPTIONS preflight request for CORS
         if request.method == 'OPTIONS':
             return {}

@@ -1,3 +1,4 @@
+"""Ollama Chat LLM using native Ollama API for full feature support including thinking levels."""
 import json
 import re
 import sys
@@ -14,6 +15,7 @@ class OllamaChatLLM(LLMInterface):
     """Ollama Chat LLM using native Ollama API (/api/chat) for full feature support including thinking levels."""
     
     def __init__(self, model_name: str, host: str, port: int | None = None):
+        """Initialize the Ollama Chat client with model name, host, and optional port."""
         self.model_name = model_name
         self.host = host.rstrip('/')  # Remove trailing slash if present
         self.port = port
@@ -21,6 +23,7 @@ class OllamaChatLLM(LLMInterface):
         LOG.info(f'Ollama initialized for model {self.model_name}')
 
     def get_completion_text(self, messages, stop=None, **kwargs):
+        """Generate completion text via the native Ollama /api/chat endpoint."""
         LOG.info(f'Generating with Ollama with model {self.model_name}')
         LOG.info(f'kwargs: {kwargs}')
         LOG.info(f'stop: {stop}')

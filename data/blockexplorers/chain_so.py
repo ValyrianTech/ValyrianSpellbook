@@ -12,13 +12,16 @@ from data.explorer_api import ExplorerAPI
 
 
 class ChainSoAPI(ExplorerAPI):
+    """Chain.so block explorer API client."""
     def __init__(self, url='', key='', testnet=False):
+        """Initialize the API client with URL, optional key, and testnet flag."""
         super(ChainSoAPI, self).__init__(url=url, testnet=testnet)
         # Set the network to use in the api calls (mainnet or testnet)
         self.network = 'BTCTEST' if self.testnet else 'BTC'
         self.url = 'https://chain.so/api/v2'
 
     def get_transactions(self, address):
+        """Retrieve all transactions for a given address from the explorer."""
         LOG.warning('DO NOT USE CHAIN.SO TO GET ADDRESS TRANSACTIONS!!!!!!!!!!!!!')
         url = '{api_url}/address/{network}/{address}'.format(api_url=self.url, network=self.network, address=address)
         try:
@@ -48,6 +51,7 @@ class ChainSoAPI(ExplorerAPI):
         return {'transactions': txs}
 
     def get_block_by_height(self, height):
+        """Retrieve a block by its height from the blockchain explorer."""
         url = '{api_url}/get_block/{network}/{height}'.format(api_url=self.url, network=self.network, height=height)
         try:
             LOG.info('GET %s' % url)
@@ -74,6 +78,7 @@ class ChainSoAPI(ExplorerAPI):
             return {'error': 'Received invalid data: %s' % data}
 
     def get_latest_block(self):
+        """Retrieve the latest block from the blockchain explorer."""
         url = '{api_url}/get_info/{network}'.format(api_url=self.url, network=self.network)
         try:
             LOG.info('GET %s' % url)
@@ -96,6 +101,7 @@ class ChainSoAPI(ExplorerAPI):
             return {'error': 'Unable to get latest block height from Chain.so'}
 
     def get_utxos(self, address, confirmations=3):
+        """Retrieve unspent transaction outputs (UTXOs) for a given address."""
         url = '{api_url}/get_tx_unspent/{network}/{address}'.format(api_url=self.url, network=self.network, address=address)
         try:
             LOG.info('GET %s' % url)
@@ -124,6 +130,7 @@ class ChainSoAPI(ExplorerAPI):
         return {'utxos': sorted(utxos, key=lambda k: (k['confirmations'], k['output_hash'], k['output_n']))}
 
     def get_block_by_hash(self, block_hash):
+        """Retrieve a block by its hash from the blockchain explorer."""
         url = '{api_url}/get_block/{network}/{block_hash}'.format(api_url=self.url, network=self.network, block_hash=block_hash)
         try:
             LOG.info('GET %s' % url)
@@ -150,6 +157,7 @@ class ChainSoAPI(ExplorerAPI):
             return {'error': 'Received invalid data: %s' % data}
 
     def get_balance(self, address):
+        """Retrieve the balance (final, received, sent) for a given address."""
         url = '{api_url}/address/{network}/{address}'.format(api_url=self.url, network=self.network, address=address)
         try:
             LOG.info('GET %s' % url)
@@ -176,6 +184,7 @@ class ChainSoAPI(ExplorerAPI):
         return {'balance': balance}
 
     def get_prime_input_address(self, txid):
+        """Retrieve the prime input address of a transaction by txid."""
         transaction_data = self.get_transaction(txid=txid)
 
         if 'transaction' in transaction_data and 'inputs' in transaction_data['transaction']:
@@ -192,6 +201,7 @@ class ChainSoAPI(ExplorerAPI):
         return {'error': 'Received invalid data: %s' % transaction_data}
 
     def get_transaction(self, txid):
+        """Retrieve a single transaction by its txid from the explorer."""
         url = '{api_url}/get_tx/{network}/{txid}'.format(api_url=self.url, network=self.network, txid=txid)
         try:
             LOG.info('GET %s' % url)

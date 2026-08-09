@@ -1,4 +1,4 @@
-
+"""Helpers for parsing LLM text generations into structured text and code blocks."""
 from langchain_core.outputs import ChatGeneration
 
 
@@ -40,33 +40,44 @@ def print_prompt(prompt_or_messages):
 
 
 class LLMResult(object):
+    """Container for LLM generation results and metadata."""
     generations: list[list[ChatGeneration]]
 
 class BaseGeneration:
+    """Base class for a single generation output block."""
     def __init__(self, content: str):
+        """Initialize with the generation content string."""
         self.content = content
 
     def to_json(self) -> dict[str, str]:
+        """Serialize the generation to a JSON-encodable dict."""
         return {'content': self.content}
 
 class TextGeneration(BaseGeneration):
+    """A plain-text generation block."""
     def __init__(self, content: str):
+        """Initialize with the text content."""
         super().__init__(content)
 
     def to_json(self) -> dict[str, str]:
+        """Serialize the text generation to a JSON-encodable dict with type 'text'."""
         return {'content': self.content, 'type': 'text'}
 
 
 class CodeGeneration(BaseGeneration):
+    """A code generation block with an associated programming language."""
     def __init__(self, content: str, language: str):
+        """Initialize with code content and language identifier."""
         super().__init__(content)
         self.language = language
 
     def to_json(self) -> dict[str, str]:
+        """Serialize the code generation to a JSON-encodable dict with type 'code'."""
         return {'content': self.content, 'language': self.language, 'type': 'code'}
 
 
 def parse_generation(input_string) -> list[dict[str, str]]:
+    """Parse a markdown-formatted string into a list of text and code block dicts."""
     parsed = []
 
     while '```' in input_string:

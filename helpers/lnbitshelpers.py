@@ -1,3 +1,4 @@
+"""Helper functions for interacting with the LNbits Lightning Network wallet API."""
 import json
 
 import requests

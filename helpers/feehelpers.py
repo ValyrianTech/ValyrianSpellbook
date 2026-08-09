@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Helper functions for retrieving recommended Bitcoin transaction fees."""
 import requests
 
 from helpers.loghelpers import LOG
@@ -7,21 +8,25 @@ from helpers.configurationhelpers import get_use_testnet
 
 
 def get_medium_priority_fee():
+    """Get the medium-priority fee per byte from BlockCypher."""
     data = get_recommended_fee_blockcypher()
     return int(data['medium_priority']/1024)
 
 
 def get_low_priority_fee():
+    """Get the low-priority fee per byte from BlockCypher."""
     data = get_recommended_fee_blockcypher()
     return int(data['low_priority']/1024)
 
 
 def get_high_priority_fee():
+    """Get the high-priority fee per byte from BlockCypher."""
     data = get_recommended_fee_blockcypher()
     return int(data['high_priority']/1024)
 
 
 def get_recommended_fee():
+    """Get recommended fees from bitcoinfees.earn.com."""
     url = 'https://bitcoinfees.earn.com/api/v1/fees/recommended'
 
     try:
@@ -37,6 +42,7 @@ def get_recommended_fee():
 
 
 def get_recommended_fee_blockcypher():
+    """Get recommended fees from BlockCypher API (testnet or mainnet)."""
     url = 'https://api.blockcypher.com/v1/btc/test3' if get_use_testnet() is True else 'https://api.blockcypher.com/v1/btc/main'
 
     try:

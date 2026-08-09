@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Elliptic curve cryptography helpers using Jacobian coordinates for secp256k1."""
 
 # Elliptic curve parameters (secp256k1)
 
@@ -13,24 +14,29 @@ G = (Gx, Gy)
 
 
 def fast_add(a, b):
+    """Add two points on the secp256k1 curve using Jacobian coordinates."""
     return from_jacobian(jacobian_add(to_jacobian(a), to_jacobian(b)))
 
 
 def fast_multiply(a, n):
+    """Multiply a point on the secp256k1 curve by a scalar using Jacobian coordinates."""
     return from_jacobian(jacobian_multiply(to_jacobian(a), n))
 
 
 def from_jacobian(p):
+    """Convert a point from Jacobian to affine coordinates."""
     z = inv(p[2], P)
     return (p[0] * z ** 2) % P, (p[1] * z ** 3) % P
 
 
 def to_jacobian(p):
+    """Convert a point from affine to Jacobian coordinates."""
     o = (p[0], p[1], 1)
     return o
 
 
 def jacobian_add(p, q):
+    """Add two points in Jacobian coordinates on the secp256k1 curve."""
     if not p[1]:
         return q
     if not q[1]:
@@ -55,6 +61,7 @@ def jacobian_add(p, q):
 
 
 def jacobian_multiply(a, n):
+    """Multiply a point in Jacobian coordinates by a scalar."""
     if a[1] == 0 or n == 0:
         return 0, 0, 1
     if n == 1:
@@ -68,6 +75,7 @@ def jacobian_multiply(a, n):
 
 
 def jacobian_double(p):
+    """Double a point in Jacobian coordinates on the secp256k1 curve."""
     if not p[1]:
         return 0, 0, 0
     ysq = (p[1] ** 2) % P
@@ -80,6 +88,7 @@ def jacobian_double(p):
 
 
 def inv(a, n):
+    """Compute the modular inverse of a modulo n using the extended Euclidean algorithm."""
     if a == 0:
         return 0
     lm, hm = 1, 0

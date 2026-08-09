@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Trigger that activates on a recurring schedule."""
+
 import time
 from datetime import datetime
 
@@ -10,7 +12,9 @@ from validators.validators import valid_amount, valid_timestamp
 
 
 class RecurringTrigger(Trigger):
+    """Trigger that activates on a recurring schedule."""
     def __init__(self, trigger_id):
+        """  init  ."""
         super(RecurringTrigger, self).__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.RECURRING
         self.next_activation = None
@@ -19,6 +23,7 @@ class RecurringTrigger(Trigger):
         self.interval = None
 
     def conditions_fulfilled(self):
+        """Conditions fulfilled."""
         if self.interval is None or self.begin_time is None:
             return False
 
@@ -34,6 +39,7 @@ class RecurringTrigger(Trigger):
         return self.next_activation <= int(time.time()) <= self.end_time
 
     def activate(self):
+        """Activate."""
         super(RecurringTrigger, self).activate()
 
         if self.end_time is None or self.next_activation + self.interval <= self.end_time:
@@ -42,6 +48,7 @@ class RecurringTrigger(Trigger):
             self.save()
 
     def configure(self, **config):
+        """Configure."""
         super(RecurringTrigger, self).configure(**config)
 
         if 'interval' in config and valid_amount(config['interval']):
@@ -62,6 +69,7 @@ class RecurringTrigger(Trigger):
         self.multi = True
 
     def json_encodable(self):
+        """Json encodable."""
         ret = super(RecurringTrigger, self).json_encodable()
 
         ret.update({

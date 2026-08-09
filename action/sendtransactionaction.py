@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Action that sends a Bitcoin transaction."""
+
 import operator
 
 from helpers.loghelpers import LOG
@@ -23,7 +25,9 @@ from validators.validators import valid_transaction_type, valid_distribution, va
 
 # Todo add option only_once so the action can not be run multiple times as a safety measure
 class SendTransactionAction(Action):
+    """Action that sends a Bitcoin transaction."""
     def __init__(self, action_id):
+        """  init  ."""
         super(SendTransactionAction, self).__init__(action_id=action_id)
         self.action_type = ActionType.SENDTRANSACTION
 
@@ -451,6 +455,7 @@ class SendTransactionAction(Action):
         return tx_outputs
 
     def get_distribution(self, transaction_type, sending_amount):
+        """Get distribution."""
         if not valid_amount(sending_amount) or sending_amount == 0:
             LOG.error('Unable to get distribution: invalid sending_amount: %s' % sending_amount)
             raise Exception('Unable to get distribution: invalid sending_amount: %s' % sending_amount)
@@ -659,6 +664,7 @@ class SendTransactionAction(Action):
 
 class TransactionInput(object):
     def __init__(self, address, value, output_hash, output_n, confirmations):
+        """  init  ."""
         self.address = address
         self.value = value
         self.output_hash = output_hash
@@ -670,5 +676,6 @@ class TransactionInput(object):
 
 class TransactionOutput(object):
     def __init__(self, address, amount):
+        """  init  ."""
         self.address = address
         self.value = amount

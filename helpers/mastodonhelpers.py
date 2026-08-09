@@ -1,3 +1,4 @@
+"""Helper functions for interacting with the Mastodon social media API."""
 from typing import Union, List
 from helpers.configurationhelpers import get_enable_mastodon, get_mastodon_client_id, get_mastodon_client_secret, get_mastodon_access_token, get_mastodon_api_base_url
 

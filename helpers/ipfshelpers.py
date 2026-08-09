@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Helper functions for interacting with IPFS for data storage and retrieval."""
 from ipfs_dict_chain.IPFS import connect
 from ipfs_dict_chain.IPFSDictChain import IPFSDictChain
 from ipfs_dict_chain.IPFSDict import IPFSDict
@@ -9,6 +10,7 @@ from helpers.configurationhelpers import get_ipfs_api_host, get_ipfs_api_port, g
 
 
 def check_ipfs():
+    """Check if the IPFS node is running and reachable."""
     try:
         connect(host=get_ipfs_api_host(), port=get_ipfs_api_port())
         return True
@@ -18,6 +20,7 @@ def check_ipfs():
 
 
 def add_json(data):
+    """Store a dict as an IPFS dict and return its CID."""
     ipfs_dict = IPFSDict()
     for key, value in data.items():
         ipfs_dict[key] = value
@@ -26,6 +29,7 @@ def add_json(data):
 
 
 def get_json(cid):
+    """Retrieve a dict from IPFS by its CID."""
     ipfs_dict = IPFSDict(cid=cid)
     for key, value in ipfs_dict.items():
         ipfs_dict[key] = value
@@ -35,6 +39,7 @@ def get_json(cid):
 
 # Todo fix this, only used in Notarize
 def add_file(filename):
+    """Add a file to IPFS and return its hash, name, and size."""
     global IPFS_API
 
     try:
@@ -47,6 +52,7 @@ def add_file(filename):
 
 
 class FileMetaData(IPFSDictChain):
+    """IPFS-backed dict chain for storing file metadata (hash, size, publisher, etc.)."""
     def __init__(self, cid=None):
         self.file_name = None
         self.file_ipfs_hash = None

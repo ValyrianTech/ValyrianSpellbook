@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Factory for building and signing Bitcoin transactions."""
+
 import binascii
 import copy
 import hashlib
@@ -124,6 +126,7 @@ def make_custom_tx(private_keys, tx_inputs, tx_outputs, tx_fee=0, op_return_data
 
 
 def num_to_op_push(x):
+    """Encode an integer as a Bitcoin script push-data prefix."""
     x = int(x)
     if 0 <= x <= 75:
         pc = b''
@@ -184,6 +187,7 @@ def add_op_return(msg, tx_hex=None):
 # copied from pybitcointools
 
 def serialize(txobj):
+    """Serialize a transaction object into raw hex or bytes."""
     # if isinstance(txobj, bytes):
     #    txobj = bytes_to_hex_string(txobj)
     o = []
@@ -208,6 +212,7 @@ def serialize(txobj):
 
 
 def deserialize(tx):
+    """Deserialize a raw transaction (hex or bytes) into a transaction object."""
     if isinstance(tx, str) and re.match('^[0-9a-fA-F]*$', tx):
         # tx = bytes(bytearray.fromhex(tx))
         return json_changebase(deserialize(binascii.unhexlify(tx)),
@@ -218,10 +223,12 @@ def deserialize(tx):
     pos = [0]
 
     def read_as_int(bytez):
+        """Read bytez bytes from the transaction as an integer."""
         pos[0] += bytez
         return decode(tx[pos[0] - bytez:pos[0]][::-1], 256)
 
     def read_var_int():
+        """Read a variable-length integer from the transaction."""
         pos[0] += 1
 
         val = from_byte_to_int(tx[pos[0] - 1])
@@ -230,10 +237,12 @@ def deserialize(tx):
         return read_as_int(pow(2, val - 252))
 
     def read_bytes(bytez):
+        """Read bytez raw bytes from the transaction."""
         pos[0] += bytez
         return tx[pos[0] - bytez:pos[0]]
 
     def read_var_string():
+        """Read a variable-length byte string from the transaction."""
         size = read_var_int()
         return read_bytes(size)
 
@@ -259,6 +268,7 @@ def deserialize(tx):
 
 
 def access(obj, prop):
+    """Access a property from a dict or list by key or index."""
     if isinstance(obj, dict):
         if prop in obj:
             return obj[prop]
@@ -271,10 +281,12 @@ def access(obj, prop):
 
 
 def multiaccess(obj, prop):
+    """Apply access() to each element in a list and return the results."""
     return [access(o, prop) for o in obj]
 
 
 def mktx(*args):
+    """Build a raw transaction from inputs and outputs (supports list or variadic args)."""
     # [in0, in1...],[out0, out1...] or in0, in1 ... out0 out1 ...
     ins, outs = [], []
     for arg in args:
@@ -321,6 +333,7 @@ def mktx(*args):
 
 
 def sign(tx, i, priv, hashcode=SIGHASH_ALL):
+    """Sign input i of transaction tx with private key priv using the given hashcode."""
     i = int(i)
     if (not is_python2 and isinstance(re, bytes)) or not re.match('^[0-9a-fA-F]*$', tx):  # pragma: no cover
         return binascii.unhexlify(sign(safe_hexlify(tx), i, priv))
@@ -339,10 +352,12 @@ def sign(tx, i, priv, hashcode=SIGHASH_ALL):
 
 
 def is_inp(arg):
+    """Return True if the argument looks like a transaction input."""
     return len(arg) > 64 or "output" in arg or "outpoint" in arg
 
 
 def json_is_base(obj, base):
+    """Check whether all string values in a JSON-like object use only characters from the given base."""
     if not is_python2 and isinstance(obj, bytes):
         return False
 
@@ -367,6 +382,7 @@ def json_is_base(obj, base):
 
 
 def json_changebase(obj, changer):
+    """Recursively apply a base-conversion function to all string values in a JSON-like object."""
     if isinstance(obj, string_or_bytes_types):
         return changer(obj)
     elif isinstance(obj, int_types) or obj is None:
@@ -378,6 +394,7 @@ def json_changebase(obj, changer):
 
 
 def num_to_var_int(x):
+    """Encode an integer as a Bitcoin variable-length integer."""
     x = int(x)
     if x < 253:
         return from_int_to_byte(x)
@@ -518,6 +535,7 @@ def address_to_script(address):
 
 
 def signature_form(tx, i, script, hashcode=SIGHASH_ALL):
+    """Produce the modified transaction object for signing input i with the given script and hashcode."""
     i, hashcode = int(i), int(hashcode)
     if isinstance(tx, string_or_bytes_types):
         return serialize(signature_form(deserialize(tx), i, script, hashcode))
@@ -544,12 +562,14 @@ def signature_form(tx, i, script, hashcode=SIGHASH_ALL):
 
 if is_python2:  # pragma: no cover
     def serialize_script(script):
+        """Serialize a list of script items into raw bytes (Python 2 branch)."""
         if json_is_base(script, 16):
             return binascii.hexlify(serialize_script(json_changebase(script,
                                                                      lambda x: binascii.unhexlify(x))))
         return ''.join(map(serialize_script_unit, script))
 else:
     def serialize_script(script):
+        """Serialize a list of script items into raw bytes (Python 2 branch)."""
         if json_is_base(script, 16):
             return safe_hexlify(serialize_script(json_changebase(script,
                                                                  lambda x: binascii.unhexlify(x))))
@@ -561,6 +581,7 @@ else:
 
 
 def serialize_script_unit(unit):
+    """Serialize a single script unit (int, None, or bytes) with appropriate push-data prefix."""
     if isinstance(unit, int):
         if unit < 16:
             return from_int_to_byte(unit + 80)
@@ -580,6 +601,7 @@ def serialize_script_unit(unit):
 
 
 def der_encode_sig(v, r, s):
+    """Encode an ECDSA signature (r, s) in DER format."""
     b1, b2 = safe_hexlify(encode(r, 256)), safe_hexlify(encode(s, 256))
 
     if len(b1) and b1[0] in '89abcdef':
@@ -595,11 +617,13 @@ def der_encode_sig(v, r, s):
 
 
 def ecdsa_tx_sign(tx, priv, hashcode=SIGHASH_ALL):
+    """Sign a transaction hash with a private key and return the DER-encoded signature plus hashcode."""
     rawsig = ecdsa_raw_sign(bin_txhash(tx, hashcode), priv)
     return der_encode_sig(*rawsig)+encode(hashcode, 16, 2)
 
 
 def ecdsa_raw_sign(msghash, priv):
+    """Perform a raw ECDSA signature using deterministic k generation."""
 
     z = hash_to_int(msghash)
     k = deterministic_generate_k(msghash, priv)
@@ -628,6 +652,7 @@ def hash_to_int(string):
 
 
 def deterministic_generate_k(msghash, priv):
+    """Deterministically generate the ECDSA nonce k per RFC 6979."""
     v = b'\x01' * 32
     k = b'\x00' * 32
     priv = encode_privkey(priv, 'bin')

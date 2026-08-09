@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""BIP44 wallet helpers for deriving addresses and keys from mnemonic seeds."""
 from bips.BIP32 import bip32_ckd, bip32_privtopub, bip32_master_key, bip32_extract_key, MAINNET_PRIVATE, TESTNET_PRIVATE
 from bips.BIP39 import get_seed
 from bips.BIP44 import get_addresses_from_xpub, get_change_addresses_from_xpub, get_xpriv_keys, get_xpub_keys, get_private_key
@@ -18,7 +19,9 @@ COIN_TYPE = 0
 
 
 class BIP44Wallet(object):
+    """BIP44 hierarchical deterministic wallet for scanning and sweeping addresses."""
     def __init__(self, mnemonic, passphrase="", account=0, n=100):
+        """Initialize the wallet from mnemonic, passphrase, account index, and number of addresses."""
         self.mnemonic = mnemonic
         self.passphrase = passphrase
         self.account = account
@@ -30,6 +33,7 @@ class BIP44Wallet(object):
         self.change_addresses = get_change_addresses_from_xpub(self.xpub_keys[account], self.n)
 
     def scan(self):
+        """Scan the blockchain for unspent outputs on all derived addresses."""
         unspent_outputs = {}
         chunk_size = 200
         k = 0
@@ -68,6 +72,7 @@ class BIP44Wallet(object):
         return unspent_outputs
 
     def sweep(self, to_address):
+        """Sweep all unspent outputs to the given address (not yet implemented)."""
         pass
 
 
@@ -90,6 +95,7 @@ def set_testnet(testnet=False):
 
 
 def show_details(mnemonic, passphrase="", n_accounts=1):
+    """Print and return BIP44 wallet details (seed, xpriv, xpub, addresses) for inspection."""
     seed = hexlify(get_seed(mnemonic=mnemonic, passphrase=passphrase))
     print('Seed:\t\t\t\t', seed)
 

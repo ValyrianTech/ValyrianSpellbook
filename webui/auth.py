@@ -36,6 +36,7 @@ def require_auth(func):
     """Decorator to require authentication for a route"""
     @wraps(func)
     async def wrapper(request: Request, *args, **kwargs):
+        """Check authentication before calling the wrapped route handler."""
         if not is_authenticated(request):
             return RedirectResponse(url="/login", status_code=303)
         return await func(request, *args, **kwargs)

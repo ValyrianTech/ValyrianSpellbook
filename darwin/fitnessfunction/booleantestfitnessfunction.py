@@ -1,14 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Boolean test fitness function for Darwin."""
+
 from fitnessfunction import FitnessFunction
 from model.booleantest import BooleanTest
 
 
 class BooleanTestFitnessFunction(FitnessFunction):
+    """Boolean test fitness function for Darwin."""
     def __init__(self):
+        """  init  ."""
         super(BooleanTestFitnessFunction, self).__init__()
 
     def fitness(self, model):
+        """Fitness."""
 
         if not isinstance(model, BooleanTest):
             raise Exception('model for fitness function is not a BooleanTest!')

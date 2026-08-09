@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""String test Rosetta Stone for Darwin."""
+
 from rosettastone import RosettaStone
 
 from genome import Genome
@@ -9,8 +11,10 @@ from encodingtype import EncodingType
 
 
 class StringTestRosettaStone(RosettaStone):
+    """String test Rosetta Stone for Darwin."""
 
     def __init__(self, name=None):
+        """  init  ."""
         super(StringTestRosettaStone, self).__init__(name)
         
 
@@ -38,9 +42,11 @@ class StringTestRosettaStone(RosettaStone):
         return genome
 
     def model_to_genome(self, model):
+        """Model to genome."""
         pass
 
     def genome_to_model(self, genome):
+        """Genome to model."""
         model = {'id': 'stringtest_%s' % genome.id(),
                  'name': 'stringtest',
                  'HelloWorld': genome.chromosomes[0].genes[0].data,

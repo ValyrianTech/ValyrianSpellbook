@@ -1,3 +1,4 @@
+"""DeepSeek LLM client implementation using the OpenAI-compatible API."""
 import json
 import sys
 import time
@@ -12,13 +13,16 @@ from .textgenerationhelpers import parse_generation
 
 
 class DeepSeekLLM(LLMInterface):
+    """DeepSeek LLM client with streaming, reasoning content, and thinking level support."""
     def __init__(self, model_name: str, api_key: str):
+        """Initialize the DeepSeek client with model name and API key."""
         self.model_name = model_name
         self.api_key = api_key
         super().__init__(model_name)
         LOG.info(f'DeepSeek initialized for model {self.model_name}')
 
     def get_completion_text(self, messages, stop=None, **kwargs):
+        """Generate completion text via DeepSeek streaming API with retry logic."""
         LOG.info(f'Generating with DeepSeek with model {self.model_name}')
         LOG.info(f'kwargs: {kwargs}')
         LOG.info(f'stop: {stop}')

@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Helper functions for converting between Bitcoin units."""
 
 
 def btc2satoshis(btc):
+    """Convert a BTC amount (string, int, or float) to an integer number of satoshis."""
     if isinstance(btc, str):
         if '.' in btc:
             parts = btc.split('.')

@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 
+"""Constants for action types used in the Spellbook."""
+
 class ActionType(object):
     COMMAND = 'Command'
     SPAWNPROCESS = 'SpawnProcess'

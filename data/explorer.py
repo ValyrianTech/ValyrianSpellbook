@@ -2,7 +2,10 @@
 # -*- coding: utf-8 -*-
 
 
+"""Base blockchain explorer abstraction with priority fallback."""
+
 class ExplorerType(object):
+    """Base blockchain explorer abstraction with priority fallback."""
     BLOCKCHAIN_INFO = 'Blockchain.info'
     BLOCKTRAIL_COM = 'Blocktrail.com'
     INSIGHT = 'Insight'

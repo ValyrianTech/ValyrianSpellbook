@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Chromosome representation for the Darwin evolutionary framework."""
+
 import random
 
 from darwin.gene import Gene, BooleanGene, IntegerGene, FloatGene, StringGene
@@ -9,7 +11,9 @@ from darwin.encodingtype import EncodingType
 
 
 class Chromosome(object):
+    """Chromosome representation for the Darwin evolutionary framework."""
     def __init__(self, chromosome_id, encoding_type, n_genes=None):
+        """  init  ."""
         self.id = chromosome_id
         self.n_genes = n_genes
         self.genes = []
@@ -20,12 +24,14 @@ class Chromosome(object):
         self.charset = None
 
     def add_gene(self, gene):
+        """Add gene."""
         if not isinstance(gene, Gene):
             raise Exception('Can not add genome to population: unexpected type: %s' % type(gene))
 
         self.genes.append(gene)
 
     def init_genes(self):
+        """Init genes."""
         # If a fixed number of genes is set, init that amount of genes, otherwise init a random number of genes
         if isinstance(self.n_genes, int) and self.n_genes > 0:
             number_of_genes = self.n_genes
@@ -64,6 +70,7 @@ class Chromosome(object):
             self.add_gene(gene=gene)
 
     def info(self):
+        """Info."""
         info = 'Encoding: %s\n' % self.encoding_type
 
         for i, gene in enumerate(self.genes):
@@ -72,6 +79,7 @@ class Chromosome(object):
         return info
 
     def apply_mutations(self, mutation_chance, multiplier=1.0):
+        """Apply mutations."""
         if mutation_chance.duplication * multiplier > random.uniform(0, 100):
             ChromosomeMutation(chromosome=self).duplication()
 
@@ -91,6 +99,7 @@ class Chromosome(object):
             ChromosomeMutation(chromosome=self).merge()
 
     def to_dict(self):
+        """To dict."""
         return {'id': self.id,
                 'n_genes': self.n_genes,
                 'genes': [gene.data for gene in self.genes],
@@ -100,9 +109,11 @@ class Chromosome(object):
                 'charset': self.charset}
 
     def value(self):
+        """Value."""
         return self.genes[0].data
 
     def average(self):
+        """Average."""
         if self.encoding_type not in [EncodingType.INTEGER, EncodingType.FLOAT]:
             raise Exception('Invalid encoding type to calculate average value of genes: %s' % self.encoding_type)
 
@@ -110,22 +121,26 @@ class Chromosome(object):
         return total/len(self.genes) if len(self.genes) > 0 else None
 
     def lowest(self):
+        """Lowest."""
         if self.encoding_type not in [EncodingType.INTEGER, EncodingType.FLOAT]:
             raise Exception('Invalid encoding type to calculate lowest value of genes: %s' % self.encoding_type)
 
         return min([gene.data for gene in self.genes])
 
     def highest(self):
+        """Highest."""
         if self.encoding_type not in [EncodingType.INTEGER, EncodingType.FLOAT]:
             raise Exception('Invalid encoding type to calculate highest value of genes: %s' % self.encoding_type)
 
         return max([gene.data for gene in self.genes])
 
     def concatenated(self):
+        """Concatenated."""
         if self.encoding_type not in [EncodingType.STRING]:
             raise Exception('Invalid encoding type to concatenate values of genes: %s' % self.encoding_type)
 
         return ''.join([gene.data for gene in self.genes])
 
     def list(self):
+        """List."""
         return [gene.data for gene in self.genes]

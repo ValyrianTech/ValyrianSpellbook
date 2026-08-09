@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Main Darwin evolutionary algorithm orchestrator."""
+
 import argparse
 import os
 import sys

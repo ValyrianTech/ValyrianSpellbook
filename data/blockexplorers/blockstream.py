@@ -10,12 +10,15 @@ from data.explorer_api import ExplorerAPI
 
 
 class BlockstreamAPI(ExplorerAPI):
+    """Blockstream.info block explorer API client."""
     def __init__(self, url='', key='', testnet=False):
+        """Initialize the API client with URL, optional key, and testnet flag."""
         super(BlockstreamAPI, self).__init__(url=url, testnet=testnet)
         # Set the url of the api depending on testnet or mainnet
         self.url = 'https://blockstream.info/testnet/api' if self.testnet is True else 'https://blockstream.info/api'
 
     def get_latest_block(self):
+        """Retrieve the latest block from the blockchain explorer."""
         url = self.url + '/blocks/tip/hash'
         LOG.info('GET %s' % url)
         try:
@@ -28,6 +31,7 @@ class BlockstreamAPI(ExplorerAPI):
         return self.get_block_by_hash(block_hash=block_hash)
 
     def get_block_by_hash(self, block_hash):
+        """Retrieve a block by its hash from the blockchain explorer."""
         url = self.url + '/block/{hash}'.format(hash=block_hash)
         LOG.info('GET %s' % url)
         try:
@@ -48,6 +52,7 @@ class BlockstreamAPI(ExplorerAPI):
             return {'error': 'Received invalid data: %s' % data}
 
     def get_block_by_height(self, height):
+        """Retrieve a block by its height from the blockchain explorer."""
         url = self.url + '/block-height/{height}'.format(height=height)
         LOG.info('GET %s' % url)
         try:
@@ -60,6 +65,7 @@ class BlockstreamAPI(ExplorerAPI):
         return self.get_block_by_hash(block_hash=block_hash)
 
     def get_transactions(self, address):
+        """Retrieve all transactions for a given address from the explorer."""
         url = self.url + '/blocks/tip/height'
         LOG.info('GET %s' % url)
         try:
@@ -103,6 +109,7 @@ class BlockstreamAPI(ExplorerAPI):
         return {'transactions': txs}
 
     def get_balance(self, address):
+        """Retrieve the balance (final, received, sent) for a given address."""
         url = self.url + '/address/{address}'.format(address=address)
         LOG.info('GET %s' % url)
         try:
@@ -122,6 +129,7 @@ class BlockstreamAPI(ExplorerAPI):
         return {'balance': balance}
 
     def get_transaction(self, txid):
+        """Retrieve a single transaction by its txid from the explorer."""
         url = self.url + '/tx/{txid}'.format(txid=txid)
         LOG.info('GET %s' % url)
         try:
@@ -136,6 +144,7 @@ class BlockstreamAPI(ExplorerAPI):
         return {'transaction': tx.json_encodable()}
 
     def parse_transaction(self, data, latest_block_height=None):
+        """Parse raw transaction data from the explorer into a TX object."""
         if latest_block_height is None:
             url = self.url + '/blocks/tip/height'
             LOG.info('GET %s' % url)
@@ -178,10 +187,12 @@ class BlockstreamAPI(ExplorerAPI):
         return tx
 
     def get_prime_input_address(self, txid):
+        """Retrieve the prime input address of a transaction by txid."""
         transaction_data = self.get_transaction(txid=txid)
         return {'prime_input_address': transaction_data['transaction']['prime_input_address']} if 'prime_input_address' in transaction_data['transaction'] else {'error': 'Received invalid data: %s' % transaction_data}
 
     def get_utxos(self, address, confirmations=3):
+        """Retrieve unspent transaction outputs (UTXOs) for a given address."""
         url = self.url + '/blocks/tip/height'
         LOG.info('GET %s' % url)
         try:
@@ -217,6 +228,7 @@ class BlockstreamAPI(ExplorerAPI):
         return {'utxos': sorted(utxos, key=lambda k: (k['confirmations'], k['output_hash'], k['output_n']))}
 
     def push_tx(self, tx):
+        """Broadcast a signed raw transaction to the blockchain network."""
         url = self.url + '/broadcast?tx={tx}'.format(tx=tx)
         LOG.info('GET %s' % url)
         try:

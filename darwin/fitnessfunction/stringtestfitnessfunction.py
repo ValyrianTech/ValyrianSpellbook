@@ -1,14 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""String test fitness function for Darwin."""
+
 from fitnessfunction import FitnessFunction
 from model.stringtest import StringTest
 
 
 class StringTestFitnessFunction(FitnessFunction):
+    """String test fitness function for Darwin."""
     def __init__(self):
+        """  init  ."""
         super(StringTestFitnessFunction, self).__init__()
 
     def fitness(self, model):
+        """Fitness."""
 
         if not isinstance(model, StringTest):
             raise Exception('model for fitness function is not a StringTest!')

@@ -1,3 +1,8 @@
+"""Thinking level mappings for LLM reasoning verbosity control across providers.
+
+Maps abstract levels (off, minimal, low, medium, high, xhigh) to
+provider-specific parameters for OpenAI, Anthropic, Google, DeepSeek, Ollama, and OpenRouter.
+"""
 # Thinking Levels - controls reasoning verbosity for models that support it
 # Maps abstract levels to provider-specific parameters
 

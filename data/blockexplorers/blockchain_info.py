@@ -9,12 +9,15 @@ from data.explorer_api import ExplorerAPI
 
 
 class BlockchainInfoAPI(ExplorerAPI):
+    """Blockchain.info block explorer API client."""
     def __init__(self, url='', key='', testnet=False):
+        """Initialize the API client with URL, optional key, and testnet flag."""
         super(BlockchainInfoAPI, self).__init__(url=url, testnet=testnet)
         # Set the url of the api depending on testnet or mainnet
         self.url = 'https://testnet.blockchain.info' if self.testnet is True else 'https://blockchain.info'
 
     def get_latest_block(self):
+        """Retrieve the latest block from the blockchain explorer."""
         latest_block = {}
         url = '{api_url}/latestblock'.format(api_url=self.url)
         try:
@@ -52,6 +55,7 @@ class BlockchainInfoAPI(ExplorerAPI):
             return {'error': 'Received invalid data: %s' % data}
 
     def get_block_by_hash(self, block_hash):
+        """Retrieve a block by its hash from the blockchain explorer."""
         url = '{api_url}/rawblock/{hash}'.format(api_url=self.url, hash=block_hash)
         try:
             LOG.info('GET %s' % url)
@@ -72,6 +76,7 @@ class BlockchainInfoAPI(ExplorerAPI):
             return {'error': 'Received invalid data: %s' % data}
 
     def get_block_by_height(self, height):
+        """Retrieve a block by its height from the blockchain explorer."""
         url = '{api_url}/block-height/{height}?format=json'.format(api_url=self.url, height=height)
         try:
             LOG.info('GET %s' % url)
@@ -95,6 +100,7 @@ class BlockchainInfoAPI(ExplorerAPI):
         return {'error': 'Received invalid data: %s' % data}
 
     def get_transactions(self, address):
+        """Retrieve all transactions for a given address from the explorer."""
         limit = 50  # max number of tx given by blockchain.info is 50
         n_tx = None
         transactions = []
@@ -167,6 +173,7 @@ class BlockchainInfoAPI(ExplorerAPI):
             return {'transactions': txs}
 
     def get_balance(self, address):
+        """Retrieve the balance (final, received, sent) for a given address."""
         url = '{api_url}/q/addressbalance/{address}?confirmations=1'.format(api_url=self.url, address=address)
         try:
             LOG.info('GET %s' % url)
@@ -200,6 +207,7 @@ class BlockchainInfoAPI(ExplorerAPI):
         return {'balance': balance}
 
     def get_transaction(self, txid):
+        """Retrieve a single transaction by its txid from the explorer."""
         url = '{api_url}/rawtx/{txid}'.format(api_url=self.url, txid=txid)
         try:
             LOG.info('GET %s' % url)
@@ -241,6 +249,7 @@ class BlockchainInfoAPI(ExplorerAPI):
         return {'transaction': tx.json_encodable()}
 
     def get_prime_input_address(self, txid):
+        """Retrieve the prime input address of a transaction by txid."""
         url = '{api_url}/rawtx/{txid}'.format(api_url=self.url, txid=txid)
         try:
             LOG.info('GET %s' % url)
@@ -268,6 +277,7 @@ class BlockchainInfoAPI(ExplorerAPI):
         return {'error': 'Received invalid data: %s' % data}
 
     def get_utxos(self, address, confirmations=3):
+        """Retrieve unspent transaction outputs (UTXOs) for a given address."""
         limit = 1000  # max number of utxo given by blockchain.info is 1000, there is no 'offset' parameter available
         url = '{api_url}/unspent?active={address}&limit={limit}&confirmations={confirmations}'.format(api_url=self.url, address=address, limit=limit, confirmations=confirmations)
         try:
@@ -299,6 +309,7 @@ class BlockchainInfoAPI(ExplorerAPI):
         return {'utxos': sorted(utxos, key=lambda k: (k['confirmations'], k['output_hash'], k['output_n']))}
 
     def push_tx(self, tx):
+        """Broadcast a signed raw transaction to the blockchain network."""
         url = '{api_url}/pushtx'.format(api_url=self.url)
         LOG.info('POST %s' % url)
         try:

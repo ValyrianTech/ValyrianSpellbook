@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Genome representation for the Darwin evolutionary framework."""
+
 from darwin.chromosome import Chromosome
 
 import hashlib
@@ -9,7 +11,9 @@ import simplejson
 
 
 class Genome(object):
+    """Genome representation for the Darwin evolutionary framework."""
     def __init__(self):
+        """  init  ."""
         self.chromosomes = {}
         self.fitness = None
 
@@ -20,6 +24,7 @@ class Genome(object):
     #     self.chromosomes.append(chromosome)
 
     def add_chromosome(self, chromosome_id, encoding_type, min_value=None, max_value=None, charset=None, n_genes=None):
+        """Add chromosome."""
         chromosome = Chromosome(chromosome_id=chromosome_id, encoding_type=encoding_type, n_genes=n_genes)
 
         if min_value is not None:
@@ -36,11 +41,13 @@ class Genome(object):
         self.chromosomes[chromosome_id] = chromosome
 
     def init_with_random_data(self):
+        """Init with random data."""
         for chromosome_id, chromosome in self.chromosomes.items():
             for gene in chromosome.genes:
                 gene.set_random_data()
 
     def info(self):
+        """Info."""
         info = 'Genome id: %s' % self.id()
 
         for chromosome_id, chromosome in self.chromosomes.items():
@@ -49,6 +56,7 @@ class Genome(object):
         return info
 
     def id(self):
+        """Id."""
         data_string = ''
         for i, (chromosome_id, chromosome) in enumerate(self.chromosomes.items()):
             data_string += '|%s|' % i
@@ -58,6 +66,7 @@ class Genome(object):
         return binascii.hexlify(hashlib.sha256(simplejson.dumps(data_string, sort_keys=True).encode('utf-8')).digest()).decode()
 
     def to_dict(self):
+        """To dict."""
         return {'chromosomes': {chromosome_id: chromosome.to_dict() for chromosome_id, chromosome in self.chromosomes.items()},
                 'fitness': self.fitness,
                 'id': self.id()}

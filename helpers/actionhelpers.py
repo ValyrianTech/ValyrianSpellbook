@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Helper functions for creating, configuring, and running actions."""
 
 import glob
 import os

@@ -12,13 +12,16 @@ from data.explorer_api import ExplorerAPI
 
 
 class BlocktrailComAPI(ExplorerAPI):
+    """Blocktrail.com block explorer API client."""
     def __init__(self, url='', key='', testnet=False):
+        """Initialize the API client with URL, optional key, and testnet flag."""
         super(BlocktrailComAPI, self).__init__(key=key, testnet=testnet)
 
         # Set the url of the api depending on testnet or mainnet
         self.url = 'https://api.blocktrail.com/v1/tBTC' if self.testnet is True else 'https://api.blocktrail.com/v1/BTC'
 
     def get_latest_block(self):
+        """Retrieve the latest block from the blockchain explorer."""
         url = '{api_url}/block/latest?api_key={api_key}'.format(api_url=self.url, api_key=self.key)
         try:
             LOG.info('GET %s' % url)
@@ -34,6 +37,7 @@ class BlocktrailComAPI(ExplorerAPI):
             return {'error': 'Received invalid data: %s' % data}
 
     def get_block_by_height(self, height):
+        """Retrieve a block by its height from the blockchain explorer."""
         url = '{api_url}/block/{height}?api_key={api_key}'.format(api_url=self.url, height=height, api_key=self.key)
         try:
             LOG.info('GET %s' % url)
@@ -55,6 +59,7 @@ class BlocktrailComAPI(ExplorerAPI):
             return {'error': 'Received invalid data: %s' % data}
 
     def get_block_by_hash(self, block_hash):
+        """Retrieve a block by its hash from the blockchain explorer."""
         url = '{api_url}/block/{hash}?api_key={api_key}'.format(api_url=self.url, hash=block_hash, api_key=self.key)
         try:
             LOG.info('GET %s' % url)
@@ -76,6 +81,7 @@ class BlocktrailComAPI(ExplorerAPI):
             return {'error': 'Received invalid data: %s' % data}
 
     def get_transactions(self, address):
+        """Retrieve all transactions for a given address from the explorer."""
         limit = 200  # max 200 for Blocktrail.com
         n_tx = None
         transactions = []
@@ -148,6 +154,7 @@ class BlocktrailComAPI(ExplorerAPI):
             return {'transactions': txs}
 
     def get_balance(self, address):
+        """Retrieve the balance (final, received, sent) for a given address."""
         url = '{api_url}/address/{address}?api_key={api_key}'.format(api_url=self.url, address=address, api_key=self.key)
         try:
             LOG.info('GET %s' % url)
@@ -166,6 +173,7 @@ class BlocktrailComAPI(ExplorerAPI):
             return {'error': 'Received invalid data: %s' % data}
 
     def get_transaction(self, txid):
+        """Retrieve a single transaction by its txid from the explorer."""
         url = '{api_url}/transaction/{txid}?api_key={api_key}'.format(api_url=self.url, txid=txid, api_key=self.key)
         try:
             LOG.info('GET %s' % url)
@@ -208,6 +216,7 @@ class BlocktrailComAPI(ExplorerAPI):
         return {'transaction': tx.json_encodable()}
 
     def get_prime_input_address(self, txid):
+        """Retrieve the prime input address of a transaction by txid."""
         url = '{api_url}/transaction/{txid}?api_key={api_key}'.format(api_url=self.url, txid=txid, api_key=self.key)
         try:
             LOG.info('GET %s' % url)
@@ -231,6 +240,7 @@ class BlocktrailComAPI(ExplorerAPI):
         return {'error': 'Received invalid data: %s' % data}
 
     def get_utxos(self, address, confirmations=3):
+        """Retrieve unspent transaction outputs (UTXOs) for a given address."""
         limit = 200  # max 200 for Blocktrail.com
         n_outputs = None
         unspent_outputs = []

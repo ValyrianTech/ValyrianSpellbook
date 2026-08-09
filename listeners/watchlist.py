@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Watchlist management for addresses being monitored by listeners."""
+
 import simplejson
 import argparse
 
@@ -8,6 +10,7 @@ WATCHLIST_FILE = 'watchlist.json'
 
 
 class Watchlist(object):
+    """Watchlist management for addresses being monitored by listeners."""
     def __init__(self):
         """
         Constructor for the Watchlist class

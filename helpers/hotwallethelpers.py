@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Helper functions for managing the encrypted hot wallet (keys, addresses, seeds)."""
 
 import os
 import getpass
@@ -14,6 +15,7 @@ HOT_WALLET_PASSWORD = None
 
 
 def get_hot_wallet():
+    """Decrypt and return the hot wallet data, prompting for password if needed."""
     global HOT_WALLET_PASSWORD
     wallet_dir, wallet_id = get_wallet_dir(), get_default_wallet()
 
@@ -39,17 +41,20 @@ def get_hot_wallet():
 
 
 def prompt_decryption_password():
+    """Prompt the user for the hot wallet decryption password."""
     global HOT_WALLET_PASSWORD
     # if this is running in pycharm console, make sure 'Emulate terminal in output console' is checked in the configuration
     HOT_WALLET_PASSWORD = getpass.getpass('Enter the password to decrypt the hot wallet: ')
 
 
 def get_address_from_wallet(account, index):
+    """Derive a Bitcoin address from the hot wallet for the given account and index."""
     xpub_key = get_xpub_key_from_wallet(account)
     return get_address_from_xpub(xpub=xpub_key, i=index)
 
 
 def get_xpub_key_from_wallet(account):
+    """Derive the xpub key for the given account from the hot wallet."""
     hot_wallet = get_hot_wallet()
     xpub_key = get_xpub_key(mnemonic=' '.join(hot_wallet['mnemonic']),
                             passphrase=hot_wallet['passphrase'],
@@ -62,6 +67,7 @@ def get_xpub_key_from_wallet(account):
 
 
 def get_xpriv_key_from_wallet(account):
+    """Derive the xpriv key for the given account from the hot wallet."""
     hot_wallet = get_hot_wallet()
     xpriv_key = get_xpriv_key(mnemonic=' '.join(hot_wallet['mnemonic']),
                               passphrase=hot_wallet['passphrase'],
@@ -74,11 +80,13 @@ def get_xpriv_key_from_wallet(account):
 
 
 def get_private_key_from_wallet(account, index):
+    """Derive the private key for the given account and index from the hot wallet."""
     xpriv_key = get_xpriv_key_from_wallet(account=account)
     return get_private_key(xpriv=xpriv_key, i=index)
 
 
 def get_single_address_private_key(address):
+    """Retrieve the private key for a single address stored directly in the hot wallet."""
     hot_wallet = get_hot_wallet()
 
     if address in hot_wallet:
@@ -86,6 +94,7 @@ def get_single_address_private_key(address):
 
 
 def find_address_in_wallet(address, accounts=1, indexes=20):
+    """Search the hot wallet for the given address across accounts and indexes."""
     hot_wallet = get_hot_wallet()
 
     for account in range(accounts):
@@ -102,17 +111,20 @@ def find_address_in_wallet(address, accounts=1, indexes=20):
 
 
 def find_single_address_in_wallet(address):
+    """Check if a single address exists directly in the hot wallet."""
     hot_wallet = get_hot_wallet()
 
     return hot_wallet[address] if address in hot_wallet else None
 
 
 def hot_wallet_seed():
+    """Derive the seed from the hot wallet mnemonic and passphrase."""
     hot_wallet = get_hot_wallet()
     return get_seed(mnemonic=' '.join(hot_wallet['mnemonic']), passphrase=hot_wallet['passphrase'])
 
 
 def find_account_by_xpub(xpub, n=20):
+    """Find the account index that matches the given xpub by scanning up to n accounts."""
     hot_wallet = get_hot_wallet()
 
     for i in range(n):

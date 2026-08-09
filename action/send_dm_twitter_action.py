@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Action that sends a direct message on Twitter."""
+
 from typing import Union
 
 from helpers.loghelpers import LOG
@@ -9,7 +11,9 @@ from helpers.twitterhelpers import create_direct_message
 
 
 class SendDMTwitterAction(Action):
+    """Action that sends a direct message on Twitter."""
     def __init__(self, action_id: str) -> None:
+        """  init  ."""
         super(SendDMTwitterAction, self).__init__(action_id=action_id)
         self.action_type = ActionType.SEND_DM_TWITTER
 
