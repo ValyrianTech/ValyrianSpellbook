@@ -178,7 +178,7 @@ def get_llm(model_name: str = 'default_model', temperature: float = 0.0):
     return llm
 
 
-def get_llm_api_key(model_name: str, server_type: str):
+def get_llm_api_key(model_name: str, server_type: str) -> str | None:
     """
     Get API key for a specific LLM model and server type.
     
@@ -188,11 +188,11 @@ def get_llm_api_key(model_name: str, server_type: str):
     3. Fallback to .env file (backup source)
     
     Args:
-        model_name: The specific model name
-        server_type: The server/provider type (OpenAI, Anthropic, Google, etc.)
+        model_name (str): The specific model name
+        server_type (str): The server/provider type (OpenAI, Anthropic, Google, etc.)
     
     Returns:
-        str or None: The API key if found, None otherwise
+        str | None: The API key if found, None otherwise.
     """
     LOG.info('Getting API key for ' + model_name)
     
@@ -254,8 +254,8 @@ def _ensure_env_file_complete(env_file_path: str, env_var_mapping: Dict[str, str
     Auto-populate missing entries with empty values.
     
     Args:
-        env_file_path: Path to the .env file
-        env_var_mapping: Dictionary mapping server types to env var names
+        env_file_path (str): Path to the .env file
+        env_var_mapping (Dict[str, str]): Dictionary mapping server types to env var names
     """
     # Create .env file if it doesn't exist
     if not os.path.exists(env_file_path):
