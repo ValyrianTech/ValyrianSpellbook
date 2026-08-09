@@ -6,7 +6,7 @@ API Client for communicating with the Valyrian Spellbook REST API (Bottle server
 
 import time
 import requests
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any
 
 import sys
 import os
