@@ -19,9 +19,12 @@ COIN_TYPE = 0
 
 
 class BIP44Wallet(object):
-    """BIP44 hierarchical deterministic wallet for scanning and sweeping addresses."""
+    """
+    BIP44 hierarchical deterministic wallet for scanning and sweeping addresses.
+
+    Initializes the wallet from mnemonic, passphrase, account index, and number of addresses.
+    """
     def __init__(self, mnemonic, passphrase="", account=0, n=100):
-        """Initialize the wallet from mnemonic, passphrase, account index, and number of addresses."""
         self.mnemonic = mnemonic
         self.passphrase = passphrase
         self.account = account

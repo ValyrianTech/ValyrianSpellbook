@@ -10,7 +10,6 @@ class FitnessFunction(object):
     __metaclass__ = ABCMeta
 
     def __init__(self, **kwargs):
-        """  init  ."""
         self.results_file = None
 
     @abstractmethod
@@ -30,6 +29,5 @@ class FitnessFunction(object):
 class Fitness(object):
     """Holds a fitness value and associated data for a genome."""
     def __init__(self, value, data):
-        """  init  ."""
         self.value = value
         self.data = data

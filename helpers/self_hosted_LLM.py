@@ -31,9 +31,12 @@ def get_default_llm_host():
 
 
 class SelfHostedLLM(LLMInterface):
-    """Self-hosted LLM client for Oobabooga/text-generation-webui with SSE streaming."""
+    """
+    Self-hosted LLM client for Oobabooga/text-generation-webui with SSE streaming.
+
+    Initializes the self-hosted LLM with host, port, and optional mixture-of-experts routing.
+    """
     def __init__(self, host: str | None = None, port: int | None = None, mixture_of_experts=False, model_name: str | None = None):
-        """Initialize the self-hosted LLM with host, port, and optional mixture-of-experts routing."""
         super().__init__(model_name if model_name is not None else '')
         if host is None:
             host = get_default_llm_host()

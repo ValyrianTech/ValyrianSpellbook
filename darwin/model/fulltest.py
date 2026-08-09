@@ -8,7 +8,6 @@ from model import Model
 class FullTest(Model):
     """Full test model for Darwin."""
     def __init__(self, name=None):
-        """  init  ."""
         super(FullTest, self).__init__(name=name)
         self.SingleTrue = None
         self.SingleFalse = None

@@ -10,7 +10,6 @@ from .triggertype import TriggerType
 class HTTPDeleteRequestTrigger(Trigger):
     """Trigger that activates on HTTP DELETE requests."""
     def __init__(self, trigger_id):
-        """  init  ."""
         super(HTTPDeleteRequestTrigger, self).__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.HTTPDELETEREQUEST
         self.json = None

@@ -14,7 +14,6 @@ from validators.validators import valid_amount, valid_timestamp
 class RecurringTrigger(Trigger):
     """Trigger that activates on a recurring schedule."""
     def __init__(self, trigger_id):
-        """  init  ."""
         super(RecurringTrigger, self).__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.RECURRING
         self.next_activation = None

@@ -11,9 +11,12 @@ from .textgenerationhelpers import parse_generation
 
 
 class OllamaLLM(LLMInterface):
-    """Ollama LLM client using the OpenAI-compatible API."""
+    """
+    Ollama LLM client using the OpenAI-compatible API.
+
+    Initializes the Ollama client with model name, host, and optional port.
+    """
     def __init__(self, model_name: str, host: str, port: int | None = None):
-        """Initialize the Ollama client with model name, host, and optional port."""
         self.model_name = model_name
         self.host = host
         self.port = port

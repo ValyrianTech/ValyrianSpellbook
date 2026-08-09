@@ -11,9 +11,12 @@ from .textgenerationhelpers import parse_generation
 
 
 class GroqLLM(LLMInterface):
-    """Groq LLM client with streaming and reasoning content support."""
+    """
+    Groq LLM client with streaming and reasoning content support.
+
+    Initializes the Groq client with model name and optional API key.
+    """
     def __init__(self, model_name: str, api_key: str = ''):
-        """Initialize the Groq client with model name and optional API key."""
         super().__init__(model_name)
 
         self.client = Groq(api_key=api_key)

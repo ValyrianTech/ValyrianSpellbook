@@ -13,9 +13,12 @@ from data.explorer_api import ExplorerAPI
 
 
 class ChainSoAPI(ExplorerAPI):
-    """Chain.so block explorer API client."""
+    """
+    Chain.so block explorer API client.
+
+    Initializes the API client with URL, optional key, and testnet flag.
+    """
     def __init__(self, url='', key='', testnet=False):
-        """Initialize the API client with URL, optional key, and testnet flag."""
         super(ChainSoAPI, self).__init__(url=url, testnet=testnet)
         # Set the network to use in the api calls (mainnet or testnet)
         self.network = 'BTCTEST' if self.testnet else 'BTC'

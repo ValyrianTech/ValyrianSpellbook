@@ -27,7 +27,6 @@ from validators.validators import valid_transaction_type, valid_distribution, va
 class SendTransactionAction(Action):
     """Action that sends a Bitcoin transaction."""
     def __init__(self, action_id):
-        """  init  ."""
         super(SendTransactionAction, self).__init__(action_id=action_id)
         self.action_type = ActionType.SENDTRANSACTION
 
@@ -665,7 +664,6 @@ class SendTransactionAction(Action):
 class TransactionInput(object):
     """Represents a transaction input with address, value, output hash, and confirmations."""
     def __init__(self, address, value, output_hash, output_n, confirmations):
-        """  init  ."""
         self.address = address
         self.value = value
         self.output_hash = output_hash
@@ -678,6 +676,5 @@ class TransactionInput(object):
 class TransactionOutput(object):
     """Represents a transaction output with an address and an amount in satoshis."""
     def __init__(self, address, amount):
-        """  init  ."""
         self.address = address
         self.value = amount

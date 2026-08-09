@@ -12,7 +12,6 @@ from .actiontype import ActionType
 class CommandAction(Action):
     """Action that executes a system command."""
     def __init__(self, action_id):
-        """  init  ."""
         super(CommandAction, self).__init__(action_id=action_id)
         self.action_type = ActionType.COMMAND
         self.run_command = None

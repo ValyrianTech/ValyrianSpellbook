@@ -6,7 +6,6 @@
 class Model(object):
     """Base model class for Darwin."""
     def __init__(self, name=None, **kwargs):
-        """  init  ."""
         self.name = name
         self.description = ''
 

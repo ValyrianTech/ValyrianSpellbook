@@ -11,7 +11,6 @@ from .actiontype import ActionType
 class RevealSecretAction(Action):
     """Action that reveals a pre-configured secret."""
     def __init__(self, action_id):
-        """  init  ."""
         super(RevealSecretAction, self).__init__(action_id=action_id)
         self.action_type = ActionType.REVEALSECRET
         self.reveal_text = None

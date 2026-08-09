@@ -12,7 +12,6 @@ from validators.validators import valid_address, valid_amount
 class ReceivedTrigger(Trigger):
     """Trigger that activates when funds are received at an address."""
     def __init__(self, trigger_id):
-        """  init  ."""
         super(ReceivedTrigger, self).__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.RECEIVED
         self.address = None

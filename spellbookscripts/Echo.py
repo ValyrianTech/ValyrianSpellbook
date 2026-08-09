@@ -11,7 +11,6 @@ from helpers.loghelpers import LOG
 class Echo(SpellbookScript):
     """Example Spellbook script that echoes trigger data back as an HTTP response."""
     def __init__(self, *args, **kwargs):
-        """  init  ."""
         super(Echo, self).__init__(*args, **kwargs)
 
     def run(self):

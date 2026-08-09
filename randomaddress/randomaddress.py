@@ -98,7 +98,6 @@ def random_address_from_lsl(address, xpub, sil_block_height=0, rng_block_height=
 class RandomAddress(object):
     """Utilities for selecting random Bitcoin addresses."""
     def __init__(self, address, sil_block_height=0, xpub=None):
-        """  init  ."""
         self.address = address
         self.block_height = sil_block_height
         self.xpub = xpub

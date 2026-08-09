@@ -103,7 +103,6 @@ server_names['sslwebserver'] = SSLWebServer
 class SpellbookRESTAPI(Bottle):
     """REST API server for the Valyrian Spellbook built on Bottle."""
     def __init__(self):
-        """  init   endpoint."""
         super(SpellbookRESTAPI, self).__init__()
 
         # Initialize variables

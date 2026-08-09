@@ -7,7 +7,6 @@
 class MutationChance(object):
     """Constants for mutation probability thresholds in Darwin."""
     def __init__(self):
-        """  init  ."""
         pass
 
     def load(self, config):
@@ -23,7 +22,6 @@ class MutationChance(object):
 class BooleanMutationChance(MutationChance):
     """Mutation probability thresholds for boolean genes."""
     def __init__(self):
-        """  init  ."""
         super(BooleanMutationChance, self).__init__()
 
         self.uniform = 0.0
@@ -33,7 +31,6 @@ class BooleanMutationChance(MutationChance):
 class IntegerMutationChance(MutationChance):
     """Mutation probability thresholds for integer genes."""
     def __init__(self):
-        """  init  ."""
         super(IntegerMutationChance, self).__init__()
 
         self.uniform = 0.0
@@ -45,7 +42,6 @@ class IntegerMutationChance(MutationChance):
 class FloatMutationChance(MutationChance):
     """Mutation probability thresholds for float genes."""
     def __init__(self):
-        """  init  ."""
         super(FloatMutationChance, self).__init__()
 
         self.uniform = 0.0
@@ -57,7 +53,6 @@ class FloatMutationChance(MutationChance):
 class StringMutationChance(MutationChance):
     """Mutation probability thresholds for string genes."""
     def __init__(self):
-        """  init  ."""
         super(StringMutationChance, self).__init__()
 
         self.uniform = 0.0
@@ -71,7 +66,6 @@ class StringMutationChance(MutationChance):
 class ChromosomeMutationChance(MutationChance):
     """Mutation probability thresholds for chromosome-level mutations."""
     def __init__(self):
-        """  init  ."""
         super(ChromosomeMutationChance, self).__init__()
 
         self.uniform = 0.0

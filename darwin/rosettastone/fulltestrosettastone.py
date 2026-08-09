@@ -13,7 +13,6 @@ class FullTestRosettaStone(RosettaStone):
     """Full test Rosetta Stone for Darwin."""
 
     def __init__(self, name=None):
-        """  init  ."""
         super(FullTestRosettaStone, self).__init__(name)
         
     def genome_template(self):

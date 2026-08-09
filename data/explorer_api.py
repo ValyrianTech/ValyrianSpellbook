@@ -6,17 +6,16 @@ from abc import abstractmethod, ABCMeta
 
 
 class ExplorerAPI(object):
-    """Abstract base class defining the interface for blockchain explorer APIs."""
+    """
+    Abstract base class defining the interface for blockchain explorer APIs.
+
+    :param url: The url of the explorer
+    :param key: An api key for the explorer
+    :param testnet: True if testnet, default False (mainnet)
+    """
     __metaclass__ = ABCMeta
 
     def __init__(self, url='', key='', testnet=False):
-        """
-        Constructor of the abstract class ExplorerAPI
-
-        :param url: The url of the explorer
-        :param key: An api key for the explorer
-        :param testnet: True if testnet, default False (mainnet)
-        """
         self.error = ''
         self.url = url
         self.key = key

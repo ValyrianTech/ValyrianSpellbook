@@ -12,7 +12,6 @@ from helpers.twitterhelpers import retweet
 class UnretweetAction(Action):
     """Action that unretweets a tweet on Twitter."""
     def __init__(self, action_id):
-        """  init  ."""
         super(UnretweetAction, self).__init__(action_id=action_id)
         self.action_type = ActionType.UNRETWEET
         self.tweet_id = None

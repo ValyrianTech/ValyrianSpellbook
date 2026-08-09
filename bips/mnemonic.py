@@ -48,9 +48,12 @@ def binary_search(a, x, lo=0, hi=None):                # can't use a to specify 
 
 
 class Mnemonic(object):
-    """BIP39 mnemonic code generator and validator."""
+    """
+    BIP39 mnemonic code generator and validator.
+
+    Loads the wordlist for the given language.
+    """
     def __init__(self, language):
-        """Load the wordlist for the given language."""
         self.radix = 2048
         with open('%s/%s.txt' % (self._get_directory(), language), 'r', encoding='utf-8') as f:
             self.wordlist = [w.strip() for w in f.readlines()]

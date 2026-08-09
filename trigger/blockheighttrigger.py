@@ -12,7 +12,6 @@ from validators.validators import valid_block_height, valid_amount
 class BlockHeightTrigger(Trigger):
     """Trigger that activates at a specific block height."""
     def __init__(self, trigger_id):
-        """  init  ."""
         super(BlockHeightTrigger, self).__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.BLOCK_HEIGHT
         self.block_height = None

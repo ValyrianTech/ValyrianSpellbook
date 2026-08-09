@@ -22,7 +22,6 @@ else:
 class LaunchEvolverAction(SpawnProcessAction):
     """Action that launches a Darwin evolutionary process."""
     def __init__(self, action_id):
-        """  init  ."""
         super(LaunchEvolverAction, self).__init__(action_id=action_id)
         self.action_type = ActionType.LAUNCHEVOLVER
         self.job_config = None

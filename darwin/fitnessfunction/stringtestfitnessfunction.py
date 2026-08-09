@@ -9,7 +9,6 @@ from model.stringtest import StringTest
 class StringTestFitnessFunction(FitnessFunction):
     """String test fitness function for Darwin."""
     def __init__(self):
-        """  init  ."""
         super(StringTestFitnessFunction, self).__init__()
 
     def fitness(self, model):

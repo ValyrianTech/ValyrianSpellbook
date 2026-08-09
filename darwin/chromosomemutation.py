@@ -12,7 +12,6 @@ from darwin.encodingtype import EncodingType
 class ChromosomeMutation(object):
     """Chromosome-level mutation operations for Darwin."""
     def __init__(self, chromosome):
-        """  init  ."""
         self.chromosome = chromosome
 
     def duplication(self):

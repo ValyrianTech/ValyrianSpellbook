@@ -9,7 +9,6 @@ import numpy as np
 class GeneMutation(object):
     """Gene-level mutation operations for Darwin."""
     def __init__(self, gene):
-        """  init  ."""
         self.gene = gene
 
     def uniform(self):
@@ -21,7 +20,6 @@ class GeneMutation(object):
 class BooleanGeneMutation(GeneMutation):
     """Mutation operations specific to boolean genes."""
     def __init__(self, gene):
-        """  init  ."""
         super(BooleanGeneMutation, self).__init__(gene)
 
     def flip(self):
@@ -32,7 +30,6 @@ class BooleanGeneMutation(GeneMutation):
 class IntegerGeneMutation(GeneMutation):
     """Mutation operations specific to integer genes."""
     def __init__(self, gene):
-        """  init  ."""
         super(IntegerGeneMutation, self).__init__(gene)
 
     def boundary(self):
@@ -56,7 +53,6 @@ class IntegerGeneMutation(GeneMutation):
 class FloatGeneMutation(GeneMutation):
     """Mutation operations specific to float genes."""
     def __init__(self, gene):
-        """  init  ."""
         super(FloatGeneMutation, self).__init__(gene)
 
     def boundary(self):
@@ -80,7 +76,6 @@ class FloatGeneMutation(GeneMutation):
 class StringGeneMutation(GeneMutation):
     """Mutation operations specific to string genes."""
     def __init__(self, gene):
-        """  init  ."""
         super(StringGeneMutation, self).__init__(gene)
 
     def bitstring(self):

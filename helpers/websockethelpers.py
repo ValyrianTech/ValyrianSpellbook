@@ -31,9 +31,12 @@ def get_broadcast_sender() -> str:
 
 
 class WebSocketHandler:
-    """Manages WebSocket connections and channel-based message broadcasting."""
+    """
+    Manages WebSocket connections and channel-based message broadcasting.
+
+    Initializes the handler with empty connection and subscription sets.
+    """
     def __init__(self):
-        """Initialize the handler with empty connection and subscription sets."""
         self.connected = set()
         self.subscriptions = {}
         self.lock = asyncio.Lock()

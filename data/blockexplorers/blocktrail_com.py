@@ -13,9 +13,12 @@ from data.explorer_api import ExplorerAPI
 
 
 class BlocktrailComAPI(ExplorerAPI):
-    """Blocktrail.com block explorer API client."""
+    """
+    Blocktrail.com block explorer API client.
+
+    Initializes the API client with URL, optional key, and testnet flag.
+    """
     def __init__(self, url='', key='', testnet=False):
-        """Initialize the API client with URL, optional key, and testnet flag."""
         super(BlocktrailComAPI, self).__init__(key=key, testnet=testnet)
 
         # Set the url of the api depending on testnet or mainnet

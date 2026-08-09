@@ -13,7 +13,6 @@ from darwin.encodingtype import EncodingType
 class Chromosome(object):
     """Chromosome representation for the Darwin evolutionary framework."""
     def __init__(self, chromosome_id, encoding_type, n_genes=None):
-        """  init  ."""
         self.id = chromosome_id
         self.n_genes = n_genes
         self.genes = []

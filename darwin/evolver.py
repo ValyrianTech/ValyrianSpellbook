@@ -27,7 +27,6 @@ SPELLBOOK_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 class Evolver(object):
     """Evolver process that drives the evolutionary loop in Darwin."""
     def __init__(self):
-        """  init  ."""
         self.title = 'Title of this job'
         self.description = 'A more detailed description of this job.'
         self.dir = r'D:\darwin'

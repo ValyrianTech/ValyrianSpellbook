@@ -17,12 +17,15 @@ class SocialNetwork(object):
 
 
 class SocialMedia(object):
-    """Abstract base class for social media platform interactions."""
+    """
+    Abstract base class for social media platform interactions.
+
+    Initializes with the name of the social network.
+    """
 
     __metaclass__ = ABCMeta
 
     def __init__(self, social_network: str = SocialNetwork.TWITTER):
-        """Initialize with the name of the social network."""
         self.social_network = social_network
 
     @abstractmethod
@@ -37,10 +40,13 @@ class SocialMedia(object):
 
 
 class Twitter(SocialMedia):
-    """Twitter implementation of the SocialMedia abstract class."""
+    """
+    Twitter implementation of the SocialMedia abstract class.
+
+    Initializes the Twitter social media adapter.
+    """
 
     def __init__(self):
-        """Initialize the Twitter social media adapter."""
         super().__init__(social_network=SocialNetwork.TWITTER)
 
     def get_trending_topics(self, woeid: int = 1) -> list:
@@ -57,10 +63,13 @@ class Twitter(SocialMedia):
 
 
 class Mastodon(SocialMedia):
-    """Mastodon implementation of the SocialMedia abstract class."""
+    """
+    Mastodon implementation of the SocialMedia abstract class.
+
+    Initializes the Mastodon social media adapter.
+    """
 
     def __init__(self):
-        """Initialize the Mastodon social media adapter."""
         super().__init__(social_network=SocialNetwork.MASTODON)
 
     def get_trending_topics(self, woeid: int = 1) -> list:

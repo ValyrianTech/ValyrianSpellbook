@@ -10,7 +10,6 @@ class RosettaStone(object):
     __metaclass__ = ABCMeta
 
     def __init__(self, name=None, **kwargs):
-        """  init  ."""
         self.name = name
 
     def configure(self, config):

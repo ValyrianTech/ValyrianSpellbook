@@ -16,16 +16,16 @@ ACTIONS_DIR = 'json/public/actions'
 
 
 class Action(object):
-    """Base action class and registry for all Spellbook actions."""
+    """
+    Base action class and registry for all Spellbook actions.
+
+    This is an abstract class of which the different action types will be derived.
+
+    :param action_id: An id for the action
+    """
     __metaclass__ = ABCMeta
 
     def __init__(self, action_id: str) -> None:
-        """
-        Constructor for an Action object
-        This is an abstract class of which the different action types will be derived
-
-        :param action_id: An id for the action
-        """
         self.id = action_id
         self.action_type: Optional[str] = None
         self.created: Optional[datetime] = None

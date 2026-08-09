@@ -21,7 +21,6 @@ class Template(SpellbookScript):
     subdirectories are allowed, just remember when saving a trigger with a script, you must include the subdirectories in the script name
     """
     def __init__(self, *args, **kwargs):
-        """  init  ."""
         super(Template, self).__init__(*args, **kwargs)
 
         # If you need to initialize a few things, it is recommended to to this here after the super call

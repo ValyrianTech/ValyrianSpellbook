@@ -10,9 +10,12 @@ from data.explorer_api import ExplorerAPI
 
 
 class BlockchainInfoAPI(ExplorerAPI):
-    """Blockchain.info block explorer API client."""
+    """
+    Blockchain.info block explorer API client.
+
+    Initializes the API client with URL, optional key, and testnet flag.
+    """
     def __init__(self, url='', key='', testnet=False):
-        """Initialize the API client with URL, optional key, and testnet flag."""
         super(BlockchainInfoAPI, self).__init__(url=url, testnet=testnet)
         # Set the url of the api depending on testnet or mainnet
         self.url = 'https://testnet.blockchain.info' if self.testnet is True else 'https://blockchain.info'

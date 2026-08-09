@@ -9,7 +9,6 @@ from model.floattest import FloatTest
 class FloatTestFitnessFunction(FitnessFunction):
     """Float test fitness function for Darwin."""
     def __init__(self):
-        """  init  ."""
         super(FloatTestFitnessFunction, self).__init__()
 
     def fitness(self, model):

@@ -10,7 +10,6 @@ from .triggertype import TriggerType
 class TriggerStatusTrigger(Trigger):
     """Trigger that activates based on another trigger's status."""
     def __init__(self, trigger_id):
-        """  init  ."""
         super(TriggerStatusTrigger, self).__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.TRIGGERSTATUS
         self.previous_trigger = None

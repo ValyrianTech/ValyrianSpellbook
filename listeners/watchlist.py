@@ -10,13 +10,12 @@ WATCHLIST_FILE = 'watchlist.json'
 
 
 class Watchlist(object):
-    """Watchlist management for addresses being monitored by listeners."""
-    def __init__(self):
-        """
-        Constructor for the Watchlist class
+    """
+    Watchlist management for addresses being monitored by listeners.
 
-        This method will automatically load the watchlist.json file, if none exists it will be created
-        """
+    Automatically loads the watchlist.json file, if none exists it will be created.
+    """
+    def __init__(self):
         self.watchlist = None
         # Load the json file
         try:

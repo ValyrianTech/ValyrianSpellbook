@@ -9,7 +9,6 @@ from model.fulltest import FullTest
 class FullTestFitnessFunction(FitnessFunction):
     """Full test fitness function for Darwin."""
     def __init__(self):
-        """  init  ."""
         super(FullTestFitnessFunction, self).__init__()
 
     def fitness(self, model):

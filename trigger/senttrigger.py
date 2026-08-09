@@ -12,7 +12,6 @@ from validators.validators import valid_address, valid_amount
 class SentTrigger(Trigger):
     """Trigger that activates when funds are sent from an address."""
     def __init__(self, trigger_id):
-        """  init  ."""
         super(SentTrigger, self).__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.SENT
         self.address = None

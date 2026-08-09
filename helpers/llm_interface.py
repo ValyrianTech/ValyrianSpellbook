@@ -13,12 +13,15 @@ if not os.environ.get('SKIP_WEBSOCKET_SERVER'):
     init_websocket_server(host=get_host(), port=get_websocket_port())
 
 class LLMInterface(object):
-    """Abstract base class for all LLM implementations in the Spellbook."""
+    """
+    Abstract base class for all LLM implementations in the Spellbook.
+
+    Initializes the LLM interface, loading token cost settings from configuration.
+    """
     __metaclass__ = ABCMeta
     temperature: float = 0.0
 
     def __init__(self, model_name: str, auto_routing=False):
-        """Initialize the LLM interface, loading token cost settings from configuration."""
         self.auto_routing = auto_routing
         self.model_name = model_name
         self.prompt_tokens_cost = 0

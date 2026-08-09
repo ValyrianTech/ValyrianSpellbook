@@ -9,7 +9,6 @@ from model.integertest import IntegerTest
 class IntegerTestFitnessFunction(FitnessFunction):
     """Integer test fitness function for Darwin."""
     def __init__(self):
-        """  init  ."""
         super(IntegerTestFitnessFunction, self).__init__()
 
     def fitness(self, model):

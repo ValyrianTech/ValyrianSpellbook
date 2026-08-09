@@ -26,7 +26,6 @@ class Trigger(object):
     __metaclass__ = ABCMeta
 
     def __init__(self, trigger_id):
-        """  init  ."""
         self.id = trigger_id
         self.trigger_type = None
         self.script = None

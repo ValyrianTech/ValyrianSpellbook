@@ -12,7 +12,6 @@ from validators.validators import valid_timestamp
 class TimestampTrigger(Trigger):
     """Trigger that activates at a specific timestamp."""
     def __init__(self, trigger_id):
-        """  init  ."""
         super(TimestampTrigger, self).__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.TIMESTAMP
         self.timestamp = None

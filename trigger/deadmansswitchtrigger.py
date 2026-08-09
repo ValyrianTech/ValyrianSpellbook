@@ -15,7 +15,6 @@ from validators.validators import valid_phase, valid_email, valid_amount, valid_
 class DeadMansSwitchTrigger(Trigger):
     """Dead man's switch trigger that activates when check-ins stop."""
     def __init__(self, trigger_id):
-        """  init  ."""
         super(DeadMansSwitchTrigger, self).__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.DEADMANSSWITCH
         self.timeout = None

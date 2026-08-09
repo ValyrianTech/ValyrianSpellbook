@@ -12,7 +12,6 @@ from darwin.genemutation import BooleanGeneMutation, IntegerGeneMutation, FloatG
 class Gene(object):
     """Gene representation for the Darwin evolutionary framework."""
     def __init__(self):
-        """  init  ."""
         self.data = None
 
     def set_random_data(self):
@@ -31,7 +30,6 @@ class Gene(object):
 class BooleanGene(Gene):
     """Gene that holds a boolean value and supports flip mutations."""
     def __init__(self):
-        """  init  ."""
         super(BooleanGene, self).__init__()
 
     def set_random_data(self):
@@ -50,7 +48,6 @@ class BooleanGene(Gene):
 class IntegerGene(Gene):
     """Gene that holds an integer value within a min/max range."""
     def __init__(self):
-        """  init  ."""
         super(IntegerGene, self).__init__()
         self.min = 0
         self.max = 100
@@ -74,7 +71,6 @@ class IntegerGene(Gene):
 class FloatGene(Gene):
     """Gene that holds a float value within a min/max range."""
     def __init__(self):
-        """  init  ."""
         super(FloatGene, self).__init__()
         self.min = 0.0
         self.max = 100.0
@@ -98,7 +94,6 @@ class FloatGene(Gene):
 class StringGene(Gene):
     """Gene that holds a string value and supports various string mutations."""
     def __init__(self):
-        """  init  ."""
         super(StringGene, self).__init__()
         self.charset = string.ascii_letters + string.digits
 

@@ -12,7 +12,6 @@ from helpers.twitterhelpers import unfollow_user
 class UnfollowOnTwitterAction(Action):
     """Action that unfollows a user on Twitter."""
     def __init__(self, action_id):
-        """  init  ."""
         super(UnfollowOnTwitterAction, self).__init__(action_id=action_id)
         self.action_type = ActionType.UNFOLLOW_ON_TWITTER
         self.user_id = None

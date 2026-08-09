@@ -17,7 +17,6 @@ class SpellbookScript(object):
     __metaclass__ = ABCMeta
 
     def __init__(self, *args, **kwargs):
-        """  init  ."""
         self.address = kwargs['address'] if 'address' in kwargs else None
         if self.address is not None and not valid_address(self.address):
             raise Exception('%s is not a valid address!' % self.address)

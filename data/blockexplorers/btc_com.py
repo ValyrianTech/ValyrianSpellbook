@@ -11,9 +11,12 @@ from data.explorer_api import ExplorerAPI
 
 
 class BTCComAPI(ExplorerAPI):
-    """Client for the BTC.com blockchain explorer API."""
+    """
+    Client for the BTC.com blockchain explorer API.
+
+    Initializes the API client with URL, optional key, and testnet flag.
+    """
     def __init__(self, url='', key='', testnet=False):
-        """Initialize the API client with URL, optional key, and testnet flag."""
         super(BTCComAPI, self).__init__(key=key, testnet=testnet)
 
         # Set the url of the api depending on testnet or mainnet

@@ -15,9 +15,12 @@ base64_regex = '^[-A-Za-z0-9+=]{1,50}|=[^=]|={3,}$'
 
 
 class PrivateKey(object):
-    """Represents a Bitcoin private key in multiple formats (WIF, hex, decimal, binary)."""
+    """
+    Represents a Bitcoin private key in multiple formats (WIF, hex, decimal, binary).
+
+    Initializes the private key from any supported format, deriving all representations.
+    """
     def __init__(self, private_key, testnet=False):
-        """Initialize the private key from any supported format, deriving all representations."""
         vbyte = 0 if testnet is False else 111
 
         self.decimal = encode_privkey(private_key=private_key, formt='decimal', vbyte=vbyte)

@@ -12,7 +12,6 @@ from validators.validators import valid_amount, valid_txid
 class TxConfirmationTrigger(Trigger):
     """Trigger that activates at a specific transaction confirmation count."""
     def __init__(self, trigger_id):
-        """  init  ."""
         super(TxConfirmationTrigger, self).__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.TX_CONFIRMATION
         self.txid = None

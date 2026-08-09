@@ -14,7 +14,6 @@ class FloatTestRosettaStone(RosettaStone):
     """Float test Rosetta Stone for Darwin."""
 
     def __init__(self, name=None):
-        """  init  ."""
         super(FloatTestRosettaStone, self).__init__(name)
         
 

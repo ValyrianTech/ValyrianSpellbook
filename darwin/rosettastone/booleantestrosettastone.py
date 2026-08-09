@@ -14,7 +14,6 @@ class BooleanTestRosettaStone(RosettaStone):
     """Boolean test Rosetta Stone for Darwin."""
 
     def __init__(self, name=None):
-        """  init  ."""
         super(BooleanTestRosettaStone, self).__init__(name)
         
 

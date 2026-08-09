@@ -10,7 +10,6 @@ from Crypto.Cipher import AES
 class AESCipher(object):
     """AES encryption/decryption cipher for the Valyrian Spellbook."""
     def __init__(self, key):
-        """  init   method."""
         self.bs = 32
         self.key = hashlib.sha256(key.encode()).digest()
 

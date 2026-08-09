@@ -10,7 +10,6 @@ from .triggertype import TriggerType
 class HTTPGetRequestTrigger(Trigger):
     """Trigger that activates on HTTP GET requests."""
     def __init__(self, trigger_id):
-        """  init  ."""
         super(HTTPGetRequestTrigger, self).__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.HTTPGETREQUEST
         self.json = None

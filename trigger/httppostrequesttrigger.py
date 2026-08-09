@@ -10,7 +10,6 @@ from .triggertype import TriggerType
 class HTTPPostRequestTrigger(Trigger):
     """Trigger that activates on HTTP POST requests."""
     def __init__(self, trigger_id):
-        """  init  ."""
         super(HTTPPostRequestTrigger, self).__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.HTTPPOSTREQUEST
         self.json = None

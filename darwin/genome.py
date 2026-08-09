@@ -13,7 +13,6 @@ import simplejson
 class Genome(object):
     """Genome representation for the Darwin evolutionary framework."""
     def __init__(self):
-        """  init  ."""
         self.chromosomes = {}
         self.fitness = None
 

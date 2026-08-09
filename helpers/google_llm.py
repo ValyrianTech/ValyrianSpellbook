@@ -12,9 +12,12 @@ from .thinking_levels import THINKING_LEVEL_GOOGLE
 
 
 class GoogleLLM(LLMInterface):
-    """Google Gemini LLM client using the OpenAI-compatible API."""
+    """
+    Google Gemini LLM client using the OpenAI-compatible API.
+
+    Initializes the Google Gemini client with model name and API key.
+    """
     def __init__(self, model_name: str, api_key: str):
-        """Initialize the Google Gemini client with model name and API key."""
         self.model_name = model_name
         self.api_key = api_key
         super().__init__(model_name)

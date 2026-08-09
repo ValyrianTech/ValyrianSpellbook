@@ -10,7 +10,6 @@ from validators.validators import valid_address
 class SignedMessageTrigger(Trigger):
     """Trigger that activates on a signed message verification."""
     def __init__(self, trigger_id):
-        """  init  ."""
         super(SignedMessageTrigger, self).__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.SIGNEDMESSAGE
         self.address = None

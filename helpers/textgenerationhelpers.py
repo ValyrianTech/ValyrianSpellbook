@@ -44,9 +44,12 @@ class LLMResult(object):
     generations: list[list[ChatGeneration]]
 
 class BaseGeneration:
-    """Base class for a single generation output block."""
+    """
+    Base class for a single generation output block.
+
+    Initializes with the generation content string.
+    """
     def __init__(self, content: str):
-        """Initialize with the generation content string."""
         self.content = content
 
     def to_json(self) -> dict[str, str]:
@@ -54,9 +57,12 @@ class BaseGeneration:
         return {'content': self.content}
 
 class TextGeneration(BaseGeneration):
-    """A plain-text generation block."""
+    """
+    A plain-text generation block.
+
+    Initializes with the text content.
+    """
     def __init__(self, content: str):
-        """Initialize with the text content."""
         super().__init__(content)
 
     def to_json(self) -> dict[str, str]:
@@ -65,9 +71,12 @@ class TextGeneration(BaseGeneration):
 
 
 class CodeGeneration(BaseGeneration):
-    """A code generation block with an associated programming language."""
+    """
+    A code generation block with an associated programming language.
+
+    Initializes with code content and language identifier.
+    """
     def __init__(self, content: str, language: str):
-        """Initialize with code content and language identifier."""
         super().__init__(content)
         self.language = language
 

@@ -32,9 +32,12 @@ PROCESS_LOG.setLevel(logging.INFO)
 
 
 class RunCommandProcess(multiprocessing.Process):
-    """Multiprocessing process that runs a shell command and logs its output."""
+    """
+    Multiprocessing process that runs a shell command and logs its output.
+
+    Initializes the process with a command and optional working directory.
+    """
     def __init__(self, command, working_dir=None):
-        """Initialize the process with a command and optional working directory."""
         multiprocessing.Process.__init__(self)
 
         self.command = command

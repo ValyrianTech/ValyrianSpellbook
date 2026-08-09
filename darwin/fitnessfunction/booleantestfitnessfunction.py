@@ -9,7 +9,6 @@ from model.booleantest import BooleanTest
 class BooleanTestFitnessFunction(FitnessFunction):
     """Boolean test fitness function for Darwin."""
     def __init__(self):
-        """  init  ."""
         super(BooleanTestFitnessFunction, self).__init__()
 
     def fitness(self, model):

@@ -12,7 +12,6 @@ from validators.validators import valid_address, valid_amount
 class BalanceTrigger(Trigger):
     """Trigger that activates when an address balance changes."""
     def __init__(self, trigger_id):
-        """  init  ."""
         super(BalanceTrigger, self).__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.BALANCE
         self.address = None
