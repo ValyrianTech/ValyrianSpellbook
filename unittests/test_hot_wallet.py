@@ -23,6 +23,8 @@ if 'hot_wallet' in sys.modules:
 
 with mock.patch('sys.argv', ['hot_wallet.py']):
     _spec = importlib.util.spec_from_file_location('hot_wallet', _HOT_WALLET_PATH)
+    assert _spec is not None
+    assert _spec.loader is not None
     hot_wallet = importlib.util.module_from_spec(_spec)
     _spec.loader.exec_module(hot_wallet)
     sys.modules['hot_wallet'] = hot_wallet

@@ -35,7 +35,7 @@ clean_up_triggers(trigger_ids=['Notary-request'])
 print('\nCreating Trigger...')
 trigger_id = 'Notary-request'
 trigger_type = TriggerType.HTTPPOSTREQUEST
-script = 'Notary\Notary.py'
+script = 'Notary/Notary.py'
 
 response = spellbook_call('save_trigger', trigger_id,
                           '--type=%s' % trigger_type,
