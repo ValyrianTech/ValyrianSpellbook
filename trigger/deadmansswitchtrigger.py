@@ -110,6 +110,7 @@ class DeadMansSwitchTrigger(Trigger):
 
 
 class SwitchPhase(object):
+    """Enumeration of dead man's switch phases (unarmed, armed, warning sent)."""
     PHASE_0 = 0  # The dead man's switch is not armed yet
     PHASE_1 = 1  # The dead man's switch has been armed
     PHASE_2 = 2  # The dead man's switch has been armed and 1 warning has been sent (50% of timeout has passed)

@@ -56,6 +56,7 @@ if get_enable_transcribe() is True:
     WHISPER_MODEL = WhisperModel(model_size_or_path=model_size_or_path, device="cpu", compute_type="int8")
 
 def enable_cors(fn):
+    """Decorator that adds CORS headers to a route's response."""
     def _enable_cors(*args, **kwargs):
         """ enable cors endpoint."""
         # set CORS headers
@@ -977,6 +978,7 @@ class SpellbookRESTAPI(Bottle):
         return transcription
 
 def convert_aac_to_opus(input_file, opus_file):
+    """Convert an AAC audio file to Opus format using ffmpeg."""
     command = f"ffmpeg -i {input_file} -c:a libopus {opus_file}"
     subprocess.run(command, shell=True)
     # Ensure the file is closed after it's used
@@ -985,6 +987,7 @@ def convert_aac_to_opus(input_file, opus_file):
 
 
 def main():
+    """Entry point: ensure host IP is configured, parse CLI args, and start the Bottle server."""
     # Check if the IP address in the configuration file is set, if not then set it
     configuration_file = os.path.join(PROGRAM_DIR, 'configuration', 'spellbook.conf')
     config = ConfigParser()

@@ -21,6 +21,7 @@ class VLLMchatLLM(LLMInterface):
         LOG.info(f'vLLM initialized for model {self.model_name}')
 
     def get_completion_text(self, messages, stop=None, **kwargs):
+        """Generate completion text using the vLLM chat completions API."""
         LOG.info(f'Generating with vLLM with model {self.model_name}')
         LOG.info(f'kwargs: {kwargs}')
         LOG.info(f'stop: {stop}')

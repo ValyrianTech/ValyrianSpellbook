@@ -5,6 +5,7 @@
 """Constants for action types used in the Spellbook."""
 
 class ActionType(object):
+    """Enumeration of all supported action types in the Spellbook."""
     COMMAND = 'Command'
     SPAWNPROCESS = 'SpawnProcess'
     REVEALSECRET = 'RevealSecret'

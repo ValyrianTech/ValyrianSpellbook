@@ -20,6 +20,7 @@ class MistralLLM(LLMInterface):
         LOG.info(f'Mistral initialized for model {self.model_name}')
 
     def get_completion_text(self, messages, stop=None, **kwargs):
+        """Generate completion text using the Mistral API."""
         LOG.info(f'Generating with Mistral with model {self.model_name}')
         LOG.info(f'kwargs: {kwargs}')
         LOG.info(f'stop: {stop}')

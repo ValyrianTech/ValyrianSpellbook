@@ -9,6 +9,7 @@ from copy import deepcopy
 
 
 def recombine(parent_a, parent_b):
+    """Recombine two parent genomes into an offspring by randomly choosing chromosomes from each parent."""
     offspring = Genome()
 
     for chromosome_id in parent_a.chromosomes.keys():

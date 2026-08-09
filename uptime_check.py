@@ -18,6 +18,7 @@ from helpers.ipfshelpers import check_ipfs
 
 
 def uptime_check(email, ipfs=False, reboot=False, ssl=None):
+    """Check if the Spellbook server is online and optionally verify IPFS node status."""
     LOG.info('CPU: %s%%' % psutil.cpu_percent())
     LOG.info('RAM: %s' % str(psutil.virtual_memory()))
     LOG.info('Checking if spellbook server is still online')
@@ -82,6 +83,7 @@ def uptime_check(email, ipfs=False, reboot=False, ssl=None):
 
 
 def get_recent_spellbook_log():
+    """Return the last 100 lines of the spellbook log as an HTML string."""
     with open(os.path.join(logs_dir, 'spellbook.txt'), 'r') as input_file:
         recent_messages = input_file.readlines()[-100:]
 
@@ -89,6 +91,7 @@ def get_recent_spellbook_log():
 
 
 def get_recent_requests_log():
+    """Return the last 100 lines of the requests log as an HTML string."""
     with open(os.path.join(logs_dir, 'requests.txt'), 'r') as input_file:
         recent_messages = input_file.readlines()[-100:]
 

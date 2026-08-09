@@ -10,6 +10,7 @@ from validators.validators import valid_address, valid_xpub
 
 
 def get_lal(address, xpub, block_height=0):
+    """Build a Linked Address List by pairing SIL inputs with addresses derived from an xpub."""
     if not valid_address(address):
         return {'error': 'Invalid address: %s' % address}
 
@@ -32,6 +33,7 @@ def get_lal(address, xpub, block_height=0):
 
 
 def get_lbl(address, xpub, block_height=0):
+    """Build a Linked Balance List with final balances and proportional shares."""
     lal_data = get_lal(address, xpub, block_height)
 
     if 'error' in lal_data:
@@ -56,6 +58,7 @@ def get_lbl(address, xpub, block_height=0):
 
 
 def get_lrl(address, xpub, block_height=0):
+    """Build a Linked Received List with received balances and proportional shares."""
     lal_data = get_lal(address, xpub, block_height)
 
     if 'error' in lal_data:
@@ -80,6 +83,7 @@ def get_lrl(address, xpub, block_height=0):
 
 
 def get_lsl(address, xpub, block_height=0):
+    """Build a Linked Sent List with sent balances and proportional shares."""
     lal_data = get_lal(address, xpub, block_height)
 
     if 'error' in lal_data:

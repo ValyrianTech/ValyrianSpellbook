@@ -36,6 +36,7 @@ def random_number_from_blockhash(block_height=0):
 
 
 def random_address_from_sil(address, sil_block_height=0, rng_block_height=0):
+    """Select a random address from the Simplified Inputs List of the given address."""
     if not valid_address(address):
         return {'error': 'Invalid address: %s' % address}
 
@@ -45,6 +46,7 @@ def random_address_from_sil(address, sil_block_height=0, rng_block_height=0):
 
 
 def random_address_from_sul(address, rng_block_height=0):
+    """Select a random address from the Simplified UTXO List of the given address."""
     if not valid_address(address):
         return {'error': 'Invalid address: %s' % address}
 
@@ -52,6 +54,7 @@ def random_address_from_sul(address, rng_block_height=0):
 
 
 def random_address_from_lbl(address, xpub, sil_block_height=0, rng_block_height=0):
+    """Select a random address from the Linked Balance List of the given address and xpub."""
     if not valid_address(address):
         return {'error': 'Invalid address: %s' % address}
 
@@ -65,6 +68,7 @@ def random_address_from_lbl(address, xpub, sil_block_height=0, rng_block_height=
 
 
 def random_address_from_lrl(address, xpub, sil_block_height=0, rng_block_height=0):
+    """Select a random address from the Linked Received List of the given address and xpub."""
     if not valid_address(address):
         return {'error': 'Invalid address: %s' % address}
 
@@ -78,6 +82,7 @@ def random_address_from_lrl(address, xpub, sil_block_height=0, rng_block_height=
 
 
 def random_address_from_lsl(address, xpub, sil_block_height=0, rng_block_height=0):
+    """Select a random address from the Linked Sent List of the given address and xpub."""
     if not valid_address(address):
         return {'error': 'Invalid address: %s' % address}
 

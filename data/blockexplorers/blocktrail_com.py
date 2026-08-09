@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Blocktrail.com blockchain explorer API client."""
 
 import requests
 from datetime import datetime
@@ -303,6 +304,7 @@ class BlocktrailComAPI(ExplorerAPI):
 
     @staticmethod
     def push_tx(tx):
+        """Broadcast a raw transaction via Blockchain.info (Blocktrail does not support broadcasting)."""
         # Must do import here to avoid circular import
         from data.data import get_explorer_api
 

@@ -25,6 +25,7 @@ class OpenAILLM(LLMInterface):
         LOG.info(f'OpenAI LLM initialized for model {self.model_name}')
 
     def get_completion_text(self, messages, stop=None, **kwargs):
+        """Generate completion text using the OpenAI API."""
         LOG.info(f'Generating with OpenAI LLM with model {self.model_name}')
         LOG.info(f'kwargs: {kwargs}')
         LOG.info(f'stop: {stop}')

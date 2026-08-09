@@ -28,6 +28,7 @@ class FitnessFunction(object):
 
 
 class Fitness(object):
+    """Holds a fitness value and associated data for a genome."""
     def __init__(self, value, data):
         """  init  ."""
         self.value = value

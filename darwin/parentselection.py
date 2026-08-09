@@ -6,6 +6,7 @@ import numpy
 
 
 def roulette_wheel_selection(genomes, n_parents=2):
+    """Select n_parents genomes using fitness-proportional roulette wheel selection."""
     # probabilities must all be non-negative, so shift all fitnesses with the lowest fitness value
     min_fitness = min([genome.fitness for genome in genomes])
     total_fitness = float(sum([genome.fitness - min_fitness for genome in genomes]))
@@ -30,6 +31,7 @@ def roulette_wheel_selection(genomes, n_parents=2):
 
 
 def rank_selection(genomes, n_parents=2):
+    """Select n_parents genomes using rank-based selection."""
     # Probability of being selected depends on rank instead of fitness
     ranks = range(len(genomes), 0, -1)  # genomes are sorted from highest fitness to lowest, so the first genome must highest probability
     total = float(sum(ranks))
@@ -46,6 +48,7 @@ def rank_selection(genomes, n_parents=2):
 
 
 def stochastic_universal_sampling(genomes, n_parents=10):
+    """Select n_parents genomes using stochastic universal sampling."""
     # probabilities must all be non-negative, so shift all fitnesses with the lowest fitness value
     min_fitness = min([genome.fitness for genome in genomes])
     total_fitness = float(sum([genome.fitness - min_fitness for genome in genomes]))
@@ -70,6 +73,7 @@ def stochastic_universal_sampling(genomes, n_parents=10):
 
 
 def tournament_selection(genomes, n_parents=2, tournament_size=5):
+    """Select n_parents genomes via tournament selection with a given tournament size."""
     selection = []
 
     if tournament_size > len(genomes):

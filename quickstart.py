@@ -10,6 +10,7 @@ from helpers.configurationhelpers import what_is_my_ip
 
 
 def update_config(config, section, option, prompt, current_value=None, fallback=None):
+    """Prompt the user to update a config option, keeping the current value as default."""
     if current_value is None:
         current_value = config.get(section=section, option=option, fallback=fallback)
 

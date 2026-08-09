@@ -33,6 +33,7 @@ class OpenRouterLLM(LLMInterface):
 
 
     def get_completion_text(self, messages, stop=None, **kwargs):
+        """Generate completion text using the OpenRouter API."""
         completion = ''
         reasoning_content = ''
         in_think_block = False  # Track if we're inside inline <think> tags

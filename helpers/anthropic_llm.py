@@ -36,6 +36,7 @@ class AnthropicLLM(LLMInterface):
         return False
 
     def get_completion_text(self, messages, stop=None, **kwargs):
+        """Generate completion text using the Anthropic API with optional extended thinking."""
         LOG.info(f'Generating with Anthropic LLM with model {self.model_name}')
         LOG.info(f'kwargs: {kwargs}')
         LOG.info(f'stop: {stop}')

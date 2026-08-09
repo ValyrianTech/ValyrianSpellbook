@@ -663,6 +663,7 @@ class SendTransactionAction(Action):
 
 
 class TransactionInput(object):
+    """Represents a transaction input with address, value, output hash, and confirmations."""
     def __init__(self, address, value, output_hash, output_n, confirmations):
         """  init  ."""
         self.address = address
@@ -675,6 +676,7 @@ class TransactionInput(object):
 
 
 class TransactionOutput(object):
+    """Represents a transaction output with an address and an amount in satoshis."""
     def __init__(self, address, amount):
         """  init  ."""
         self.address = address

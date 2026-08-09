@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Integer test model for the Darwin evolutionary framework."""
 from model import Model
 
 

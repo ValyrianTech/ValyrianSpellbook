@@ -45,6 +45,7 @@ EXIT_ON_TIMEOUT = None
 
 
 def on_message(ws, message):
+    """Process incoming transaction messages, match against the watchlist, and execute commands."""
     event_found = False
     transaction = simplejson.loads(message)
     if 'type' not in transaction or transaction['type'] != 'new-transactions':
@@ -120,14 +121,17 @@ def on_message(ws, message):
 
 
 def on_error(ws, error):
+    """Handle websocket errors by logging them."""
     LISTENER_LOG.info('ERROR: %s' % error)  # use info level here instead of error level because for some reason an error is raised when the program exits
 
 
 def on_close(ws):
+    """Handle websocket close events by logging the closure."""
     LISTENER_LOG.info("### websocket closed ###")
 
 
 def on_open(ws):
+    """Subscribe to new transaction notifications on websocket open."""
     LISTENER_LOG.info("### websocket opened ###")
     LISTENER_LOG.info("Subscribing to new transactions")
     if args.testnet is True:

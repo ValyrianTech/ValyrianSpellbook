@@ -24,6 +24,7 @@ class TextGenerationWebuiLLM(LLMInterface):
         LOG.info(f'Text-generation-webui LLM initialized for model {self.model_name} at {self.host}')
 
     def get_completion_text(self, messages, stop=None, **kwargs):
+        """Generate completion text using the Text-generation-webui OpenAI-compatible API."""
         LOG.info(f'Generating with Text-generation-webui with model {self.model_name}')
         LOG.info(f'kwargs: {kwargs}')
         LOG.info(f'stop: {stop}')

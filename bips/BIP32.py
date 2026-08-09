@@ -111,10 +111,12 @@ def get_xpub_child(xpub, child_index):
 
 
 def bip32_ckd(data, i):
+    """Derive the child key at index i from a BIP32 serialized key string."""
     return bip32_serialize(raw_bip32_ckd(bip32_deserialize(data), i))
 
 
 def bip32_serialize(rawtuple):
+    """Serialize a raw BIP32 tuple into a Base58Check-encoded string."""
     vbytes, depth, fingerprint, i, chaincode, key = rawtuple
     i = encode(i, 256, 4)
     chaincode = encode(hash_to_int(chaincode), 256, 32)
@@ -124,6 +126,7 @@ def bip32_serialize(rawtuple):
 
 
 def bip32_deserialize(data):
+    """Deserialize a Base58Check-encoded BIP32 key string into a raw tuple."""
     dbin = changebase(data, 58, 256)
     if bin_dbl_sha256(dbin[:-4])[:4] != dbin[-4:]:
         raise Exception("Invalid checksum")
@@ -137,6 +140,7 @@ def bip32_deserialize(data):
 
 
 def raw_bip32_ckd(rawtuple, i):
+    """Derive the raw child key tuple at index i from a raw BIP32 parent tuple."""
     vbytes, depth, fingerprint, oldi, chaincode, key = rawtuple
     i = int(i)
 
@@ -164,6 +168,7 @@ def raw_bip32_ckd(rawtuple, i):
 
 
 def hash_to_int(x):
+    """Convert a hex or byte-string hash to an integer."""
     if len(x) in [40, 64]:
         return decode(x, 16)
     return decode(x, 256)
@@ -173,6 +178,7 @@ def hash_to_int(x):
 
 
 def bip32_master_key(seed, vbytes=MAINNET_PRIVATE):
+    """Derive the BIP32 master key from a seed."""
     hmac_digest = hmac.new(
             from_string_to_bytes("Bitcoin seed"),
             from_string_to_bytes(seed),
@@ -184,14 +190,17 @@ def bip32_master_key(seed, vbytes=MAINNET_PRIVATE):
 
 
 def raw_bip32_privtopub(rawtuple):
+    """Convert a raw BIP32 private key tuple to a public key tuple."""
     vbytes, depth, fingerprint, i, chaincode, key = rawtuple
     newvbytes = MAINNET_PUBLIC if vbytes == MAINNET_PRIVATE else TESTNET_PUBLIC
     return newvbytes, depth, fingerprint, i, chaincode, privkey_to_pubkey(key)
 
 
 def bip32_privtopub(data):
+    """Convert a serialized BIP32 private key to a public key."""
     return bip32_serialize(raw_bip32_privtopub(bip32_deserialize(data)))
 
 
 def bip32_extract_key(data):
+    """Extract the raw key (hex-encoded) from a serialized BIP32 key string."""
     return safe_hexlify(bip32_deserialize(data)[-1])

@@ -54,6 +54,7 @@ app.include_router(blockchain.router, prefix="/blockchain", tags=["blockchain"])
 
 @app.exception_handler(404)
 async def not_found_handler(request: Request, exc):
+    """Handle 404 errors by rendering the 404 error template."""
     return templates.TemplateResponse(
         request,
         "errors/404.html",
@@ -64,6 +65,7 @@ async def not_found_handler(request: Request, exc):
 
 @app.exception_handler(500)
 async def server_error_handler(request: Request, exc):
+    """Handle 500 errors by rendering the 500 error template with error details."""
     return templates.TemplateResponse(
         request,
         "errors/500.html",

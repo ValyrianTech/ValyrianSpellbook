@@ -15,6 +15,7 @@ class ExplorerType(object):
 
 
 class Explorer(object):
+    """Represents a blockchain explorer configuration with API key, URL, priority, and testnet flag."""
     def __init__(self):
         """
         Constructor of the Explorer object

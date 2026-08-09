@@ -42,6 +42,7 @@ CLIENTS: dict[str, LLMInterface] = {}
 
 
 def get_llm(model_name: str = 'default_model', temperature: float = 0.0):
+    """Retrieve or create an LLM client for the given model name and temperature."""
     global CLIENTS
 
     if model_name == 'default_model':
@@ -295,6 +296,7 @@ def _ensure_env_file_complete(env_file_path: str, env_var_mapping: Dict[str, str
 
 
 def get_role(message: BaseMessage):
+    """Return the role string for a given LangChain message type."""
     if isinstance(message, HumanMessage):
         return 'user: '
     elif isinstance(message, AIMessage):
@@ -308,6 +310,7 @@ def get_role(message: BaseMessage):
 
 
 def comparison_prompt(messages: List[BaseMessage], generations: List[LLMResult]):
+    """Build a prompt asking an LLM to compare multiple generations and pick the best one."""
     original_prompt = ''
     for message in messages:
         original_prompt += str(message.content)
@@ -345,6 +348,7 @@ Please respond with only the json object inside a markdown code block, and nothi
 
 
 class LLM(object):
+    """Wrapper around an LLM client that supports generation, best-of selection, and auto-routing."""
     llm: Any = None
     model_name: str = ''
     temperature: float = 0.0
@@ -364,6 +368,7 @@ class LLM(object):
         self.max_tokens = llm_config.get('max_tokens', 4096)
 
     def generate(self, messages: List[BaseMessage], stop=None, max_tokens: int | None = None):
+        """Generate a completion from the underlying LLM using the given messages and stop sequences."""
         if max_tokens is None:
             max_tokens = self.max_tokens
         kwargs = {'temperature': self.temperature, 'max_tokens': max_tokens}
@@ -432,6 +437,7 @@ class LLM(object):
         return completion_text, llm_output, generation_info
 
     def choose_best_llm(self, prompt: str, llm_names: list) -> str:
+        """Use the default LLM to select the best model name from a list based on a routing prompt."""
         llm_config_name = 'default_model'
 
         default_llm = get_llm(model_name='default_model')
@@ -463,6 +469,7 @@ class LLM(object):
 
 
     def choose_best_generation(self, messages: List[BaseMessage], generations: List[LLMResult]) -> int:
+        """Compare multiple generations and return the index of the best one."""
 
         if self.model_name == 'text-davinci-003':
             result = self.llm.generate(comparison_prompt(messages, generations))
@@ -508,6 +515,7 @@ class CustomStreamingCallbackHandler(StreamingStdOutCallbackHandler):
         LOG.info('streaming started again')
 
     def on_llm_end(self, response: LLMResult, **kwargs: Any) -> None:
+        """Run when LLM ends running; broadcasts end-of-message signal."""
         LOG.info('streaming ended')
         self.full_completion = ""
         data = {'message': '<|end of message|>', 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': []}
@@ -524,6 +532,7 @@ class CustomStreamingCallbackHandler(StreamingStdOutCallbackHandler):
 
 
 def load_llms():
+    """Load and return all LLM configurations from the LLMs.json configuration file."""
     llms_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'configuration', 'LLMs.json')
     llms_data = load_from_json_file(filename=llms_file) if os.path.exists(llms_file) else {}
 
@@ -531,11 +540,13 @@ def load_llms():
 
 
 def get_llm_config(llm_name: str):
+    """Return the configuration dict for a specific LLM by name."""
     llms_data = load_llms()
     return llms_data.get(llm_name, {})
 
 
 def delete_llm(llm_name: str):
+    """Delete an LLM configuration by name and save the updated configuration file."""
     llms_data = load_llms()
     if llm_name in llms_data:
         del llms_data[llm_name]
@@ -543,6 +554,7 @@ def delete_llm(llm_name: str):
 
 
 def save_llm_config(llm_name: str, llm_config: dict):
+    """Save or update an LLM configuration and clear cached self-hosted clients."""
     global CLIENTS
 
     llms_data = load_llms()
@@ -564,6 +576,7 @@ def save_llm_config(llm_name: str, llm_config: dict):
     CLIENTS = {k: v for k, v in CLIENTS.items() if not k.startswith('self-hosted')}
 
 def set_default_llm(llm_name: str):
+    """Set the default LLM model in the spellbook configuration file."""
     config = spellbook_config()
     config.set(section='LLMs', option='default_model', value=llm_name)
     with open(CONFIGURATION_FILE, 'w') as configfile:
@@ -577,6 +590,7 @@ def encode_image(image_path):
 
 
 def construct_user_messages(text: str, image_paths: List[str] | None = None):
+    """Build a list of user messages with optional inline base64-encoded images."""
     if image_paths is None:
         image_paths = []
 

@@ -5,6 +5,7 @@
 """Constants for trigger types used in the Spellbook."""
 
 class TriggerType(object):
+    """Enumeration of all supported trigger types in the Spellbook."""
     MANUAL = 'Manual'  # Triggers on a http request
     BALANCE = 'Balance'  # Triggers when an address has a final balance greater than or equal to a certain amount
     RECEIVED = 'Received'  # Triggers when an address has a total received balance greater than or equal to a certain amount

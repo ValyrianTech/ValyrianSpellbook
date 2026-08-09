@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""BTC.com blockchain explorer API client."""
 
 import requests
 from time import sleep
@@ -10,6 +11,7 @@ from data.explorer_api import ExplorerAPI
 
 
 class BTCComAPI(ExplorerAPI):
+    """Client for the BTC.com blockchain explorer API."""
     def __init__(self, url='', key='', testnet=False):
         """Initialize the API client with URL, optional key, and testnet flag."""
         super(BTCComAPI, self).__init__(key=key, testnet=testnet)
@@ -299,6 +301,7 @@ class BTCComAPI(ExplorerAPI):
 
     @staticmethod
     def push_tx(tx):
+        """Broadcast a raw transaction via Blockchain.info (BTC.com does not support broadcasting)."""
         # Must do import here to avoid circular import
         from data.data import get_explorer_api
 

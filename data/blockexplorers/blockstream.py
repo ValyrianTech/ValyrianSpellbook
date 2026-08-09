@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Blockstream.info block explorer API client."""
 import requests
 from time import sleep
 

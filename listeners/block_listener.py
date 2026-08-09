@@ -8,6 +8,7 @@ import simplejson
 
 
 def on_message(ws, message):
+    """Process incoming websocket messages and print new block details."""
     block = simplejson.loads(message)
     print('\n\nNew block:')
     print('height:', block['x']['height'])
@@ -17,14 +18,17 @@ def on_message(ws, message):
 
 
 def on_error(ws, error):
+    """Handle websocket errors by printing the error."""
     print(error)
 
 
 def on_close(ws):
+    """Handle websocket close events."""
     print("### websocket closed ###")
 
 
 def on_open(ws):
+    """Subscribe to new block notifications on websocket open."""
     print("### websocket opened ###")
     print("Subscribing to new blocks")
     ws.send('{"op":"blocks_sub"}')

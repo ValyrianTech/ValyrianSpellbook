@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""String test model for the Darwin evolutionary framework."""
 from model import Model
 
 

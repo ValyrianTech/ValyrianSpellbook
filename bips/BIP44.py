@@ -72,6 +72,7 @@ def get_change_addresses_from_xpub(xpub, i=100):
 
 
 def get_xpriv_key(mnemonic, passphrase="", account=0):
+    """Derive the xpriv key for a given BIP44 account from a mnemonic and passphrase."""
     # BIP32 paths: m / purpose' / coin_type' / account' / change / address_index
     # ' means a hardened path is used
     # path for bitcoin mainnet is m/44'/0'/0'/0/0
@@ -85,6 +86,7 @@ def get_xpriv_key(mnemonic, passphrase="", account=0):
 
 
 def get_xpriv_keys(mnemonic, passphrase="", i=1):
+    """Derive a list of xpriv keys for multiple BIP44 accounts from a mnemonic and passphrase."""
     # BIP32 paths: m / purpose' / coin_type' / account' / change / address_index
     # ' means a hardened path is used
     # path for bitcoin mainnet is m/44'/0'/0'/0/0
@@ -101,12 +103,14 @@ def get_xpriv_keys(mnemonic, passphrase="", i=1):
 
 
 def get_xpub_key(mnemonic, passphrase="", account=0):
+    """Derive the xpub key for a given BIP44 account from a mnemonic and passphrase."""
     xpriv_key = get_xpriv_key(mnemonic=mnemonic, passphrase=passphrase, account=account)
     xpub_key = bip32_privtopub(xpriv_key)
     return xpub_key
 
 
 def get_xpub_keys(mnemonic, passphrase="", i=1):
+    """Derive a list of xpub keys for multiple BIP44 accounts from a mnemonic and passphrase."""
     # BIP32 paths: m / purpose' / coin_type' / account' / change / address_index
     # ' means a hardened path is used
     # path for bitcoin mainnet is m/44'/0'/0'/0/0

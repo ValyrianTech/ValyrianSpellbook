@@ -136,6 +136,7 @@ show_parser.add_argument('--wallet-password', help='password for wallet encrypti
 # ----------------------------------------------------------------------------------------------------------------
 
 def load_wallet():
+    """Load and decrypt the hot wallet from disk, returning the wallet contents as a dict."""
     global WALLET_ID
     if args.wallet is not None:
         WALLET_ID = args.wallet
@@ -162,6 +163,7 @@ def load_wallet():
 
 
 def save_wallet(wallet):
+    """Encrypt and save the wallet dict to disk."""
     if args.wallet_password is not None:
         password1 = args.wallet_password
         password2 = args.wallet_password
@@ -181,6 +183,7 @@ def save_wallet(wallet):
 
 
 def add_key():
+    """Add a private key to the hot wallet and save it."""
     wallet = load_wallet()
 
     try:
@@ -196,6 +199,7 @@ def add_key():
 
 
 def delete_key():
+    """Delete the private key for a given address from the hot wallet."""
     wallet = load_wallet()
 
     if args.address in wallet:
@@ -205,6 +209,7 @@ def delete_key():
 
 
 def set_bip44():
+    """Set the BIP44 mnemonic and passphrase for the hot wallet."""
     wallet = load_wallet()
 
     if len(args.mnemonic) not in [12, 24]:
@@ -220,6 +225,7 @@ def set_bip44():
 
 
 def show():
+    """Display the private keys and/or mnemonic stored in the hot wallet."""
     wallet = load_wallet()
     pprint(wallet)
 

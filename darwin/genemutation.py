@@ -19,6 +19,7 @@ class GeneMutation(object):
 
 
 class BooleanGeneMutation(GeneMutation):
+    """Mutation operations specific to boolean genes."""
     def __init__(self, gene):
         """  init  ."""
         super(BooleanGeneMutation, self).__init__(gene)
@@ -29,6 +30,7 @@ class BooleanGeneMutation(GeneMutation):
 
 
 class IntegerGeneMutation(GeneMutation):
+    """Mutation operations specific to integer genes."""
     def __init__(self, gene):
         """  init  ."""
         super(IntegerGeneMutation, self).__init__(gene)
@@ -52,6 +54,7 @@ class IntegerGeneMutation(GeneMutation):
 
 
 class FloatGeneMutation(GeneMutation):
+    """Mutation operations specific to float genes."""
     def __init__(self, gene):
         """  init  ."""
         super(FloatGeneMutation, self).__init__(gene)
@@ -75,6 +78,7 @@ class FloatGeneMutation(GeneMutation):
 
 
 class StringGeneMutation(GeneMutation):
+    """Mutation operations specific to string genes."""
     def __init__(self, gene):
         """  init  ."""
         super(StringGeneMutation, self).__init__(gene)

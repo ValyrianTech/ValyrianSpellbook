@@ -28,14 +28,17 @@ class Settings:
     # Spellbook REST API settings (the existing Bottle server)
     @property
     def SPELLBOOK_API_HOST(self) -> str:
+        """Return the Spellbook REST API host from configuration."""
         return get_host()
     
     @property
     def SPELLBOOK_API_PORT(self) -> int:
+        """Return the Spellbook REST API port from configuration."""
         return get_port()
     
     @property
     def SPELLBOOK_API_URL(self) -> str:
+        """Return the full Spellbook REST API URL."""
         return f"http://{self.SPELLBOOK_API_HOST}:{self.SPELLBOOK_API_PORT}"
 
 
