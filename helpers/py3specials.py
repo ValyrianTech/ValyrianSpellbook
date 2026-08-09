@@ -131,9 +131,11 @@ if sys.version_info.major == 3:
         result = 0
         if base == 256:
             def extract(d, cs):
+                """Return the byte value directly for base-256 decoding."""
                 return d
         else:
             def extract(d, cs):
+                """Find the position of a character in the code string for decoding."""
                 return cs.find(d if isinstance(d, str) else chr(d))
 
         if base == 16:
