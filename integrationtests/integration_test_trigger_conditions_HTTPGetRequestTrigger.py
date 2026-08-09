@@ -35,7 +35,7 @@ assert response['trigger_type'] == trigger_type
 print('Activating HTTP GET request trigger with data')
 host, port = get_host(), get_port()
 url = 'http://{host}:{port}/spellbook/triggers/{trigger_id}/get'.format(host=host, port=port, trigger_id=trigger_id)
-headers = {}
+headers: dict[str, str] = {}
 data = {'test': 'hello'}
 
 try:

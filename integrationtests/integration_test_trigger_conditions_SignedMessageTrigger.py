@@ -3,7 +3,7 @@
 import os
 import simplejson
 
-from helpers.ipfshelpers import IPFS_API
+from helpers.ipfshelpers import add_json
 from helpers.hotwallethelpers import get_address_from_wallet, get_private_key_from_wallet
 from helpers.setupscripthelpers import spellbook_call, clean_up_triggers
 from helpers.messagehelpers import sign_message, verify_message
@@ -127,7 +127,7 @@ assert response['triggered'] == 2
 # --------------------------------------------------------------------------------------------------------
 print('Sending IPFS hash as message')
 
-multihash = IPFS_API.add_json({'address': address})
+multihash = add_json({'address': address})
 
 message = '/ipfs/%s' % multihash
 signature = sign_message(message=message, private_key=private_key)
