@@ -5,6 +5,7 @@ import os
 import time
 from abc import abstractmethod, ABCMeta
 from datetime import datetime
+from typing import Optional
 
 from helpers.jsonhelpers import save_to_json_file
 from validators.validators import valid_action_type
@@ -15,7 +16,7 @@ ACTIONS_DIR = 'json/public/actions'
 class Action(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self, action_id):
+    def __init__(self, action_id: str) -> None:
         """
         Constructor for an Action object
         This is an abstract class of which the different action types will be derived
@@ -23,8 +24,8 @@ class Action(object):
         :param action_id: An id for the action
         """
         self.id = action_id
-        self.action_type = None
-        self.created = None
+        self.action_type: Optional[str] = None
+        self.created: Optional[datetime] = None
 
     def configure(self, **config):
         """

@@ -9,7 +9,7 @@ from helpers.twitterhelpers import create_tweet
 
 
 class CreateTweetAction(Action):
-    def __init__(self, action_id):
+    def __init__(self, action_id: str) -> None:
         super(CreateTweetAction, self).__init__(action_id=action_id)
         self.action_type = ActionType.CREATE_TWEET
 
