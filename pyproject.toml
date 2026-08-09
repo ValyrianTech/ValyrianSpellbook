@@ -1,0 +1,5 @@
+[tool.interrogate]
+exclude = ["unittests", "integrationtests", "apps"]
+fail-under = 80
+ignore-init-method = true
+ignore-init-module = false
