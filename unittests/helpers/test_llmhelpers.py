@@ -112,7 +112,7 @@ class TestGetRole(unittest.TestCase):
     def test_get_role_human(self):
         """Test get_role for HumanMessage"""
         from helpers.llmhelpers import get_role
-        from langchain.schema import HumanMessage
+        from langchain_core.messages import HumanMessage
         
         msg = HumanMessage(content="test")
         result = get_role(msg)
@@ -122,7 +122,7 @@ class TestGetRole(unittest.TestCase):
     def test_get_role_ai(self):
         """Test get_role for AIMessage"""
         from helpers.llmhelpers import get_role
-        from langchain.schema import AIMessage
+        from langchain_core.messages import AIMessage
         
         msg = AIMessage(content="test")
         result = get_role(msg)
@@ -132,7 +132,7 @@ class TestGetRole(unittest.TestCase):
     def test_get_role_system(self):
         """Test get_role for SystemMessage"""
         from helpers.llmhelpers import get_role
-        from langchain.schema import SystemMessage
+        from langchain_core.messages import SystemMessage
         
         msg = SystemMessage(content="test")
         result = get_role(msg)
@@ -358,7 +358,7 @@ class TestComparisonPrompt(unittest.TestCase):
     def test_comparison_prompt(self):
         """Test comparison_prompt generates correct format"""
         from helpers.llmhelpers import comparison_prompt
-        from langchain.schema import HumanMessage
+        from langchain_core.messages import HumanMessage
         
         messages = [HumanMessage(content="Test prompt")]
         
@@ -379,7 +379,7 @@ class TestGetRoleUnknown(unittest.TestCase):
     def test_get_role_chat_message(self):
         """Test get_role for ChatMessage"""
         from helpers.llmhelpers import get_role
-        from langchain.schema import ChatMessage
+        from langchain_core.messages import ChatMessage
         
         msg = ChatMessage(content="test", role="custom_role")
         result = get_role(msg)
@@ -891,7 +891,7 @@ class TestLLMGenerateWithThinkingLevel(unittest.TestCase):
         mock_llm_instance.generate.return_value = ('result', {'prompt_tokens': 10, 'completion_tokens': 20, 'total_tokens': 30, 'total_cost': 0.01})
 
         client = LLM(model_name='OpenAI:gpt-4', thinking_level='medium')
-        from langchain.schema import HumanMessage
+        from langchain_core.messages import HumanMessage
         messages = [HumanMessage(content="Test")]
         client.generate(messages)
 
@@ -959,7 +959,7 @@ class TestLLMClass(unittest.TestCase):
     def test_llm_generate_text_davinci(self, mock_get_llm, mock_get_config):
         """Test LLM generate with text-davinci-003"""
         from helpers.llmhelpers import LLM
-        from langchain.schema import HumanMessage
+        from langchain_core.messages import HumanMessage
         
         mock_llm_instance = MagicMock()
         mock_result = MagicMock()
@@ -981,7 +981,7 @@ class TestLLMClass(unittest.TestCase):
     def test_llm_generate_chat_model(self, mock_get_llm, mock_get_config):
         """Test LLM generate with chat model"""
         from helpers.llmhelpers import LLM
-        from langchain.schema import HumanMessage
+        from langchain_core.messages import HumanMessage
         
         mock_llm_instance = MagicMock()
         mock_result = MagicMock()
@@ -1002,7 +1002,7 @@ class TestLLMClass(unittest.TestCase):
     def test_llm_run_oobabooga_disabled(self, mock_log, mock_enable, mock_get_llm, mock_get_config):
         """Test LLM run returns error when Oobabooga is disabled"""
         from helpers.llmhelpers import LLM
-        from langchain.schema import HumanMessage
+        from langchain_core.messages import HumanMessage
         
         mock_llm_instance = MagicMock()
         mock_get_llm.return_value = mock_llm_instance
@@ -1020,7 +1020,7 @@ class TestLLMClass(unittest.TestCase):
     def test_llm_run_single_generation(self, mock_log, mock_get_llm, mock_get_config):
         """Test LLM run with single generation"""
         from helpers.llmhelpers import LLM
-        from langchain.schema import HumanMessage
+        from langchain_core.messages import HumanMessage
         
         mock_llm_instance = MagicMock()
         mock_result = MagicMock()
@@ -1043,7 +1043,7 @@ class TestLLMClass(unittest.TestCase):
     def test_llm_run_best_of_multiple(self, mock_log, mock_get_llm, mock_get_config):
         """Test LLM run with best_of > 1"""
         from helpers.llmhelpers import LLM
-        from langchain.schema import HumanMessage
+        from langchain_core.messages import HumanMessage
         
         mock_llm_instance = MagicMock()
         mock_result1 = MagicMock()
@@ -1210,7 +1210,7 @@ class TestLLMChooseBestGeneration(unittest.TestCase):
     def test_choose_best_generation_valid(self, mock_log, mock_parse, mock_get_llm, mock_get_config):
         """Test choose_best_generation with valid JSON response"""
         from helpers.llmhelpers import LLM, CodeGeneration
-        from langchain.schema import HumanMessage
+        from langchain_core.messages import HumanMessage
         
         mock_llm_instance = MagicMock()
         mock_result = MagicMock()
@@ -1241,7 +1241,7 @@ class TestLLMChooseBestGeneration(unittest.TestCase):
     def test_choose_best_generation_parse_error(self, mock_log, mock_parse, mock_get_llm, mock_get_config):
         """Test choose_best_generation with parse error returns 0"""
         from helpers.llmhelpers import LLM
-        from langchain.schema import HumanMessage
+        from langchain_core.messages import HumanMessage
         
         mock_llm_instance = MagicMock()
         mock_result = MagicMock()
@@ -1268,7 +1268,7 @@ class TestLLMChooseBestGeneration(unittest.TestCase):
     def test_choose_best_generation_best_n_out_of_range(self, mock_log, mock_parse, mock_get_llm, mock_get_config):
         """Test choose_best_generation with best_n out of range returns 0"""
         from helpers.llmhelpers import LLM, CodeGeneration
-        from langchain.schema import HumanMessage
+        from langchain_core.messages import HumanMessage
         
         mock_llm_instance = MagicMock()
         mock_result = MagicMock()
@@ -1297,7 +1297,7 @@ class TestLLMChooseBestGeneration(unittest.TestCase):
     def test_choose_best_generation_text_davinci(self, mock_log, mock_parse, mock_get_llm, mock_get_config):
         """Test choose_best_generation with text-davinci-003"""
         from helpers.llmhelpers import LLM, CodeGeneration
-        from langchain.schema import HumanMessage
+        from langchain_core.messages import HumanMessage
         
         mock_llm_instance = MagicMock()
         mock_result = MagicMock()
@@ -1326,7 +1326,7 @@ class TestLLMChooseBestGeneration(unittest.TestCase):
     def test_choose_best_generation_invalid_json(self, mock_log, mock_parse, mock_get_llm, mock_get_config):
         """Test choose_best_generation with invalid JSON in code block"""
         from helpers.llmhelpers import LLM, CodeGeneration
-        from langchain.schema import HumanMessage
+        from langchain_core.messages import HumanMessage
         
         mock_llm_instance = MagicMock()
         mock_result = MagicMock()

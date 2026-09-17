@@ -14,8 +14,9 @@ from .configurationhelpers import get_enable_openai, get_openai_api_key, spellbo
 
 from langchain_community.llms import OpenAI
 from langchain_openai import ChatOpenAI
-from langchain.schema import HumanMessage, AIMessage, SystemMessage, ChatMessage, BaseMessage, LLMResult
-from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, ChatMessage, BaseMessage
+from langchain_core.outputs import LLMResult
+from langchain_core.callbacks import StreamingStdOutCallbackHandler
 
 from .loghelpers import LOG
 from .jsonhelpers import load_from_json_file, save_to_json_file
