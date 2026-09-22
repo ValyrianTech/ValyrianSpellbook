@@ -143,12 +143,13 @@ class TestDeepSeekLLM(unittest.TestCase):
 
     @patch('helpers.llm_interface.init_websocket_server')
     @patch('helpers.deepseek_llm.OpenAI')
+    @patch('helpers.deepseek_llm.time.sleep')
     @patch('helpers.deepseek_llm.broadcast_message')
     @patch('helpers.deepseek_llm.get_broadcast_channel', return_value='test-channel')
     @patch('helpers.deepseek_llm.get_broadcast_sender', return_value='test-sender')
     @patch('helpers.deepseek_llm.LOG')
-    def test_get_completion_text_empty_choices(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_openai, mock_ws):
-        """Test completion handles empty choices"""
+    def test_get_completion_text_empty_choices(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_sleep, mock_openai, mock_ws):
+        """Test completion handles empty choices (usage-only chunks) by retrying"""
         from helpers.deepseek_llm import DeepSeekLLM
         
         # Create mock chunk with empty choices (usage only)
@@ -160,7 +161,7 @@ class TestDeepSeekLLM(unittest.TestCase):
         mock_chunk.usage.total_tokens = 15
         
         mock_client = MagicMock()
-        mock_client.chat.completions.create.return_value = iter([mock_chunk])
+        mock_client.chat.completions.create.side_effect = lambda *a, **k: iter([mock_chunk])
         mock_openai.return_value = mock_client
         
         llm = DeepSeekLLM(model_name='deepseek-chat', api_key='test-key')
@@ -174,6 +175,7 @@ class TestDeepSeekLLM(unittest.TestCase):
         
         self.assertEqual(result, '')
         self.assertEqual(usage['prompt_tokens'], 10)
+        self.assertEqual(mock_client.chat.completions.create.call_count, 3)
 
 
 class TestDeepSeekLLMAdvanced(unittest.TestCase):
@@ -320,6 +322,90 @@ class TestDeepSeekLLMAdvanced(unittest.TestCase):
         result = llm.get_completion_text(messages)
 
         self.assertIn('Error', result)
+        self.assertEqual(mock_client.chat.completions.create.call_count, 3)
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.deepseek_llm.OpenAI')
+    @patch('helpers.deepseek_llm.time.sleep')
+    @patch('helpers.deepseek_llm.broadcast_message')
+    @patch('helpers.deepseek_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.deepseek_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.deepseek_llm.LOG')
+    def test_empty_completion_retry(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_sleep, mock_openai, mock_ws):
+        """Test that an empty completion triggers a retry and recovers"""
+        from helpers.deepseek_llm import DeepSeekLLM
+
+        empty_chunk = MagicMock()
+        empty_chunk.choices = [MagicMock()]
+        empty_chunk.choices[0].delta.content = ''
+        empty_chunk.choices[0].delta.reasoning_content = None
+        empty_chunk.usage = MagicMock()
+        empty_chunk.usage.prompt_tokens = 10
+        empty_chunk.usage.completion_tokens = 8
+        empty_chunk.usage.total_tokens = 18
+
+        content_chunk = MagicMock()
+        content_chunk.choices = [MagicMock()]
+        content_chunk.choices[0].delta.content = 'Recovered!'
+        content_chunk.choices[0].delta.reasoning_content = None
+        content_chunk.usage = MagicMock()
+        content_chunk.usage.prompt_tokens = 10
+        content_chunk.usage.completion_tokens = 5
+        content_chunk.usage.total_tokens = 15
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.side_effect = [
+            iter([empty_chunk]),
+            iter([content_chunk]),
+        ]
+        mock_openai.return_value = mock_client
+
+        llm = DeepSeekLLM(model_name='deepseek-chat', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages)
+
+        self.assertEqual(result, 'Recovered!')
+        self.assertEqual(mock_client.chat.completions.create.call_count, 2)
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.deepseek_llm.OpenAI')
+    @patch('helpers.deepseek_llm.time.sleep')
+    @patch('helpers.deepseek_llm.broadcast_message')
+    @patch('helpers.deepseek_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.deepseek_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.deepseek_llm.LOG')
+    def test_empty_completion_all_retries_fail(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_sleep, mock_openai, mock_ws):
+        """Test that persistent empty completions exhaust all retries"""
+        from helpers.deepseek_llm import DeepSeekLLM
+
+        empty_chunk = MagicMock()
+        empty_chunk.choices = [MagicMock()]
+        empty_chunk.choices[0].delta.content = ''
+        empty_chunk.choices[0].delta.reasoning_content = None
+        empty_chunk.usage = MagicMock()
+        empty_chunk.usage.prompt_tokens = 10
+        empty_chunk.usage.completion_tokens = 8
+        empty_chunk.usage.total_tokens = 18
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.side_effect = lambda *a, **k: iter([empty_chunk])
+        mock_openai.return_value = mock_client
+
+        llm = DeepSeekLLM(model_name='deepseek-chat', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages)
+
+        self.assertEqual(result, '')
         self.assertEqual(mock_client.chat.completions.create.call_count, 3)
 
 

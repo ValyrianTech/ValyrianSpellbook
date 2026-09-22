@@ -71,10 +71,12 @@ class DeepSeekLLM(LLMInterface):
                 )
 
                 prompt_tokens, completion_tokens, total_tokens = 0, 0, 0
+                stopped_early = False
                 for chunk in response:
                     if self.check_stop_generation():
                         print()
                         sys.stdout.flush()
+                        stopped_early = True
                         break
 
                     if hasattr(chunk, 'usage') and chunk.usage:
@@ -100,6 +102,17 @@ class DeepSeekLLM(LLMInterface):
 
                     data = {'message': completion.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion.lstrip())}
                     broadcast_message(message=json.dumps(data), channel=get_broadcast_channel())
+
+                # DeepSeek V4 intermittently returns an empty completion (finish_reason='stop',
+                # a handful of completion tokens, but no content). Retry the generation in that case.
+                if completion.strip() == '' and not stopped_early:
+                    LOG.warning(f'DeepSeek returned an empty completion (attempt {attempt}/{max_retries})')
+                    if attempt < max_retries:
+                        LOG.info(f'Retrying in {retry_delay} seconds...')
+                        time.sleep(retry_delay)
+                        continue
+                    else:
+                        LOG.error(f'DeepSeek returned an empty completion after {max_retries} attempts.')
 
                 break
 
