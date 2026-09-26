@@ -132,12 +132,13 @@ class TestSaveWallet(object):
         mock_aes.assert_called_once_with(key='pass1')
         mock_aes.return_value.encrypt.assert_called_once()
 
-    @mock.patch('hot_wallet.sys.exit')
+    @mock.patch('hot_wallet.sys.exit', side_effect=SystemExit(1))
     @mock.patch('builtins.print')
     @mock.patch('hot_wallet.getpass.getpass', side_effect=['pass1', 'pass2'])
     def test_save_interactive_password_mismatch(self, mock_getpass, mock_print, mock_exit):
         hot_wallet.args = make_args(wallet_password=None)
-        hot_wallet.save_wallet({'addr': 'key'})
+        with pytest.raises(SystemExit):
+            hot_wallet.save_wallet({'addr': 'key'})
         mock_exit.assert_called_once_with(1)
 
     @mock.patch('builtins.open', new_callable=mock.mock_open)
@@ -235,20 +236,22 @@ class TestSetBip44(object):
         hot_wallet.set_bip44()
         mock_save.assert_called_once_with({'existing': 'data', 'mnemonic': words, 'passphrase': 'pass'})
 
-    @mock.patch('hot_wallet.sys.exit')
+    @mock.patch('hot_wallet.sys.exit', side_effect=SystemExit(1))
     @mock.patch('builtins.print')
     @mock.patch('hot_wallet.load_wallet', return_value={})
     def test_set_bip44_invalid_word_count(self, mock_load, mock_print, mock_exit):
         hot_wallet.args = make_args(mnemonic=['word'] * 15, passphrase=None, wallet=None, wallet_password='pass')
-        hot_wallet.set_bip44()
+        with pytest.raises(SystemExit):
+            hot_wallet.set_bip44()
         mock_exit.assert_called_once_with(1)
 
-    @mock.patch('hot_wallet.sys.exit')
+    @mock.patch('hot_wallet.sys.exit', side_effect=SystemExit(1))
     @mock.patch('builtins.print')
     @mock.patch('hot_wallet.load_wallet', return_value={})
     def test_set_bip44_too_few_words(self, mock_load, mock_print, mock_exit):
         hot_wallet.args = make_args(mnemonic=['word'] * 6, passphrase=None, wallet=None, wallet_password='pass')
-        hot_wallet.set_bip44()
+        with pytest.raises(SystemExit):
+            hot_wallet.set_bip44()
         mock_exit.assert_called_once_with(1)
 
 

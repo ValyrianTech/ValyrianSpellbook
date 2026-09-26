@@ -6,7 +6,9 @@ Tests for spellbookserver.py — the Valyrian Spellbook REST API server (Bottle)
 The SpellbookRESTAPI.__init__ starts a web server via self.run(), so we mock
 that out and test the endpoint callbacks as static methods.
 """
+import importlib.util
 import logging
+import os
 import sys
 from unittest.mock import patch, MagicMock, mock_open
 
@@ -1110,7 +1112,7 @@ class TestTranscribe:
         mock_segment1.end = 1.0
         mock_segment1.text = 'Hello world'
 
-        with patch('spellbookserver.WHISPER_MODEL') as mock_whisper:
+        with patch('spellbookserver.WHISPER_MODEL', create=True) as mock_whisper:
             mock_whisper.transcribe.return_value = ([mock_segment1], MagicMock())
             result = SpellbookRESTAPI.transcribe()
             assert result['full_text'] == 'Hello world'
@@ -1141,7 +1143,7 @@ class TestTranscribe:
         mock_segment1.end = 2.0
         mock_segment1.text = 'Converted audio'
 
-        with patch('spellbookserver.WHISPER_MODEL') as mock_whisper, \
+        with patch('spellbookserver.WHISPER_MODEL', create=True) as mock_whisper, \
              patch('builtins.open', mock_open(read_data=b'opus_data')):
             mock_whisper.transcribe.return_value = ([mock_segment1], MagicMock())
             result = SpellbookRESTAPI.transcribe()
@@ -1173,7 +1175,7 @@ class TestTranscribe:
         mock_segment1.end = 2.0
         mock_segment1.text = 'Converted audio'
 
-        with patch('spellbookserver.WHISPER_MODEL') as mock_whisper, \
+        with patch('spellbookserver.WHISPER_MODEL', create=True) as mock_whisper, \
              patch('builtins.open', mock_open(read_data=b'opus_data')):
             mock_whisper.transcribe.return_value = ([mock_segment1], MagicMock())
             SpellbookRESTAPI.transcribe()
@@ -1181,6 +1183,20 @@ class TestTranscribe:
             remove_calls = [str(c) for c in mock_remove.call_args_list]
             assert any('tmp_audio.mp3' in c for c in remove_calls)
             assert any('opus_audio.opus' in c for c in remove_calls)
+
+
+class TestWhisperModelLoading:
+
+    def test_whisper_model_loaded_when_transcribe_enabled(self):
+        """Cover the module-level WhisperModel loading block (spellbookserver.py:50-56)."""
+        path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'spellbookserver.py')
+        spec = importlib.util.spec_from_file_location('spellbookserver_transcribe_enabled', path)
+        mod = importlib.util.module_from_spec(spec)
+        with patch('helpers.configurationhelpers.get_enable_transcribe', return_value=True), \
+             patch('helpers.configurationhelpers.get_model_size_transcribe', return_value='tiny'), \
+             patch('faster_whisper.WhisperModel') as mock_whisper:
+            spec.loader.exec_module(mod)
+        mock_whisper.assert_called_once()
 
 
 class TestConvertAacToOpus:

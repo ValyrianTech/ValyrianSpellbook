@@ -1,11 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from unittest import mock
+
 import pytest
 
 from bips.BIP32 import set_chain_mode
 from helpers.hotwallethelpers import get_address_from_wallet, get_private_key_from_wallet
 from helpers.messagehelpers import verify_message, sign_message
 from helpers.configurationhelpers import get_use_testnet
+
+TEST_WALLET = {
+    'mnemonic': 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'.split(),
+    'passphrase': '',
+}
 
 
 # Note: if this test fails, check if openssl and ripemd160 are installed
@@ -103,8 +110,9 @@ class TestSignMessage(object):
         signature = 'HyEuQEIIi5KS0dqyCaIWh6a5A3wIMFqkSEehuNa7jOUZTSyLa08czuASi5RUcj78hPI5PMNec0w6XhzflMbFNcM='
         assert verify_message(address=address, message=message, signature=signature)
 
+    @mock.patch('helpers.hotwallethelpers.get_hot_wallet', return_value=TEST_WALLET)
     @pytest.mark.parametrize('index', range(1))
-    def test_sign_message_with_addresses_from_hot_wallet(self, index):
+    def test_sign_message_with_addresses_from_hot_wallet(self, mock_wallet, index):
         account = 0
         address = get_address_from_wallet(account=account, index=index)
         private_key = get_private_key_from_wallet(account=account, index=index)[address]
@@ -146,8 +154,9 @@ class TestSignMessage(object):
         signature = 'H4NTp6Z3RWVndpmapw3sJ/CZd0jDS0evgQxasAN+hn3KGhoMLNvzs1Ms3nvPAqdf04XG3O6A4QmmIi70y14Lh18='
         assert verify_message(address=address, message=message, signature=signature)
 
+    @mock.patch('helpers.hotwallethelpers.get_hot_wallet', return_value=TEST_WALLET)
     @pytest.mark.parametrize('index', range(1))
-    def test_sign_message_with_addresses_from_hot_wallet_in_testnet_mode(self, index):
+    def test_sign_message_with_addresses_from_hot_wallet_in_testnet_mode(self, mock_wallet, index):
         set_chain_mode(mainnet=False)
         try:
             account = 0
@@ -166,7 +175,8 @@ class TestSignMessage(object):
             # Reset to mainnet mode to avoid affecting other tests
             set_chain_mode(mainnet=True)
 
-    def test_sign_message_with_a_message_of_256_chars(self):
+    @mock.patch('helpers.hotwallethelpers.get_hot_wallet', return_value=TEST_WALLET)
+    def test_sign_message_with_a_message_of_256_chars(self, mock_wallet):
         address = get_address_from_wallet(account=0, index=0)
         message = ''.join(['a' for _ in range(255)])
         private_key = get_private_key_from_wallet(account=0, index=0)[address]
