@@ -2,6 +2,8 @@
 
 **Last updated:** 2026-08-08 — **56 errors resolved, 0 remaining**
 
+> Note: module paths below have been updated to reflect PEP 8 snake_case renames on this branch (e.g. `helpers/vLLM_llm.py` → `helpers/vllm_llm.py`, `helpers/OpenAIhelpers.py` → `helpers/openaihelpers.py`).
+
 ## Current Status
 
 **0 mypy errors — repository is fully type-check clean**
@@ -35,14 +37,14 @@ mypy 2.1.0 | Command: `mypy --ignore-missing-imports --explicit-package-bases <d
 |------|--------|----------------|
 | `helpers/llmhelpers.py` | 15 | LangChain typing, implicit Optional, union-attr, operator |
 | `webui/api_client.py` | 6 | Return type mismatches, missing returns |
-| `helpers/OpenAIhelpers.py` | 5 | Attr-defined (LangChain module attributes) |
-| `helpers/self_hosted_LLM.py` | 4 | Implicit Optional, attr-defined |
+| `helpers/openaihelpers.py` | 5 | Attr-defined (LangChain module attributes) |
+| `helpers/self_hosted_llm.py` | 4 | Implicit Optional, attr-defined |
 | `helpers/mastodonhelpers.py` | 2 | Override (return type incompatible with parent) |
 | `helpers/lnbitshelpers.py` | 3 | Return type, attr-defined |
 | `helpers/py2specials.py` | 2 | Python 2 builtins (`unicode`, `long`) |
-| `helpers/vLLM_llm.py` | 1 | Implicit Optional (`port: int = None`) |
-| `helpers/vLLMchat_llm.py` | 1 | Implicit Optional (`port: int = None`) |
-| `helpers/together_ai_LLM.py` | 1 | Implicit Optional (`api_key: str = None`) |
+| `helpers/vllm_llm.py` | 1 | Implicit Optional (`port: int = None`) |
+| `helpers/vllmchat_llm.py` | 1 | Implicit Optional (`port: int = None`) |
+| `helpers/together_ai_llm.py` | 1 | Implicit Optional (`api_key: str = None`) |
 | `helpers/textgenerationwebui_llm.py` | 1 | Implicit Optional (`port: int = None`) |
 | `helpers/textgenerationwebui_chat_llm.py` | 1 | Implicit Optional (`port: int = None`) |
 | `helpers/openrouter_llm.py` | 1 | Implicit Optional (`api_key: str = None`) |
@@ -59,7 +61,7 @@ mypy 2.1.0 | Command: `mypy --ignore-missing-imports --explicit-package-bases <d
 
 ### Phase 1: Implicit Optional Fixes (22 errors resolved, 14 files)
 - [x] Add `| None` to parameters defaulting to `None` across LLM helper files
-- Files: `vLLM_llm.py`, `vLLMchat_llm.py`, `together_ai_LLM.py`, `textgenerationwebui_llm.py`, `textgenerationwebui_chat_llm.py`, `openrouter_llm.py`, `openai_llm.py`, `ollama_llm.py`, `ollama_chat_llm.py`, `self_hosted_LLM.py`, `llmhelpers.py`, `webui/api_client.py`, `helpers/lnbitshelpers.py`, `helpers/mastodonhelpers.py`, `helpers/OpenAIhelpers.py`
+- Files: `vllm_llm.py`, `vllmchat_llm.py`, `together_ai_llm.py`, `textgenerationwebui_llm.py`, `textgenerationwebui_chat_llm.py`, `openrouter_llm.py`, `openai_llm.py`, `ollama_llm.py`, `ollama_chat_llm.py`, `self_hosted_llm.py`, `llmhelpers.py`, `webui/api_client.py`, `helpers/lnbitshelpers.py`, `helpers/mastodonhelpers.py`, `helpers/openaihelpers.py`
 - All 3,244 tests pass, 100% coverage maintained
 
 ### Phase 2: Module-Level Variable Annotations (3 errors resolved, 3 files)
@@ -79,7 +81,7 @@ mypy 2.1.0 | Command: `mypy --ignore-missing-imports --explicit-package-bases <d
 - [x] Fix arg-type error by handling `None` model_name in `SelfHostedLLM.__init__` (1 error)
 - [x] Fix `content` list type annotation to `list[dict[str, Any]]` (1 error)
 - [x] Fix abstract class instantiation with `# type: ignore[abstract]` (1 error)
-- [x] Fix `self_hosted_LLM.py` attr-defined with `# type: ignore[attr-defined]` (1 error)
+- [x] Fix `self_hosted_llm.py` attr-defined with `# type: ignore[attr-defined]` (1 error)
 - [x] Fix `comparison_prompt` operator error with `str()` conversion (1 error)
 - All 3,244 tests pass, 100% coverage maintained
 
@@ -87,7 +89,7 @@ mypy 2.1.0 | Command: `mypy --ignore-missing-imports --explicit-package-bases <d
 - [x] Fix return type mismatches: `get_llms()`, `get_explorers()`, `get_triggers()`, `get_actions()` changed from `List[str]` to `Dict[str, Any]` to match `_request()` return type
 - All 3,244 tests pass, 100% coverage maintained
 
-### Phase 5: `helpers/OpenAIhelpers.py` Fixes (4 errors resolved, 1 file)
+### Phase 5: `helpers/openaihelpers.py` Fixes (4 errors resolved, 1 file)
 - [x] Add `# type: ignore[attr-defined]` for legacy OpenAI SDK v0.x module attributes (`Model`, `Completion`, `ChatCompletion`, `Edit`)
 - All 3,244 tests pass, 100% coverage maintained
 

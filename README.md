@@ -17,6 +17,7 @@ The Valyrian Spellbook, formerly known as the Bitcoin Spellbook, is an open plat
 - [Scripts](#scripts)
 - [Example Apps](#example-apps)
 - [Additional Tools](#additional-tools)
+- [Development](#development)
 - [Donations and Social Media](#donations-and-social-media)
 
 ---
@@ -162,6 +163,19 @@ What is not possible yet:
 * sending from segwit addresses (I'm working on it)  
 * looking up transactions or balances from bech32 addresses (this is because blockchain.info and BTC.com do not support this yet)
 
+
+## Development
+
+The project maintains a high quality bar for its source code:
+
+- **Lint-clean** (ruff)
+- **Type-check-clean** (mypy)
+- **100% docstring coverage** (interrogate)
+- **100% unit-test coverage** (pytest)
+
+Source modules follow PEP 8 snake_case naming conventions.
+
+---
 
 ## Donations and Social Media
 If you find this project useful, consider making a donation to support development:

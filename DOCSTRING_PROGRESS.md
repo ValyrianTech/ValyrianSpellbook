@@ -2,6 +2,8 @@
 
 **Last updated:** 2026-08-09 — **0 docstrings missing, 1,303 present (100.0%)**
 
+> Note: module paths below have been updated to reflect PEP 8 snake_case renames on this branch (e.g. `bips/BIP32.py` → `bips/bip32.py`, `helpers/BIP44.py` → `helpers/bip44.py`).
+
 ## Current Status
 
 **100.0% docstring coverage — target: 80.0% — PASSED**
@@ -55,7 +57,7 @@ ignore-init-module = false
   - `helpers/privatekeyhelpers.py`, `publickeyhelpers.py`, `messagehelpers.py`, `mailhelpers.py`, `jsonhelpers.py`, `conversionhelpers.py` — all function docstrings
   - `helpers/setupscripthelpers.py`, `runcommandprocess.py`, `llm_interface.py`, `textgenerationhelpers.py` — all docstrings
   - `bips/mnemonic.py` — module, class, and all method docstrings
-  - `helpers/BIP44.py` — class and method docstrings
+  - `helpers/bip44.py` — class and method docstrings
 - **Bug fixes**: Fixed syntax error (extra bracket) in `bips/mnemonic.py`; fixed indentation issue in `darwin/population.py`
 - **Verification**: `interrogate` 88.2% (PASSED), `ruff` clean, `pytest` 3244 passed
 
@@ -67,7 +69,7 @@ ignore-init-module = false
 - **`uptime_check.py`** — 3 function docstrings
 - **`randomaddress/randomaddress.py`** — 5 function docstrings
 - **`darwin/mutationchance.py`** — 5 class docstrings
-- **`bips/BIP44.py`** — 4 function docstrings
+- **`bips/bip44.py`** — 4 function docstrings
 - **`darwin/gene.py`** — 4 class docstrings
 - **`darwin/genemutation.py`** — 4 class docstrings
 - **`spellbookserver.py`** — 3 function docstrings (`enable_cors`, `convert_aac_to_opus`, `main`)
@@ -81,8 +83,8 @@ ignore-init-module = false
 - **`action/transactiontype.py`** — 1 class docstring (`TransactionType`)
 - **`trigger/triggertype.py`** — 1 class docstring (`TriggerType`)
 - **`darwin/encodingtype.py`** — 1 class docstring (`EncodingType`)
-- **`bips/BIP32.py`** — 9 function docstrings
-- **`bips/BIP39.py`** — 1 function docstring (`get_seed`)
+- **`bips/bip32.py`** — 9 function docstrings
+- **`bips/bip39.py`** — 1 function docstring (`get_seed`)
 - **`darwin/parentselection.py`** — 4 function docstrings
 - **`darwin/recombination.py`** — 1 function docstring
 - **`darwin/fitnessfunction/fitnessfunction.py`** — 1 class docstring (`Fitness`)

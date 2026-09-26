@@ -53,7 +53,6 @@ All modules at 100% coverage, 3,243 tests passing.
 - [x] `bitcoinwand.py` — 37 lines — 100% coverage (added POST exception handler test)
 - [x] `quickstart.py` — 96 lines — 100% coverage (added tests for SMTP/SSL/Twitter/OpenAI/Mastodon/Nostr enabled branches, spellbook.conf exists, empty host, api_keys missing)
 - [x] `uptime_check.py` — 68 lines — 100% coverage (added IPFS email failure test, `__main__` guard tests)
-- [x] `dockerfiles/replace_placeholders.py` — 13 lines — 100% coverage
 - [x] `texts.py` — 76 lines — 100% coverage
 - [x] `import_llm_configs.py` — 117 lines — 100% coverage
 
