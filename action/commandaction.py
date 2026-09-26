@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 """Action that executes a system command."""
 
-from subprocess import PIPE, Popen
+import shlex
+import subprocess
 
 from helpers.loghelpers import LOG
 
@@ -28,26 +29,26 @@ class CommandAction(Action):
         if self.run_command is None or self.run_command == '':
             return False
 
+        command = self.run_command
         placeholders = kwargs.get('placeholders', {})
         for key, value in placeholders.items():
             LOG.info(f'Replacing placeholder {key} with {value}')
-            self.run_command = self.run_command.replace(key, value)
+            command = command.replace(key, shlex.quote(str(value)))
 
-        LOG.info(f'Running command: {self.run_command}')
+        LOG.info(f'Running command: {command}')
         if self.working_dir is not None:
             LOG.info(f'Working dir: {self.working_dir}')
-        
-        # Use cwd parameter instead of os.chdir() for thread-safety
-        command_process = Popen(self.run_command, stdout=PIPE, stderr=PIPE, shell=True, cwd=self.working_dir)
-        output, error = command_process.communicate()
-        stripped_output = output.strip()
+
+        argv = shlex.split(command)
+        result = subprocess.run(argv, shell=False, capture_output=True, cwd=self.working_dir)
+        stripped_output = result.stdout.strip()
         LOG.info(f'Command output: {stripped_output}')
 
-        stripped_error = error.strip()
+        stripped_error = result.stderr.strip()
         if len(stripped_error):
             LOG.error(f'Command error: {stripped_error}')
 
-        if command_process.returncode == 0:
+        if result.returncode == 0:
             return True, stripped_output, stripped_error
         else:
             return False, stripped_output, stripped_error
