@@ -40,7 +40,11 @@ class CommandAction(Action):
             LOG.info(f'Working dir: {self.working_dir}')
 
         argv = shlex.split(command)
-        result = subprocess.run(argv, shell=False, capture_output=True, cwd=self.working_dir)
+        try:
+            result = subprocess.run(argv, shell=False, capture_output=True, cwd=self.working_dir)
+        except OSError as e:
+            LOG.error(f'Command failed to run: {e}')
+            return False, b'', str(e).encode()
         stripped_output = result.stdout.strip()
         LOG.info(f'Command output: {stripped_output}')
 
