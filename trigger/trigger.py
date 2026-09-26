@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Base Trigger class and registry for all Spellbook triggers."""
 
@@ -7,21 +6,31 @@ import importlib
 import os
 import platform
 import time
-from abc import abstractmethod, ABCMeta
+from abc import ABCMeta, abstractmethod
 from datetime import datetime
 
-from helpers.actionhelpers import get_actions, get_action
+from helpers.actionhelpers import get_action, get_actions
 from helpers.jsonhelpers import save_to_json_file
 from helpers.loghelpers import LOG
 from spellbookscripts.spellbookscript import SpellbookScript
-from validators.validators import valid_actions, valid_trigger_type, valid_amount, valid_script
-from validators.validators import valid_description, valid_creator, valid_email, valid_youtube_id
-from validators.validators import valid_status, valid_visibility, valid_timestamp
+from validators.validators import (
+    valid_actions,
+    valid_amount,
+    valid_creator,
+    valid_description,
+    valid_email,
+    valid_script,
+    valid_status,
+    valid_timestamp,
+    valid_trigger_type,
+    valid_visibility,
+    valid_youtube_id,
+)
 
 TRIGGERS_DIR = 'json/public/triggers'
 
 
-class Trigger(object):
+class Trigger:
     """Base trigger class and registry for all Spellbook triggers."""
     __metaclass__ = ABCMeta
 
@@ -104,7 +113,6 @@ class Trigger(object):
 
         :return: True or False
         """
-        pass
 
     def activate(self):
         """

@@ -1,20 +1,20 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Action that sends data to a webhook URL."""
 
 import requests
 
 from helpers.loghelpers import LOG
+from validators.validators import valid_url
+
 from .action import Action
 from .actiontype import ActionType
-from validators.validators import valid_url
 
 
 class WebhookAction(Action):
     """Action that sends data to a webhook URL."""
     def __init__(self, action_id):
-        super(WebhookAction, self).__init__(action_id=action_id)
+        super().__init__(action_id=action_id)
         self.action_type = ActionType.WEBHOOK
         self.webhook = None
         self.body = None
@@ -57,7 +57,7 @@ class WebhookAction(Action):
         :param config: A dict containing the configuration settings
                        - config['webhook']    : An url of the webhook
         """
-        super(WebhookAction, self).configure(**config)
+        super().configure(**config)
         if 'webhook' in config and valid_url(config['webhook']):
             self.webhook = config['webhook']
 
@@ -70,7 +70,7 @@ class WebhookAction(Action):
 
         :return: A dict containing the configuration settings
         """
-        ret = super(WebhookAction, self).json_encodable()
+        ret = super().json_encodable()
         ret.update({'webhook': self.webhook,
                     'body': self.body,
                     'request_type': self.request_type})

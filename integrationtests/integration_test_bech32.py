@@ -1,7 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 from helpers.setupscripthelpers import spellbook_call
-
 
 print('Starting Spellbook integration test: bech32')
 print('----------------------------------------------\n')

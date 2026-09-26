@@ -1,16 +1,23 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """BIP32 hierarchical deterministic wallet key derivation."""
 
 import hashlib
 import hmac
 import re
 
-from helpers.py3specials import bin_dbl_sha256, changebase, decode, encode, from_byte_to_int, from_int_to_byte, from_string_to_bytes, safe_hexlify
-from helpers.privatekeyhelpers import privkey_to_pubkey, add_privkeys
-from helpers.publickeyhelpers import add_pubkeys, compress, bin_hash160
-
 from helpers.configurationhelpers import get_use_testnet
+from helpers.privatekeyhelpers import add_privkeys, privkey_to_pubkey
+from helpers.publickeyhelpers import add_pubkeys, bin_hash160, compress
+from helpers.py3specials import (
+    bin_dbl_sha256,
+    changebase,
+    decode,
+    encode,
+    from_byte_to_int,
+    from_int_to_byte,
+    from_string_to_bytes,
+    safe_hexlify,
+)
 
 BIP32_DERIVATION_PATH_REGEX = r"^m(\/\d+'?)*"
 HARDENED = 2**31

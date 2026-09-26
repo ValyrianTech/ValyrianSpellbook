@@ -1,20 +1,19 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Standalone uptime monitoring script for the Spellbook server."""
 
-import os
 import argparse
-import requests
+import os
 import platform
+
 import psutil
+import requests
 
 from helpers.configurationhelpers import get_host, get_port
+from helpers.ipfshelpers import check_ipfs
 from helpers.loghelpers import LOG, logs_dir
 from helpers.mailhelpers import sendmail
 from helpers.runcommandprocess import RunCommandProcess
-
-from helpers.ipfshelpers import check_ipfs
 
 
 def uptime_check(email, ipfs=False, reboot=False, ssl=None):
@@ -24,9 +23,9 @@ def uptime_check(email, ipfs=False, reboot=False, ssl=None):
     LOG.info('Checking if spellbook server is still online')
 
     if ssl is None:
-        url = 'http://{host}:{port}/spellbook/ping'.format(host=get_host(), port=get_port())
+        url = f'http://{get_host()}:{get_port()}/spellbook/ping'
     else:
-        url = 'https://{host}:{port}/spellbook/ping'.format(host=ssl, port=get_port())
+        url = f'https://{ssl}:{get_port()}/spellbook/ping'
     try:
         r = requests.get(url=url, timeout=10)
         response = r.json()

@@ -1,13 +1,12 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Blockstream.info block explorer API client."""
-import requests
 from time import sleep
 
-from helpers.loghelpers import LOG
-from data.transaction import TX, TxInput, TxOutput
-from data.explorer_api import ExplorerAPI
+import requests
 
+from data.explorer_api import ExplorerAPI
+from data.transaction import TX, TxInput, TxOutput
+from helpers.loghelpers import LOG
 
 
 class BlockstreamAPI(ExplorerAPI):
@@ -17,7 +16,7 @@ class BlockstreamAPI(ExplorerAPI):
     Initializes the API client with URL, optional key, and testnet flag.
     """
     def __init__(self, url='', key='', testnet=False):
-        super(BlockstreamAPI, self).__init__(url=url, testnet=testnet)
+        super().__init__(url=url, testnet=testnet)
         # Set the url of the api depending on testnet or mainnet
         self.url = 'https://blockstream.info/testnet/api' if self.testnet is True else 'https://blockstream.info/api'
 
@@ -36,7 +35,7 @@ class BlockstreamAPI(ExplorerAPI):
 
     def get_block_by_hash(self, block_hash):
         """Retrieve a block by its hash from the blockchain explorer."""
-        url = self.url + '/block/{hash}'.format(hash=block_hash)
+        url = self.url + f'/block/{block_hash}'
         LOG.info('GET %s' % url)
         try:
             r = requests.get(url)
@@ -57,7 +56,7 @@ class BlockstreamAPI(ExplorerAPI):
 
     def get_block_by_height(self, height):
         """Retrieve a block by its height from the blockchain explorer."""
-        url = self.url + '/block-height/{height}'.format(height=height)
+        url = self.url + f'/block-height/{height}'
         LOG.info('GET %s' % url)
         try:
             r = requests.get(url)
@@ -79,7 +78,7 @@ class BlockstreamAPI(ExplorerAPI):
             LOG.error('Unable to get latest block_height from Blockstream.info: %s' % ex)
             return {'error': 'Unable to get latest block_height from Blockstream.info'}
 
-        url = self.url + '/address/{address}/txs'.format(address=address)
+        url = self.url + f'/address/{address}/txs'
         LOG.info('GET %s' % url)
         try:
             r = requests.get(url)
@@ -96,7 +95,7 @@ class BlockstreamAPI(ExplorerAPI):
         while len(data) >= 25:
             sleep(0.5)
             last_txid = data[-1]['txid']
-            url = self.url + '/address/{address}/txs/chain/{last_txid}'.format(address=address, last_txid=last_txid)
+            url = self.url + f'/address/{address}/txs/chain/{last_txid}'
             LOG.info('GET %s' % url)
             try:
                 r = requests.get(url)
@@ -114,7 +113,7 @@ class BlockstreamAPI(ExplorerAPI):
 
     def get_balance(self, address):
         """Retrieve the balance (final, received, sent) for a given address."""
-        url = self.url + '/address/{address}'.format(address=address)
+        url = self.url + f'/address/{address}'
         LOG.info('GET %s' % url)
         try:
             r = requests.get(url)
@@ -134,7 +133,7 @@ class BlockstreamAPI(ExplorerAPI):
 
     def get_transaction(self, txid):
         """Retrieve a single transaction by its txid from the explorer."""
-        url = self.url + '/tx/{txid}'.format(txid=txid)
+        url = self.url + f'/tx/{txid}'
         LOG.info('GET %s' % url)
         try:
             r = requests.get(url)
@@ -206,7 +205,7 @@ class BlockstreamAPI(ExplorerAPI):
             LOG.error('Unable to get latest block_height from Blockstream.info: %s' % ex)
             return {'error': 'Unable to get latest block_height from Blockstream.info'}
 
-        url = self.url + '/address/{address}/utxo'.format(address=address)
+        url = self.url + f'/address/{address}/utxo'
         LOG.info('GET %s' % url)
         try:
             r = requests.get(url)
@@ -233,7 +232,7 @@ class BlockstreamAPI(ExplorerAPI):
 
     def push_tx(self, tx):
         """Broadcast a signed raw transaction to the blockchain network."""
-        url = self.url + '/broadcast?tx={tx}'.format(tx=tx)
+        url = self.url + f'/broadcast?tx={tx}'
         LOG.info('GET %s' % url)
         try:
             r = requests.get(url)

@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Insight block explorer API client."""
 
 import requests
 
-from helpers.loghelpers import LOG
-from data.transaction import TX, TxInput, TxOutput
 from data.explorer_api import ExplorerAPI
+from data.transaction import TX, TxInput, TxOutput
+from helpers.loghelpers import LOG
 
 
 class InsightAPI(ExplorerAPI):
@@ -131,14 +130,13 @@ class InsightAPI(ExplorerAPI):
                 n_tx -= 1
 
         if n_tx != len(txs):
-            return {'error': 'Not all transactions are retrieved! expected {expected} but only got {received}'.format(
-                    expected=n_tx, received=len(txs))}
+            return {'error': f'Not all transactions are retrieved! expected {n_tx} but only got {len(txs)}'}
         else:
             return {'transactions': txs}
 
     def get_balance(self, address):
         """Retrieve the balance (final, received, sent) for a given address."""
-        url = '{api_url}/addr/{address}/balance'.format(api_url=self.url, address=address)
+        url = f'{self.url}/addr/{address}/balance'
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
@@ -149,7 +147,7 @@ class InsightAPI(ExplorerAPI):
 
         balance = {'final': data}
 
-        url = '{api_url}/addr/{address}/totalReceived'.format(api_url=self.url, address=address)
+        url = f'{self.url}/addr/{address}/totalReceived'
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
@@ -160,7 +158,7 @@ class InsightAPI(ExplorerAPI):
 
         balance['received'] = data
 
-        url = '{api_url}/addr/{address}/totalSent'.format(api_url=self.url, address=address)
+        url = f'{self.url}/addr/{address}/totalSent'
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
@@ -258,7 +256,7 @@ class InsightAPI(ExplorerAPI):
             tx_inputs = data['vin']
 
             input_addresses = []
-            for i in range(0, len(tx_inputs)):
+            for i in range(len(tx_inputs)):
                 input_addresses.append(tx_inputs[i]['addr'])
 
             if len(input_addresses) > 0:
@@ -294,7 +292,7 @@ class InsightAPI(ExplorerAPI):
 
     def push_tx(self, tx):
         """Broadcast a signed raw transaction to the blockchain network."""
-        url = '{api_url}/tx/send'.format(api_url=self.url)
+        url = f'{self.url}/tx/send'
         LOG.info('POST %s' % url)
         try:
             r = requests.post(url, data=dict(rawtx=tx))

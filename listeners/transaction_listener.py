@@ -1,21 +1,22 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Transaction listener that monitors incoming transactions."""
 
-import websocket
-import simplejson
 import argparse
-import sys
-import os
-import time
 import logging
+import os
+import sys
+import time
 from logging.handlers import RotatingFileHandler
+
+import simplejson
+import websocket
 
 PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, PROGRAM_DIR)
 
-from helpers.runcommandprocess import RunCommandProcess  # noqa: E402
+from helpers.runcommandprocess import RunCommandProcess
+
 # import mysql.connector  # TODO re-enable mysql functionality
 
 
@@ -236,7 +237,7 @@ if __name__ == "__main__":
                     WATCHLIST = simplejson.load(input_file)
                 except Exception as ex:
                     raise Exception('%s does not contain a valid dictionary: %s' % (args.watchlist, ex))
-        except IOError:
+        except OSError:
             raise Exception('File %s does not exists' % args.watchlist)
 
         LISTENER_LOG.info('Watchlist:')

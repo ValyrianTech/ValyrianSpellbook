@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import time
 
-from helpers.setupscripthelpers import spellbook_call, clean_up_triggers
+from helpers.setupscripthelpers import clean_up_triggers, spellbook_call
 
 print('Starting Spellbook integration test: DeadMansSwitch trigger conditions')
 print('----------------------------------------------\n')

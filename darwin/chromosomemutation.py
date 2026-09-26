@@ -1,15 +1,14 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Chromosome-level mutation operations for Darwin."""
 
 import random
 from copy import deepcopy
 
-from darwin.gene import BooleanGene, IntegerGene, FloatGene, StringGene
 from darwin.encodingtype import EncodingType
+from darwin.gene import BooleanGene, FloatGene, IntegerGene, StringGene
 
 
-class ChromosomeMutation(object):
+class ChromosomeMutation:
     """Chromosome-level mutation operations for Darwin."""
     def __init__(self, chromosome):
         self.chromosome = chromosome

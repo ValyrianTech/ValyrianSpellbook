@@ -1,21 +1,25 @@
 """Helper functions for interacting with OpenAI's Large Language Models like GPT-3."""
-from typing import List, Dict, Union
-from helpers.configurationhelpers import get_enable_openai, get_openai_api_key, get_openai_organization
 
 import openai
+
+from helpers.configurationhelpers import (
+    get_enable_openai,
+    get_openai_api_key,
+    get_openai_organization,
+)
 
 if get_enable_openai() is True:
     openai.organization = get_openai_organization()
     openai.api_key = get_openai_api_key()
 
 
-def get_model_ids() -> List:
+def get_model_ids() -> list:
     """
     Get a list of the available model ids at openai
 
     :return: List - List containing the ids of the models
     """
-    ids: List[str]
+    ids: list[str]
 
     try:
         result = openai.Model.list()  # type: ignore[attr-defined]
@@ -28,15 +32,15 @@ def get_model_ids() -> List:
     return ids
 
 
-def openai_complete(prompt: Union[str, List[str], None],
+def openai_complete(prompt: str | list[str] | None,
                     model: str = 'text-davinci-003',
                     suffix: str | None = None,
                     max_tokens: int = 64,
                     temperature: float = 1,
                     top_p: float = 1,
                     n: int = 1,
-                    stop: Union[str, List[str], None] = None,
-                    user: str = '') -> Dict:
+                    stop: str | list[str] | None = None,
+                    user: str = '') -> dict:
     """
     Complete a prompt
 
@@ -58,7 +62,7 @@ def openai_complete(prompt: Union[str, List[str], None],
     :param user: A unique identifier representing your end-user, which can help OpenAI to monitor and detect abuse.
     :return: Dictionary containing the response data
     """
-    response: Dict
+    response: dict
 
     try:
         response = openai.Completion.create(  # type: ignore[attr-defined]
@@ -79,17 +83,17 @@ def openai_complete(prompt: Union[str, List[str], None],
     return response
 
 
-def openai_chat_complete(messages: List[Dict],
+def openai_chat_complete(messages: list[dict],
                          model: str = 'gpt-3.5-turbo',
                          max_tokens: int = 64,
                          temperature: float = 1,
                          top_p: float = 1,
                          n: int = 1,
-                         stop: Union[str, List[str], None] = None,
+                         stop: str | list[str] | None = None,
                          user: str = '',
                          stream: bool = False,
                          presence_penalty: float = 0,
-                         frequency_penalty: float = 0) -> Dict:
+                         frequency_penalty: float = 0) -> dict:
     """
     Complete a prompt
 
@@ -112,7 +116,7 @@ def openai_chat_complete(messages: List[Dict],
     :param user: A unique identifier representing your end-user, which can help OpenAI to monitor and detect abuse.
     :return: Dictionary containing the response data
     """
-    response: Dict
+    response: dict
 
     try:
         response = openai.ChatCompletion.create(  # type: ignore[attr-defined]
@@ -155,7 +159,7 @@ def openai_edit(instruction: str,
 
     :return: Dictionary containing the response data
     """
-    response: Dict
+    response: dict
 
     try:
         response = openai.Edit.create(  # type: ignore[attr-defined]

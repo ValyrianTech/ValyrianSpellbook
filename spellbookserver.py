@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """REST API server for the Valyrian Spellbook built on Bottle."""
 
 import argparse
@@ -10,35 +9,95 @@ import sys
 import time
 import traceback
 import uuid
-import magic
 from configparser import ConfigParser
 from datetime import datetime
 from functools import wraps
 from logging.handlers import RotatingFileHandler
 
-from bottle import Bottle, BaseRequest, request, response, static_file, ServerAdapter, server_names, HTTPResponse
+import magic
+from bottle import (
+    BaseRequest,
+    Bottle,
+    HTTPResponse,
+    ServerAdapter,
+    request,
+    response,
+    server_names,
+    static_file,
+)
 
 from authentication import initialize_api_keys_file
-from data.data import get_explorers, get_explorer_config, save_explorer, delete_explorer
-from data.data import latest_block, block_by_height, block_by_hash, prime_input_address, transaction
-from data.data import transactions, balance, utxos
-from decorators import authentication_required, use_explorer, output_json
-from helpers.actionhelpers import get_actions, get_action_config, save_action, delete_action, run_action, get_reveal
-from helpers.configurationhelpers import get_host, get_port, get_notification_email, get_mail_on_exception, what_is_my_ip
-from helpers.configurationhelpers import get_enable_uploads, get_uploads_dir, get_allowed_extensions, get_max_file_size
-from helpers.configurationhelpers import get_enable_transcribe, get_allowed_extensions_transcribe, get_max_file_size_transcribe, get_model_size_transcribe
-from helpers.configurationhelpers import get_enable_ssl, get_ssl_certificate, get_ssl_private_key, get_ssl_certificate_chain, get_enable_wallet
+from data.data import (
+    balance,
+    block_by_hash,
+    block_by_height,
+    delete_explorer,
+    get_explorer_config,
+    get_explorers,
+    latest_block,
+    prime_input_address,
+    save_explorer,
+    transaction,
+    transactions,
+    utxos,
+)
+from decorators import authentication_required, output_json, use_explorer
+from helpers.actionhelpers import (
+    delete_action,
+    get_action_config,
+    get_actions,
+    get_reveal,
+    run_action,
+    save_action,
+)
+from helpers.configurationhelpers import (
+    get_allowed_extensions,
+    get_allowed_extensions_transcribe,
+    get_enable_ssl,
+    get_enable_transcribe,
+    get_enable_uploads,
+    get_enable_wallet,
+    get_host,
+    get_mail_on_exception,
+    get_max_file_size,
+    get_max_file_size_transcribe,
+    get_model_size_transcribe,
+    get_notification_email,
+    get_port,
+    get_ssl_certificate,
+    get_ssl_certificate_chain,
+    get_ssl_private_key,
+    get_uploads_dir,
+    what_is_my_ip,
+)
 from helpers.hotwallethelpers import get_hot_wallet
+from helpers.llmhelpers import delete_llm, get_llm_config, load_llms, save_llm_config
 from helpers.loghelpers import LOG, REQUESTS_LOG, get_logs
-from helpers.triggerhelpers import get_triggers, get_trigger_config, save_trigger, delete_trigger, activate_trigger, \
-    check_triggers, verify_signed_message, http_get_request, http_post_request, http_delete_request, http_options_request, sign_message, file_download
 from helpers.mailhelpers import sendmail
-from inputs.inputs import get_sil, get_profile, get_sul
-from linker.linker import get_lal, get_lbl, get_lrl, get_lsl
-from randomaddress.randomaddress import random_address_from_sil, random_address_from_lbl, random_address_from_lrl, \
-    random_address_from_lsl
 from helpers.qrhelpers import generate_qr
-from helpers.llmhelpers import load_llms, get_llm_config, save_llm_config, delete_llm
+from helpers.triggerhelpers import (
+    activate_trigger,
+    check_triggers,
+    delete_trigger,
+    file_download,
+    get_trigger_config,
+    get_triggers,
+    http_delete_request,
+    http_get_request,
+    http_options_request,
+    http_post_request,
+    save_trigger,
+    sign_message,
+    verify_signed_message,
+)
+from inputs.inputs import get_profile, get_sil, get_sul
+from linker.linker import get_lal, get_lbl, get_lrl, get_lsl
+from randomaddress.randomaddress import (
+    random_address_from_lbl,
+    random_address_from_lrl,
+    random_address_from_lsl,
+    random_address_from_sil,
+)
 
 BaseRequest.MEMFILE_MAX = 10 * 1024 * 1024  # 10MB — override default 100KB for large AddMessage payloads
 
@@ -79,8 +138,8 @@ class SSLWebServer(ServerAdapter):
         """
         Runs a CherryPy Server using the SSL certificate.
         """
-        from cheroot.wsgi import Server as CherryPyWSGIServer
         from cheroot.ssl.builtin import BuiltinSSLAdapter
+        from cheroot.wsgi import Server as CherryPyWSGIServer
 
         server = CherryPyWSGIServer((self.host, self.port), handler)
 
@@ -103,7 +162,7 @@ server_names['sslwebserver'] = SSLWebServer
 class SpellbookRESTAPI(Bottle):
     """REST API server for the Valyrian Spellbook built on Bottle."""
     def __init__(self):
-        super(SpellbookRESTAPI, self).__init__()
+        super().__init__()
 
         # Initialize variables
         self.host = get_host()

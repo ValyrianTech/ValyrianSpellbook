@@ -1,9 +1,8 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import unittest
 import hashlib
+import unittest
 
-from helpers.py_ripemd160 import ripemd160, compress, fi, rol
+from helpers.py_ripemd160 import compress, fi, ripemd160, rol
 
 
 class TestPyRipemd160(unittest.TestCase):

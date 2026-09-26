@@ -1,13 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Base Action class and registry for all Spellbook actions."""
 
 import os
 import time
-from abc import abstractmethod, ABCMeta
+from abc import ABCMeta, abstractmethod
 from datetime import datetime
-from typing import Optional
 
 from helpers.jsonhelpers import save_to_json_file
 from validators.validators import valid_action_type
@@ -15,7 +13,7 @@ from validators.validators import valid_action_type
 ACTIONS_DIR = 'json/public/actions'
 
 
-class Action(object):
+class Action:
     """
     Base action class and registry for all Spellbook actions.
 
@@ -27,8 +25,8 @@ class Action(object):
 
     def __init__(self, action_id: str) -> None:
         self.id = action_id
-        self.action_type: Optional[str] = None
-        self.created: Optional[datetime] = None
+        self.action_type: str | None = None
+        self.created: datetime | None = None
 
     def configure(self, **config):
         """
@@ -70,4 +68,3 @@ class Action(object):
 
         :return: True upon success, False upon failure
         """
-        pass

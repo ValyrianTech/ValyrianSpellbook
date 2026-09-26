@@ -1,11 +1,10 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Base Rosetta Stone class for Darwin."""
 
-from abc import abstractmethod, ABCMeta
+from abc import ABCMeta, abstractmethod
 
 
-class RosettaStone(object):
+class RosettaStone:
     """Base Rosetta Stone class for Darwin."""
     __metaclass__ = ABCMeta
 
@@ -24,16 +23,13 @@ class RosettaStone(object):
     @abstractmethod
     def genome_template(self):
         """Genome template."""
-        pass
 
     @abstractmethod
     def model_to_genome(self, model):
         """Model to genome."""
-        pass
 
     @abstractmethod
     def genome_to_model(self, genome):
         """Genome to model."""
-        pass
 
 

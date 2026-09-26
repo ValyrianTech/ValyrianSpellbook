@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import pytest
 
 from helpers.privatekeyhelpers import PrivateKey
@@ -17,7 +16,7 @@ address_uncompressed = '1GnvtEY28hzbuEhrWjUNA2aAX5FtRKChHR'
 public_key_uncompressed = '043782620F3397D7AAC738DD7AAD7C4D769C6DA8571DC0E1C4EE60A61883E7E5C56525367FB5BE8EDF81290E150F840446A80754EDD61A59A99BB1B271931C1EFA'
 
 
-class TestPrivateKey(object):
+class TestPrivateKey:
     def test_given_no_parameters_when_initializing_private_key_then_exception_is_raised(self):
         with pytest.raises(Exception):
             PrivateKey()

@@ -1,13 +1,12 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Helper functions for spawning and managing external command processes."""
 
-import sys
-import os
 import logging
-from logging.handlers import RotatingFileHandler
 import multiprocessing
-from subprocess import Popen, PIPE
+import os
+import sys
+from logging.handlers import RotatingFileHandler
+from subprocess import PIPE, Popen
 
 from helpers.platformhelpers import format_args
 

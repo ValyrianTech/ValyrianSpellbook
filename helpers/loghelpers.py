@@ -1,13 +1,12 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Logging configuration and helpers for the Valyrian Spellbook."""
 
-import os
-import io
-import sys
 import glob
-import platform
+import io
 import logging
+import os
+import platform
+import sys
 from logging.handlers import RotatingFileHandler
 
 PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -66,7 +65,7 @@ def get_logs(filter_string=''):
     combined_logs = []
     for log_file in log_files:
         with open(log_file, 'r', encoding='utf-8') as input_file:
-            for line in input_file.readlines():
+            for line in input_file:
                 if filter_string in line:
                     combined_logs.append(line.strip())
 

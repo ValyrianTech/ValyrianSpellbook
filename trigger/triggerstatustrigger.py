@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Trigger that activates based on another trigger's status."""
 
@@ -10,7 +9,7 @@ from .triggertype import TriggerType
 class TriggerStatusTrigger(Trigger):
     """Trigger that activates based on another trigger's status."""
     def __init__(self, trigger_id):
-        super(TriggerStatusTrigger, self).__init__(trigger_id=trigger_id)
+        super().__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.TRIGGERSTATUS
         self.previous_trigger = None
         self.previous_trigger_status = None
@@ -29,7 +28,7 @@ class TriggerStatusTrigger(Trigger):
 
     def configure(self, **config):
         """Configure."""
-        super(TriggerStatusTrigger, self).configure(**config)
+        super().configure(**config)
         if 'previous_trigger' in config:
             self.previous_trigger = config['previous_trigger']
 
@@ -38,7 +37,7 @@ class TriggerStatusTrigger(Trigger):
 
     def json_encodable(self):
         """Json encodable."""
-        ret = super(TriggerStatusTrigger, self).json_encodable()
+        ret = super().json_encodable()
 
         ret.update({
             'previous_trigger': self.previous_trigger,

@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import mock
+from unittest import mock
 
-from action.spawnprocessaction import SpawnProcessAction
 from action.actiontype import ActionType
+from action.spawnprocessaction import SpawnProcessAction
 
 
-class TestSpawnProcessAction(object):
+class TestSpawnProcessAction:
     """Tests for SpawnProcessAction"""
 
     def test_spawnprocessaction_init(self):

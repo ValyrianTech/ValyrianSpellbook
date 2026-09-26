@@ -1,9 +1,8 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import unittest
 import os
 import tempfile
-from unittest.mock import patch, MagicMock
+import unittest
+from unittest.mock import MagicMock, patch
 
 
 class TestLoadSmtpSettings(unittest.TestCase):
@@ -16,8 +15,8 @@ class TestLoadSmtpSettings(unittest.TestCase):
     @patch('helpers.mailhelpers.get_smtp_password', return_value='password')
     def test_load_smtp_settings(self, mock_pass, mock_user, mock_port, mock_host, mock_from):
         """Test loading SMTP settings from configuration"""
-        from helpers.mailhelpers import load_smtp_settings
         import helpers.mailhelpers as mail_module
+        from helpers.mailhelpers import load_smtp_settings
         
         load_smtp_settings()
         

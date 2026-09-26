@@ -1,13 +1,15 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import unittest
-from unittest.mock import patch, MagicMock, AsyncMock
 import asyncio
+import unittest
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
 
 from helpers.websockethelpers import (
-    set_broadcast_channel, get_broadcast_channel, get_broadcast_sender,
-    WebSocketHandler
+    WebSocketHandler,
+    get_broadcast_channel,
+    get_broadcast_sender,
+    set_broadcast_channel,
 )
 
 

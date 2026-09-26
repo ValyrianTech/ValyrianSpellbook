@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 from bips.BIP32 import set_chain_mode
 from helpers.hotwallethelpers import get_address_from_wallet
-from helpers.setupscripthelpers import spellbook_call, clean_up_actions
+from helpers.setupscripthelpers import clean_up_actions, spellbook_call
 
 # make sure testnet is always on for this integrationtest
 set_chain_mode(mainnet=False)

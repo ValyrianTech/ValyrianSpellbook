@@ -1,13 +1,17 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Helper functions for signing and verifying Bitcoin messages."""
 import hashlib
+
 import bitcoin
 import simplejson
+from bitcoin.signmessage import BitcoinMessage, SignMessage, VerifyMessage
 from bitcoin.wallet import CBitcoinSecret
-from bitcoin.signmessage import BitcoinMessage, VerifyMessage, SignMessage
-from helpers.hotwallethelpers import get_address_from_wallet, get_private_key_from_wallet
+
 from helpers.configurationhelpers import get_use_testnet
+from helpers.hotwallethelpers import (
+    get_address_from_wallet,
+    get_private_key_from_wallet,
+)
 
 bitcoin.SelectParams(name='testnet' if get_use_testnet() is True else 'mainnet')
 

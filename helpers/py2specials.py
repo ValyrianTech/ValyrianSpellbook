@@ -1,12 +1,11 @@
 """Python 2 compatibility helpers copied from Vitalik Buterin's pybitcointools."""
 # Code copied from Vitalik Buterin's pybitcointools (library is no longer maintained)
 
-import sys
-import re
 import binascii
-import os
 import hashlib
-
+import os
+import re
+import sys
 
 if sys.version_info.major == 2:
     string_types = (str, unicode)  # type: ignore[name-defined]  # noqa: F821

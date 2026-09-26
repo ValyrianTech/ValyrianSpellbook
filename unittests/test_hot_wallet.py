@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Tests for hot_wallet.py — the hot wallet management CLI.
 
@@ -10,8 +9,8 @@ import argparse
 import importlib.util
 import os
 import sys
+from unittest import mock
 
-import mock
 import pytest
 
 # hot_wallet.py runs argparse and command dispatch at module level.
@@ -35,7 +34,7 @@ def make_args(**kwargs):
     return argparse.Namespace(**kwargs)
 
 
-class TestLoadWallet(object):
+class TestLoadWallet:
 
     @mock.patch('hot_wallet.os.path.isfile', return_value=False)
     def test_no_wallet_file_returns_empty(self, mock_isfile):
@@ -83,7 +82,7 @@ class TestLoadWallet(object):
 
     @mock.patch('hot_wallet.sys.exit')
     @mock.patch('builtins.print')
-    @mock.patch('builtins.open', side_effect=IOError('File not found'))
+    @mock.patch('builtins.open', side_effect=OSError('File not found'))
     @mock.patch('hot_wallet.AESCipher')
     @mock.patch('hot_wallet.os.path.isfile', return_value=True)
     def test_load_io_error(self, mock_isfile, mock_aes, mock_open, mock_print, mock_exit):
@@ -107,7 +106,7 @@ class TestLoadWallet(object):
         mock_exit.assert_called_once_with(1)
 
 
-class TestSaveWallet(object):
+class TestSaveWallet:
 
     @mock.patch('builtins.open', new_callable=mock.mock_open)
     @mock.patch('hot_wallet.AESCipher')
@@ -152,7 +151,7 @@ class TestSaveWallet(object):
         mock_aes.assert_called_once_with(key='')
 
 
-class TestAddKey(object):
+class TestAddKey:
 
     @mock.patch('hot_wallet.save_wallet')
     @mock.patch('hot_wallet.privkey_to_address', return_value='1TestAddress')
@@ -186,7 +185,7 @@ class TestAddKey(object):
         mock_exit.assert_called_once_with(1)
 
 
-class TestDeleteKey(object):
+class TestDeleteKey:
 
     @mock.patch('hot_wallet.save_wallet')
     @mock.patch('hot_wallet.load_wallet', return_value={'addr1': 'key1', 'addr2': 'key2'})
@@ -210,7 +209,7 @@ class TestDeleteKey(object):
         mock_save.assert_called_once_with({})
 
 
-class TestSetBip44(object):
+class TestSetBip44:
 
     @mock.patch('hot_wallet.save_wallet')
     @mock.patch('hot_wallet.load_wallet', return_value={})
@@ -255,7 +254,7 @@ class TestSetBip44(object):
         mock_exit.assert_called_once_with(1)
 
 
-class TestShow(object):
+class TestShow:
 
     @mock.patch('hot_wallet.pprint')
     @mock.patch('hot_wallet.load_wallet', return_value={'addr1': 'key1'})
@@ -272,7 +271,7 @@ class TestShow(object):
         mock_pprint.assert_called_once_with({})
 
 
-class TestModuleLevel(object):
+class TestModuleLevel:
 
     def test_no_command(self):
         """When imported with no subcommand, args.command is None and no function runs."""

@@ -1,74 +1,73 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import mock
+from unittest import mock
 
 from helpers.configurationhelpers import (
-    spellbook_config,
-    what_is_my_ip,
-    get_host,
-    get_port,
-    get_notification_email,
-    get_mail_on_exception,
-    get_python_exe,
-    get_websocket_port,
-    get_key,
-    get_secret,
-    get_enable_wallet,
-    get_wallet_dir,
+    get_allowed_extensions,
+    get_allowed_extensions_transcribe,
+    get_app_data_dir,
     get_default_wallet,
-    get_use_testnet,
-    get_max_tx_fee_percentage,
-    get_minimum_output_value,
-    get_enable_smtp,
-    get_smtp_from_address,
-    get_smtp_host,
-    get_smtp_port,
-    get_smtp_user,
-    get_smtp_password,
+    get_domain_name,
     get_enable_ipfs,
+    get_enable_mastodon,
+    get_enable_nostr,
+    get_enable_oobabooga,
+    get_enable_openai,
+    get_enable_smtp,
+    get_enable_ssl,
+    get_enable_together_ai,
+    get_enable_transcribe,
+    get_enable_twitter,
+    get_enable_uploads,
+    get_enable_wallet,
+    get_host,
     get_ipfs_api_host,
     get_ipfs_api_port,
     get_ipfs_gateway_host,
     get_ipfs_gateway_port,
-    get_app_data_dir,
-    get_enable_ssl,
-    get_domain_name,
-    get_ssl_certificate,
-    get_ssl_private_key,
-    get_ssl_certificate_chain,
+    get_key,
+    get_llms_default_model,
+    get_mail_on_exception,
+    get_mastodon_access_token,
+    get_mastodon_api_base_url,
+    get_mastodon_client_id,
+    get_mastodon_client_secret,
+    get_max_file_size,
+    get_max_file_size_transcribe,
+    get_max_tx_fee_percentage,
+    get_minimum_output_value,
+    get_model_size_transcribe,
+    get_nostr_nsec,
+    get_notification_email,
+    get_openai_api_key,
+    get_openai_organization,
+    get_port,
+    get_python_exe,
+    get_secret,
+    get_smtp_from_address,
+    get_smtp_host,
+    get_smtp_password,
+    get_smtp_port,
+    get_smtp_user,
     get_spellbook_uri,
-    get_enable_twitter,
-    get_twitter_consumer_key,
-    get_twitter_consumer_secret,
+    get_ssl_certificate,
+    get_ssl_certificate_chain,
+    get_ssl_private_key,
+    get_together_ai_bearer_token,
     get_twitter_access_token,
     get_twitter_access_token_secret,
     get_twitter_bearer_token,
-    get_enable_openai,
-    get_openai_api_key,
-    get_openai_organization,
-    get_enable_mastodon,
-    get_mastodon_client_id,
-    get_mastodon_client_secret,
-    get_mastodon_access_token,
-    get_mastodon_api_base_url,
-    get_enable_nostr,
-    get_nostr_nsec,
-    get_enable_oobabooga,
-    get_llms_default_model,
-    get_enable_together_ai,
-    get_together_ai_bearer_token,
-    get_enable_uploads,
+    get_twitter_consumer_key,
+    get_twitter_consumer_secret,
     get_uploads_dir,
-    get_max_file_size,
-    get_allowed_extensions,
-    get_enable_transcribe,
-    get_model_size_transcribe,
-    get_max_file_size_transcribe,
-    get_allowed_extensions_transcribe,
+    get_use_testnet,
+    get_wallet_dir,
+    get_websocket_port,
+    spellbook_config,
+    what_is_my_ip,
 )
 
 
-class TestConfigurationHelpers(object):
+class TestConfigurationHelpers:
     """Tests for configuration helper functions"""
 
     def test_spellbook_config(self):
@@ -127,7 +126,7 @@ class TestConfigurationHelpers(object):
         assert result == 'http://localhost:8080'
 
 
-class TestConfigurationGetters(object):
+class TestConfigurationGetters:
     """Tests for various configuration getter functions"""
 
     def test_get_notification_email(self):
@@ -580,10 +579,11 @@ class TestConfigurationGetters(object):
 
     def test_get_openrouter_api_key(self):
         """Test getting openrouter API key (line 297)"""
-        import tempfile
         import os
-        from helpers.configurationhelpers import get_openrouter_api_key
+        import tempfile
         from configparser import ConfigParser
+
+        from helpers.configurationhelpers import get_openrouter_api_key
 
         # Create a temp config file with the openrouter_api_key option
         mock_config = ConfigParser()

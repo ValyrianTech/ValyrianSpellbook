@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import mock
+from unittest import mock
 
 from data.blockexplorers.blockstream import BlockstreamAPI
 
@@ -15,7 +14,7 @@ def make_mock_response(json_data=None, text_data=None, status_code=200):
     return resp
 
 
-class TestBlockstreamAPIInit(object):
+class TestBlockstreamAPIInit:
     def test_init_mainnet(self):
         api = BlockstreamAPI()
         assert 'blockstream.info/api' in api.url
@@ -27,7 +26,7 @@ class TestBlockstreamAPIInit(object):
         assert api.testnet is True
 
 
-class TestGetLatestBlock(object):
+class TestGetLatestBlock:
     @mock.patch('data.blockexplorers.blockstream.requests.get')
     def test_success(self, mock_get):
         mock_get.side_effect = [
@@ -46,7 +45,7 @@ class TestGetLatestBlock(object):
         assert 'error' in result
 
 
-class TestGetBlockByHash(object):
+class TestGetBlockByHash:
     @mock.patch('data.blockexplorers.blockstream.requests.get')
     def test_success(self, mock_get):
         mock_get.return_value = make_mock_response(json_data={
@@ -71,7 +70,7 @@ class TestGetBlockByHash(object):
         assert 'error' in result
 
 
-class TestGetBlockByHeight(object):
+class TestGetBlockByHeight:
     @mock.patch('data.blockexplorers.blockstream.requests.get')
     def test_success(self, mock_get):
         mock_get.side_effect = [
@@ -90,7 +89,7 @@ class TestGetBlockByHeight(object):
         assert 'error' in result
 
 
-class TestGetTransactions(object):
+class TestGetTransactions:
     @mock.patch('data.blockexplorers.blockstream.requests.get')
     def test_success(self, mock_get):
         mock_get.side_effect = [
@@ -190,7 +189,7 @@ class TestGetTransactions(object):
         assert len(result['transactions']) == 26
 
 
-class TestGetBalance(object):
+class TestGetBalance:
     @mock.patch('data.blockexplorers.blockstream.requests.get')
     def test_success(self, mock_get):
         mock_get.return_value = make_mock_response(json_data={
@@ -210,7 +209,7 @@ class TestGetBalance(object):
         assert 'error' in result
 
 
-class TestGetTransaction(object):
+class TestGetTransaction:
     @mock.patch('data.blockexplorers.blockstream.requests.get')
     @mock.patch('data.blockexplorers.blockstream.BlockstreamAPI.parse_transaction')
     def test_success(self, mock_parse, mock_get):
@@ -230,7 +229,7 @@ class TestGetTransaction(object):
         assert 'error' in result
 
 
-class TestParseTransaction(object):
+class TestParseTransaction:
     @mock.patch('data.blockexplorers.blockstream.requests.get')
     def test_with_latest_block_height(self, mock_get):
         data = {
@@ -279,7 +278,7 @@ class TestParseTransaction(object):
         assert result.confirmations == 0
 
 
-class TestGetPrimeInputAddress(object):
+class TestGetPrimeInputAddress:
     @mock.patch('data.blockexplorers.blockstream.BlockstreamAPI.get_transaction')
     def test_success(self, mock_get_tx):
         mock_get_tx.return_value = {'transaction': {'prime_input_address': 'addr1'}}
@@ -295,7 +294,7 @@ class TestGetPrimeInputAddress(object):
         assert 'error' in result
 
 
-class TestGetUtxos(object):
+class TestGetUtxos:
     @mock.patch('data.blockexplorers.blockstream.requests.get')
     def test_success(self, mock_get):
         mock_get.side_effect = [
@@ -345,7 +344,7 @@ class TestGetUtxos(object):
         assert result['utxos'][0]['confirmations'] == 0
 
 
-class TestPushTx(object):
+class TestPushTx:
     @mock.patch('data.blockexplorers.blockstream.requests.get')
     def test_success(self, mock_get):
         mock_get.return_value = make_mock_response(text_data='txid123', status_code=200)

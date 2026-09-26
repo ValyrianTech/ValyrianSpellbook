@@ -1,25 +1,24 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Action that sends a direct message on Twitter."""
 
-from typing import Union
 
 from helpers.loghelpers import LOG
+from helpers.twitterhelpers import create_direct_message
+
 from .action import Action
 from .actiontype import ActionType
-from helpers.twitterhelpers import create_direct_message
 
 
 class SendDMTwitterAction(Action):
     """Action that sends a direct message on Twitter."""
     def __init__(self, action_id: str) -> None:
-        super(SendDMTwitterAction, self).__init__(action_id=action_id)
+        super().__init__(action_id=action_id)
         self.action_type = ActionType.SEND_DM_TWITTER
 
-        self.dm_conversation_id: Union[str, None] = None
-        self.participant_id: Union[int, str, None] = None
-        self.media_id: Union[int, str, None] = None
-        self.text: Union[str, None] = None
+        self.dm_conversation_id: str | None = None
+        self.participant_id: int | str | None = None
+        self.media_id: int | str | None = None
+        self.text: str | None = None
         self.user_auth: bool = True
 
     def run(self):
@@ -59,7 +58,7 @@ class SendDMTwitterAction(Action):
                     - config['text']: Text of the Direct Message being created. This field is required if media_id is not present. Text messages support up to 10,000 characters.
                     - config['user_auth']: Whether or not to use OAuth 1.0a User Context to authenticate
         """
-        super(SendDMTwitterAction, self).configure(**config)
+        super().configure(**config)
         if 'dm_conversation_id' in config:
             self.dm_conversation_id = config['dm_conversation_id']
 
@@ -81,7 +80,7 @@ class SendDMTwitterAction(Action):
 
         :return: A dict containing the configuration settings
         """
-        ret = super(SendDMTwitterAction, self).json_encodable()
+        ret = super().json_encodable()
         ret.update({'dm_conversation_id': self.dm_conversation_id,
                     'participant_id': self.participant_id,
                     'media_id': self.media_id,

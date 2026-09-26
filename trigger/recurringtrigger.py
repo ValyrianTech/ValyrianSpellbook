@@ -1,20 +1,20 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Trigger that activates on a recurring schedule."""
 
 import time
 from datetime import datetime
 
 from helpers.loghelpers import LOG
+from validators.validators import valid_amount, valid_timestamp
+
 from .trigger import Trigger
 from .triggertype import TriggerType
-from validators.validators import valid_amount, valid_timestamp
 
 
 class RecurringTrigger(Trigger):
     """Trigger that activates on a recurring schedule."""
     def __init__(self, trigger_id):
-        super(RecurringTrigger, self).__init__(trigger_id=trigger_id)
+        super().__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.RECURRING
         self.next_activation = None
         self.begin_time = None
@@ -39,7 +39,7 @@ class RecurringTrigger(Trigger):
 
     def activate(self):
         """Activate."""
-        super(RecurringTrigger, self).activate()
+        super().activate()
 
         if self.end_time is None or self.next_activation + self.interval <= self.end_time:
             self.next_activation += self.interval  # Todo what if trigger was activated after interval has passed??
@@ -48,7 +48,7 @@ class RecurringTrigger(Trigger):
 
     def configure(self, **config):
         """Configure."""
-        super(RecurringTrigger, self).configure(**config)
+        super().configure(**config)
 
         if 'interval' in config and valid_amount(config['interval']):
             self.interval = config['interval']
@@ -69,7 +69,7 @@ class RecurringTrigger(Trigger):
 
     def json_encodable(self):
         """Json encodable."""
-        ret = super(RecurringTrigger, self).json_encodable()
+        ret = super().json_encodable()
 
         ret.update({
             'begin_time': self.begin_time,

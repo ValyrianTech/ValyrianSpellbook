@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Action that deletes a trigger from the Spellbook."""
 
 from helpers.loghelpers import LOG
+
 from .action import Action
 from .actiontype import ActionType
 
@@ -11,7 +11,7 @@ from .actiontype import ActionType
 class DeleteTriggerAction(Action):
     """Action that deletes a trigger from the Spellbook."""
     def __init__(self, action_id):
-        super(DeleteTriggerAction, self).__init__(action_id=action_id)
+        super().__init__(action_id=action_id)
         self.action_type = ActionType.DELETETRIGGER
         self.trigger_ids = []
 
@@ -46,7 +46,7 @@ class DeleteTriggerAction(Action):
         :param config: A dict containing the configuration settings
                        - config['trigger_ids']  : A list of trigger_ids to delete
         """
-        super(DeleteTriggerAction, self).configure(**config)
+        super().configure(**config)
         if 'trigger_ids' in config:
             self.trigger_ids = config['trigger_ids']
 
@@ -56,6 +56,6 @@ class DeleteTriggerAction(Action):
 
         :return: A dict containing the configuration settings
         """
-        ret = super(DeleteTriggerAction, self).json_encodable()
+        ret = super().json_encodable()
         ret.update({'trigger_ids': self.trigger_ids})
         return ret

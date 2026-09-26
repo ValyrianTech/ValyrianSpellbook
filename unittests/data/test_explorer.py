@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 from data.explorer import Explorer, ExplorerType
 
 
-class TestExplorerType(object):
+class TestExplorerType:
     """Tests for ExplorerType constants"""
 
     def test_explorer_type_constants(self):
@@ -16,7 +15,7 @@ class TestExplorerType(object):
         assert ExplorerType.BLOCKSTREAM == 'Blockstream.info'
 
 
-class TestExplorer(object):
+class TestExplorer:
     """Tests for Explorer class"""
 
     def test_explorer_init(self):

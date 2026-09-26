@@ -3,13 +3,18 @@
 import sys
 from pprint import pprint
 
-from together import Together
 import simplejson
+from together import Together
 
+from helpers.configurationhelpers import get_together_ai_bearer_token
 from helpers.llm_interface import LLMInterface
 from helpers.loghelpers import LOG
-from helpers.websockethelpers import broadcast_message, get_broadcast_channel, get_broadcast_sender
-from helpers.configurationhelpers import get_together_ai_bearer_token
+from helpers.websockethelpers import (
+    broadcast_message,
+    get_broadcast_channel,
+    get_broadcast_sender,
+)
+
 from .textgenerationhelpers import parse_generation
 from .thinking_levels import THINKING_LEVEL_OPENAI
 
@@ -134,7 +139,7 @@ class TogetherAILLM(LLMInterface):
             LOG.error(f'Error connecting to Together.ai LLM: {e}')
             return 'Error: Unable to connect to Together.ai.\n'
 
-        print('')
+        print()
 
         # Broadcast end of message message to clear the streaming widget in the UI
         data = {'message': '<|end of message|>', 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation('')}

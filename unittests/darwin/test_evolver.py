@@ -1,15 +1,15 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import os
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
+import pytest
+
+from darwin.encodingtype import EncodingType
 from darwin.evolver import Evolver
+from darwin.fitnessfunction.fitnessfunction import Fitness, FitnessFunction
+from darwin.genome import Genome
 from darwin.model.model import Model
 from darwin.rosettastone.rosettastone import RosettaStone
-from darwin.fitnessfunction.fitnessfunction import FitnessFunction, Fitness
-from darwin.genome import Genome
-from darwin.encodingtype import EncodingType
 
 
 def make_config(tmp_path):

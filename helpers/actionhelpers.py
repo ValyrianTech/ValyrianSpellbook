@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Helper functions for creating, configuring, and running actions."""
 
 import glob
@@ -7,15 +6,14 @@ import os
 
 from action.actiontype import ActionType
 from action.commandaction import CommandAction
-from action.spawnprocessaction import SpawnProcessAction
+from action.deletetriggeraction import DeleteTriggerAction
 from action.launchevolveraction import LaunchEvolverAction
-from helpers.jsonhelpers import load_from_json_file
 from action.revealsecretaction import RevealSecretAction
 from action.sendmailaction import SendMailAction
 from action.sendtransactionaction import SendTransactionAction
+from action.spawnprocessaction import SpawnProcessAction
 from action.webhookaction import WebhookAction
-from action.deletetriggeraction import DeleteTriggerAction
-
+from helpers.jsonhelpers import load_from_json_file
 
 ACTIONS_DIR = 'json/public/actions'
 
@@ -40,7 +38,7 @@ def get_action_config(action_id):
     """
     try:
         action_config = load_from_json_file(os.path.join(ACTIONS_DIR, '%s.json' % action_id))
-    except IOError:
+    except OSError:
         # Action does not exist yet, return empty dict
         action_config = {}
 

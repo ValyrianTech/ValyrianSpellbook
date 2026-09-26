@@ -1,15 +1,15 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Chain.so block explorer API client."""
 
-import requests
 import binascii
 from time import sleep
 
-from helpers.loghelpers import LOG
-from helpers.conversionhelpers import btc2satoshis
-from data.transaction import TX, TxInput, TxOutput
+import requests
+
 from data.explorer_api import ExplorerAPI
+from data.transaction import TX, TxInput, TxOutput
+from helpers.conversionhelpers import btc2satoshis
+from helpers.loghelpers import LOG
 
 
 class ChainSoAPI(ExplorerAPI):
@@ -19,7 +19,7 @@ class ChainSoAPI(ExplorerAPI):
     Initializes the API client with URL, optional key, and testnet flag.
     """
     def __init__(self, url='', key='', testnet=False):
-        super(ChainSoAPI, self).__init__(url=url, testnet=testnet)
+        super().__init__(url=url, testnet=testnet)
         # Set the network to use in the api calls (mainnet or testnet)
         self.network = 'BTCTEST' if self.testnet else 'BTC'
         self.url = 'https://chain.so/api/v2'
@@ -27,7 +27,7 @@ class ChainSoAPI(ExplorerAPI):
     def get_transactions(self, address):
         """Retrieve all transactions for a given address from the explorer."""
         LOG.warning('DO NOT USE CHAIN.SO TO GET ADDRESS TRANSACTIONS!!!!!!!!!!!!!')
-        url = '{api_url}/address/{network}/{address}'.format(api_url=self.url, network=self.network, address=address)
+        url = f'{self.url}/address/{self.network}/{address}'
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
@@ -56,7 +56,7 @@ class ChainSoAPI(ExplorerAPI):
 
     def get_block_by_height(self, height):
         """Retrieve a block by its height from the blockchain explorer."""
-        url = '{api_url}/get_block/{network}/{height}'.format(api_url=self.url, network=self.network, height=height)
+        url = f'{self.url}/get_block/{self.network}/{height}'
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
@@ -83,7 +83,7 @@ class ChainSoAPI(ExplorerAPI):
 
     def get_latest_block(self):
         """Retrieve the latest block from the blockchain explorer."""
-        url = '{api_url}/get_info/{network}'.format(api_url=self.url, network=self.network)
+        url = f'{self.url}/get_info/{self.network}'
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
@@ -106,7 +106,7 @@ class ChainSoAPI(ExplorerAPI):
 
     def get_utxos(self, address, confirmations=3):
         """Retrieve unspent transaction outputs (UTXOs) for a given address."""
-        url = '{api_url}/get_tx_unspent/{network}/{address}'.format(api_url=self.url, network=self.network, address=address)
+        url = f'{self.url}/get_tx_unspent/{self.network}/{address}'
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
@@ -135,7 +135,7 @@ class ChainSoAPI(ExplorerAPI):
 
     def get_block_by_hash(self, block_hash):
         """Retrieve a block by its hash from the blockchain explorer."""
-        url = '{api_url}/get_block/{network}/{block_hash}'.format(api_url=self.url, network=self.network, block_hash=block_hash)
+        url = f'{self.url}/get_block/{self.network}/{block_hash}'
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
@@ -162,7 +162,7 @@ class ChainSoAPI(ExplorerAPI):
 
     def get_balance(self, address):
         """Retrieve the balance (final, received, sent) for a given address."""
-        url = '{api_url}/address/{network}/{address}'.format(api_url=self.url, network=self.network, address=address)
+        url = f'{self.url}/address/{self.network}/{address}'
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
@@ -195,7 +195,7 @@ class ChainSoAPI(ExplorerAPI):
             tx_inputs = transaction_data['transaction']['inputs']
 
             input_addresses = []
-            for i in range(0, len(tx_inputs)):
+            for i in range(len(tx_inputs)):
                 input_addresses.append(tx_inputs[i]['address'])
 
             if len(input_addresses) > 0:
@@ -206,7 +206,7 @@ class ChainSoAPI(ExplorerAPI):
 
     def get_transaction(self, txid):
         """Retrieve a single transaction by its txid from the explorer."""
-        url = '{api_url}/get_tx/{network}/{txid}'.format(api_url=self.url, network=self.network, txid=txid)
+        url = f'{self.url}/get_tx/{self.network}/{txid}'
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)

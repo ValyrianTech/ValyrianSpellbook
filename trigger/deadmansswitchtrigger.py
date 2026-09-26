@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Dead man's switch trigger that activates when check-ins stop."""
 
 import time
@@ -7,15 +6,21 @@ from datetime import datetime
 
 from helpers.loghelpers import LOG
 from helpers.mailhelpers import sendmail
+from validators.validators import (
+    valid_amount,
+    valid_email,
+    valid_phase,
+    valid_timestamp,
+)
+
 from .trigger import Trigger
 from .triggertype import TriggerType
-from validators.validators import valid_phase, valid_email, valid_amount, valid_timestamp
 
 
 class DeadMansSwitchTrigger(Trigger):
     """Dead man's switch trigger that activates when check-ins stop."""
     def __init__(self, trigger_id):
-        super(DeadMansSwitchTrigger, self).__init__(trigger_id=trigger_id)
+        super().__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.DEADMANSSWITCH
         self.timeout = None
         self.warning_email = None
@@ -71,7 +76,7 @@ class DeadMansSwitchTrigger(Trigger):
 
     def configure(self, **config):
         """Configure."""
-        super(DeadMansSwitchTrigger, self).configure(**config)
+        super().configure(**config)
 
         if 'timeout' in config and valid_amount(config['timeout']):
             self.timeout = config['timeout']
@@ -98,7 +103,7 @@ class DeadMansSwitchTrigger(Trigger):
 
     def json_encodable(self):
         """Json encodable."""
-        ret = super(DeadMansSwitchTrigger, self).json_encodable()
+        ret = super().json_encodable()
 
         ret.update({
             'timeout': self.timeout,
@@ -108,7 +113,7 @@ class DeadMansSwitchTrigger(Trigger):
         return ret
 
 
-class SwitchPhase(object):
+class SwitchPhase:
     """Enumeration of dead man's switch phases (unarmed, armed, warning sent)."""
     PHASE_0 = 0  # The dead man's switch is not armed yet
     PHASE_1 = 1  # The dead man's switch has been armed

@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import json
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 
 class TestOllamaChatLLM(unittest.TestCase):
@@ -29,6 +28,7 @@ class TestOllamaChatLLM(unittest.TestCase):
     def test_get_completion_text_error(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_ws, mock_post):
         """Test get_completion_text handles errors"""
         import requests as req_module
+
         from helpers.ollama_chat_llm import OllamaChatLLM
         
         mock_post.side_effect = req_module.exceptions.RequestException("Connection Error")

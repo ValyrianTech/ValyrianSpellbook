@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import unittest
-from unittest.mock import patch, MagicMock
 import sys
+import unittest
+from unittest.mock import MagicMock, patch
 
 # Mock pynostr modules before importing
 mock_private_key = MagicMock()
@@ -24,7 +23,7 @@ class TestNostrHelpers(unittest.TestCase):
     @patch('helpers.nostrhelpers.get_nostr_nsec', return_value='nsec1test123456789')
     def test_get_nostr_private_key(self, mock_get_nsec):
         """Test get_nostr_private_key returns PrivateKey"""
-        from helpers.nostrhelpers import get_nostr_private_key, PrivateKey
+        from helpers.nostrhelpers import PrivateKey, get_nostr_private_key
         
         mock_pk = MagicMock()
         PrivateKey.from_nsec.return_value = mock_pk
@@ -36,7 +35,7 @@ class TestNostrHelpers(unittest.TestCase):
     @patch('helpers.nostrhelpers.get_nostr_nsec', return_value='nsec1test123456789')
     def test_get_nostr_public_key(self, mock_get_nsec):
         """Test get_nostr_public_key returns public key from private key"""
-        from helpers.nostrhelpers import get_nostr_public_key, PrivateKey
+        from helpers.nostrhelpers import PrivateKey, get_nostr_public_key
         
         mock_pk = MagicMock()
         mock_pubkey = MagicMock()
@@ -51,7 +50,7 @@ class TestNostrHelpers(unittest.TestCase):
     @patch('helpers.nostrhelpers.get_nostr_nsec', return_value='nsec1test123456789')
     def test_post_note(self, mock_get_nsec, mock_sleep):
         """Test post_note publishes event to relays"""
-        from helpers.nostrhelpers import post_note, PrivateKey, RelayManager, Event
+        from helpers.nostrhelpers import Event, PrivateKey, RelayManager, post_note
         
         mock_pk = MagicMock()
         mock_pk.public_key.hex.return_value = 'pubkey_hex'
@@ -77,7 +76,7 @@ class TestNostrHelpers(unittest.TestCase):
     @patch('helpers.nostrhelpers.get_nostr_nsec', return_value='nsec1test123456789')
     def test_post_note_with_ok_notices(self, mock_get_nsec, mock_sleep):
         """Test post_note handles ok notices - covering lines 41-42"""
-        from helpers.nostrhelpers import post_note, PrivateKey, RelayManager, Event
+        from helpers.nostrhelpers import Event, PrivateKey, RelayManager, post_note
         
         mock_pk = MagicMock()
         mock_pk.public_key.hex.return_value = 'pubkey_hex'
@@ -102,7 +101,7 @@ class TestNostrHelpers(unittest.TestCase):
     @patch('helpers.nostrhelpers.get_nostr_nsec', return_value='nsec1test123456789')
     def test_post_note_with_events(self, mock_get_nsec, mock_sleep):
         """Test post_note handles events - covering lines 44-45"""
-        from helpers.nostrhelpers import post_note, PrivateKey, RelayManager, Event
+        from helpers.nostrhelpers import Event, PrivateKey, RelayManager, post_note
         
         mock_pk = MagicMock()
         mock_pk.public_key.hex.return_value = 'pubkey_hex'

@@ -1,11 +1,10 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Recombination (crossover) operations for Darwin."""
 
-from random import randint
-from darwin.genome import Genome
-
 from copy import deepcopy
+from random import randint
+
+from darwin.genome import Genome
 
 
 def recombine(parent_a, parent_b):

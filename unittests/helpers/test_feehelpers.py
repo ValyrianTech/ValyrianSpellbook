@@ -1,18 +1,18 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+from unittest import mock
+
 import pytest
-import mock
 
 from helpers.feehelpers import (
-    get_medium_priority_fee,
-    get_low_priority_fee,
     get_high_priority_fee,
+    get_low_priority_fee,
+    get_medium_priority_fee,
     get_recommended_fee,
     get_recommended_fee_blockcypher,
 )
 
 
-class TestFeeHelpers(object):
+class TestFeeHelpers:
     """Tests for fee helper functions"""
 
     @mock.patch('helpers.feehelpers.get_recommended_fee_blockcypher')

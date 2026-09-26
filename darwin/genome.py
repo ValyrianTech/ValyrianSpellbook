@@ -1,16 +1,16 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Genome representation for the Darwin evolutionary framework."""
 
-from darwin.chromosome import Chromosome
-
-import hashlib
 import binascii
+import hashlib
+
 import simplejson
 
+from darwin.chromosome import Chromosome
 
-class Genome(object):
+
+class Genome:
     """Genome representation for the Darwin evolutionary framework."""
     def __init__(self):
         self.chromosomes = {}

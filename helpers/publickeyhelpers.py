@@ -1,12 +1,20 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Helper functions for encoding, decoding, and manipulating Bitcoin public keys."""
 import binascii
 import hashlib
 
-from .py3specials import bin_to_b58check, decode, encode, four, from_byte_to_int, from_int_to_byte, safe_from_hex, three, two
-
-from .jacobianhelpers import fast_add, A, B, P
+from .jacobianhelpers import A, B, P, fast_add
+from .py3specials import (
+    bin_to_b58check,
+    decode,
+    encode,
+    four,
+    from_byte_to_int,
+    from_int_to_byte,
+    safe_from_hex,
+    three,
+    two,
+)
 from .py_ripemd160 import ripemd160
 
 

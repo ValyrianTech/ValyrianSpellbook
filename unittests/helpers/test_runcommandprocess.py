@@ -1,11 +1,10 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import mock
+from unittest import mock
 
-from helpers.runcommandprocess import RunCommandProcess, PROCESS_LOG
+from helpers.runcommandprocess import PROCESS_LOG, RunCommandProcess
 
 
-class TestRunCommandProcess(object):
+class TestRunCommandProcess:
     """Tests for RunCommandProcess class"""
 
     def test_init(self):
@@ -98,7 +97,7 @@ class TestRunCommandProcess(object):
         assert isinstance(process, multiprocessing.Process)
 
 
-class TestProcessLog(object):
+class TestProcessLog:
     """Tests for PROCESS_LOG logger"""
 
     def test_process_log_exists(self):
@@ -108,7 +107,7 @@ class TestProcessLog(object):
         assert len(PROCESS_LOG.handlers) >= 1
 
 
-class TestRunCommandProcessWorkingDir(object):
+class TestRunCommandProcessWorkingDir:
     """Tests for RunCommandProcess working directory handling"""
 
     def test_working_dir_stored(self):

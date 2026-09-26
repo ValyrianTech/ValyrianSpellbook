@@ -1,11 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import argparse
 import time
-
-from helpers.setupscripthelpers import spellbook_call
 from pprint import pprint
 
+from helpers.setupscripthelpers import spellbook_call
 
 EXPLORERS = spellbook_call('get_explorers')
 
@@ -22,11 +20,7 @@ def deep_diff(d1, d2, prefix='root'):
             path = f"{prefix}['{key}']"
             v1, v2 = d1[key], d2[key]
 
-            if isinstance(v1, dict) and isinstance(v2, dict):
-                sub = deep_diff(v1, v2, path)
-                values_changed.update(sub['values_changed'])
-                type_changes.update(sub.get('type_changes', {}))
-            elif isinstance(v1, list) and isinstance(v2, list):
+            if isinstance(v1, dict) and isinstance(v2, dict) or isinstance(v1, list) and isinstance(v2, list):
                 sub = deep_diff(v1, v2, path)
                 values_changed.update(sub['values_changed'])
                 type_changes.update(sub.get('type_changes', {}))
@@ -41,11 +35,7 @@ def deep_diff(d1, d2, prefix='root'):
             path = f"{prefix}[{i}]"
             v1, v2 = d1[i], d2[i]
 
-            if isinstance(v1, dict) and isinstance(v2, dict):
-                sub = deep_diff(v1, v2, path)
-                values_changed.update(sub['values_changed'])
-                type_changes.update(sub.get('type_changes', {}))
-            elif isinstance(v1, list) and isinstance(v2, list):
+            if isinstance(v1, dict) and isinstance(v2, dict) or isinstance(v1, list) and isinstance(v2, list):
                 sub = deep_diff(v1, v2, path)
                 values_changed.update(sub['values_changed'])
                 type_changes.update(sub.get('type_changes', {}))
@@ -61,7 +51,7 @@ def deep_diff(d1, d2, prefix='root'):
     return result
 
 
-class Comparison(object):
+class Comparison:
     def __init__(self, *args):
         self.spellbook_args = list(args)
 

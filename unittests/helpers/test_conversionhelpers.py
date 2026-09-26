@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import pytest
 import random
+
+import pytest
 
 from helpers.conversionhelpers import btc2satoshis
 
 
-class TestConversionHelpers(object):
+class TestConversionHelpers:
 
     @pytest.mark.parametrize('btc, expected', [
         ['0.00000001', 1],

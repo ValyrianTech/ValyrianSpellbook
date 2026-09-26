@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Tests for spellbook.py — the Valyrian Spellbook CLI interface.
 
@@ -10,8 +9,8 @@ import argparse
 import importlib.util
 import os
 import sys
+from unittest import mock
 
-import mock
 import pytest
 
 # spellbook.py runs argparse and command dispatch at module level.
@@ -96,7 +95,7 @@ def get_call_data(mock_call):
     return kwargs.get('data', {})
 
 
-class TestAddAuthenticationHeaders(object):
+class TestAddAuthenticationHeaders:
 
     def test_with_default_headers(self):
         spellbook.args = make_args(api_key='test_key', api_secret=VALID_SECRET)
@@ -121,7 +120,7 @@ class TestAddAuthenticationHeaders(object):
         assert 'API_Sign' in headers
 
 
-class TestSpecifyExplorer(object):
+class TestSpecifyExplorer:
 
     def test_with_explorer(self):
         spellbook.args = make_args(explorer='blockstream')
@@ -148,7 +147,7 @@ class TestSpecifyExplorer(object):
         assert result == url
 
 
-class TestDoGetRequest(object):
+class TestDoGetRequest:
 
     @mock.patch('spellbook.requests')
     @mock.patch('spellbook.print')
@@ -189,7 +188,7 @@ class TestDoGetRequest(object):
         mock_sys.exit.assert_called_once_with(1)
 
 
-class TestDoPostRequest(object):
+class TestDoPostRequest:
 
     @mock.patch('spellbook.requests')
     @mock.patch('spellbook.print')
@@ -220,7 +219,7 @@ class TestDoPostRequest(object):
         mock_sys.exit.assert_called_once_with(1)
 
 
-class TestDoDeleteRequest(object):
+class TestDoDeleteRequest:
 
     @mock.patch('spellbook.requests')
     @mock.patch('spellbook.print')
@@ -253,7 +252,7 @@ class TestDoDeleteRequest(object):
 # LLM Commands
 # --------------------------------------------------------------------------------------------------
 
-class TestGetLlms(object):
+class TestGetLlms:
 
     @mock.patch('spellbook.do_get_request')
     def test_get_llms(self, mock_get):
@@ -262,7 +261,7 @@ class TestGetLlms(object):
         assert '/spellbook/llms' in url
 
 
-class TestGetLlmConfig(object):
+class TestGetLlmConfig:
 
     @mock.patch('spellbook.do_get_request')
     def test_get_llm_config(self, mock_get):
@@ -272,7 +271,7 @@ class TestGetLlmConfig(object):
         assert '/spellbook/llms/OpenAI:gpt-4o' in url
 
 
-class TestSaveLlmConfig(object):
+class TestSaveLlmConfig:
 
     @mock.patch('spellbook.do_post_request')
     def test_save_llm_config(self, mock_post):
@@ -291,7 +290,7 @@ class TestSaveLlmConfig(object):
         assert data['model_name'] == 'gpt-4o'
 
 
-class TestDeleteLlm(object):
+class TestDeleteLlm:
 
     @mock.patch('spellbook.do_delete_request')
     def test_delete_llm(self, mock_delete):
@@ -305,7 +304,7 @@ class TestDeleteLlm(object):
 # Explorer Commands
 # --------------------------------------------------------------------------------------------------
 
-class TestGetExplorers(object):
+class TestGetExplorers:
 
     @mock.patch('spellbook.do_get_request')
     def test_get_explorers(self, mock_get):
@@ -314,7 +313,7 @@ class TestGetExplorers(object):
         assert '/spellbook/explorers' in url
 
 
-class TestGetExplorerConfig(object):
+class TestGetExplorerConfig:
 
     @mock.patch('spellbook.do_get_request')
     def test_get_explorer_config(self, mock_get):
@@ -324,7 +323,7 @@ class TestGetExplorerConfig(object):
         assert '/spellbook/explorers/blockstream' in url
 
 
-class TestSaveExplorer(object):
+class TestSaveExplorer:
 
     @mock.patch('spellbook.do_post_request')
     def test_save_explorer(self, mock_post):
@@ -340,7 +339,7 @@ class TestSaveExplorer(object):
         assert data['testnet'] is False
 
 
-class TestDeleteExplorer(object):
+class TestDeleteExplorer:
 
     @mock.patch('spellbook.do_delete_request')
     def test_delete_explorer(self, mock_delete):
@@ -354,7 +353,7 @@ class TestDeleteExplorer(object):
 # Blockchain Data Commands
 # --------------------------------------------------------------------------------------------------
 
-class TestGetLatestBlock(object):
+class TestGetLatestBlock:
 
     @mock.patch('spellbook.do_get_request')
     def test_get_latest_block(self, mock_get):
@@ -363,7 +362,7 @@ class TestGetLatestBlock(object):
         assert '/spellbook/blocks/latest' in url
 
 
-class TestGetBlock(object):
+class TestGetBlock:
 
     @mock.patch('spellbook.do_get_request')
     def test_get_block(self, mock_get):
@@ -373,7 +372,7 @@ class TestGetBlock(object):
         assert '/spellbook/blocks/1000' in url
 
 
-class TestGetPrimeInputAddress(object):
+class TestGetPrimeInputAddress:
 
     @mock.patch('spellbook.do_get_request')
     def test_get_prime_input_address(self, mock_get):
@@ -383,7 +382,7 @@ class TestGetPrimeInputAddress(object):
         assert '/spellbook/transactions/abc123/prime_input' in url
 
 
-class TestGetTransaction(object):
+class TestGetTransaction:
 
     @mock.patch('spellbook.do_get_request')
     def test_get_transaction(self, mock_get):
@@ -393,7 +392,7 @@ class TestGetTransaction(object):
         assert '/spellbook/transactions/abc123' in url
 
 
-class TestGetTransactions(object):
+class TestGetTransactions:
 
     @mock.patch('spellbook.do_get_request')
     def test_get_transactions(self, mock_get):
@@ -403,7 +402,7 @@ class TestGetTransactions(object):
         assert '/spellbook/addresses/1ABC123/transactions' in url
 
 
-class TestGetBalance(object):
+class TestGetBalance:
 
     @mock.patch('spellbook.do_get_request')
     def test_get_balance(self, mock_get):
@@ -413,7 +412,7 @@ class TestGetBalance(object):
         assert '/spellbook/addresses/1ABC123/balance' in url
 
 
-class TestGetUtxos(object):
+class TestGetUtxos:
 
     @mock.patch('spellbook.do_get_request')
     def test_get_utxos(self, mock_get):
@@ -424,7 +423,7 @@ class TestGetUtxos(object):
         assert 'confirmations=3' in url
 
 
-class TestGetSil(object):
+class TestGetSil:
 
     @mock.patch('spellbook.do_get_request')
     def test_get_sil(self, mock_get):
@@ -436,7 +435,7 @@ class TestGetSil(object):
         assert data['block_height'] == 100
 
 
-class TestGetProfile(object):
+class TestGetProfile:
 
     @mock.patch('spellbook.do_get_request')
     def test_get_profile(self, mock_get):
@@ -446,7 +445,7 @@ class TestGetProfile(object):
         assert '/spellbook/addresses/1ABC123/profile' in url
 
 
-class TestGetSul(object):
+class TestGetSul:
 
     @mock.patch('spellbook.do_get_request')
     def test_get_sul(self, mock_get):
@@ -458,7 +457,7 @@ class TestGetSul(object):
         assert data['confirmations'] == 1
 
 
-class TestGetLal(object):
+class TestGetLal:
 
     @mock.patch('spellbook.do_get_request')
     def test_get_lal(self, mock_get):
@@ -470,7 +469,7 @@ class TestGetLal(object):
         assert data['xpub'] == 'xpub123'
 
 
-class TestGetLbl(object):
+class TestGetLbl:
 
     @mock.patch('spellbook.do_get_request')
     def test_get_lbl(self, mock_get):
@@ -480,7 +479,7 @@ class TestGetLbl(object):
         assert '/spellbook/addresses/1ABC123/LBL' in url
 
 
-class TestGetLrl(object):
+class TestGetLrl:
 
     @mock.patch('spellbook.do_get_request')
     def test_get_lrl(self, mock_get):
@@ -490,7 +489,7 @@ class TestGetLrl(object):
         assert '/spellbook/addresses/1ABC123/LRL' in url
 
 
-class TestGetLsl(object):
+class TestGetLsl:
 
     @mock.patch('spellbook.do_get_request')
     def test_get_lsl(self, mock_get):
@@ -500,7 +499,7 @@ class TestGetLsl(object):
         assert '/spellbook/addresses/1ABC123/LSL' in url
 
 
-class TestGetRandomAddress(object):
+class TestGetRandomAddress:
 
     @mock.patch('spellbook.do_get_request')
     def test_get_random_address(self, mock_get):
@@ -519,7 +518,7 @@ class TestGetRandomAddress(object):
 # Trigger Commands
 # --------------------------------------------------------------------------------------------------
 
-class TestGetTriggers(object):
+class TestGetTriggers:
 
     @mock.patch('spellbook.do_get_request')
     def test_get_triggers(self, mock_get):
@@ -528,7 +527,7 @@ class TestGetTriggers(object):
         assert '/spellbook/triggers' in url
 
 
-class TestGetTrigger(object):
+class TestGetTrigger:
 
     @mock.patch('spellbook.do_get_request')
     def test_get_trigger(self, mock_get):
@@ -538,7 +537,7 @@ class TestGetTrigger(object):
         assert '/spellbook/triggers/trig1' in url
 
 
-class TestSaveTrigger(object):
+class TestSaveTrigger:
 
     @mock.patch('spellbook.do_post_request')
     def test_save_trigger_minimal(self, mock_post):
@@ -589,7 +588,7 @@ class TestSaveTrigger(object):
         assert data['actions'] == ['act1', 'act2']
 
 
-class TestDeleteTrigger(object):
+class TestDeleteTrigger:
 
     @mock.patch('spellbook.do_delete_request')
     def test_delete_trigger(self, mock_delete):
@@ -599,7 +598,7 @@ class TestDeleteTrigger(object):
         assert '/spellbook/triggers/trig1' in url
 
 
-class TestActivateTrigger(object):
+class TestActivateTrigger:
 
     @mock.patch('spellbook.do_get_request')
     def test_activate_trigger(self, mock_get):
@@ -609,7 +608,7 @@ class TestActivateTrigger(object):
         assert '/spellbook/triggers/trig1/activate' in url
 
 
-class TestSendSignedMessage(object):
+class TestSendSignedMessage:
 
     @mock.patch('spellbook.do_post_request')
     def test_send_signed_message_with_string(self, mock_post):
@@ -638,7 +637,7 @@ class TestSendSignedMessage(object):
         assert data['message'] == 'file message content'
 
 
-class TestSignMessage(object):
+class TestSignMessage:
 
     @mock.patch('spellbook.do_post_request')
     def test_sign_message_with_string(self, mock_post):
@@ -674,7 +673,7 @@ class TestSignMessage(object):
         mock_post.assert_not_called()
 
 
-class TestCheckTriggers(object):
+class TestCheckTriggers:
 
     @mock.patch('spellbook.do_get_request')
     def test_check_specific_trigger(self, mock_get):
@@ -695,7 +694,7 @@ class TestCheckTriggers(object):
 # Action Commands
 # --------------------------------------------------------------------------------------------------
 
-class TestGetActions(object):
+class TestGetActions:
 
     @mock.patch('spellbook.do_get_request')
     def test_get_actions(self, mock_get):
@@ -704,7 +703,7 @@ class TestGetActions(object):
         assert '/spellbook/actions' in url
 
 
-class TestGetAction(object):
+class TestGetAction:
 
     @mock.patch('spellbook.do_get_request')
     def test_get_action(self, mock_get):
@@ -714,7 +713,7 @@ class TestGetAction(object):
         assert '/spellbook/actions/act1' in url
 
 
-class TestSaveAction(object):
+class TestSaveAction:
 
     @mock.patch('spellbook.do_post_request')
     def test_save_action_command_type(self, mock_post):
@@ -833,7 +832,7 @@ class TestSaveAction(object):
         mock_post.assert_not_called()
 
 
-class TestDeleteAction(object):
+class TestDeleteAction:
 
     @mock.patch('spellbook.do_delete_request')
     def test_delete_action(self, mock_delete):
@@ -843,7 +842,7 @@ class TestDeleteAction(object):
         assert '/spellbook/actions/act1' in url
 
 
-class TestRunAction(object):
+class TestRunAction:
 
     @mock.patch('spellbook.do_get_request')
     def test_run_action(self, mock_get):
@@ -853,7 +852,7 @@ class TestRunAction(object):
         assert '/spellbook/actions/act1/run' in url
 
 
-class TestGetReveal(object):
+class TestGetReveal:
 
     @mock.patch('spellbook.do_get_request')
     def test_get_reveal(self, mock_get):
@@ -863,7 +862,7 @@ class TestGetReveal(object):
         assert '/spellbook/actions/act1/reveal' in url
 
 
-class TestGetLogs(object):
+class TestGetLogs:
 
     @mock.patch('spellbook.do_get_request')
     def test_get_logs(self, mock_get):
@@ -877,7 +876,7 @@ class TestGetLogs(object):
         assert 'error timeout' in url
 
 
-class TestGetHivemind(object):
+class TestGetHivemind:
 
     @mock.patch('spellbook.do_get_request')
     def test_get_hivemind(self, mock_get):
@@ -887,7 +886,7 @@ class TestGetHivemind(object):
         assert '/spellbook/hiveminds/hive1' in url
 
 
-class TestCommandDispatch(object):
+class TestCommandDispatch:
     """Test module-level command dispatch by re-importing spellbook.py with subcommands."""
 
     def _reload_with_command(self, command, extra_args=None):

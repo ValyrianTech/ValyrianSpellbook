@@ -1,20 +1,18 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Float test Rosetta Stone for Darwin."""
 
-from rosettastone import RosettaStone
-
-from genome import Genome
 from chromosome import Chromosome
 from encodingtype import EncodingType
+from genome import Genome
+from rosettastone import RosettaStone
 
 
 class FloatTestRosettaStone(RosettaStone):
     """Float test Rosetta Stone for Darwin."""
 
     def __init__(self, name=None):
-        super(FloatTestRosettaStone, self).__init__(name)
+        super().__init__(name)
         
 
     def genome_template(self):
@@ -37,7 +35,6 @@ class FloatTestRosettaStone(RosettaStone):
 
     def model_to_genome(self, model):
         """Model to genome."""
-        pass
 
     def genome_to_model(self, genome):
         """Genome to model."""

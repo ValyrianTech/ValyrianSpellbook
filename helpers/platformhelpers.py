@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Helper functions for platform-specific (OS) operations."""
 import platform
 

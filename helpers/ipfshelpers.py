@@ -1,12 +1,15 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Helper functions for interacting with IPFS for data storage and retrieval."""
 from ipfs_dict_chain.IPFS import connect
-from ipfs_dict_chain.IPFSDictChain import IPFSDictChain
 from ipfs_dict_chain.IPFSDict import IPFSDict
+from ipfs_dict_chain.IPFSDictChain import IPFSDictChain
 
+from helpers.configurationhelpers import (
+    get_enable_ipfs,
+    get_ipfs_api_host,
+    get_ipfs_api_port,
+)
 from helpers.loghelpers import LOG
-from helpers.configurationhelpers import get_ipfs_api_host, get_ipfs_api_port, get_enable_ipfs
 
 
 def check_ipfs():
@@ -64,7 +67,7 @@ class FileMetaData(IPFSDictChain):
         self.publisher_signature = None
         self.signed_message = None
 
-        super(FileMetaData, self).__init__(cid=cid)
+        super().__init__(cid=cid)
 
 
 if get_enable_ipfs() is True:

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Tests for uptime_check.py — server uptime monitoring CLI.
 
@@ -7,11 +6,11 @@ uptime_check.py has a __main__ guard, so functions are importable without
 side effects. We test uptime_check(), get_recent_spellbook_log(), and
 get_recent_requests_log() with mocked dependencies.
 """
-import mock
 import os
-import sys
 import runpy
 import subprocess
+import sys
+from unittest import mock
 
 import uptime_check
 

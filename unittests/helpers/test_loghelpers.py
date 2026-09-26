@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
-from helpers.loghelpers import get_logs, LOG, REQUESTS_LOG
+from helpers.loghelpers import LOG, REQUESTS_LOG, get_logs
 
 
-class TestLogHelpers(object):
+class TestLogHelpers:
     """Tests for log helper functions"""
 
     def test_log_exists(self):

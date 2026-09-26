@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import mock
+from unittest import mock
 
 from data.blockexplorers.insight import InsightAPI
 
@@ -15,13 +14,13 @@ def make_mock_response(json_data=None, text_data=None, status_code=200):
     return resp
 
 
-class TestInsightAPIInit(object):
+class TestInsightAPIInit:
     def test_init(self):
         api = InsightAPI(url='http://example.com')
         assert api.url == 'http://example.com'
 
 
-class TestGetLatestBlock(object):
+class TestGetLatestBlock:
     @mock.patch('data.blockexplorers.insight.requests.get')
     def test_success(self, mock_get):
         mock_get.side_effect = [
@@ -47,7 +46,7 @@ class TestGetLatestBlock(object):
         assert 'error' in result
 
 
-class TestGetBlockByHash(object):
+class TestGetBlockByHash:
     @mock.patch('data.blockexplorers.insight.requests.get')
     def test_success(self, mock_get):
         mock_get.return_value = make_mock_response(json_data={
@@ -72,7 +71,7 @@ class TestGetBlockByHash(object):
         assert 'error' in result
 
 
-class TestGetBlockByHeight(object):
+class TestGetBlockByHeight:
     @mock.patch('data.blockexplorers.insight.requests.get')
     def test_success(self, mock_get):
         mock_get.side_effect = [
@@ -98,7 +97,7 @@ class TestGetBlockByHeight(object):
         assert 'error' in result
 
 
-class TestGetTransactions(object):
+class TestGetTransactions:
     @mock.patch('data.blockexplorers.insight.requests.get')
     def test_success(self, mock_get):
         mock_get.return_value = make_mock_response(json_data={
@@ -211,7 +210,7 @@ class TestGetTransactions(object):
         assert 'transactions' in result
 
 
-class TestGetBalance(object):
+class TestGetBalance:
     @mock.patch('data.blockexplorers.insight.requests.get')
     def test_success(self, mock_get):
         mock_get.side_effect = [
@@ -254,7 +253,7 @@ class TestGetBalance(object):
         assert 'error' in result
 
 
-class TestGetTransaction(object):
+class TestGetTransaction:
     @mock.patch('data.blockexplorers.insight.requests.get')
     def test_success(self, mock_get):
         mock_get.return_value = make_mock_response(json_data={
@@ -318,7 +317,7 @@ class TestGetTransaction(object):
         assert 'transaction' in result
 
 
-class TestGetPrimeInputAddress(object):
+class TestGetPrimeInputAddress:
     @mock.patch('data.blockexplorers.insight.requests.get')
     def test_success(self, mock_get):
         mock_get.return_value = make_mock_response(json_data={
@@ -343,7 +342,7 @@ class TestGetPrimeInputAddress(object):
         assert 'error' in result
 
 
-class TestGetUtxos(object):
+class TestGetUtxos:
     @mock.patch('data.blockexplorers.insight.requests.get')
     def test_success(self, mock_get):
         mock_get.return_value = make_mock_response(json_data=[{
@@ -377,7 +376,7 @@ class TestGetUtxos(object):
         assert len(result['utxos']) == 0
 
 
-class TestPushTx(object):
+class TestPushTx:
     @mock.patch('data.blockexplorers.insight.requests.post')
     def test_success(self, mock_post):
         mock_post.return_value = make_mock_response(json_data={'txid': 'newtx'}, status_code=200)

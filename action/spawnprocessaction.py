@@ -1,18 +1,18 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Action that spawns a new system process."""
 
-from .action import Action
-from .actiontype import ActionType
 from helpers.loghelpers import LOG
 from helpers.runcommandprocess import RunCommandProcess
+
+from .action import Action
+from .actiontype import ActionType
 
 
 class SpawnProcessAction(Action):
     """Action that spawns a new system process."""
     def __init__(self, action_id):
-        super(SpawnProcessAction, self).__init__(action_id=action_id)
+        super().__init__(action_id=action_id)
         self.action_type = ActionType.SPAWNPROCESS
         self.run_command = None
         self.working_dir = None
@@ -42,7 +42,7 @@ class SpawnProcessAction(Action):
         :param config: A dict containing the configuration settings
                        - config['run_command']  : The command to run
         """
-        super(SpawnProcessAction, self).configure(**config)
+        super().configure(**config)
         if 'run_command' in config:
             self.run_command = config['run_command']
         if 'working_dir' in config:
@@ -54,6 +54,6 @@ class SpawnProcessAction(Action):
 
         :return: A dict containing the configuration settings
         """
-        ret = super(SpawnProcessAction, self).json_encodable()
+        ret = super().json_encodable()
         ret.update({'run_command': self.run_command, 'working_dir': self.working_dir})
         return ret

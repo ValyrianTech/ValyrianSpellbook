@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 
 class TestMistralLLM(unittest.TestCase):
@@ -370,7 +369,7 @@ class TestMistralLLM(unittest.TestCase):
         # Remove text and thinking attributes so fallback to str() is used
         del mock_chunk_item.text
         del mock_chunk_item.thinking
-        mock_chunk_item.configure_mock(**{'__str__': lambda self: 'Fallback string'})
+        mock_chunk_item.configure_mock(__str__=lambda self: 'Fallback string')
         
         mock_chunk = MagicMock()
         mock_chunk.data.choices = [MagicMock()]

@@ -1,24 +1,23 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Authentication helpers for verifying API requests."""
 
-import configparser
-import os
 import base64
+import configparser
 import hashlib
 import hmac
+import os
 import random
 import string
 
 import simplejson
 
-from helpers.jsonhelpers import save_to_json_file, load_from_json_file
+from helpers.jsonhelpers import load_from_json_file, save_to_json_file
 
 API_KEYS_FILE = 'json/private/api_keys.json'
 LAST_NONCES: dict[str, int] = {}
 
 
-class AuthenticationStatus(object):
+class AuthenticationStatus:
     """Authentication helpers for verifying API requests."""
     OK = 'OK'
     INVALID_API_KEY = 'Invalid API key'

@@ -1,15 +1,21 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Helper functions for managing the encrypted hot wallet (keys, addresses, seeds)."""
 
-import os
 import getpass
+import os
+
 import simplejson
 
 from AESCipher import AESCipher
-from bips.BIP44 import get_address_from_xpub, get_addresses_from_xpub, get_xpriv_key, get_xpub_key, get_private_key
-from helpers.configurationhelpers import get_wallet_dir, get_default_wallet
 from bips.BIP39 import get_seed
+from bips.BIP44 import (
+    get_address_from_xpub,
+    get_addresses_from_xpub,
+    get_private_key,
+    get_xpriv_key,
+    get_xpub_key,
+)
+from helpers.configurationhelpers import get_default_wallet, get_wallet_dir
 
 HOT_WALLET_PASSWORD = None
 

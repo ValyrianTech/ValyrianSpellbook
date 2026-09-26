@@ -1,9 +1,12 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import unittest
 
 from helpers.textgenerationhelpers import (
-    LLMResult, BaseGeneration, TextGeneration, CodeGeneration, parse_generation
+    BaseGeneration,
+    CodeGeneration,
+    LLMResult,
+    TextGeneration,
+    parse_generation,
 )
 
 
@@ -145,9 +148,10 @@ class TestPrintPrompt(unittest.TestCase):
 
     def test_print_prompt_string(self):
         """Test print_prompt with a simple string"""
-        from helpers.textgenerationhelpers import print_prompt
         import io
         from contextlib import redirect_stdout
+
+        from helpers.textgenerationhelpers import print_prompt
         f = io.StringIO()
         with redirect_stdout(f):
             print_prompt("Hello world")
@@ -157,9 +161,10 @@ class TestPrintPrompt(unittest.TestCase):
 
     def test_print_prompt_messages_list(self):
         """Test print_prompt with a list of messages"""
-        from helpers.textgenerationhelpers import print_prompt
         import io
         from contextlib import redirect_stdout
+
+        from helpers.textgenerationhelpers import print_prompt
         messages = [
             {'role': 'user', 'content': 'Hello'},
             {'role': 'assistant', 'content': 'Hi there'},
@@ -174,9 +179,10 @@ class TestPrintPrompt(unittest.TestCase):
 
     def test_print_prompt_multimodal_messages(self):
         """Test print_prompt with multimodal content (list of parts)"""
-        from helpers.textgenerationhelpers import print_prompt
         import io
         from contextlib import redirect_stdout
+
+        from helpers.textgenerationhelpers import print_prompt
         messages = [
             {'role': 'user', 'content': [
                 {'text': 'Describe this image'},
@@ -192,9 +198,10 @@ class TestPrintPrompt(unittest.TestCase):
 
     def test_print_prompt_multimodal_string_parts(self):
         """Test print_prompt with multimodal content containing string parts"""
-        from helpers.textgenerationhelpers import print_prompt
         import io
         from contextlib import redirect_stdout
+
+        from helpers.textgenerationhelpers import print_prompt
         messages = [
             {'role': 'user', 'content': ['plain string part']},
         ]
@@ -206,9 +213,10 @@ class TestPrintPrompt(unittest.TestCase):
 
     def test_print_prompt_other_type(self):
         """Test print_prompt with a non-string non-list type"""
-        from helpers.textgenerationhelpers import print_prompt
         import io
         from contextlib import redirect_stdout
+
+        from helpers.textgenerationhelpers import print_prompt
         f = io.StringIO()
         with redirect_stdout(f):
             print_prompt(42)
@@ -217,9 +225,10 @@ class TestPrintPrompt(unittest.TestCase):
 
     def test_print_prompt_empty_content_in_message(self):
         """Test print_prompt with a message that has no 'content' key"""
-        from helpers.textgenerationhelpers import print_prompt
         import io
         from contextlib import redirect_stdout
+
+        from helpers.textgenerationhelpers import print_prompt
         messages = [{'role': 'user'}]
         f = io.StringIO()
         with redirect_stdout(f):

@@ -1,15 +1,21 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """BIP44 multi-account hierarchy for HD wallets."""
 
 from binascii import hexlify, unhexlify
 
-
-from .BIP32 import bip32_ckd, bip32_extract_key, MAGICBYTE, bip32_master_key, VERSION_BYTES, bip32_privtopub
-from .BIP39 import get_seed
-from helpers.publickeyhelpers import encode_pubkey, pubkey_to_address
-from helpers.privatekeyhelpers import encode_privkey, privkey_to_address
 from helpers.configurationhelpers import get_use_testnet
+from helpers.privatekeyhelpers import encode_privkey, privkey_to_address
+from helpers.publickeyhelpers import encode_pubkey, pubkey_to_address
+
+from .BIP32 import (
+    MAGICBYTE,
+    VERSION_BYTES,
+    bip32_ckd,
+    bip32_extract_key,
+    bip32_master_key,
+    bip32_privtopub,
+)
+from .BIP39 import get_seed
 
 HARDENED = 2**31
 COIN_TYPE = 1 if get_use_testnet() is True else 0
@@ -42,7 +48,7 @@ def get_addresses_from_xpub(xpub, i=100):
     address_list = []
     pub0 = bip32_ckd(xpub, 0)
 
-    for i in range(0, i):
+    for i in range(i):
         public_key = bip32_ckd(pub0, i)
         hex_key = encode_pubkey(bip32_extract_key(public_key), 'hex_compressed')
         address_from_public_key = pubkey_to_address(hex_key, magicbyte=MAGICBYTE)
@@ -62,7 +68,7 @@ def get_change_addresses_from_xpub(xpub, i=100):
     address_list = []
     pub0 = bip32_ckd(xpub, 1)
 
-    for i in range(0, i):
+    for i in range(i):
         public_key = bip32_ckd(pub0, i)
         hex_key = encode_pubkey(bip32_extract_key(public_key), 'hex_compressed')
         address_from_public_key = pubkey_to_address(hex_key, magicbyte=MAGICBYTE)
@@ -95,7 +101,7 @@ def get_xpriv_keys(mnemonic, passphrase="", i=1):
     seed = hexlify(get_seed(mnemonic=mnemonic, passphrase=passphrase))
     private_key = bip32_master_key(unhexlify(seed), vbytes=VERSION_BYTES)
     xprivs = []
-    for i in range(0, i):
+    for i in range(i):
         derived_private_key = bip32_ckd(bip32_ckd(bip32_ckd(private_key, 44+HARDENED), HARDENED+COIN_TYPE), HARDENED+i)
         xprivs.append(derived_private_key)
 
@@ -119,7 +125,7 @@ def get_xpub_keys(mnemonic, passphrase="", i=1):
     seed = hexlify(get_seed(mnemonic=mnemonic, passphrase=passphrase))
     priv = bip32_master_key(unhexlify(seed), vbytes=VERSION_BYTES)
     xpubs = []
-    for i in range(0, i):
+    for i in range(i):
         derived_private_key = bip32_ckd(bip32_ckd(bip32_ckd(priv, 44+HARDENED), HARDENED+COIN_TYPE), HARDENED+i)
         xpub = bip32_privtopub(derived_private_key)
         xpubs.append(xpub)

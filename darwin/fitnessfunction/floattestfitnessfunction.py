@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Float test fitness function for Darwin."""
 
 from fitnessfunction import FitnessFunction
@@ -9,7 +8,7 @@ from model.floattest import FloatTest
 class FloatTestFitnessFunction(FitnessFunction):
     """Float test fitness function for Darwin."""
     def __init__(self):
-        super(FloatTestFitnessFunction, self).__init__()
+        super().__init__()
 
     def fitness(self, model):
         """Fitness."""

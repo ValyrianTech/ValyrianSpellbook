@@ -1,32 +1,34 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Helper functions for creating, configuring, checking, and activating triggers."""
 
 import glob
 import os
 import time
 
+from helpers.actionhelpers import delete_action
+from helpers.hotwallethelpers import (
+    find_address_in_wallet,
+    find_single_address_in_wallet,
+    get_private_key_from_wallet,
+)
+from helpers.jsonhelpers import load_from_json_file
 from helpers.loghelpers import LOG
+from helpers.messagehelpers import sign_and_verify, verify_message
 from trigger.balancetrigger import BalanceTrigger
 from trigger.blockheighttrigger import BlockHeightTrigger
-from trigger.txconfirmationtrigger import TxConfirmationTrigger
 from trigger.deadmansswitchtrigger import DeadMansSwitchTrigger
-from helpers.jsonhelpers import load_from_json_file
+from trigger.httpdeleterequesttrigger import HTTPDeleteRequestTrigger
+from trigger.httpgetrequesttrigger import HTTPGetRequestTrigger
+from trigger.httppostrequesttrigger import HTTPPostRequestTrigger
 from trigger.manualtrigger import ManualTrigger
 from trigger.receivedtrigger import ReceivedTrigger
 from trigger.recurringtrigger import RecurringTrigger
 from trigger.senttrigger import SentTrigger
-from helpers.messagehelpers import verify_message, sign_and_verify
 from trigger.signedmessagetrigger import SignedMessageTrigger
 from trigger.timestamptrigger import TimestampTrigger
 from trigger.triggerstatustrigger import TriggerStatusTrigger
-from trigger.httpgetrequesttrigger import HTTPGetRequestTrigger
-from trigger.httppostrequesttrigger import HTTPPostRequestTrigger
-from trigger.httpdeleterequesttrigger import HTTPDeleteRequestTrigger
 from trigger.triggertype import TriggerType
-from helpers.actionhelpers import delete_action
-from helpers.hotwallethelpers import get_private_key_from_wallet, find_address_in_wallet, find_single_address_in_wallet
-
+from trigger.txconfirmationtrigger import TxConfirmationTrigger
 from validators.validators import valid_address
 
 TRIGGERS_DIR = 'json/public/triggers'
@@ -52,7 +54,7 @@ def get_trigger_config(trigger_id):
     """
     try:
         trigger_config = load_from_json_file(os.path.join(TRIGGERS_DIR, '%s.json' % trigger_id))
-    except IOError:
+    except OSError:
         # Trigger does not exist yet, return empty dict
         trigger_config = {}
 

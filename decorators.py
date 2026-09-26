@@ -1,16 +1,16 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Decorators for authentication, explorer selection, JSON output, config verification, and logging."""
 import functools
 import os
-import simplejson
 import time
-from bottle import request
 from configparser import ConfigParser
 from functools import wraps
 
-from authentication import check_authentication, AuthenticationStatus
-from data.data import set_explorer, clear_explorer, get_last_explorer
+import simplejson
+from bottle import request
+
+from authentication import AuthenticationStatus, check_authentication
+from data.data import clear_explorer, get_last_explorer, set_explorer
 from helpers.loghelpers import LOG
 
 CONFIGURATION_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "configuration", "spellbook.conf"))

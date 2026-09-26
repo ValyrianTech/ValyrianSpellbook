@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 
 class TestNotifyTransaction(unittest.TestCase):
@@ -39,8 +38,9 @@ class TestNotifyTransaction(unittest.TestCase):
         mock_process.communicate.return_value = (b'OK', b'')
         mock_popen.return_value = mock_process
 
-        import helpers.notify_transaction as nt_module
         import sys
+
+        import helpers.notify_transaction as nt_module
 
         original_argv = sys.argv
         sys.argv = ['notify_transaction', 'http://example.com/notify', 'pr123', 'tx456']

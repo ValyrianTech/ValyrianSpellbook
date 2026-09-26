@@ -1,10 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Configuration helpers for reading Spellbook settings from the config file."""
 
 import os
-import requests
 from configparser import ConfigParser
+
+import requests
+
 from decorators import verify_config
 
 CONFIGURATION_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "configuration", "spellbook.conf"))
@@ -222,9 +223,9 @@ def get_ssl_certificate_chain():
 def get_spellbook_uri():
     """Get the full Spellbook URI (https or http) based on SSL settings."""
     if get_enable_ssl() is True:
-        uri = 'https://{domain_name}:{port}'.format(domain_name=get_domain_name(), port=get_port())
+        uri = f'https://{get_domain_name()}:{get_port()}'
     else:
-        uri = 'http://{host}:{port}'.format(host=get_host(), port=get_port())
+        uri = f'http://{get_host()}:{get_port()}'
 
     return uri
 

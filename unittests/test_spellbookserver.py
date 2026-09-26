@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Tests for spellbookserver.py — the Valyrian Spellbook REST API server (Bottle).
 
@@ -10,7 +9,7 @@ import importlib.util
 import logging
 import os
 import sys
-from unittest.mock import patch, MagicMock, mock_open
+from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 
@@ -26,11 +25,11 @@ _transcribe_patcher.start()
 _wallet_patcher = patch('spellbookserver.get_enable_wallet', return_value=False)
 _wallet_patcher.start()
 
-import spellbookserver as srv  # noqa: E402
-from spellbookserver import (  # noqa: E402
-    enable_cors,
+import spellbookserver as srv
+from spellbookserver import (
     SpellbookRESTAPI,
     convert_aac_to_opus,
+    enable_cors,
 )
 
 # Re-enable for individual tests if needed

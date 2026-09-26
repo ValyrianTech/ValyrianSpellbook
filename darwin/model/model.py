@@ -1,9 +1,8 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Base model class for the Darwin evolutionary framework."""
 
 
-class Model(object):
+class Model:
     """Base model class for Darwin."""
     def __init__(self, name=None, **kwargs):
         self.name = name
@@ -20,15 +19,12 @@ class Model(object):
 
     def darwin_init_actions(self):
         """Darwin init actions."""
-        pass
 
     def champion_actions(self):
         """Champion actions."""
-        pass
 
     def info(self):
         """Info."""
-        pass
 
     def pre_generation_actions(self):
         """Pre generation actions."""

@@ -1,16 +1,15 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Tests for the spellbookscripts package: SpellbookScript base class, Echo, and Template.
 """
 import hashlib
+from unittest import mock
 
-import mock
 import pytest
 import simplejson
 
-from spellbookscripts.spellbookscript import SpellbookScript
 from spellbookscripts.Echo import Echo
+from spellbookscripts.spellbookscript import SpellbookScript
 from spellbookscripts.Template import Template
 
 

@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Helper functions for retrieving recommended Bitcoin transaction fees."""
 import requests
 
-from helpers.loghelpers import LOG
 from helpers.configurationhelpers import get_use_testnet
+from helpers.loghelpers import LOG
 
 
 def get_medium_priority_fee():

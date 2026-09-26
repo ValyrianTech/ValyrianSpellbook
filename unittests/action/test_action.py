@@ -1,15 +1,14 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import mock
 import time
 from datetime import datetime
+from unittest import mock
 
 from action.action import Action
 from action.actiontype import ActionType
 from action.transactiontype import TransactionType
 
 
-class TestActionType(object):
+class TestActionType:
     """Tests for ActionType constants"""
 
     def test_action_type_constants(self):
@@ -34,7 +33,7 @@ class TestActionType(object):
         assert ActionType.UNFOLLOW_ON_TWITTER == 'Unfollow on twitter'
 
 
-class TestTransactionType(object):
+class TestTransactionType:
     """Tests for TransactionType constants"""
 
     def test_transaction_type_constants(self):
@@ -54,7 +53,7 @@ class ConcreteAction(Action):
         return True
 
 
-class TestAction(object):
+class TestAction:
     """Tests for the Action base class"""
 
     def test_action_init(self):

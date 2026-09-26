@@ -1,18 +1,18 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Action that unlikes a tweet on Twitter."""
 
 from helpers.loghelpers import LOG
+from helpers.twitterhelpers import unlike_tweet
+
 from .action import Action
 from .actiontype import ActionType
-from helpers.twitterhelpers import unlike_tweet
 
 
 class UnlikeTweetAction(Action):
     """Action that unlikes a tweet on Twitter."""
     def __init__(self, action_id):
-        super(UnlikeTweetAction, self).__init__(action_id=action_id)
+        super().__init__(action_id=action_id)
         self.action_type = ActionType.UNLIKE_TWEET
         self.tweet_id = None
 
@@ -42,7 +42,7 @@ class UnlikeTweetAction(Action):
         :param config: A dict containing the configuration settings
                        - config['tweet_id']    : The id of the tweet to unlike
         """
-        super(UnlikeTweetAction, self).configure(**config)
+        super().configure(**config)
         if 'tweet_id' in config:
             self.tweet_id = config['tweet_id']
 
@@ -52,6 +52,6 @@ class UnlikeTweetAction(Action):
 
         :return: A dict containing the configuration settings
         """
-        ret = super(UnlikeTweetAction, self).json_encodable()
+        ret = super().json_encodable()
         ret.update({'tweet_id': self.tweet_id})
         return ret

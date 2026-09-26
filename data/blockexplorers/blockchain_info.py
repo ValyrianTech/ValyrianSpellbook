@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Blockchain.info block explorer API client."""
-import requests
 from time import sleep
 
-from helpers.loghelpers import LOG
-from data.transaction import TX, TxInput, TxOutput
+import requests
+
 from data.explorer_api import ExplorerAPI
+from data.transaction import TX, TxInput, TxOutput
+from helpers.loghelpers import LOG
 
 
 class BlockchainInfoAPI(ExplorerAPI):
@@ -16,14 +16,14 @@ class BlockchainInfoAPI(ExplorerAPI):
     Initializes the API client with URL, optional key, and testnet flag.
     """
     def __init__(self, url='', key='', testnet=False):
-        super(BlockchainInfoAPI, self).__init__(url=url, testnet=testnet)
+        super().__init__(url=url, testnet=testnet)
         # Set the url of the api depending on testnet or mainnet
         self.url = 'https://testnet.blockchain.info' if self.testnet is True else 'https://blockchain.info'
 
     def get_latest_block(self):
         """Retrieve the latest block from the blockchain explorer."""
         latest_block = {}
-        url = '{api_url}/latestblock'.format(api_url=self.url)
+        url = f'{self.url}/latestblock'
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
@@ -60,7 +60,7 @@ class BlockchainInfoAPI(ExplorerAPI):
 
     def get_block_by_hash(self, block_hash):
         """Retrieve a block by its hash from the blockchain explorer."""
-        url = '{api_url}/rawblock/{hash}'.format(api_url=self.url, hash=block_hash)
+        url = f'{self.url}/rawblock/{block_hash}'
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
@@ -81,7 +81,7 @@ class BlockchainInfoAPI(ExplorerAPI):
 
     def get_block_by_height(self, height):
         """Retrieve a block by its height from the blockchain explorer."""
-        url = '{api_url}/block-height/{height}?format=json'.format(api_url=self.url, height=height)
+        url = f'{self.url}/block-height/{height}?format=json'
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
@@ -92,7 +92,7 @@ class BlockchainInfoAPI(ExplorerAPI):
 
         if 'blocks' in data:
             blocks = data['blocks']
-            for i in range(0, len(blocks)):
+            for i in range(len(blocks)):
                 if blocks[i]['main_chain'] is True and blocks[i]['height'] == height:
                     block = {'height': blocks[i]['height'],
                              'hash': blocks[i]['hash'],
@@ -114,7 +114,7 @@ class BlockchainInfoAPI(ExplorerAPI):
 
         i = 0
         while n_tx is None or len(transactions) < n_tx:
-            url = '{api_url}/address/{address}?format=json&limit={limit}&offset={offset}'.format(api_url=self.url, address=address, limit=limit, offset=limit * i)
+            url = f'{self.url}/address/{address}?format=json&limit={limit}&offset={limit * i}'
             try:
                 LOG.info('GET %s' % url)
                 r = requests.get(url)
@@ -172,13 +172,13 @@ class BlockchainInfoAPI(ExplorerAPI):
                 n_tx -= 1
 
         if n_tx != len(txs):
-            return {'error': 'Not all transactions are retrieved! expected {expected} but only got {received}'.format(expected=n_tx, received=len(txs))}
+            return {'error': f'Not all transactions are retrieved! expected {n_tx} but only got {len(txs)}'}
         else:
             return {'transactions': txs}
 
     def get_balance(self, address):
         """Retrieve the balance (final, received, sent) for a given address."""
-        url = '{api_url}/q/addressbalance/{address}?confirmations=1'.format(api_url=self.url, address=address)
+        url = f'{self.url}/q/addressbalance/{address}?confirmations=1'
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
@@ -187,7 +187,7 @@ class BlockchainInfoAPI(ExplorerAPI):
             LOG.error('Unable to get balance of address %s from Blockchain.info: %s' % (address, ex))
             return {'error': 'Unable to get balance of address %s from Blockchain.info' % address}
 
-        url = '{api_url}/q/getreceivedbyaddress/{address}?confirmations=1'.format(api_url=self.url, address=address)
+        url = f'{self.url}/q/getreceivedbyaddress/{address}?confirmations=1'
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
@@ -196,7 +196,7 @@ class BlockchainInfoAPI(ExplorerAPI):
             LOG.error('Unable to get balance of address %s from Blockchain.info: %s' % (address, ex))
             return {'error': 'Unable to get balance of address %s from Blockchain.info' % address}
 
-        url = '{api_url}/q/getsentbyaddress/{address}?confirmations=1'.format(api_url=self.url, address=address)
+        url = f'{self.url}/q/getsentbyaddress/{address}?confirmations=1'
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
@@ -212,7 +212,7 @@ class BlockchainInfoAPI(ExplorerAPI):
 
     def get_transaction(self, txid):
         """Retrieve a single transaction by its txid from the explorer."""
-        url = '{api_url}/rawtx/{txid}'.format(api_url=self.url, txid=txid)
+        url = f'{self.url}/rawtx/{txid}'
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
@@ -254,7 +254,7 @@ class BlockchainInfoAPI(ExplorerAPI):
 
     def get_prime_input_address(self, txid):
         """Retrieve the prime input address of a transaction by txid."""
-        url = '{api_url}/rawtx/{txid}'.format(api_url=self.url, txid=txid)
+        url = f'{self.url}/rawtx/{txid}'
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
@@ -267,7 +267,7 @@ class BlockchainInfoAPI(ExplorerAPI):
             tx_inputs = data['inputs']
 
             input_addresses = []
-            for i in range(0, len(tx_inputs)):
+            for i in range(len(tx_inputs)):
                 if 'prev_out' in tx_inputs[i]:  # Coinbase transactions don't have a input address
                     input_addresses.append(tx_inputs[i]['prev_out']['addr'])
 
@@ -283,7 +283,7 @@ class BlockchainInfoAPI(ExplorerAPI):
     def get_utxos(self, address, confirmations=3):
         """Retrieve unspent transaction outputs (UTXOs) for a given address."""
         limit = 1000  # max number of utxo given by blockchain.info is 1000, there is no 'offset' parameter available
-        url = '{api_url}/unspent?active={address}&limit={limit}&confirmations={confirmations}'.format(api_url=self.url, address=address, limit=limit, confirmations=confirmations)
+        url = f'{self.url}/unspent?active={address}&limit={limit}&confirmations={confirmations}'
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
@@ -314,7 +314,7 @@ class BlockchainInfoAPI(ExplorerAPI):
 
     def push_tx(self, tx):
         """Broadcast a signed raw transaction to the blockchain network."""
-        url = '{api_url}/pushtx'.format(api_url=self.url)
+        url = f'{self.url}/pushtx'
         LOG.info('POST %s' % url)
         try:
             r = requests.post(url, data=dict(tx=tx))

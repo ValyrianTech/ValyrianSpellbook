@@ -1,33 +1,47 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Action that sends a Bitcoin transaction."""
 
 import operator
 
+from bips.BIP44 import get_private_key, get_xpriv_key
+from data.data import prime_input_address, push_tx, utxos
+from helpers.configurationhelpers import (
+    get_max_tx_fee_percentage,
+    get_minimum_output_value,
+)
+from helpers.feehelpers import (
+    get_high_priority_fee,
+    get_low_priority_fee,
+    get_medium_priority_fee,
+)
+from helpers.hotwallethelpers import get_address_from_wallet, get_hot_wallet
 from helpers.loghelpers import LOG
+from inputs.inputs import get_sil
+from linker.linker import get_lal, get_lbl, get_lrl, get_lsl
+from transactionfactory import make_custom_tx, txhash
+from validators.validators import (
+    valid_address,
+    valid_amount,
+    valid_block_height,
+    valid_distribution,
+    valid_op_return,
+    valid_percentage,
+    valid_private_key,
+    valid_transaction_type,
+    valid_xpub,
+)
+
 from .action import Action
 from .actiontype import ActionType
-from data.data import utxos, prime_input_address, push_tx
-from bips.BIP44 import get_xpriv_key, get_private_key
-from helpers.configurationhelpers import get_max_tx_fee_percentage
-from helpers.configurationhelpers import get_minimum_output_value
-from helpers.feehelpers import get_medium_priority_fee, get_high_priority_fee, get_low_priority_fee
-from helpers.hotwallethelpers import get_address_from_wallet
-from helpers.hotwallethelpers import get_hot_wallet
-from inputs.inputs import get_sil
-from linker.linker import get_lbl, get_lrl, get_lsl, get_lal
-from transactionfactory import make_custom_tx, txhash
 from .transactiontype import TransactionType
-from validators.validators import valid_address, valid_xpub, valid_amount, valid_op_return, valid_block_height
-from validators.validators import valid_transaction_type, valid_distribution, valid_percentage, valid_private_key
 
 
 # Todo add option only_once so the action can not be run multiple times as a safety measure
 class SendTransactionAction(Action):
     """Action that sends a Bitcoin transaction."""
     def __init__(self, action_id):
-        super(SendTransactionAction, self).__init__(action_id=action_id)
+        super().__init__(action_id=action_id)
         self.action_type = ActionType.SENDTRANSACTION
 
         # These are for the spellbook fees, not to be confused with transaction fees
@@ -83,7 +97,7 @@ class SendTransactionAction(Action):
                        - config['registration_xpub']         : An xpub key used for the registration of a LBL, LRL or LSL
                        - config['distribution']              : A dict containing a distribution (each address should be a key in the dict with the value being the share)
         """
-        super(SendTransactionAction, self).configure(**config)
+        super().configure(**config)
         if 'fee_address' in config and valid_address(config['fee_address']):
             self.fee_address = config['fee_address']
 
@@ -160,7 +174,7 @@ class SendTransactionAction(Action):
 
         :return: A dict containing the configuration settings
         """
-        ret = super(SendTransactionAction, self).json_encodable()
+        ret = super().json_encodable()
         ret.update({'fee_address': self.fee_address,
                     'fee_percentage': self.fee_percentage,
                     'wallet_type': self.wallet_type,
@@ -395,8 +409,7 @@ class SendTransactionAction(Action):
             fee_base = total_value_in_inputs if self.amount == 0 else self.amount
             spellbook_fee = int(fee_base * self.fee_percentage/100.0)
 
-            if spellbook_fee < self.fee_minimum_amount:
-                spellbook_fee = self.fee_minimum_amount
+            spellbook_fee = max(spellbook_fee, self.fee_minimum_amount)
 
             LOG.info('Spellbook fee: %s' % spellbook_fee)
 
@@ -661,7 +674,7 @@ class SendTransactionAction(Action):
             return True
 
 
-class TransactionInput(object):
+class TransactionInput:
     """Represents a transaction input with address, value, output hash, and confirmations."""
     def __init__(self, address, value, output_hash, output_n, confirmations):
         self.address = address
@@ -673,7 +686,7 @@ class TransactionInput(object):
         self.output = '%s:%s' % (self.output_hash, self.output_n)
 
 
-class TransactionOutput(object):
+class TransactionOutput:
     """Represents a transaction output with an address and an amount in satoshis."""
     def __init__(self, address, amount):
         self.address = address

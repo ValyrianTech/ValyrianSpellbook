@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Tests for darwin/darwin.py — the CLI entry point for the Evolver.
 
@@ -7,10 +6,9 @@ darwin.py runs all logic in a __main__ guard. We use runpy to execute it
 with mocked dependencies, covering the argparse setup and evolver calls.
 """
 import os
-import sys
 import runpy
-from unittest.mock import patch, MagicMock
-
+import sys
+from unittest.mock import MagicMock, patch
 
 _DARWIN_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
                             'darwin', 'darwin.py')

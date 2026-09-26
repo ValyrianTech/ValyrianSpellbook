@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import mock
+from unittest import mock
 
 from data.blockexplorers.blocktrail_com import BlocktrailComAPI
 
@@ -15,7 +14,7 @@ def make_mock_response(json_data=None, text_data=None, status_code=200):
     return resp
 
 
-class TestBlocktrailComAPIInit(object):
+class TestBlocktrailComAPIInit:
     def test_init_mainnet(self):
         api = BlocktrailComAPI(key='mykey')
         assert 'api.blocktrail.com/v1/BTC' in api.url
@@ -26,7 +25,7 @@ class TestBlocktrailComAPIInit(object):
         assert 'tBTC' in api.url
 
 
-class TestGetLatestBlock(object):
+class TestGetLatestBlock:
     @mock.patch('data.blockexplorers.blocktrail_com.requests.get')
     def test_success(self, mock_get):
         mock_get.side_effect = [
@@ -55,7 +54,7 @@ class TestGetLatestBlock(object):
         assert 'error' in result
 
 
-class TestGetBlockByHeight(object):
+class TestGetBlockByHeight:
     @mock.patch('data.blockexplorers.blocktrail_com.requests.get')
     def test_success(self, mock_get):
         mock_get.return_value = make_mock_response(json_data={
@@ -81,7 +80,7 @@ class TestGetBlockByHeight(object):
         assert 'error' in result
 
 
-class TestGetBlockByHash(object):
+class TestGetBlockByHash:
     @mock.patch('data.blockexplorers.blocktrail_com.requests.get')
     def test_success(self, mock_get):
         mock_get.return_value = make_mock_response(json_data={
@@ -107,7 +106,7 @@ class TestGetBlockByHash(object):
         assert 'error' in result
 
 
-class TestGetTransactions(object):
+class TestGetTransactions:
     @mock.patch('data.blockexplorers.blocktrail_com.requests.get')
     def test_success(self, mock_get):
         mock_get.return_value = make_mock_response(json_data={
@@ -208,7 +207,7 @@ class TestGetTransactions(object):
         assert 'transactions' in result
 
 
-class TestGetBalance(object):
+class TestGetBalance:
     @mock.patch('data.blockexplorers.blocktrail_com.requests.get')
     def test_success(self, mock_get):
         mock_get.return_value = make_mock_response(json_data={
@@ -233,7 +232,7 @@ class TestGetBalance(object):
         assert 'error' in result
 
 
-class TestGetTransaction(object):
+class TestGetTransaction:
     @mock.patch('data.blockexplorers.blocktrail_com.requests.get')
     def test_success(self, mock_get):
         mock_get.return_value = make_mock_response(json_data={
@@ -274,7 +273,7 @@ class TestGetTransaction(object):
         assert 'transaction' in result
 
 
-class TestGetPrimeInputAddress(object):
+class TestGetPrimeInputAddress:
     @mock.patch('data.blockexplorers.blocktrail_com.requests.get')
     def test_success(self, mock_get):
         mock_get.return_value = make_mock_response(json_data={
@@ -299,7 +298,7 @@ class TestGetPrimeInputAddress(object):
         assert 'error' in result
 
 
-class TestGetUtxos(object):
+class TestGetUtxos:
     @mock.patch('data.blockexplorers.blocktrail_com.requests.get')
     def test_success(self, mock_get):
         mock_get.return_value = make_mock_response(json_data={
@@ -366,7 +365,7 @@ class TestGetUtxos(object):
         assert len(result['utxos']) == 0
 
 
-class TestGetRecommendedFee(object):
+class TestGetRecommendedFee:
     @mock.patch('data.blockexplorers.blocktrail_com.requests.get')
     def test_success(self, mock_get):
         mock_get.return_value = make_mock_response(json_data={'optimal': 100})
@@ -382,7 +381,7 @@ class TestGetRecommendedFee(object):
         assert 'error' in result
 
 
-class TestPushTx(object):
+class TestPushTx:
     @mock.patch('data.data.get_explorer_api')
     def test_push_tx_delegates(self, mock_get_api):
         mock_bc_api = mock.MagicMock()

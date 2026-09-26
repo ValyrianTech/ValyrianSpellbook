@@ -1,13 +1,15 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import os
+
 import simplejson
 
+from helpers.hotwallethelpers import (
+    get_address_from_wallet,
+    get_private_key_from_wallet,
+)
 from helpers.ipfshelpers import add_json
-from helpers.hotwallethelpers import get_address_from_wallet, get_private_key_from_wallet
-from helpers.setupscripthelpers import spellbook_call, clean_up_triggers
 from helpers.messagehelpers import sign_message, verify_message
-
+from helpers.setupscripthelpers import clean_up_triggers, spellbook_call
 
 print('Starting Spellbook integration test: SignedMessage trigger conditions')
 print('----------------------------------------------\n')

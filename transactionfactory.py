@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Factory for building and signing Bitcoin transactions."""
 
 import binascii
@@ -10,6 +9,17 @@ import re
 import sys
 from functools import reduce
 
+from helpers.bech32 import bech32_decode
+from helpers.bech32 import decode as decode_witness_program
+from helpers.jacobianhelpers import G, N, fast_multiply, inv
+from helpers.loghelpers import LOG
+from helpers.privatekeyhelpers import (
+    decode_privkey,
+    encode_privkey,
+    get_privkey_format,
+    privkey_to_pubkey,
+)
+from helpers.publickeyhelpers import pubkey_to_address
 from helpers.py3specials import (
     bin_dbl_sha256,
     changebase,
@@ -24,15 +34,6 @@ from helpers.py3specials import (
     string_or_bytes_types,
     string_types,
 )
-
-from helpers.privatekeyhelpers import privkey_to_pubkey, decode_privkey, get_privkey_format, encode_privkey
-from helpers.publickeyhelpers import pubkey_to_address
-from helpers.jacobianhelpers import fast_multiply, inv, G, N
-from helpers.bech32 import bech32_decode
-from helpers.bech32 import decode as decode_witness_program
-
-from helpers.loghelpers import LOG
-
 
 SIGHASH_ALL = 1
 SIGHASH_NONE = 2
@@ -98,7 +99,7 @@ def make_custom_tx(private_keys, tx_inputs, tx_outputs, tx_fee=0, op_return_data
         tx = add_op_return(op_return_data, tx)
 
     # Now sign each transaction input with the private key
-    for i in range(0, len(tx_inputs)):
+    for i in range(len(tx_inputs)):
         tx = sign(tx, i, str(private_keys[tx_inputs[i]['address']]))
 
     return tx
@@ -200,7 +201,7 @@ def serialize(txobj):
     for inp in txobj["ins"]:
         o.append(inp["outpoint"]["hash"][::-1])
         o.append(encode(inp["outpoint"]["index"], 256, 4)[::-1])
-        o.append(num_to_var_int(len(inp["script"]))+(inp["script"] if inp["script"] or is_python2 else bytes()))
+        o.append(num_to_var_int(len(inp["script"]))+(inp["script"] if inp["script"] or is_python2 else b''))
         o.append(encode(inp["sequence"], 256, 4)[::-1])
     o.append(num_to_var_int(len(txobj["outs"])))
     for out in txobj["outs"]:
@@ -208,7 +209,7 @@ def serialize(txobj):
         o.append(num_to_var_int(len(out["script"]))+out["script"])
     o.append(encode(txobj["locktime"], 256, 4)[::-1])
 
-    return ''.join(o) if is_python2 else reduce(lambda x,y: x+y, o, bytes())
+    return ''.join(o) if is_python2 else reduce(lambda x,y: x+y, o, b'')
 
 
 def deserialize(tx):
@@ -574,7 +575,7 @@ else:
             return safe_hexlify(serialize_script(json_changebase(script,
                                                                  lambda x: binascii.unhexlify(x))))
 
-        result = bytes()
+        result = b''
         for b in map(serialize_script_unit, script):
             result += b if isinstance(b, bytes) else bytes(b, 'utf-8')
         return result

@@ -3,9 +3,7 @@
 import os
 from unittest.mock import patch
 
-
 import import_llm_configs
-
 
 # ---------------------------------------------------------------------------
 # parse_price

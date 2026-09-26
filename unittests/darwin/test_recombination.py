@@ -1,9 +1,8 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 from unittest.mock import patch
 
-from darwin.genome import Genome
 from darwin.encodingtype import EncodingType
+from darwin.genome import Genome
 from darwin.recombination import recombine
 
 

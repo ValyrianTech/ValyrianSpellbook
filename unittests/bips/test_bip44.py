@@ -1,19 +1,17 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
+from bips.BIP32 import set_chain_mode
 from bips.BIP44 import (
     get_address_from_xpub,
     get_addresses_from_xpub,
     get_change_addresses_from_xpub,
+    get_private_key,
     get_xpriv_key,
     get_xpriv_keys,
     get_xpub_key,
     get_xpub_keys,
-    get_private_key,
 )
-from bips.BIP32 import set_chain_mode
 from helpers.configurationhelpers import get_use_testnet
-
 
 # Test mnemonic (12 words) - this is a well-known test vector
 TEST_MNEMONIC = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
@@ -29,7 +27,7 @@ def teardown_module(module):
     set_chain_mode(mainnet=(get_use_testnet() is False))
 
 
-class TestBIP44(object):
+class TestBIP44:
     """Tests for BIP44 functions"""
 
     def test_get_xpriv_key(self):

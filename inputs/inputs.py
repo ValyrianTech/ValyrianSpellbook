@@ -1,10 +1,14 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Functions for building Simplified Inputs Lists (SIL), profiles, and Simplified UTXO Lists (SUL) from blockchain data."""
 
 import re
+
 from data import data
-from validators.validators import valid_address, valid_op_return, valid_blockprofile_message
+from validators.validators import (
+    valid_address,
+    valid_blockprofile_message,
+    valid_op_return,
+)
 
 
 def get_sil(address, block_height=0):
@@ -42,7 +46,7 @@ def txs_2_sil(txs, block_height=0):
     for tx in txs:
         if tx['receiving'] is True and tx['block_height'] is not None and (block_height == 0 or tx['block_height'] <= block_height):
             recurring = False
-            for i in range(0, len(sil)):
+            for i in range(len(sil)):
                 if sil[i][0] == tx['prime_input_address']:
                     sil[i][1] += tx['receivedValue']
                     recurring = True

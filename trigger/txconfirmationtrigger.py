@@ -1,18 +1,18 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Trigger that activates at a specific transaction confirmation count."""
 
-from .trigger import Trigger
-from .triggertype import TriggerType
 from data.data import transaction
 from validators.validators import valid_amount, valid_txid
+
+from .trigger import Trigger
+from .triggertype import TriggerType
 
 
 class TxConfirmationTrigger(Trigger):
     """Trigger that activates at a specific transaction confirmation count."""
     def __init__(self, trigger_id):
-        super(TxConfirmationTrigger, self).__init__(trigger_id=trigger_id)
+        super().__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.TX_CONFIRMATION
         self.txid = None
         self.confirmations = 1
@@ -33,7 +33,7 @@ class TxConfirmationTrigger(Trigger):
 
     def configure(self, **config):
         """Configure."""
-        super(TxConfirmationTrigger, self).configure(**config)
+        super().configure(**config)
         if 'txid' in config and valid_txid(config['txid']):
             self.txid = config['txid']
 
@@ -42,7 +42,7 @@ class TxConfirmationTrigger(Trigger):
 
     def json_encodable(self):
         """Json encodable."""
-        ret = super(TxConfirmationTrigger, self).json_encodable()
+        ret = super().json_encodable()
 
         ret.update({
             'txid': self.txid,

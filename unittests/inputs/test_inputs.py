@@ -1,9 +1,15 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 from unittest.mock import patch
 
-from inputs.inputs import get_sil, txs_2_sil, get_profile, txs_to_profile, get_sul, utxos_to_sul, get_sil_section
-
+from inputs.inputs import (
+    get_profile,
+    get_sil,
+    get_sil_section,
+    get_sul,
+    txs_2_sil,
+    txs_to_profile,
+    utxos_to_sul,
+)
 
 VALID_ADDRESS = '1Bobk6PuJst6ot6ay2DcVugv8nxfJh5y'
 VALID_ADDRESS_2 = '1Alice3WtXqygdLq7BdvygPcQ9U2NQ9xX'

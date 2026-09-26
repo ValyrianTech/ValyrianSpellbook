@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 
 """Constants for mutation probability thresholds in Darwin."""
 
-class MutationChance(object):
+class MutationChance:
     """Constants for mutation probability thresholds in Darwin."""
     def __init__(self):
         pass
@@ -22,7 +21,7 @@ class MutationChance(object):
 class BooleanMutationChance(MutationChance):
     """Mutation probability thresholds for boolean genes."""
     def __init__(self):
-        super(BooleanMutationChance, self).__init__()
+        super().__init__()
 
         self.uniform = 0.0
         self.flip = 0.0
@@ -31,7 +30,7 @@ class BooleanMutationChance(MutationChance):
 class IntegerMutationChance(MutationChance):
     """Mutation probability thresholds for integer genes."""
     def __init__(self):
-        super(IntegerMutationChance, self).__init__()
+        super().__init__()
 
         self.uniform = 0.0
         self.boundary = 0.0
@@ -42,7 +41,7 @@ class IntegerMutationChance(MutationChance):
 class FloatMutationChance(MutationChance):
     """Mutation probability thresholds for float genes."""
     def __init__(self):
-        super(FloatMutationChance, self).__init__()
+        super().__init__()
 
         self.uniform = 0.0
         self.boundary = 0.0
@@ -53,7 +52,7 @@ class FloatMutationChance(MutationChance):
 class StringMutationChance(MutationChance):
     """Mutation probability thresholds for string genes."""
     def __init__(self):
-        super(StringMutationChance, self).__init__()
+        super().__init__()
 
         self.uniform = 0.0
         self.bitstring = 0.0
@@ -66,7 +65,7 @@ class StringMutationChance(MutationChance):
 class ChromosomeMutationChance(MutationChance):
     """Mutation probability thresholds for chromosome-level mutations."""
     def __init__(self):
-        super(ChromosomeMutationChance, self).__init__()
+        super().__init__()
 
         self.uniform = 0.0
         self.duplication = 0.0

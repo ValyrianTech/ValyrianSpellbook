@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 
 class TestDeepSeekLLM(unittest.TestCase):
@@ -263,8 +262,9 @@ class TestDeepSeekLLMAdvanced(unittest.TestCase):
     @patch('helpers.deepseek_llm.LOG')
     def test_api_connection_error_retry(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_sleep, mock_openai, mock_ws):
         """Test APIConnectionError triggers retry logic"""
-        from helpers.deepseek_llm import DeepSeekLLM
         from openai import APIConnectionError
+
+        from helpers.deepseek_llm import DeepSeekLLM
 
         mock_client = MagicMock()
         # Fail twice then succeed
@@ -305,8 +305,9 @@ class TestDeepSeekLLMAdvanced(unittest.TestCase):
     @patch('helpers.deepseek_llm.LOG')
     def test_api_connection_error_all_retries_fail(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_sleep, mock_openai, mock_ws):
         """Test APIConnectionError exhausts all retries"""
-        from helpers.deepseek_llm import DeepSeekLLM
         from openai import APIConnectionError
+
+        from helpers.deepseek_llm import DeepSeekLLM
 
         mock_client = MagicMock()
         mock_client.chat.completions.create.side_effect = APIConnectionError(request=MagicMock())

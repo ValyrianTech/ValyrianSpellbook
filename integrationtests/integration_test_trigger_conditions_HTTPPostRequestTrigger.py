@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import sys
+
 import requests
 import simplejson
 
-from helpers.setupscripthelpers import spellbook_call, clean_up_triggers
 from helpers.configurationhelpers import get_host, get_port
-
+from helpers.setupscripthelpers import clean_up_triggers, spellbook_call
 
 print('Starting Spellbook integration test: HTTP POST request trigger conditions')
 print('----------------------------------------------\n')
@@ -34,7 +33,7 @@ assert response['trigger_type'] == trigger_type
 
 print('Activating HTTP POST request trigger with data')
 host, port = get_host(), get_port()
-url = 'http://{host}:{port}/spellbook/triggers/{trigger_id}/post'.format(host=host, port=port, trigger_id=trigger_id)
+url = f'http://{host}:{port}/spellbook/triggers/{trigger_id}/post'
 headers: dict[str, str] = {}
 data = {'test': 'hello'}
 

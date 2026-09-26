@@ -1,19 +1,18 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """CLI tool for managing the encrypted hot wallet."""
 
+import argparse
+import getpass
 import os
 import sys
-import argparse
-import simplejson
-import getpass
-
-from helpers.configurationhelpers import get_use_testnet
-from helpers.privatekeyhelpers import privkey_to_address
-from AESCipher import AESCipher
 from configparser import ConfigParser
 from pprint import pprint
 
+import simplejson
+
+from AESCipher import AESCipher
+from helpers.configurationhelpers import get_use_testnet
+from helpers.privatekeyhelpers import privkey_to_address
 
 # Make sure we are in the correct working directory
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -154,7 +153,7 @@ def load_wallet():
             encrypted_data = input_file.read()
             return simplejson.loads(cipher.decrypt(encrypted_data))
 
-    except IOError as ex:
+    except OSError as ex:
         print('Unable to load encrypted wallet: %s' % ex, file=sys.stderr)
         sys.exit(1)
     except Exception as ex:

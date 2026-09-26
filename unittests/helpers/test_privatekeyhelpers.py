@@ -1,16 +1,23 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import pytest
 
-from helpers.privatekeyhelpers import (
-    PrivateKey, encode_privkey, decode_privkey, get_privkey_format,
-    b58check_to_bin, privkey_to_pubkey, add_privkeys, privkey_to_address,
-    wif_compressed_regex, wif_uncompressed_regex, hexadecimal_regex
-)
 from helpers.jacobianhelpers import N
+from helpers.privatekeyhelpers import (
+    PrivateKey,
+    add_privkeys,
+    b58check_to_bin,
+    decode_privkey,
+    encode_privkey,
+    get_privkey_format,
+    hexadecimal_regex,
+    privkey_to_address,
+    privkey_to_pubkey,
+    wif_compressed_regex,
+    wif_uncompressed_regex,
+)
 
 
-class TestPrivateKeyClass(object):
+class TestPrivateKeyClass:
     """Tests for PrivateKey class"""
 
     def test_privatekey_from_decimal(self):
@@ -33,7 +40,7 @@ class TestPrivateKeyClass(object):
         assert pk.decimal == 12345
 
 
-class TestGetPrivkeyFormat(object):
+class TestGetPrivkeyFormat:
     """Tests for get_privkey_format function"""
 
     def test_get_privkey_format_decimal(self):
@@ -84,7 +91,7 @@ class TestGetPrivkeyFormat(object):
             get_privkey_format('invalid')
 
 
-class TestEncodePrivkey(object):
+class TestEncodePrivkey:
     """Tests for encode_privkey function"""
 
     def test_encode_privkey_decimal(self):
@@ -138,7 +145,7 @@ class TestEncodePrivkey(object):
         assert isinstance(result, str)
 
 
-class TestDecodePrivkey(object):
+class TestDecodePrivkey:
     """Tests for decode_privkey function"""
 
     def test_decode_privkey_decimal(self):
@@ -185,7 +192,7 @@ class TestDecodePrivkey(object):
             decode_privkey('test', 'invalid')
 
 
-class TestB58checkToBin(object):
+class TestB58checkToBin:
     """Tests for b58check_to_bin function"""
 
     def test_b58check_to_bin(self):
@@ -200,7 +207,7 @@ class TestB58checkToBin(object):
         assert isinstance(result, bytes)
 
 
-class TestPrivkeyToPubkey(object):
+class TestPrivkeyToPubkey:
     """Tests for privkey_to_pubkey function"""
 
     def test_privkey_to_pubkey_decimal(self):
@@ -236,7 +243,7 @@ class TestPrivkeyToPubkey(object):
             privkey_to_pubkey(N)
 
 
-class TestAddPrivkeys(object):
+class TestAddPrivkeys:
     """Tests for add_privkeys function"""
 
     def test_add_privkeys_decimal(self):
@@ -257,7 +264,7 @@ class TestAddPrivkeys(object):
         assert result == 1
 
 
-class TestPrivkeyToAddress(object):
+class TestPrivkeyToAddress:
     """Tests for privkey_to_address function"""
 
     def test_privkey_to_address(self):
@@ -271,7 +278,7 @@ class TestPrivkeyToAddress(object):
         assert result[0] in ['m', 'n']
 
 
-class TestRegexPatterns(object):
+class TestRegexPatterns:
     """Tests for regex patterns"""
 
     def test_wif_compressed_regex(self):
@@ -290,7 +297,7 @@ class TestRegexPatterns(object):
         assert re.match(hexadecimal_regex, hex_key) is not None
 
 
-class TestPrivateKeyTestnet(object):
+class TestPrivateKeyTestnet:
     """Tests for PrivateKey with testnet - covering additional paths"""
 
     def test_privatekey_mainnet(self):
@@ -302,7 +309,7 @@ class TestPrivateKeyTestnet(object):
         assert pk.wif.startswith('5')
 
 
-class TestDecodePrivkeyEdgeCases(object):
+class TestDecodePrivkeyEdgeCases:
     """Tests for decode_privkey edge cases"""
 
     def test_decode_privkey_invalid_format_raises(self):
@@ -312,7 +319,7 @@ class TestDecodePrivkeyEdgeCases(object):
         assert 'WIF does not represent privkey' in str(excinfo.value)
 
 
-class TestPrivateKeyTestnetWIF(object):
+class TestPrivateKeyTestnetWIF:
     """Tests for PrivateKey with testnet WIF format"""
 
     def test_privatekey_testnet_raises_on_wifc_validation(self):
@@ -335,7 +342,7 @@ class TestPrivateKeyTestnetWIF(object):
         assert pk.hex == hex_key.upper()
 
 
-class TestGetPrivkeyFormatEdgeCases(object):
+class TestGetPrivkeyFormatEdgeCases:
     """Tests for get_privkey_format edge cases"""
 
     def test_get_privkey_format_invalid_bin_length(self):

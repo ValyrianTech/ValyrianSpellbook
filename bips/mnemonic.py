@@ -29,6 +29,7 @@ import itertools
 import os
 import sys
 import unicodedata
+
 from pbkdf2 import PBKDF2
 
 PBKDF2_ROUNDS = 2048
@@ -36,7 +37,6 @@ PBKDF2_ROUNDS = 2048
 
 class ConfigurationError(Exception):
     """Raised when the mnemonic configuration is invalid."""
-    pass
 
 
 # From <http://tinyurl.com/p54ocsk>
@@ -47,7 +47,7 @@ def binary_search(a, x, lo=0, hi=None):                # can't use a to specify 
     return (pos if pos != hi and a[pos] == x else -1)  # don't walk off the end
 
 
-class Mnemonic(object):
+class Mnemonic:
     """
     BIP39 mnemonic code generator and validator.
 
@@ -56,7 +56,7 @@ class Mnemonic(object):
     def __init__(self, language):
         self.radix = 2048
         with open('%s/%s.txt' % (self._get_directory(), language), 'r', encoding='utf-8') as f:
-            self.wordlist = [w.strip() for w in f.readlines()]
+            self.wordlist = [w.strip() for w in f]
         if len(self.wordlist) != self.radix:
             raise ConfigurationError('Wordlist should contain %d words, but it contains %d words.' % (self.radix, len(self.wordlist)))
 
@@ -75,7 +75,7 @@ class Mnemonic(object):
         """Normalize a string to NFKD form."""
         if isinstance(txt, bytes):
             utxt = txt.decode('utf8')
-        elif isinstance(txt, str):  # noqa: F821
+        elif isinstance(txt, str):
             utxt = txt
         else:
             raise TypeError("String value expected")
@@ -138,9 +138,9 @@ class Mnemonic(object):
         # Take the digest of the entropy.
         hashBytes = hashlib.sha256(entropy).digest()
         if sys.version < '3':
-            hashBits = list(itertools.chain.from_iterable(([ord(c) & (1 << (7 - i)) != 0 for i in range(8)] for c in hashBytes)))
+            hashBits = list(itertools.chain.from_iterable([ord(c) & (1 << (7 - i)) != 0 for i in range(8)] for c in hashBytes))
         else:
-            hashBits = list(itertools.chain.from_iterable(([c & (1 << (7 - i)) != 0 for i in range(8)] for c in hashBytes)))
+            hashBits = list(itertools.chain.from_iterable([c & (1 << (7 - i)) != 0 for i in range(8)] for c in hashBytes))
         # Check all the checksum bits.
         for i in range(checksumLengthBits):
             if concatBits[entropyLengthBits + i] != hashBits[i]:
@@ -159,7 +159,7 @@ class Mnemonic(object):
             idx = int(b[i * 11:(i + 1) * 11], 2)
             result.append(self.wordlist[idx])
         if self.detect_language(' '.join(result)) == 'japanese':  # Japanese must be joined by ideographic space.
-            result_phrase = u'\u3000'.join(result)
+            result_phrase = '\u3000'.join(result)
         else:
             result_phrase = ' '.join(result)
         return result_phrase
@@ -175,7 +175,7 @@ class Mnemonic(object):
             b = ''.join(idx)
         except ValueError:
             return False
-        l = len(b)  # noqa: E741
+        l = len(b)
         d = b[:l // 33 * 32]
         h = b[-l // 33:]
         nd = binascii.unhexlify(hex(int(d, 2))[2:].rstrip('L').zfill(l // 33 * 8))
@@ -204,7 +204,7 @@ class Mnemonic(object):
         """Derive a 64-byte seed from a mnemonic and passphrase using PBKDF2."""
         mnemonic = cls.normalize_string(mnemonic)
         passphrase = cls.normalize_string(passphrase)
-        return PBKDF2(mnemonic, u'mnemonic' + passphrase, iterations=PBKDF2_ROUNDS, macmodule=hmac, digestmodule=hashlib.sha512).read(64)
+        return PBKDF2(mnemonic, 'mnemonic' + passphrase, iterations=PBKDF2_ROUNDS, macmodule=hmac, digestmodule=hashlib.sha512).read(64)
 
 
 def main():

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 # The test vectors include input entropy, mnemonic and seed. The passphrase "TREZOR" is used for all vectors.
 

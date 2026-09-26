@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Linked list implementation for the Spellbook."""
 
-from data.data import balance
 from bips.BIP44 import get_addresses_from_xpub
+from data.data import balance
 from inputs.inputs import get_sil
 from validators.validators import valid_address, valid_xpub
 
@@ -24,7 +23,7 @@ def get_lal(address, xpub, block_height=0):
         linked_addresses = get_addresses_from_xpub(xpub, len(sil))
 
         lal = []
-        for i in range(0, len(sil)):
+        for i in range(len(sil)):
             lal.append([sil[i][0], linked_addresses[i]])
 
         return {'LAL': lal}
@@ -42,7 +41,7 @@ def get_lbl(address, xpub, block_height=0):
     lal = lal_data['LAL']
 
     lbl = []
-    for i in range(0, len(lal)):
+    for i in range(len(lal)):
         address = lal[i][0]
         linked_balance = balance(lal[i][1])
         if 'balance' in linked_balance and 'final' in linked_balance['balance']:
@@ -67,7 +66,7 @@ def get_lrl(address, xpub, block_height=0):
     lal = lal_data['LAL']
 
     lrl = []
-    for i in range(0, len(lal)):
+    for i in range(len(lal)):
         address = lal[i][0]
         linked_balance = balance(lal[i][1])
         if 'balance' in linked_balance and 'received' in linked_balance['balance']:
@@ -92,7 +91,7 @@ def get_lsl(address, xpub, block_height=0):
     lal = lal_data['LAL']
 
     lsl = []
-    for i in range(0, len(lal)):
+    for i in range(len(lal)):
         address = lal[i][0]
         linked_balance = balance(lal[i][1])
         if 'balance' in linked_balance and 'sent' in linked_balance['balance']:

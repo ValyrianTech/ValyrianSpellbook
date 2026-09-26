@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Action that executes a system command."""
 
-from subprocess import Popen, PIPE
+from subprocess import PIPE, Popen
 
 from helpers.loghelpers import LOG
+
 from .action import Action
 from .actiontype import ActionType
 
@@ -12,7 +12,7 @@ from .actiontype import ActionType
 class CommandAction(Action):
     """Action that executes a system command."""
     def __init__(self, action_id):
-        super(CommandAction, self).__init__(action_id=action_id)
+        super().__init__(action_id=action_id)
         self.action_type = ActionType.COMMAND
         self.run_command = None
         self.working_dir = None
@@ -59,7 +59,7 @@ class CommandAction(Action):
         :param config: A dict containing the configuration settings
                        - config['run_command']  : The command to run
         """
-        super(CommandAction, self).configure(**config)
+        super().configure(**config)
         if 'run_command' in config:
             self.run_command = config['run_command']
         if 'working_dir' in config:
@@ -71,6 +71,6 @@ class CommandAction(Action):
 
         :return: A dict containing the configuration settings
         """
-        ret = super(CommandAction, self).json_encodable()
+        ret = super().json_encodable()
         ret.update({'run_command': self.run_command, 'working_dir': self.working_dir})
         return ret

@@ -1,16 +1,15 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Chromosome representation for the Darwin evolutionary framework."""
 
 import random
 
-from darwin.gene import Gene, BooleanGene, IntegerGene, FloatGene, StringGene
 from darwin.chromosomemutation import ChromosomeMutation
 from darwin.encodingtype import EncodingType
+from darwin.gene import BooleanGene, FloatGene, Gene, IntegerGene, StringGene
 
 
-class Chromosome(object):
+class Chromosome:
     """Chromosome representation for the Darwin evolutionary framework."""
     def __init__(self, chromosome_id, encoding_type, n_genes=None):
         self.id = chromosome_id

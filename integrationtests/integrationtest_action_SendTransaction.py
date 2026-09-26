@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 from helpers.hotwallethelpers import get_address_from_wallet, get_xpub_key_from_wallet
-from helpers.setupscripthelpers import spellbook_call, clean_up_actions
+from helpers.setupscripthelpers import clean_up_actions, spellbook_call
 
 print('Starting Spellbook integration test: SendTransaction action')
 print('----------------------------------------------\n')

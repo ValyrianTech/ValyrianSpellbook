@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Tests for quickstart.py — interactive configuration setup CLI.
 
@@ -10,9 +9,8 @@ importlib, following the pattern from test_spellbook.py.
 import importlib.util
 import os
 import sys
-
-import mock
 from configparser import ConfigParser
+from unittest import mock
 
 _QUICKSTART_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'quickstart.py')
 

@@ -1,11 +1,10 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Helper functions for encoding, decoding, and manipulating Bitcoin private keys."""
 import re
-from .py3specials import bin_dbl_sha256, bin_to_b58check, changebase, decode, encode
 
-from .jacobianhelpers import fast_multiply, N, G
+from .jacobianhelpers import G, N, fast_multiply
 from .publickeyhelpers import encode_pubkey, pubkey_to_address
+from .py3specials import bin_dbl_sha256, bin_to_b58check, changebase, decode, encode
 
 # Regular expressions for private key formats
 wif_compressed_regex = '^[LK][1-9A-Za-z][^OIl]{50}$'
@@ -14,7 +13,7 @@ hexadecimal_regex = '^[0-9a-fA-F]{64}$'
 base64_regex = '^[-A-Za-z0-9+=]{1,50}|=[^=]|={3,}$'
 
 
-class PrivateKey(object):
+class PrivateKey:
     """
     Represents a Bitcoin private key in multiple formats (WIF, hex, decimal, binary).
 

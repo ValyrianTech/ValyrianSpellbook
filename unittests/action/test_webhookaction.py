@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import mock
+from unittest import mock
 
-from action.webhookaction import WebhookAction
 from action.actiontype import ActionType
+from action.webhookaction import WebhookAction
 
 
-class TestWebhookAction(object):
+class TestWebhookAction:
     """Tests for WebhookAction"""
 
     def test_webhookaction_init(self):

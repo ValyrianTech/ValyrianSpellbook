@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Utilities for selecting random Bitcoin addresses."""
 
-from validators.validators import valid_address, valid_xpub
 from data.data import block_by_height, latest_block
 from inputs.inputs import get_sil, get_sul
 from linker.linker import get_lbl, get_lrl, get_lsl
+from validators.validators import valid_address, valid_xpub
 
 
 def random_number_from_blockhash(block_height=0):
@@ -95,7 +94,7 @@ def random_address_from_lsl(address, xpub, sil_block_height=0, rng_block_height=
                                                                 rng_block_height=rng_block_height)
 
 
-class RandomAddress(object):
+class RandomAddress:
     """Utilities for selecting random Bitcoin addresses."""
     def __init__(self, address, sil_block_height=0, xpub=None):
         self.address = address
@@ -174,7 +173,7 @@ class RandomAddress(object):
         if total > 0:
             target = random_number*total
             cumulative = 0.0
-            for i in range(0, len(values)):
+            for i in range(len(values)):
                 cumulative = cumulative + values[i]
                 if cumulative >= target:
                     return i

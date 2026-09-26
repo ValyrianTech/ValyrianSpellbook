@@ -1,18 +1,18 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Trigger that activates when funds are received at an address."""
 
-from .trigger import Trigger
-from .triggertype import TriggerType
 from data.data import balance
 from validators.validators import valid_address, valid_amount
+
+from .trigger import Trigger
+from .triggertype import TriggerType
 
 
 class ReceivedTrigger(Trigger):
     """Trigger that activates when funds are received at an address."""
     def __init__(self, trigger_id):
-        super(ReceivedTrigger, self).__init__(trigger_id=trigger_id)
+        super().__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.RECEIVED
         self.address = None
         self.amount = None
@@ -33,7 +33,7 @@ class ReceivedTrigger(Trigger):
 
     def configure(self, **config):
         """Configure."""
-        super(ReceivedTrigger, self).configure(**config)
+        super().configure(**config)
         if 'address' in config and valid_address(config['address']):
             self.address = config['address']
 
@@ -42,7 +42,7 @@ class ReceivedTrigger(Trigger):
 
     def json_encodable(self):
         """Json encodable."""
-        ret = super(ReceivedTrigger, self).json_encodable()
+        ret = super().json_encodable()
 
         ret.update({
             'address': self.address,

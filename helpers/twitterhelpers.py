@@ -1,13 +1,17 @@
 """Helper functions for interacting with the Twitter API via tweepy."""
-from typing import Union, List, Dict
-
-import tweepy
-import random
-import requests
 import os
+import random
 
-from helpers.configurationhelpers import get_twitter_consumer_key, get_twitter_consumer_secret, get_twitter_access_token, get_twitter_access_token_secret, get_twitter_bearer_token
+import requests
+import tweepy
 
+from helpers.configurationhelpers import (
+    get_twitter_access_token,
+    get_twitter_access_token_secret,
+    get_twitter_bearer_token,
+    get_twitter_consumer_key,
+    get_twitter_consumer_secret,
+)
 
 # For Twitter API to work, you need to enable developer portal on your twitter account
 # go to https://developer.twitter.com/
@@ -63,8 +67,7 @@ def update_status_with_media(url, message):
     request = requests.get(url, stream=True)
     if request.status_code == 200:
         with open(filename, 'wb') as image:
-            for chunk in request:
-                image.write(chunk)
+            image.writelines(request)
 
         api.update_status_with_media(filename=filename, status=message)
         os.remove(filename)
@@ -72,7 +75,7 @@ def update_status_with_media(url, message):
         print("Unable to download media")
 
 
-def get_tweets(searchtext, limit=100) -> List[tweepy.tweet.Tweet]:
+def get_tweets(searchtext, limit=100) -> list[tweepy.tweet.Tweet]:
     """
     Get most recent tweets about given search text
 
@@ -191,7 +194,7 @@ def get_tweet(tweet_id: str) -> dict:
     return tweet
 
 
-def get_recent_tweets(searchtext: str, sort_by: str, limit: int = 100) -> List:
+def get_recent_tweets(searchtext: str, sort_by: str, limit: int = 100) -> list:
     """
     Get a sorted list of tweets on given searchtext in descending order on a given type ('like_count', 'quote_count', 'reply_count' or 'retweet_count')
 
@@ -208,7 +211,7 @@ def get_recent_tweets(searchtext: str, sort_by: str, limit: int = 100) -> List:
     return tweets
 
 
-def get_popular_tweet_ids(searchtext: str, sort_by: str, limit: int = 100) -> List:
+def get_popular_tweet_ids(searchtext: str, sort_by: str, limit: int = 100) -> list:
     """
     Get a sorted list of tweets on given searchtext in descending order on a given type ('like_count', 'quote_count', 'reply_count' or 'retweet_count')
 
@@ -232,7 +235,7 @@ def get_popular_tweet_ids(searchtext: str, sort_by: str, limit: int = 100) -> Li
     return popular_tweet_ids
 
 
-def get_tweets_by_id(tweet_ids: List[str]) -> Dict:
+def get_tweets_by_id(tweet_ids: list[str]) -> dict:
     """Retrieve multiple tweets by their IDs.
 
     :param tweet_ids: A list of tweet ID strings
@@ -264,7 +267,7 @@ def get_users(ids):
     return []
 
 
-def get_country_woeids() -> Dict:
+def get_country_woeids() -> dict:
     """
     Get a Dict containing all available woeids of countries
 
@@ -289,7 +292,7 @@ def get_country_woeid(country: str) -> int:
         return 0
 
 
-def get_trending_topics(woeid: Union[int, None] = None) -> List[tuple]:
+def get_trending_topics(woeid: int | None = None) -> list[tuple]:
     """
     Get trending topics of a location
 
@@ -319,7 +322,7 @@ def get_extended_status(status_id):
     return status
 
 
-def follow_user(target_user_id: Union[int, str], user_auth: bool = True) -> dict:
+def follow_user(target_user_id: int | str, user_auth: bool = True) -> dict:
     """
     Follow a user on Twitter
 
@@ -331,7 +334,7 @@ def follow_user(target_user_id: Union[int, str], user_auth: bool = True) -> dict
     return response
 
 
-def unfollow_user(target_user_id: Union[int, str], user_auth: bool = True) -> dict:
+def unfollow_user(target_user_id: int | str, user_auth: bool = True) -> dict:
     """
     Unfollow a user on Twitter
 
@@ -343,8 +346,8 @@ def unfollow_user(target_user_id: Union[int, str], user_auth: bool = True) -> di
     return response
 
 
-def get_user(user_id: Union[int, str, None] = None,
-             user_name: Union[str, None] = None) -> dict:
+def get_user(user_id: int | str | None = None,
+             user_name: str | None = None) -> dict:
     """
     Get information about a specific user by giving either a user_id or user_name
 
@@ -375,7 +378,7 @@ def get_user(user_id: Union[int, str, None] = None,
     return response
 
 
-def like_tweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
+def like_tweet(tweet_id: int | str, user_auth: bool = True) -> dict:
     """
     Like a tweet on Twitter
 
@@ -387,7 +390,7 @@ def like_tweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
     return response
 
 
-def unlike_tweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
+def unlike_tweet(tweet_id: int | str, user_auth: bool = True) -> dict:
     """
     Unlike a tweet on Twitter
 
@@ -399,7 +402,7 @@ def unlike_tweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
     return response
 
 
-def delete_tweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
+def delete_tweet(tweet_id: int | str, user_auth: bool = True) -> dict:
     """
     Delete a tweet on Twitter
 
@@ -411,7 +414,7 @@ def delete_tweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
     return response
 
 
-def retweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
+def retweet(tweet_id: int | str, user_auth: bool = True) -> dict:
     """
     Causes the user ID to Retweet the target Tweet.
 
@@ -423,7 +426,7 @@ def retweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
     return response
 
 
-def unretweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
+def unretweet(tweet_id: int | str, user_auth: bool = True) -> dict:
     """
     Allows an authenticated user ID to remove the Retweet of a Tweet.
 
@@ -435,18 +438,18 @@ def unretweet(tweet_id: Union[int, str], user_auth: bool = True) -> dict:
     return response
 
 
-def create_tweet(text: Union[str, None] = None,
-                 in_reply_to_tweet_id: Union[int, str, None] = None,
-                 reply_settings: Union[str, None] = None,
-                 exclude_reply_user_ids: Union[List[Union[int, str]], None] = None,
-                 quote_tweet_id: Union[int, str, None] = None,
-                 poll_options: Union[List[str], None] = None,
-                 poll_duration_minutes: Union[int, None] = None,
-                 media_tagged_user_ids: Union[List[Union[int, str]], None] = None,
-                 media_ids: Union[List[Union[int, str]], None] = None,
-                 place_id: Union[str, None] = None,
-                 for_super_followers_only: Union[bool, None] = None,
-                 direct_message_deep_link: Union[str, None] = None,
+def create_tweet(text: str | None = None,
+                 in_reply_to_tweet_id: int | str | None = None,
+                 reply_settings: str | None = None,
+                 exclude_reply_user_ids: list[int | str] | None = None,
+                 quote_tweet_id: int | str | None = None,
+                 poll_options: list[str] | None = None,
+                 poll_duration_minutes: int | None = None,
+                 media_tagged_user_ids: list[int | str] | None = None,
+                 media_ids: list[int | str] | None = None,
+                 place_id: str | None = None,
+                 for_super_followers_only: bool | None = None,
+                 direct_message_deep_link: str | None = None,
                  user_auth: bool = True) -> dict:
     """
     Creates a Tweet on behalf of an authenticated user.
@@ -483,17 +486,17 @@ def create_tweet(text: Union[str, None] = None,
     return response
 
 
-def get_direct_message_events(dm_conversation_id: Union[str, None] = None,
-                              participant_id: Union[int, str, None] = None,
-                              dm_event_fields: Union[List[str], str, None] = None,
-                              event_types: Union[str, None] = None,
-                              expansions: Union[List[str], str, None] = None,
-                              max_results: Union[int, None] = None,
-                              media_fields: Union[List[str], str, None] = None,
-                              pagination_token: Union[str, None] = None,
-                              tweet_fields: Union[List[str], str, None] = None,
-                              user_fields: Union[List[str], str, None] = None,
-                              user_auth: bool = True) -> Union[List[tweepy.direct_message_event.DirectMessageEvent], None]:
+def get_direct_message_events(dm_conversation_id: str | None = None,
+                              participant_id: int | str | None = None,
+                              dm_event_fields: list[str] | str | None = None,
+                              event_types: str | None = None,
+                              expansions: list[str] | str | None = None,
+                              max_results: int | None = None,
+                              media_fields: list[str] | str | None = None,
+                              pagination_token: str | None = None,
+                              tweet_fields: list[str] | str | None = None,
+                              user_fields: list[str] | str | None = None,
+                              user_auth: bool = True) -> list[tweepy.direct_message_event.DirectMessageEvent] | None:
     """
     If dm_conversation_id is passed, returns a list of Direct Messages within the conversation specified. Messages are returned in reverse chronological order.
 
@@ -528,10 +531,10 @@ def get_direct_message_events(dm_conversation_id: Union[str, None] = None,
     return response
 
 
-def create_direct_message(dm_conversation_id: Union[str, None] = None,
-                          participant_id: Union[int, str, None] = None,
-                          media_id: Union[int, str, None] = None,
-                          text: Union[str, None] = None,
+def create_direct_message(dm_conversation_id: str | None = None,
+                          participant_id: int | str | None = None,
+                          media_id: int | str | None = None,
+                          text: str | None = None,
                           user_auth: bool = True) -> dict:
     """
     If dm_conversation_id is passed, creates a Direct Message on behalf of the authenticated user, and adds it to the specified conversation.

@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import os
 
-from action.commandaction import CommandAction
 from action.actiontype import ActionType
+from action.commandaction import CommandAction
 
 
-class TestCommandAction(object):
+class TestCommandAction:
     """Tests for CommandAction"""
 
     def test_commandaction_init(self):

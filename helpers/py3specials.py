@@ -1,13 +1,11 @@
 """Python 3 compatibility helpers copied from Vitalik Buterin's pybitcointools."""
 # Code copied from Vitalik Buterin's pybitcointools (library is no longer maintained)
-from __future__ import print_function
 
-import sys
-import os
 import binascii
 import hashlib
+import os
+import sys
 from functools import reduce  # noqa: F401 - re-exported for backward compatibility
-
 
 if sys.version_info.major == 3:
     string_types = (str)
@@ -74,7 +72,7 @@ if sys.version_info.major == 3:
         if isinstance(b, str):
             return b
 
-        return ''.join('{:02x}'.format(y) for y in b)
+        return ''.join(f'{y:02x}' for y in b)
 
     def safe_from_hex(s):
         """Decode a hex string to bytes."""
@@ -104,7 +102,7 @@ if sys.version_info.major == 3:
         """Encode an integer to a string in the given base with optional minimum length."""
         base, minlen = int(base), int(minlen)
         code_string = get_code_string(base)
-        result_bytes = bytes()
+        result_bytes = b''
         while val > 0:
             curcode = code_string[val % base]
             result_bytes = bytes([ord(curcode)]) + result_bytes

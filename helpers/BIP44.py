@@ -1,16 +1,29 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """BIP44 wallet helpers for deriving addresses and keys from mnemonic seeds."""
-from bips.BIP32 import bip32_ckd, bip32_privtopub, bip32_master_key, bip32_extract_key, MAINNET_PRIVATE, TESTNET_PRIVATE
-from bips.BIP39 import get_seed
-from bips.BIP44 import get_addresses_from_xpub, get_change_addresses_from_xpub, get_xpriv_keys, get_xpub_keys, get_private_key
-from helpers.publickeyhelpers import pubkey_to_address
-from helpers.privatekeyhelpers import privkey_to_pubkey, encode_privkey
-
-from binascii import hexlify, unhexlify
-import requests
-from pprint import pprint
 import time
+from binascii import hexlify, unhexlify
+from pprint import pprint
+
+import requests
+
+from bips.BIP32 import (
+    MAINNET_PRIVATE,
+    TESTNET_PRIVATE,
+    bip32_ckd,
+    bip32_extract_key,
+    bip32_master_key,
+    bip32_privtopub,
+)
+from bips.BIP39 import get_seed
+from bips.BIP44 import (
+    get_addresses_from_xpub,
+    get_change_addresses_from_xpub,
+    get_private_key,
+    get_xpriv_keys,
+    get_xpub_keys,
+)
+from helpers.privatekeyhelpers import encode_privkey, privkey_to_pubkey
+from helpers.publickeyhelpers import pubkey_to_address
 
 HARDENED = 2**31
 MAGICBYTE = 0
@@ -18,7 +31,7 @@ VBYTES = MAINNET_PRIVATE
 COIN_TYPE = 0
 
 
-class BIP44Wallet(object):
+class BIP44Wallet:
     """
     BIP44 hierarchical deterministic wallet for scanning and sweeping addresses.
 
@@ -49,7 +62,7 @@ class BIP44Wallet(object):
                 r = requests.get(url)
                 data = r.json()
 
-                for j in range(0, len(data['addresses'])):
+                for j in range(len(data['addresses'])):
                     if data['addresses'][j]['final_balance'] > 0:
                         key_index = addressList.index(data['addresses'][j]['address'])
                         private_key = get_private_key(self.xpriv_keys[self.account], key_index, k)
@@ -76,7 +89,6 @@ class BIP44Wallet(object):
 
     def sweep(self, to_address):
         """Sweep all unspent outputs to the given address (not yet implemented)."""
-        pass
 
 
 def set_testnet(testnet=False):
@@ -114,7 +126,7 @@ def show_details(mnemonic, passphrase="", n_accounts=1):
     print('public key (hex):\t', pub_hex)
     print('Master Key address:\t', pubkey_to_address(pub_hex, magicbyte=MAGICBYTE))
 
-    print("")
+    print()
     print("TREZOR Keys:")
 
     account = 0
@@ -133,10 +145,10 @@ def show_details(mnemonic, passphrase="", n_accounts=1):
     address = pubkey_to_address(public_key_hex, magicbyte=MAGICBYTE)
     print('address:\t\t\t', address)
 
-    print("")
+    print()
     print("Account public keys (XPUB)")
     xpubs = []
-    for i in range(0, n_accounts):
+    for i in range(n_accounts):
         derived_private_key = bip32_ckd(bip32_ckd(bip32_ckd(priv, 44+HARDENED), HARDENED+COIN_TYPE), HARDENED+i)
         xpub = bip32_privtopub(derived_private_key)
         print('Account', i, 'xpub:', xpub)

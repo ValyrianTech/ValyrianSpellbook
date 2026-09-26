@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Helper functions for generating QR code images."""
-import qrcode
 import io
+
+import qrcode
 
 from helpers.loghelpers import LOG
 

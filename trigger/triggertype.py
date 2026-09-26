@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 
 """Constants for trigger types used in the Spellbook."""
 
-class TriggerType(object):
+class TriggerType:
     """Enumeration of all supported trigger types in the Spellbook."""
     MANUAL = 'Manual'  # Triggers on a http request
     BALANCE = 'Balance'  # Triggers when an address has a final balance greater than or equal to a certain amount

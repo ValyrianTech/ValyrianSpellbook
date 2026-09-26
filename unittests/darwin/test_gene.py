@@ -1,10 +1,13 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 from unittest.mock import patch
 
-from darwin.gene import Gene, BooleanGene, IntegerGene, FloatGene, StringGene
-from darwin.mutationchance import (BooleanMutationChance, IntegerMutationChance,
-                                   FloatMutationChance, StringMutationChance)
+from darwin.gene import BooleanGene, FloatGene, Gene, IntegerGene, StringGene
+from darwin.mutationchance import (
+    BooleanMutationChance,
+    FloatMutationChance,
+    IntegerMutationChance,
+    StringMutationChance,
+)
 
 
 class TestGene:

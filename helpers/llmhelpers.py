@@ -4,40 +4,56 @@ import base64
 import os
 import sys
 import time
+from typing import Any
 
 import simplejson
 from dotenv import load_dotenv
-
-from typing import List, Any, Dict
-
-from .configurationhelpers import get_enable_openai, get_openai_api_key, spellbook_config, CONFIGURATION_FILE, get_llms_default_model, get_enable_oobabooga, get_app_data_dir
-
 from langchain_community.llms import OpenAI
-from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, ChatMessage, BaseMessage
-from langchain_core.outputs import LLMResult
 from langchain_core.callbacks import StreamingStdOutCallbackHandler
+from langchain_core.messages import (
+    AIMessage,
+    BaseMessage,
+    ChatMessage,
+    HumanMessage,
+    SystemMessage,
+)
+from langchain_core.outputs import LLMResult
+from langchain_openai import ChatOpenAI
 
-from .loghelpers import LOG
-from .jsonhelpers import load_from_json_file, save_to_json_file
-from .self_hosted_LLM import SelfHostedLLM
-from helpers.websockethelpers import broadcast_message, get_broadcast_channel, get_broadcast_sender
-from .textgenerationhelpers import parse_generation, CodeGeneration
-from .llm_interface import LLMInterface, llm_router_prompt, get_available_llms
-from .together_ai_LLM import TogetherAILLM
-from .openai_llm import OpenAILLM
+from helpers.websockethelpers import (
+    broadcast_message,
+    get_broadcast_channel,
+    get_broadcast_sender,
+)
+
 from .anthropic_llm import AnthropicLLM
+from .configurationhelpers import (
+    CONFIGURATION_FILE,
+    get_app_data_dir,
+    get_enable_oobabooga,
+    get_enable_openai,
+    get_llms_default_model,
+    get_openai_api_key,
+    spellbook_config,
+)
+from .deepseek_llm import DeepSeekLLM
+from .google_llm import GoogleLLM
 from .groq_llm import GroqLLM
+from .jsonhelpers import load_from_json_file, save_to_json_file
+from .llm_interface import LLMInterface, get_available_llms, llm_router_prompt
+from .loghelpers import LOG
+from .mistral_llm import MistralLLM
+from .ollama_chat_llm import OllamaChatLLM
+from .ollama_llm import OllamaLLM
+from .openai_llm import OpenAILLM
+from .openrouter_llm import OpenRouterLLM
+from .self_hosted_LLM import SelfHostedLLM
+from .textgenerationhelpers import CodeGeneration, parse_generation
+from .textgenerationwebui_chat_llm import TextGenerationWebuiChatLLM
+from .textgenerationwebui_llm import TextGenerationWebuiLLM
+from .together_ai_LLM import TogetherAILLM
 from .vLLM_llm import VLLMLLM
 from .vLLMchat_llm import VLLMchatLLM
-from .ollama_llm import OllamaLLM
-from .ollama_chat_llm import OllamaChatLLM
-from .deepseek_llm import DeepSeekLLM
-from .mistral_llm import MistralLLM
-from .google_llm import GoogleLLM
-from .openrouter_llm import OpenRouterLLM
-from .textgenerationwebui_llm import TextGenerationWebuiLLM
-from .textgenerationwebui_chat_llm import TextGenerationWebuiChatLLM
 
 CLIENTS: dict[str, LLMInterface] = {}
 
@@ -249,7 +265,7 @@ def get_llm_api_key(model_name: str, server_type: str) -> str | None:
     return None
 
 
-def _ensure_env_file_complete(env_file_path: str, env_var_mapping: Dict[str, str]):
+def _ensure_env_file_complete(env_file_path: str, env_var_mapping: dict[str, str]):
     """
     Ensure .env file exists and contains all required API key entries.
     Auto-populate missing entries with empty values.
@@ -310,7 +326,7 @@ def get_role(message: BaseMessage):
         raise Exception("Unknown message type")
 
 
-def comparison_prompt(messages: List[BaseMessage], generations: List[LLMResult]):
+def comparison_prompt(messages: list[BaseMessage], generations: list[LLMResult]):
     """Build a prompt asking an LLM to compare multiple generations and pick the best one."""
     original_prompt = ''
     for message in messages:
@@ -348,7 +364,7 @@ Please respond with only the json object inside a markdown code block, and nothi
     return comparison_prompt
 
 
-class LLM(object):
+class LLM:
     """Wrapper around an LLM client that supports generation, best-of selection, and auto-routing."""
     llm: Any = None
     model_name: str = ''
@@ -368,7 +384,7 @@ class LLM(object):
         self.chat = llm_config.get('chat', False)
         self.max_tokens = llm_config.get('max_tokens', 4096)
 
-    def generate(self, messages: List[BaseMessage], stop=None, max_tokens: int | None = None):
+    def generate(self, messages: list[BaseMessage], stop=None, max_tokens: int | None = None):
         """Generate a completion from the underlying LLM using the given messages and stop sequences."""
         if max_tokens is None:
             max_tokens = self.max_tokens
@@ -386,7 +402,7 @@ class LLM(object):
         else:
             return self.llm.generate(messages, stop=stop, **kwargs)
 
-    def run(self, messages: List[BaseMessage], stop=None, best_of: int = 1):
+    def run(self, messages: list[BaseMessage], stop=None, best_of: int = 1):
         """Run the LLM and return the completion text, the LLM output, and the generation info.
         Note: generation info is only available for text-davinci-003.
         llm_output = {'token_usage': {'prompt_tokens': 0, 'completion_tokens': 0, 'total_tokens': 0}}
@@ -469,7 +485,7 @@ class LLM(object):
         return llm_config_name
 
 
-    def choose_best_generation(self, messages: List[BaseMessage], generations: List[LLMResult]) -> int:
+    def choose_best_generation(self, messages: list[BaseMessage], generations: list[LLMResult]) -> int:
         """Compare multiple generations and return the index of the best one."""
 
         if self.model_name == 'text-davinci-003':
@@ -509,7 +525,7 @@ class CustomStreamingCallbackHandler(StreamingStdOutCallbackHandler):
         self.full_completion = ""
 
     def on_llm_start(
-            self, serialized: Dict[str, Any], prompts: List[str], **kwargs: Any
+            self, serialized: dict[str, Any], prompts: list[str], **kwargs: Any
     ) -> None:
         """Run when LLM starts running."""
         self.full_completion = ""
@@ -590,7 +606,7 @@ def encode_image(image_path):
         return base64.b64encode(image_file.read()).decode('utf-8')
 
 
-def construct_user_messages(text: str, image_paths: List[str] | None = None):
+def construct_user_messages(text: str, image_paths: list[str] | None = None):
     """Build a list of user messages with optional inline base64-encoded images."""
     if image_paths is None:
         image_paths = []

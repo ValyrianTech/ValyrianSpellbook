@@ -1,9 +1,8 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Standalone script that sends a transaction notification via curl to a webhook URL."""
 
 import argparse
-from subprocess import Popen, PIPE
+from subprocess import PIPE, Popen
 
 if __name__ == "__main__":
     # Create main parser

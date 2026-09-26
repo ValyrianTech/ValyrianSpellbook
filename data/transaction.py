@@ -1,13 +1,12 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Transaction data model for blockchain data representation."""
 
-from __future__ import unicode_literals
 import binascii
+
 from helpers.loghelpers import LOG
 
 
-class TX(object):
+class TX:
     """Transaction data model for blockchain data representation."""
     def __init__(self):
         """
@@ -179,7 +178,7 @@ class TX(object):
                 'confirmations': self.confirmations}
 
 
-class TxInput(object):
+class TxInput:
     """Transaction input data model."""
     def __init__(self):
         """  init  ."""
@@ -200,7 +199,7 @@ class TxInput(object):
                 'sequence': self.sequence}
 
 
-class TxOutput(object):
+class TxOutput:
     """Transaction output data model."""
     def __init__(self):
         """  init  ."""

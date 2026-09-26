@@ -6,7 +6,12 @@ from openai import OpenAI
 
 from helpers.llm_interface import LLMInterface
 from helpers.loghelpers import LOG
-from helpers.websockethelpers import broadcast_message, get_broadcast_channel, get_broadcast_sender
+from helpers.websockethelpers import (
+    broadcast_message,
+    get_broadcast_channel,
+    get_broadcast_sender,
+)
+
 from .textgenerationhelpers import parse_generation
 from .thinking_levels import THINKING_LEVEL_OPENAI
 
@@ -106,7 +111,7 @@ class TextGenerationWebuiChatLLM(LLMInterface):
             LOG.error(f'Error connecting to text-generation-webui: {e}')
             return 'Error: Unable to connect to text-generation-webui.\n', {}
 
-        print('')
+        print()
 
         # Broadcast end of message message to clear the streaming widget in the UI
         data = {'message': '<|end of message|>', 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation('')}

@@ -1,15 +1,15 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Watchlist management for addresses being monitored by listeners."""
 
-import simplejson
 import argparse
+
+import simplejson
 
 WATCHLIST_FILE = 'watchlist.json'
 
 
-class Watchlist(object):
+class Watchlist:
     """
     Watchlist management for addresses being monitored by listeners.
 
@@ -24,7 +24,7 @@ class Watchlist(object):
                     self.watchlist = simplejson.load(input_file)
                 except Exception as ex:
                     raise Exception('%s does not contain a valid dictionary: %s' % (WATCHLIST_FILE, ex))
-        except IOError:
+        except OSError:
             self.watchlist = {}
             self.save_file()
 

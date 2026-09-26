@@ -1,16 +1,17 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import pytest
 import binascii
 
-from .BIP39_test_vectors import BIP39_test_vectors, BIP39_test_vectors_japanese
+import pytest
+
 from bips.BIP39 import get_seed
+
+from .BIP39_test_vectors import BIP39_test_vectors, BIP39_test_vectors_japanese
 
 testvectors = [[testvector[1], 'TREZOR', testvector[2]] for testvector in BIP39_test_vectors['english']]
 testvectors_japanese = [[testvector['mnemonic'], testvector['passphrase'], testvector['seed']] for testvector in BIP39_test_vectors_japanese]
 
 
-class TestBIP39(object):
+class TestBIP39:
     def test_pytest(self):
         print('testing pytest...',)
         assert True

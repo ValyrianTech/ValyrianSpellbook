@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Quickstart script for setting up a basic Spellbook configuration."""
 
 import os
 from configparser import ConfigParser
-from helpers.jsonhelpers import load_from_json_file
+
 from authentication import initialize_api_keys_file
 from helpers.configurationhelpers import what_is_my_ip
+from helpers.jsonhelpers import load_from_json_file
 
 
 def update_config(config, section, option, prompt, current_value=None, fallback=None):
@@ -143,9 +143,9 @@ with open(configuration_file, 'w') as output_file:
     config.write(output_file)
     print('spellbook.conf file updated')
 
-print("")
+print()
 print("Don't forget to initialize the hot wallet before starting the spellbookserver")
 print("use command: ./hot_wallet.py set_bip44 <your 12 or 24 mnemonic words>")
-print("")
+print()
 print("To start the server, use command: ./spellbookserver.py")
-print("")
+print()

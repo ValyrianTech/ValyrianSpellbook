@@ -1,20 +1,19 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import mock
+from unittest import mock
 
+from action.actiontype import ActionType
 from action.create_tweet_action import CreateTweetAction
 from action.delete_tweet_action import DeleteTweetAction
-from action.like_tweet_action import LikeTweetAction
-from action.unlike_tweet_action import UnlikeTweetAction
-from action.retweet_action import RetweetAction
-from action.unretweet_action import UnretweetAction
 from action.follow_on_twitter_action import FollowOnTwitterAction
-from action.unfollow_on_twitter_action import UnfollowOnTwitterAction
+from action.like_tweet_action import LikeTweetAction
+from action.retweet_action import RetweetAction
 from action.send_dm_twitter_action import SendDMTwitterAction
-from action.actiontype import ActionType
+from action.unfollow_on_twitter_action import UnfollowOnTwitterAction
+from action.unlike_tweet_action import UnlikeTweetAction
+from action.unretweet_action import UnretweetAction
 
 
-class TestCreateTweetAction(object):
+class TestCreateTweetAction:
     """Tests for CreateTweetAction"""
 
     def test_createtweetaction_init(self):
@@ -81,7 +80,7 @@ class TestCreateTweetAction(object):
         assert not result
 
 
-class TestDeleteTweetAction(object):
+class TestDeleteTweetAction:
     """Tests for DeleteTweetAction"""
 
     def test_deletetweetaction_init(self):
@@ -123,7 +122,7 @@ class TestDeleteTweetAction(object):
         assert not result
 
 
-class TestLikeTweetAction(object):
+class TestLikeTweetAction:
     """Tests for LikeTweetAction"""
 
     def test_liketweetaction_init(self):
@@ -165,7 +164,7 @@ class TestLikeTweetAction(object):
         assert not result
 
 
-class TestUnlikeTweetAction(object):
+class TestUnlikeTweetAction:
     """Tests for UnlikeTweetAction"""
 
     def test_unliketweetaction_init(self):
@@ -207,7 +206,7 @@ class TestUnlikeTweetAction(object):
         assert not result
 
 
-class TestRetweetAction(object):
+class TestRetweetAction:
     """Tests for RetweetAction"""
 
     def test_retweetaction_init(self):
@@ -249,7 +248,7 @@ class TestRetweetAction(object):
         assert not result
 
 
-class TestUnretweetAction(object):
+class TestUnretweetAction:
     """Tests for UnretweetAction"""
 
     def test_unretweetaction_init(self):
@@ -291,7 +290,7 @@ class TestUnretweetAction(object):
         assert not result
 
 
-class TestFollowOnTwitterAction(object):
+class TestFollowOnTwitterAction:
     """Tests for FollowOnTwitterAction"""
 
     def test_followontwitteraction_init(self):
@@ -333,7 +332,7 @@ class TestFollowOnTwitterAction(object):
         assert not result
 
 
-class TestUnfollowOnTwitterAction(object):
+class TestUnfollowOnTwitterAction:
     """Tests for UnfollowOnTwitterAction"""
 
     def test_unfollowontwitteraction_init(self):
@@ -375,7 +374,7 @@ class TestUnfollowOnTwitterAction(object):
         assert not result
 
 
-class TestSendDMTwitterAction(object):
+class TestSendDMTwitterAction:
     """Tests for SendDMTwitterAction"""
 
     def test_senddmtwitteraction_init(self):

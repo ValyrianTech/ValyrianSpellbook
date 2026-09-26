@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import pytest
-import mock
 from datetime import datetime
+from unittest import mock
+
+import pytest
 
 from trigger.trigger import Trigger
 from trigger.triggertype import TriggerType
@@ -15,7 +15,7 @@ class ConcreteTrigger(Trigger):
         return True
 
 
-class TestTriggerType(object):
+class TestTriggerType:
     """Tests for TriggerType constants"""
 
     def test_trigger_type_constants(self):
@@ -36,7 +36,7 @@ class TestTriggerType(object):
         assert TriggerType.HTTPOPTIONSREQUEST == 'HTTPOptionsRequest'
 
 
-class TestTrigger(object):
+class TestTrigger:
     """Tests for the Trigger base class"""
 
     def test_trigger_init(self):
@@ -290,7 +290,7 @@ class TestTrigger(object):
         mock_script_instance = mock.MagicMock()
         mock_script_class.return_value = mock_script_instance
         mock_module = mock.MagicMock()
-        setattr(mock_module, 'testscript', mock_script_class)
+        mock_module.testscript = mock_script_class
         mock_import.return_value = mock_module
         
         # Mock isinstance to return True for SpellbookScript check
@@ -324,7 +324,7 @@ class TestTrigger(object):
             mock_script_instance = mock.MagicMock()
             mock_script_class.return_value = mock_script_instance
             mock_module = mock.MagicMock()
-            setattr(mock_module, 'testscript', mock_script_class)
+            mock_module.testscript = mock_script_class
             mock_import.return_value = mock_module
             
             with mock.patch('trigger.trigger.isinstance', return_value=True):
@@ -354,7 +354,7 @@ class TestTrigger(object):
         mock_script_instance = mock.MagicMock()
         mock_script_class.return_value = mock_script_instance
         mock_module = mock.MagicMock()
-        setattr(mock_module, 'testscript', mock_script_class)
+        mock_module.testscript = mock_script_class
         mock_import.return_value = mock_module
         
         trigger = ConcreteTrigger('test_trigger_id')

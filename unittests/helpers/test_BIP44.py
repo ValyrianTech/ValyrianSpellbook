@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 
 class TestBIP44Wallet(unittest.TestCase):
@@ -198,8 +197,8 @@ class TestSetTestnet(unittest.TestCase):
 
     def test_set_testnet_true(self):
         """Test setting testnet mode"""
-        from helpers.BIP44 import set_testnet
         from bips.BIP32 import TESTNET_PRIVATE
+        from helpers.BIP44 import set_testnet
         
         set_testnet(True)
         
@@ -211,8 +210,8 @@ class TestSetTestnet(unittest.TestCase):
 
     def test_set_testnet_false(self):
         """Test setting mainnet mode"""
-        from helpers.BIP44 import set_testnet
         from bips.BIP32 import MAINNET_PRIVATE
+        from helpers.BIP44 import set_testnet
         
         set_testnet(False)
         

@@ -1,18 +1,18 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Action that retweets a tweet on Twitter."""
 
 from helpers.loghelpers import LOG
+from helpers.twitterhelpers import retweet
+
 from .action import Action
 from .actiontype import ActionType
-from helpers.twitterhelpers import retweet
 
 
 class RetweetAction(Action):
     """Action that retweets a tweet on Twitter."""
     def __init__(self, action_id):
-        super(RetweetAction, self).__init__(action_id=action_id)
+        super().__init__(action_id=action_id)
         self.action_type = ActionType.RETWEET
         self.tweet_id = None
 
@@ -42,7 +42,7 @@ class RetweetAction(Action):
         :param config: A dict containing the configuration settings
                        - config['tweet_id']    : The id of the tweet to retweet
         """
-        super(RetweetAction, self).configure(**config)
+        super().configure(**config)
         if 'tweet_id' in config:
             self.tweet_id = config['tweet_id']
 
@@ -52,6 +52,6 @@ class RetweetAction(Action):
 
         :return: A dict containing the configuration settings
         """
-        ret = super(RetweetAction, self).json_encodable()
+        ret = super().json_encodable()
         ret.update({'tweet_id': self.tweet_id})
         return ret

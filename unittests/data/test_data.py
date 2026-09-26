@@ -1,13 +1,13 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+from unittest import mock
+
 import pytest
-import mock
 
 from data import data
 from data.explorer import ExplorerType
 
 
-class TestInitializeExplorersFile(object):
+class TestInitializeExplorersFile:
     """Tests for initialize_explorers_file function"""
 
     @mock.patch('data.data.save_to_json_file')
@@ -23,7 +23,7 @@ class TestInitializeExplorersFile(object):
         assert saved_data['blockchain.info']['priority'] == 3
 
 
-class TestGetExplorers(object):
+class TestGetExplorers:
     """Tests for get_explorers function"""
 
     @mock.patch('data.data.os.path.isfile', return_value=False)
@@ -57,7 +57,7 @@ class TestGetExplorers(object):
         assert result is None
 
 
-class TestGetExplorerConfig(object):
+class TestGetExplorerConfig:
     """Tests for get_explorer_config function"""
 
     @mock.patch('data.data.load_from_json_file')
@@ -73,7 +73,7 @@ class TestGetExplorerConfig(object):
         assert result is None
 
 
-class TestSaveExplorer(object):
+class TestSaveExplorer:
     """Tests for save_explorer function"""
 
     @mock.patch('data.data.save_to_json_file')
@@ -103,7 +103,7 @@ class TestSaveExplorer(object):
         assert saved['myexplorer']['priority'] == 0
 
 
-class TestDeleteExplorer(object):
+class TestDeleteExplorer:
     """Tests for delete_explorer function"""
 
     @mock.patch('data.data.save_to_json_file')
@@ -123,7 +123,7 @@ class TestDeleteExplorer(object):
         mock_save.assert_not_called()
 
 
-class TestGetExplorerAPI(object):
+class TestGetExplorerAPI:
     """Tests for get_explorer_api function"""
 
     @mock.patch('data.data.load_from_json_file')
@@ -175,7 +175,7 @@ class TestGetExplorerAPI(object):
         assert result is None
 
 
-class TestQuery(object):
+class TestQuery:
     """Tests for query function"""
 
     def setup_method(self, method):
@@ -357,7 +357,7 @@ class TestQuery(object):
         assert 'error' in result
 
 
-class TestWrapperFunctions(object):
+class TestWrapperFunctions:
     """Tests for wrapper functions (block, block_by_height, etc.)"""
 
     def setup_method(self, method):
@@ -429,7 +429,7 @@ class TestWrapperFunctions(object):
         assert 'transactions' not in result
 
 
-class TestExplorerGlobalFunctions(object):
+class TestExplorerGlobalFunctions:
     """Tests for set_explorer, clear_explorer, get_last_explorer"""
 
     def setup_method(self, method):

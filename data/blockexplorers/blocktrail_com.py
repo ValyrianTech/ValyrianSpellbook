@@ -1,15 +1,15 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Blocktrail.com blockchain explorer API client."""
 
-import requests
-from datetime import datetime
 import calendar
+from datetime import datetime
 from time import sleep
 
-from helpers.loghelpers import LOG
-from data.transaction import TX, TxInput, TxOutput
+import requests
+
 from data.explorer_api import ExplorerAPI
+from data.transaction import TX, TxInput, TxOutput
+from helpers.loghelpers import LOG
 
 
 class BlocktrailComAPI(ExplorerAPI):
@@ -19,14 +19,14 @@ class BlocktrailComAPI(ExplorerAPI):
     Initializes the API client with URL, optional key, and testnet flag.
     """
     def __init__(self, url='', key='', testnet=False):
-        super(BlocktrailComAPI, self).__init__(key=key, testnet=testnet)
+        super().__init__(key=key, testnet=testnet)
 
         # Set the url of the api depending on testnet or mainnet
         self.url = 'https://api.blocktrail.com/v1/tBTC' if self.testnet is True else 'https://api.blocktrail.com/v1/BTC'
 
     def get_latest_block(self):
         """Retrieve the latest block from the blockchain explorer."""
-        url = '{api_url}/block/latest?api_key={api_key}'.format(api_url=self.url, api_key=self.key)
+        url = f'{self.url}/block/latest?api_key={self.key}'
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
@@ -42,7 +42,7 @@ class BlocktrailComAPI(ExplorerAPI):
 
     def get_block_by_height(self, height):
         """Retrieve a block by its height from the blockchain explorer."""
-        url = '{api_url}/block/{height}?api_key={api_key}'.format(api_url=self.url, height=height, api_key=self.key)
+        url = f'{self.url}/block/{height}?api_key={self.key}'
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
@@ -64,7 +64,7 @@ class BlocktrailComAPI(ExplorerAPI):
 
     def get_block_by_hash(self, block_hash):
         """Retrieve a block by its hash from the blockchain explorer."""
-        url = '{api_url}/block/{hash}?api_key={api_key}'.format(api_url=self.url, hash=block_hash, api_key=self.key)
+        url = f'{self.url}/block/{block_hash}?api_key={self.key}'
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
@@ -92,7 +92,7 @@ class BlocktrailComAPI(ExplorerAPI):
         page = 1
 
         while n_tx is None or len(transactions) < n_tx:
-            url = '{api_url}/address/{address}/transactions?api_key={api_key}&limit={limit}&page={page}&sort_dir=asc'.format(api_url=self.url, address=address, api_key=self.key, limit=limit, page=page)
+            url = f'{self.url}/address/{address}/transactions?api_key={self.key}&limit={limit}&page={page}&sort_dir=asc'
             try:
                 LOG.info('GET %s' % url)
                 r = requests.get(url)
@@ -152,14 +152,14 @@ class BlocktrailComAPI(ExplorerAPI):
 
         if n_tx != len(txs):
             # Blocktrail seems to have some issues not returning the correct total number of transactions, yet all transactions are present???
-            LOG.warning('Blocktrail.com: Not all transactions are retrieved! expected {expected} but only got {received}'.format(expected=n_tx, received=len(txs)))
+            LOG.warning(f'Blocktrail.com: Not all transactions are retrieved! expected {n_tx} but only got {len(txs)}')
             return {'transactions': txs}
         else:
             return {'transactions': txs}
 
     def get_balance(self, address):
         """Retrieve the balance (final, received, sent) for a given address."""
-        url = '{api_url}/address/{address}?api_key={api_key}'.format(api_url=self.url, address=address, api_key=self.key)
+        url = f'{self.url}/address/{address}?api_key={self.key}'
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
@@ -178,7 +178,7 @@ class BlocktrailComAPI(ExplorerAPI):
 
     def get_transaction(self, txid):
         """Retrieve a single transaction by its txid from the explorer."""
-        url = '{api_url}/transaction/{txid}?api_key={api_key}'.format(api_url=self.url, txid=txid, api_key=self.key)
+        url = f'{self.url}/transaction/{txid}?api_key={self.key}'
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
@@ -221,7 +221,7 @@ class BlocktrailComAPI(ExplorerAPI):
 
     def get_prime_input_address(self, txid):
         """Retrieve the prime input address of a transaction by txid."""
-        url = '{api_url}/transaction/{txid}?api_key={api_key}'.format(api_url=self.url, txid=txid, api_key=self.key)
+        url = f'{self.url}/transaction/{txid}?api_key={self.key}'
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)
@@ -234,7 +234,7 @@ class BlocktrailComAPI(ExplorerAPI):
             tx_inputs = data['inputs']
 
             input_addresses = []
-            for i in range(0, len(tx_inputs)):
+            for i in range(len(tx_inputs)):
                 input_addresses.append(tx_inputs[i]['address'])
 
             if len(input_addresses) > 0:
@@ -251,7 +251,7 @@ class BlocktrailComAPI(ExplorerAPI):
         page = 1
 
         while n_outputs is None or len(unspent_outputs) < n_outputs:
-            url = '{api_url}/address/{address}/unspent-outputs?api_key={api_key}&limit={limit}&page={page}&sort_dir=asc'.format(api_url=self.url, address=address, api_key=self.key, limit=limit, page=page)
+            url = f'{self.url}/address/{address}/unspent-outputs?api_key={self.key}&limit={limit}&page={page}&sort_dir=asc'
             try:
                 LOG.info('GET %s' % url)
                 r = requests.get(url)
@@ -271,8 +271,7 @@ class BlocktrailComAPI(ExplorerAPI):
                 sleep(1)
 
         if n_outputs != len(unspent_outputs):
-            return {'error': 'Not all unspent outputs are retrieved! expected {expected} but only got {received}'.format(
-                    expected=n_outputs, received=len(unspent_outputs))}
+            return {'error': f'Not all unspent outputs are retrieved! expected {n_outputs} but only got {len(unspent_outputs)}'}
 
         utxos = []
         for output in unspent_outputs:
@@ -294,7 +293,7 @@ class BlocktrailComAPI(ExplorerAPI):
 
         :return: a dict containing 'optimal', 'high_priority', 'low_priority' and 'min_relay_fee'
         """
-        url = '{api_url}/fee-per-kb?api_key={api_key}'.format(api_url=self.url, api_key=self.key)
+        url = f'{self.url}/fee-per-kb?api_key={self.key}'
         try:
             LOG.info('GET %s' % url)
             r = requests.get(url)

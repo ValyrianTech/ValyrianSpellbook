@@ -1,13 +1,13 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Helper functions for setup scripts that invoke the Spellbook CLI."""
 import os
-from subprocess import Popen, PIPE
 import sys
+from subprocess import PIPE, Popen
+
 import simplejson
 
-from helpers.platformhelpers import format_args
 from helpers.configurationhelpers import get_python_exe
+from helpers.platformhelpers import format_args
 
 PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 

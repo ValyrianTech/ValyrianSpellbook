@@ -1,19 +1,20 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+from unittest import mock
+
 import pytest
-import mock
-from validators import validators
+
 import helpers.configurationhelpers
+from validators import validators
 
 
-class TestValidators(object):
+class TestValidators:
     def test_pytest(self):
         print('testing pytest...',)
         assert True
 
     @pytest.mark.parametrize('address, expected, description', [
         ['1Robbk6PuJst6ot6ay2DcVugv8nxfJh5y', True, "Normal valid address"],
-        [u'1Robbk6PuJst6ot6ay2DcVugv8nxfJh5y', True, "unicode valid address"],
+        ['1Robbk6PuJst6ot6ay2DcVugv8nxfJh5y', True, "unicode valid address"],
         ['1SansacmMr38bdzGkzruDVajEsZuiZHx9', True, "Normal valid address"],
         ['1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8', True, "Normal valid address"],
         ['3AL6xh1qn4m83ni9vfTh6WarHBn1Ew1CZk', True, "Multisig valid address"],
@@ -33,7 +34,7 @@ class TestValidators(object):
 
     @pytest.mark.parametrize('address, expected, description', [
         ['miwEV9pnnQtetsETmdVLzLmrw3jcT3QKdb', True, "Normal valid address"],
-        [u'miwEV9pnnQtetsETmdVLzLmrw3jcT3QKdb', True, "unicode valid address"],
+        ['miwEV9pnnQtetsETmdVLzLmrw3jcT3QKdb', True, "unicode valid address"],
         ['2NA61aPdv3JAVcqwJSHvUcygkJeWaWsMKJ8', True, "Multisig valid address"],
         ['1iwEV9pnnQtetsETmdVLzLmrw3jcT3QKdb', False, "invalid address, starts with 1"],
         ['mlwEV9pnnQtetsETmdVLzLmrw3jcT3QKdb', False, "invalid address, contains l"],
@@ -289,17 +290,17 @@ class TestValidators(object):
         assert validators.valid_private_key(key) == expected
 
     @pytest.mark.parametrize('distribution, expected, description', [
-        [{u'1Robbk6PuJst6ot6ay2DcVugv8nxfJh5y': 100000,
-          u'1SansacmMr38bdzGkzruDVajEsZuiZHx9': 400000,
-          u'1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8': 500000}, True, 'valid distribution'],
+        [{'1Robbk6PuJst6ot6ay2DcVugv8nxfJh5y': 100000,
+          '1SansacmMr38bdzGkzruDVajEsZuiZHx9': 400000,
+          '1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8': 500000}, True, 'valid distribution'],
 
-        [{u'1Robbk6PuJst6ot6ay2DcVugv8nxfJh5y': 'a',
-          u'1SansacmMr38bdzGkzruDVajEsZuiZHx9': 400000,
-          u'1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8': 500000}, False, 'value not a integer'],
+        [{'1Robbk6PuJst6ot6ay2DcVugv8nxfJh5y': 'a',
+          '1SansacmMr38bdzGkzruDVajEsZuiZHx9': 400000,
+          '1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8': 500000}, False, 'value not a integer'],
 
-        [{u'4Robbk6PuJst6ot6ay2DcVugv8nxfJh5y': 100000,
-          u'1SansacmMr38bdzGkzruDVajEsZuiZHx9': 400000,
-          u'1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8': 500000}, False, 'address not valid'],
+        [{'4Robbk6PuJst6ot6ay2DcVugv8nxfJh5y': 100000,
+          '1SansacmMr38bdzGkzruDVajEsZuiZHx9': 400000,
+          '1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8': 500000}, False, 'address not valid'],
 
         [{}, False, 'empty dict'],
         ['', False, 'empty string'],

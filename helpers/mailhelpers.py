@@ -1,21 +1,23 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Helper functions for sending templated emails via SMTP."""
 
 import os
 import smtplib
-
+from email import encoders
+from email.mime.base import MIMEBase
+from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.mime.image import MIMEImage
-from email.mime.base import MIMEBase
-from email import encoders
 
-
+from helpers.configurationhelpers import (
+    get_enable_smtp,
+    get_smtp_from_address,
+    get_smtp_host,
+    get_smtp_password,
+    get_smtp_port,
+    get_smtp_user,
+)
 from helpers.loghelpers import LOG
-from helpers.configurationhelpers import get_smtp_from_address, get_smtp_host, get_smtp_port, get_smtp_user, get_smtp_password
-from helpers.configurationhelpers import get_enable_smtp
-
 
 FROM_ADDRESS = ''
 HOST = ''

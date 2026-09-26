@@ -1,6 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-from helpers.setupscripthelpers import spellbook_call, clean_up_triggers, clean_up_actions
+from helpers.setupscripthelpers import (
+    clean_up_actions,
+    clean_up_triggers,
+    spellbook_call,
+)
 
 print('Starting Spellbook integration test: trigger with actions')
 print('----------------------------------------------\n')

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import unittest
 from unittest.mock import patch
 
@@ -14,6 +13,7 @@ class TestOpenAIHelpersInitialization(unittest.TestCase):
         with mocked configuration functions that return True/test values.
         """
         import sys
+
         import openai
         
         # Save original values

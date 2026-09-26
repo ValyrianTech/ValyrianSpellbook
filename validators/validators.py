@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Validation functions for Bitcoin addresses, transactions, and various input types."""
 
-import re
 import os
+import re
+
 from helpers.bech32 import bech32_decode
 from helpers.loghelpers import LOG
 
@@ -202,9 +202,7 @@ def valid_script(script):
         return False
 
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    if os.path.isfile(os.path.join(project_root, 'spellbookscripts', script)):
-        return True
-    elif os.path.isfile(os.path.join(project_root, 'apps', script)):
+    if os.path.isfile(os.path.join(project_root, 'spellbookscripts', script)) or os.path.isfile(os.path.join(project_root, 'apps', script)):
         return True
     else:
         LOG.error('Script %s is invalid: file not found in spellbookscripts or apps directory' % script)

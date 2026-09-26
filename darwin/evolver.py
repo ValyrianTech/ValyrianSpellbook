@@ -1,30 +1,39 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Evolver process that drives the evolutionary loop in Darwin."""
 
+import importlib
 import os
 import platform
-import importlib
+import random
 import time
 from pprint import pprint
-import random
 
+from darwin.encodingtype import EncodingType
 from darwin.fitnessfunction.fitnessfunction import FitnessFunction
-from darwin.rosettastone.rosettastone import RosettaStone
 from darwin.model.model import Model
-
-from helpers.jsonhelpers import save_to_json_file
-from darwin.mutationchance import BooleanMutationChance, IntegerMutationChance, FloatMutationChance, StringMutationChance, ChromosomeMutationChance
-from darwin.parentselection import roulette_wheel_selection, rank_selection, stochastic_universal_sampling, tournament_selection
+from darwin.mutationchance import (
+    BooleanMutationChance,
+    ChromosomeMutationChance,
+    FloatMutationChance,
+    IntegerMutationChance,
+    StringMutationChance,
+)
+from darwin.parentselection import (
+    rank_selection,
+    roulette_wheel_selection,
+    stochastic_universal_sampling,
+    tournament_selection,
+)
 from darwin.population import Population
 from darwin.recombination import recombine
-from darwin.encodingtype import EncodingType
+from darwin.rosettastone.rosettastone import RosettaStone
+from helpers.jsonhelpers import save_to_json_file
 
 DARWIN_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__)))
 SPELLBOOK_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 
-class Evolver(object):
+class Evolver:
     """Evolver process that drives the evolutionary loop in Darwin."""
     def __init__(self):
         self.title = 'Title of this job'
