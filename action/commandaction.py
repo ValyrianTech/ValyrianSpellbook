@@ -24,6 +24,13 @@ class CommandAction(Action):
 
         if a parameter called 'placeholders' is passed in the kwargs, the placeholders in the run_command will be replaced with the values in the placeholders dict
 
+        Note: placeholders are intended to occupy a complete command argument/token (e.g. run_command='echo {MESSAGE}').
+        Each substituted value is quoted with shlex.quote() so that a whole-token placeholder can never inject shell
+        metacharacters, regardless of the characters contained in the value. Embedding a placeholder inside a larger
+        already-quoted literal (e.g. run_command='echo "prefix {MESSAGE} suffix"') is NOT supported: the quoting inserted
+        by shlex.quote() then interacts with the surrounding quoting, and the value becomes a literal substring of that
+        single argument rather than its own quoted token.
+
         :return: True upon success, False upon failure
         """
         if self.run_command is None or self.run_command == '':

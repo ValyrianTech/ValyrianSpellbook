@@ -120,3 +120,19 @@ class TestCommandActionSecurity:
         result = action.run(placeholders={'{MESSAGE}': 'a b|c&d;e'})
         assert result[0]
         assert result[1] == b'a b|c&d;e'
+
+    def test_commandaction_placeholder_intended_for_whole_token_usage(self):
+        action = CommandAction('test_command_action')
+        action.configure(run_command='echo {MESSAGE}')
+        result = action.run(placeholders={'{MESSAGE}': 'alpha beta'})
+        assert result[0]
+        assert result[1] == b'alpha beta'
+
+    def test_commandaction_placeholder_embedded_in_quoted_literal_is_preserved_literally(self):
+        action = CommandAction('test_command_action')
+        action.configure(run_command='printf %s "prefix {MESSAGE} suffix"')
+        result = action.run(placeholders={'{MESSAGE}': 'a b|c&d;e'})
+        assert result[0]
+        # shlex.quote() wraps the value in single quotes, which become literal characters
+        # inside the surrounding double quotes, so the special characters are preserved.
+        assert result[1] == b"prefix 'a b|c&d;e' suffix"
