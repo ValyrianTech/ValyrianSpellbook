@@ -96,6 +96,34 @@ class TestRunCommandProcess:
         process = RunCommandProcess('echo hello')
         assert isinstance(process, multiprocessing.Process)
 
+    @mock.patch('helpers.runcommandprocess.Popen')
+    def test_run_with_list_command(self, mock_popen):
+        mock_process = mock.MagicMock()
+        mock_process.stdout.readline.side_effect = ['']
+        mock_process.stderr.readline.side_effect = ['']
+        mock_popen.return_value = mock_process
+
+        process = RunCommandProcess(['echo', 'hello'])
+        process.run()
+
+        mock_popen.assert_called_once()
+        assert mock_popen.call_args[0][0] == ['echo', 'hello']
+        assert mock_popen.call_args.kwargs.get('shell') is not True
+
+    @mock.patch('helpers.runcommandprocess.Popen')
+    def test_run_with_string_command_is_split(self, mock_popen):
+        mock_process = mock.MagicMock()
+        mock_process.stdout.readline.side_effect = ['']
+        mock_process.stderr.readline.side_effect = ['']
+        mock_popen.return_value = mock_process
+
+        process = RunCommandProcess('echo hello')
+        process.run()
+
+        mock_popen.assert_called_once()
+        assert mock_popen.call_args[0][0] == ['echo', 'hello']
+        assert mock_popen.call_args.kwargs.get('shell') is not True
+
 
 class TestProcessLog:
     """Tests for PROCESS_LOG logger"""
