@@ -1,11 +1,10 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import mock
+from unittest import mock
 
 from helpers.platformhelpers import format_args
 
 
-class TestPlatformHelpers(object):
+class TestPlatformHelpers:
     """Tests for platform helper functions"""
 
     @mock.patch('helpers.platformhelpers.platform.system', return_value='Linux')

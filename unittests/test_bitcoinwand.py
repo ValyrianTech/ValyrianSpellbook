@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Tests for bitcoinwand.py — CLI for signing Bitcoin messages and sending
 signed POST requests.
@@ -11,8 +10,8 @@ following the same pattern as test_spellbook.py.
 import importlib.util
 import os
 import sys
+from unittest import mock
 
-import mock
 import pytest
 
 _BITCOINWAND_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'bitcoinwand.py')
@@ -140,5 +139,5 @@ class TestBitcoinwandPostException:
     def test_post_exception_exits(self):
         """When requests.post raises an exception, the except block is entered and sys.exit(1) is called."""
         with pytest.raises(SystemExit) as exc_info:
-            _import_bitcoinwand(message='hello', post_side_effect=Exception('Connection refused'))
+            _import_bitcoinwand(message='hello', post_side_effect=ValueError('Connection refused'))
         assert exc_info.value.code == 1

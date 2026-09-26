@@ -1,16 +1,18 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 from unittest import mock
 
 import pytest
 
-from bips.BIP32 import set_chain_mode
-from helpers.hotwallethelpers import get_address_from_wallet, get_private_key_from_wallet
-from helpers.messagehelpers import verify_message, sign_message
+from bips.bip32 import set_chain_mode
 from helpers.configurationhelpers import get_use_testnet
+from helpers.hotwallethelpers import (
+    get_address_from_wallet,
+    get_private_key_from_wallet,
+)
+from helpers.messagehelpers import sign_message, verify_message
 
 TEST_WALLET = {
-    'mnemonic': 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'.split(),
+    'mnemonic': ['abandon', 'abandon', 'abandon', 'abandon', 'abandon', 'abandon', 'abandon', 'abandon', 'abandon', 'abandon', 'abandon', 'about'],
     'passphrase': '',
 }
 
@@ -43,7 +45,7 @@ TEST_WALLET = {
 # activate = 1
 
 
-class TestSignMessage(object):
+class TestSignMessage:
     # For some reason there are multiple possible valid signatures, testing both the signatures found on the
     # https://github.com/stequald/bitcoin-sign-message readme as the ones that are actually calculated
     def test_verify_message_with_compressed_address_with_given_signature(self):

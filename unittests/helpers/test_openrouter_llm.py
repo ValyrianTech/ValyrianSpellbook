@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 
 class TestOpenRouterLLM(unittest.TestCase):
@@ -45,7 +44,7 @@ class TestOpenRouterLLM(unittest.TestCase):
         from helpers.openrouter_llm import OpenRouterLLM
 
         mock_client = MagicMock()
-        mock_client.chat.completions.create.side_effect = Exception("API Error")
+        mock_client.chat.completions.create.side_effect = ValueError("API Error")
         mock_openai.return_value = mock_client
 
         llm = OpenRouterLLM(model_name='openai/gpt-4o', api_key='test-key')
@@ -120,7 +119,7 @@ class TestOpenRouterLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
 
         self.assertIn('Thinking about this', result)
         self.assertIn('', result)
@@ -153,7 +152,7 @@ class TestOpenRouterLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
 
         self.assertIn('The answer is 42', result)
 
@@ -186,7 +185,7 @@ class TestOpenRouterLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
 
         self.assertEqual(result, '')
 
@@ -221,7 +220,7 @@ class TestOpenRouterLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages, thinking_level='high')
+        result, _usage = llm.get_completion_text(messages, thinking_level='high')
 
         self.assertEqual(result, 'Hello!')
         # Verify extra_body was passed with reasoning effort
@@ -277,7 +276,35 @@ class TestOpenRouterLLM(unittest.TestCase):
         from helpers.openrouter_llm import OpenRouterLLM
 
         mock_client = MagicMock()
-        mock_client.chat.completions.create.side_effect = Exception('Connection refused')
+        mock_client.chat.completions.create.side_effect = ValueError('Connection refused')
+        mock_openai.return_value = mock_client
+
+        llm = OpenRouterLLM(model_name='openai/gpt-4o', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result = llm.get_completion_text(messages)
+
+        # Error path returns just a string, not a tuple
+        if isinstance(result, tuple):
+            result = result[0]
+        self.assertIn('Error: Unable to connect to OpenRouter', result)
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.openrouter_llm.OpenAI')
+    @patch('helpers.openrouter_llm.get_openrouter_api_key', return_value='default-key')
+    @patch('helpers.openrouter_llm.LOG')
+    def test_get_completion_text_error_openai(self, mock_log, mock_get_key, mock_openai, mock_ws):
+        """Test get_completion_text when OpenAI SDK raises OpenAIError"""
+        from openai import OpenAIError
+
+        from helpers.openrouter_llm import OpenRouterLLM
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.side_effect = OpenAIError('Connection refused')
         mock_openai.return_value = mock_client
 
         llm = OpenRouterLLM(model_name='openai/gpt-4o', api_key='test-key')
@@ -325,7 +352,7 @@ class TestOpenRouterLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages, thinking_level='off')
+        _result, _usage = llm.get_completion_text(messages, thinking_level='off')
 
         # thinking_level='off' maps to 'none' in THINKING_LEVEL_OPENROUTER, so extra_body IS set with effort='none'
         call_kwargs = mock_client.chat.completions.create.call_args
@@ -369,7 +396,7 @@ class TestOpenRouterLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages, thinking_level='medium')
+        result, _usage = llm.get_completion_text(messages, thinking_level='medium')
 
         # Should contain reasoning wrapped in think tags and the content
         self.assertIn('Answer!', result)
@@ -405,7 +432,7 @@ class TestOpenRouterLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages, stop=['END'], top_p=0.9)
+        _result, _usage = llm.get_completion_text(messages, stop=['END'], top_p=0.9)
 
         call_kwargs = mock_client.chat.completions.create.call_args.kwargs
         self.assertEqual(call_kwargs['stop'], ['END'])
@@ -442,7 +469,7 @@ class TestOpenRouterLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages, thinking_level='invalid_level')
+        _result, _usage = llm.get_completion_text(messages, thinking_level='invalid_level')
 
         mock_log.info.assert_any_call('Thinking level: invalid_level -> Disabled (no reasoning.effort)')
 
@@ -490,7 +517,7 @@ class TestOpenRouterLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
 
         self.assertIn('Let me think', result)
         self.assertIn('The answer is 42', result)

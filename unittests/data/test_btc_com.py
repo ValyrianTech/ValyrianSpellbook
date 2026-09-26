@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+from unittest import mock
+
 import pytest
-import mock
 
 from data.blockexplorers.btc_com import BTCComAPI
 
@@ -16,7 +16,7 @@ def make_mock_response(json_data=None, text_data=None, status_code=200):
     return resp
 
 
-class TestBTCComAPIInit(object):
+class TestBTCComAPIInit:
     def test_init_mainnet(self):
         api = BTCComAPI()
         assert 'chain.api.btc.com/v3' in api.url
@@ -26,7 +26,7 @@ class TestBTCComAPIInit(object):
         assert 'tchain.api.btc.com/v3' in api.url
 
 
-class TestGetLatestBlock(object):
+class TestGetLatestBlock:
     @mock.patch('data.blockexplorers.btc_com.requests.get')
     def test_success(self, mock_get):
         mock_get.return_value = make_mock_response(json_data={
@@ -38,7 +38,7 @@ class TestGetLatestBlock(object):
 
     @mock.patch('data.blockexplorers.btc_com.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = BTCComAPI()
         result = api.get_latest_block()
         assert 'error' in result
@@ -58,7 +58,7 @@ class TestGetLatestBlock(object):
         assert 'error' in result
 
 
-class TestGetBlockByHeight(object):
+class TestGetBlockByHeight:
     @mock.patch('data.blockexplorers.btc_com.requests.get')
     def test_success(self, mock_get):
         mock_get.return_value = make_mock_response(json_data={
@@ -70,7 +70,7 @@ class TestGetBlockByHeight(object):
 
     @mock.patch('data.blockexplorers.btc_com.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = BTCComAPI()
         result = api.get_block_by_height(100)
         assert 'error' in result
@@ -83,7 +83,7 @@ class TestGetBlockByHeight(object):
         assert 'error' in result
 
 
-class TestGetBlockByHash(object):
+class TestGetBlockByHash:
     @mock.patch('data.blockexplorers.btc_com.requests.get')
     def test_success(self, mock_get):
         mock_get.return_value = make_mock_response(json_data={
@@ -95,7 +95,7 @@ class TestGetBlockByHash(object):
 
     @mock.patch('data.blockexplorers.btc_com.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = BTCComAPI()
         result = api.get_block_by_hash('abc')
         assert 'error' in result
@@ -108,7 +108,7 @@ class TestGetBlockByHash(object):
         assert 'error' in result
 
 
-class TestGetTransactions(object):
+class TestGetTransactions:
     @mock.patch('data.blockexplorers.btc_com.requests.get')
     def test_success(self, mock_get):
         mock_get.return_value = make_mock_response(json_data={
@@ -127,7 +127,7 @@ class TestGetTransactions(object):
 
     @mock.patch('data.blockexplorers.btc_com.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = BTCComAPI()
         result = api.get_transactions('addr1')
         assert 'error' in result
@@ -210,7 +210,7 @@ class TestGetTransactions(object):
         assert 'error' in result
 
 
-class TestGetBalance(object):
+class TestGetBalance:
     @mock.patch('data.blockexplorers.btc_com.requests.get')
     def test_success(self, mock_get):
         mock_get.return_value = make_mock_response(json_data={
@@ -224,7 +224,7 @@ class TestGetBalance(object):
 
     @mock.patch('data.blockexplorers.btc_com.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = BTCComAPI()
         result = api.get_balance('addr')
         assert 'error' in result
@@ -237,7 +237,7 @@ class TestGetBalance(object):
         assert 'error' in result
 
 
-class TestGetTransaction(object):
+class TestGetTransaction:
     @mock.patch('data.blockexplorers.btc_com.requests.get')
     def test_success(self, mock_get):
         mock_get.return_value = make_mock_response(json_data={
@@ -253,7 +253,7 @@ class TestGetTransaction(object):
 
     @mock.patch('data.blockexplorers.btc_com.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = BTCComAPI()
         result = api.get_transaction('txid')
         assert 'error' in result
@@ -292,7 +292,7 @@ class TestGetTransaction(object):
         assert 'transaction' in result
 
 
-class TestGetPrimeInputAddress(object):
+class TestGetPrimeInputAddress:
     @mock.patch('data.blockexplorers.btc_com.BTCComAPI.get_transaction')
     def test_success(self, mock_get_tx):
         mock_get_tx.return_value = {'transaction': {'inputs': [{'address': 'b_addr'}, {'address': 'a_addr'}]}}
@@ -315,7 +315,7 @@ class TestGetPrimeInputAddress(object):
         assert 'error' in result
 
 
-class TestGetUtxos(object):
+class TestGetUtxos:
     @mock.patch('data.blockexplorers.btc_com.requests.get')
     def test_success(self, mock_get):
         mock_get.return_value = make_mock_response(json_data={
@@ -330,7 +330,7 @@ class TestGetUtxos(object):
 
     @mock.patch('data.blockexplorers.btc_com.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = BTCComAPI()
         result = api.get_utxos('addr')
         assert 'error' in result
@@ -392,7 +392,7 @@ class TestGetUtxos(object):
         assert len(result['utxos']) == 0
 
 
-class TestPushTx(object):
+class TestPushTx:
     @mock.patch('data.data.get_explorer_api')
     def test_push_tx_delegates(self, mock_get_api):
         mock_bc_api = mock.MagicMock()

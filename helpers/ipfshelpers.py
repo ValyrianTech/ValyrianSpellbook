@@ -1,12 +1,17 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Helper functions for interacting with IPFS for data storage and retrieval."""
 from ipfs_dict_chain.IPFS import connect
-from ipfs_dict_chain.IPFSDictChain import IPFSDictChain
 from ipfs_dict_chain.IPFSDict import IPFSDict
+from ipfs_dict_chain.IPFSDictChain import IPFSDictChain
 
+from helpers.configurationhelpers import (
+    get_enable_ipfs,
+    get_ipfs_api_host,
+    get_ipfs_api_port,
+)
 from helpers.loghelpers import LOG
-from helpers.configurationhelpers import get_ipfs_api_host, get_ipfs_api_port, get_enable_ipfs
+
+IPFS_API = None
 
 
 def check_ipfs():
@@ -14,8 +19,8 @@ def check_ipfs():
     try:
         connect(host=get_ipfs_api_host(), port=get_ipfs_api_port())
         return True
-    except Exception as ex:
-        LOG.error('IPFS node is not running: %s' % ex)
+    except (ValueError, KeyError, TypeError, OSError) as ex:
+        LOG.error(f'IPFS node is not running: {ex}')
         return False
 
 
@@ -40,13 +45,11 @@ def get_json(cid):
 # Todo fix this, only used in Notarize
 def add_file(filename):
     """Add a file to IPFS and return its hash, name, and size."""
-    global IPFS_API
-
     try:
         ipfs_info = IPFS_API.add(filename)
-    except Exception as e:
-        LOG.error('Unable to store file on IPFS: %s' % e)
-        raise Exception('IPFS failure')
+    except (ValueError, KeyError, TypeError, OSError) as e:
+        LOG.error(f'Unable to store file on IPFS: {e}')
+        raise ValueError('IPFS failure')
 
     return ipfs_info['Hash'], ipfs_info['Name'], ipfs_info['Size']
 
@@ -64,7 +67,7 @@ class FileMetaData(IPFSDictChain):
         self.publisher_signature = None
         self.signed_message = None
 
-        super(FileMetaData, self).__init__(cid=cid)
+        super().__init__(cid=cid)
 
 
 if get_enable_ipfs() is True:

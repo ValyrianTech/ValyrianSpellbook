@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 from unittest.mock import patch
 
 from linker.linker import get_lal, get_lbl, get_lrl, get_lsl
-
 
 VALID_ADDRESS = '1Bobk6PuJst6ot6ay2DcVugv8nxfJh5y'
 VALID_ADDRESS_2 = '1Alice3WtXqygdLq7BdvygPcQ9U2NQ9xX'

@@ -2,6 +2,8 @@
 
 **Last updated:** 2026-08-07 — **613 errors resolved, 0 remaining**
 
+> Note: module paths below have been updated to reflect PEP 8 snake_case renames on this branch (e.g. `bips/BIP32.py` → `bips/bip32.py`, `helpers/vLLM_llm.py` → `helpers/vllm_llm.py`).
+
 ## Current Status
 
 **0 lint errors remaining — repository is fully lint-clean**
@@ -29,20 +31,20 @@
   - Ruff auto-fix broke Python 2/3 compat try/except pattern, replaced with direct Python 3 import
 - [x] **Fixed broken `reduce` import in `py3specials.py`** (2026-08-07, commit `4d7e6a6`)
   - Restored `from functools import reduce` needed by `transactionfactory.py` via `import *`
-- [x] **Restored side-effect import in `test_OpenAIhelpers.py`** (2026-08-07, commit `4d7e6a6`)
-  - Ruff removed `import helpers.OpenAIhelpers` that was needed for module initialization test
+- [x] **Restored side-effect import in `test_openaihelpers.py`** (2026-08-07, commit `4d7e6a6`)
+  - Ruff removed `import helpers.openaihelpers` that was needed for module initialization test
 - [x] **16 errors resolved across 7 small categories** (2026-08-07)
   - E701: Split multiple statements on one line in `transactionfactory.py` (1 → 0)
   - F633: Added noqa for Python 2 print syntax in `helpers/py2specials.py` (1 → 0)
   - F501: Fixed incomplete `%s: %` format strings in `integrationtests/compare_explorers.py` (2 → 0)
   - F821: Added noqa for Python 2 builtins (`unicode`, `long`) in `helpers/py2specials.py` (2 → 0)
-  - F401: Added noqa for intentionally kept imports in `py3specials.py` and `test_OpenAIhelpers.py` (2 → 0)
-  - E741: Renamed ambiguous variable `I` to `hmac_digest` in `bips/BIP32.py` (3 → 0)
+  - F401: Added noqa for intentionally kept imports in `py3specials.py` and `test_openaihelpers.py` (2 → 0)
+  - E741: Renamed ambiguous variable `I` to `hmac_digest` in `bips/bip32.py` (3 → 0)
   - F811: Removed 4 shadowed test methods in `test_mysqlhelpers.py`, merged duplicate class in `test_websockethelpers.py` (5 → 0)
 - [x] **166 errors resolved: F403 + F405 star imports eliminated** (2026-08-07)
   - F403: 8 → 0, F405: 158 → 0
   - Replaced all `from helpers.py2specials import *` and `from helpers.py3specials import *` with explicit imports
-  - Files changed: `bips/BIP32.py`, `data/transaction.py`, `helpers/privatekeyhelpers.py`, `helpers/publickeyhelpers.py`, `transactionfactory.py`
+  - Files changed: `bips/bip32.py`, `data/transaction.py`, `helpers/privatekeyhelpers.py`, `helpers/publickeyhelpers.py`, `transactionfactory.py`
   - Added missing direct stdlib imports (`hashlib`, `binascii`, `re`, `sys`, `functools.reduce`) that were leaking through star imports
   - `data/transaction.py` had unused star imports removed entirely
 - [x] **16 errors resolved: E721 type comparisons eliminated** (2026-08-07)
@@ -50,7 +52,7 @@
   - Replaced `type(x) == str` / `type(x) == list` with `isinstance(x, str)` / `isinstance(x, list)` in 6 LLM helper files
   - Replaced `type(x) != type(y)` with `type(x) is not type(y)` in `integrationtests/compare_explorers.py` (3 occurrences)
   - Replaced `string_types == str` with `string_types is str` in `unittests/helpers/test_py3specials.py`
-  - Files changed: `helpers/llmhelpers.py`, `helpers/ollama_chat_llm.py`, `helpers/ollama_llm.py`, `helpers/self_hosted_LLM.py`, `helpers/textgenerationwebui_llm.py`, `helpers/vLLM_llm.py`, `integrationtests/compare_explorers.py`, `unittests/helpers/test_py3specials.py`
+  - Files changed: `helpers/llmhelpers.py`, `helpers/ollama_chat_llm.py`, `helpers/ollama_llm.py`, `helpers/self_hosted_llm.py`, `helpers/textgenerationwebui_llm.py`, `helpers/vllm_llm.py`, `integrationtests/compare_explorers.py`, `unittests/helpers/test_py3specials.py`
 - [x] **156 errors resolved: E712 true/false comparisons eliminated** (2026-08-07)
   - E712: 156 → 0
   - Applied `ruff --unsafe-fixes` to replace `== False` with `not` and `== True` with truthy checks
@@ -99,9 +101,9 @@
 | `unittests/action/test_deletetriggeraction.py` | 4 | E712 |
 | `helpers/ollama_chat_llm.py` | 2 | E402 |
 | `helpers/ollama_llm.py` | 2 | E402 |
-| `helpers/self_hosted_LLM.py` | 2 | E402 |
+| `helpers/self_hosted_llm.py` | 2 | E402 |
 | `helpers/textgenerationwebui_llm.py` | 2 | E402 |
-| `helpers/vLLM_llm.py` | 2 | E402 |
+| `helpers/vllm_llm.py` | 2 | E402 |
 | `integrationtests/compare_explorers.py` | 3 | E712 |
 | Other files (≤3 each) | 48 | Various |
 
@@ -116,7 +118,7 @@
 
 - **`helpers/mailhelpers.py`** — Ruff auto-fix replaced Python 2/3 compat try/except with `pass`, preventing `encoders` from being imported. Fixed by replacing with direct `from email import encoders`.
 - **`helpers/py3specials.py`** — Ruff auto-fix removed `from functools import reduce` as "unused", but it was needed by `transactionfactory.py` via `import *`. Restored manually.
-- **`unittests/helpers/test_OpenAIhelpers.py`** — Ruff auto-fix removed `import helpers.OpenAIhelpers` as "unused", but the import side-effect was required for the test. Restored manually.
+- **`unittests/helpers/test_openaihelpers.py`** — Ruff auto-fix removed `import helpers.openaihelpers` as "unused", but the import side-effect was required for the test. Restored manually.
 
 ---
 

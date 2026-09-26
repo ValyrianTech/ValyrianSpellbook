@@ -1,43 +1,48 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Helper functions for managing the encrypted hot wallet (keys, addresses, seeds)."""
 
-import os
 import getpass
+import os
+
 import simplejson
 
 from AESCipher import AESCipher
-from bips.BIP44 import get_address_from_xpub, get_addresses_from_xpub, get_xpriv_key, get_xpub_key, get_private_key
-from helpers.configurationhelpers import get_wallet_dir, get_default_wallet
-from bips.BIP39 import get_seed
+from bips.bip39 import get_seed
+from bips.bip44 import (
+    get_address_from_xpub,
+    get_addresses_from_xpub,
+    get_private_key,
+    get_xpriv_key,
+    get_xpub_key,
+)
+from helpers.configurationhelpers import get_default_wallet, get_wallet_dir
 
 HOT_WALLET_PASSWORD = None
 
 
 def get_hot_wallet():
     """Decrypt and return the hot wallet data, prompting for password if needed."""
-    global HOT_WALLET_PASSWORD
     wallet_dir, wallet_id = get_wallet_dir(), get_default_wallet()
 
     if HOT_WALLET_PASSWORD is None:
         # Try empty password first (Reminder: in production there should always be a decryption password for the hot wallet)
         try:
             cipher = AESCipher(key='')
-            with open(os.path.join(wallet_dir, '%s.enc' % wallet_id), 'r') as input_file:
+            with open(os.path.join(wallet_dir, f'{wallet_id}.enc'), 'r') as input_file:
                 encrypted_data = input_file.read()
                 return simplejson.loads(cipher.decrypt(encrypted_data))
 
-        except Exception:
+        except (ValueError, KeyError, TypeError, OSError):
             prompt_decryption_password()
 
     try:
         cipher = AESCipher(key=HOT_WALLET_PASSWORD)
-        with open(os.path.join(wallet_dir, '%s.enc' % wallet_id), 'r') as input_file:
+        with open(os.path.join(wallet_dir, f'{wallet_id}.enc'), 'r') as input_file:
             encrypted_data = input_file.read()
             return simplejson.loads(cipher.decrypt(encrypted_data))
 
-    except Exception:
-        raise Exception('Invalid password to decrypt hot wallet!')
+    except (ValueError, KeyError, TypeError, OSError):
+        raise ValueError('Invalid password to decrypt hot wallet!')
 
 
 def prompt_decryption_password():
@@ -114,7 +119,7 @@ def find_single_address_in_wallet(address):
     """Check if a single address exists directly in the hot wallet."""
     hot_wallet = get_hot_wallet()
 
-    return hot_wallet[address] if address in hot_wallet else None
+    return hot_wallet.get(address, None)
 
 
 def hot_wallet_seed():

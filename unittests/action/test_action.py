@@ -1,15 +1,14 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import mock
 import time
-from datetime import datetime
+from datetime import datetime, timezone
+from unittest import mock
 
 from action.action import Action
 from action.actiontype import ActionType
 from action.transactiontype import TransactionType
 
 
-class TestActionType(object):
+class TestActionType:
     """Tests for ActionType constants"""
 
     def test_action_type_constants(self):
@@ -34,7 +33,7 @@ class TestActionType(object):
         assert ActionType.UNFOLLOW_ON_TWITTER == 'Unfollow on twitter'
 
 
-class TestTransactionType(object):
+class TestTransactionType:
     """Tests for TransactionType constants"""
 
     def test_transaction_type_constants(self):
@@ -54,7 +53,7 @@ class ConcreteAction(Action):
         return True
 
 
-class TestAction(object):
+class TestAction:
     """Tests for the Action base class"""
 
     def test_action_init(self):
@@ -67,13 +66,13 @@ class TestAction(object):
         action = ConcreteAction('test_action_id')
         timestamp = 1609459200  # 2021-01-01 00:00:00 UTC
         action.configure(created=timestamp)
-        assert action.created == datetime.fromtimestamp(timestamp)
+        assert action.created == datetime.fromtimestamp(timestamp, tz=timezone.utc)
 
     def test_action_configure_without_created(self):
         action = ConcreteAction('test_action_id')
-        before = datetime.now()
+        before = datetime.now(tz=timezone.utc)
         action.configure()
-        after = datetime.now()
+        after = datetime.now(tz=timezone.utc)
         assert before <= action.created <= after
 
     def test_action_configure_with_valid_action_type(self):
@@ -97,9 +96,9 @@ class TestAction(object):
     def test_action_json_encodable_sets_created_if_none(self):
         action = ConcreteAction('test_action_id')
         action.created = None
-        before = int(time.mktime(datetime.now().timetuple()))
+        before = int(time.time())
         result = action.json_encodable()
-        after = int(time.mktime(datetime.now().timetuple()))
+        after = int(time.time())
         assert before <= result['created'] <= after
 
     @mock.patch('action.action.save_to_json_file')

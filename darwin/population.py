@@ -1,19 +1,17 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Population management for the Darwin evolutionary framework."""
 
-import os
 import glob
+import os
 import shutil
 import time
 
+from darwin.gene import BooleanGene, FloatGene, IntegerGene, StringGene
 from darwin.genome import Genome
-from darwin.gene import BooleanGene, IntegerGene, FloatGene, StringGene
-
-from helpers.jsonhelpers import save_to_json_file, load_from_json_file
+from helpers.jsonhelpers import load_from_json_file, save_to_json_file
 
 
-class Population(object):
+class Population:
     """Population management for the Darwin evolutionary framework."""
     def __init__(self):
         """Initialize an empty population."""
@@ -28,7 +26,7 @@ class Population(object):
         shutil.rmtree(directory)
         time.sleep(1)
         for genome in self.genomes:
-            save_to_json_file(os.path.join(directory, '%s.json' % genome.id()), data=genome.to_dict())
+            save_to_json_file(os.path.join(directory, f'{genome.id()}.json'), data=genome.to_dict())
 
     def load_directory(self, directory):
         """Load directory."""
@@ -77,7 +75,7 @@ class Population(object):
                         gene.charset = chromosome_data['charset']
 
                 else:  # pragma: no cover
-                    raise NotImplementedError('Unknown encoding type: %s' % chromosome_data['encoding_type'])
+                    raise NotImplementedError('Unknown encoding type: {}'.format(chromosome_data['encoding_type']))
 
                 gene.data = gene_data
                 genome.chromosomes[chromosome_id].genes.append(gene)

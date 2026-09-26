@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 
 """Constants for action types used in the Spellbook."""
 
-class ActionType(object):
+class ActionType:
     """Enumeration of all supported action types in the Spellbook."""
     COMMAND = 'Command'
     SPAWNPROCESS = 'SpawnProcess'

@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Action that reveals a pre-configured secret."""
 
 from helpers.loghelpers import LOG
+
 from .action import Action
 from .actiontype import ActionType
 
@@ -11,7 +11,7 @@ from .actiontype import ActionType
 class RevealSecretAction(Action):
     """Action that reveals a pre-configured secret."""
     def __init__(self, action_id):
-        super(RevealSecretAction, self).__init__(action_id=action_id)
+        super().__init__(action_id=action_id)
         self.action_type = ActionType.REVEALSECRET
         self.reveal_text = None
         self.reveal_link = None
@@ -23,7 +23,7 @@ class RevealSecretAction(Action):
 
         :return: True upon success, False upon failure
         """
-        LOG.info('Allowing reveal of RevealSecret action %s' % self.id)
+        LOG.info(f'Allowing reveal of RevealSecret action {self.id}')
         self.allow_reveal = True
         self.save()
         return True
@@ -37,7 +37,7 @@ class RevealSecretAction(Action):
                        - config['reveal_link']  : A secret link
                        - config['allow_reveal'] : Is the secret allowed to be revealed?
         """
-        super(RevealSecretAction, self).configure(**config)
+        super().configure(**config)
         if 'reveal_text' in config:
             self.reveal_text = config['reveal_text']
 
@@ -53,7 +53,7 @@ class RevealSecretAction(Action):
 
         :return: A dict containing the configuration settings
         """
-        ret = super(RevealSecretAction, self).json_encodable()
+        ret = super().json_encodable()
         ret.update({'reveal_text': self.reveal_text,
                     'reveal_link': self.reveal_link,
                     'allow_reveal': self.allow_reveal})

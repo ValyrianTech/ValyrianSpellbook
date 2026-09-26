@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Import LLM configurations from preconfigured_llm_models.csv into the Valyrian Spellbook.
 
@@ -7,12 +6,12 @@ This script reads the CSV file containing pre-configured LLM models and directly
 saves them to the system using the save_llm_config function.
 """
 
-import os
-import sys
+import argparse
 import csv
 import json
-import argparse
-from typing import Dict, Any
+import os
+import sys
+from typing import Any
 
 # Add the current directory to the path to import Spellbook modules
 sys.path.append(os.path.dirname(__file__))
@@ -52,7 +51,7 @@ def parse_vision_capability(vision_str: str) -> bool:
     return vision_str.lower() in ['true', 'yes', '1', 'enabled']
 
 
-def create_llm_config(model_data: Dict[str, str]) -> Dict[str, Any]:
+def create_llm_config(model_data: dict[str, str]) -> dict[str, Any]:
     """Create LLM configuration dictionary from CSV row data"""
     provider = model_data['Provider']
     model_name = model_data['Model_name']
@@ -90,7 +89,7 @@ def create_llm_config(model_data: Dict[str, str]) -> Dict[str, Any]:
     return config
 
 
-def save_llm_config_direct(config: Dict[str, Any], verbose: bool = False) -> bool:
+def save_llm_config_direct(config: dict[str, Any], verbose: bool = False) -> bool:
     """Save LLM configuration directly using save_llm_config function"""
     
     llm_name = config['llm_name']
@@ -127,20 +126,17 @@ def save_llm_config_direct(config: Dict[str, Any], verbose: bool = False) -> boo
         print(f"✓ Successfully saved: {llm_name}")
         return True
             
-    except Exception as ex:
+    except (ValueError, KeyError, TypeError, OSError) as ex:
         print(f"✗ Exception saving {llm_name}: {ex}")
         return False
 
 
 def read_csv_models(csv_file_path: str) -> list:
     """Read and parse the CSV file containing LLM model data"""
-    models = []
-    
     try:
         with open(csv_file_path, 'r', newline='', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile)
-            for row in reader:
-                models.append(row)
+            models = list(reader)
         
         print(f"Read {len(models)} models from {csv_file_path}")
         return models
@@ -148,7 +144,7 @@ def read_csv_models(csv_file_path: str) -> list:
     except FileNotFoundError:
         print(f"Error: CSV file not found: {csv_file_path}")
         return []
-    except Exception as ex:
+    except (ValueError, KeyError, TypeError, OSError) as ex:
         print(f"Error reading CSV file: {ex}")
         return []
 
@@ -206,7 +202,7 @@ def main():
         # Create configuration
         try:
             config = create_llm_config(model_data)
-        except Exception as ex:
+        except (ValueError, KeyError, TypeError, OSError) as ex:
             print(f"✗ Error creating config for {model_data['Model_name']}: {ex}")
             continue
         

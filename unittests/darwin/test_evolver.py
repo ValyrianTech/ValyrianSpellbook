@@ -1,15 +1,15 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import os
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
+import pytest
+
+from darwin.encodingtype import EncodingType
 from darwin.evolver import Evolver
+from darwin.fitnessfunction.fitnessfunction import Fitness, FitnessFunction
+from darwin.genome import Genome
 from darwin.model.model import Model
 from darwin.rosettastone.rosettastone import RosettaStone
-from darwin.fitnessfunction.fitnessfunction import FitnessFunction, Fitness
-from darwin.genome import Genome
-from darwin.encodingtype import EncodingType
 
 
 def make_config(tmp_path):
@@ -319,7 +319,7 @@ class TestLoadScript:
             evolver.load_script(script='model/booleantest.py',
                                 script_class_name='BooleanTest')
 
-    @patch('darwin.evolver.importlib.import_module', side_effect=Exception('import error'))
+    @patch('darwin.evolver.importlib.import_module', side_effect=ValueError('import error'))
     def test_load_script_import_failure(self, _mock_import, capsys):
         evolver = Evolver()
         result = evolver.load_script(script='model/booleantest.py',
@@ -454,9 +454,9 @@ class TestEvolverStart:
     @patch('darwin.evolver.save_to_json_file')
     def test_start_invalid_model_raises(self, mock_save, tmp_path):
         evolver = self._setup_evolver(tmp_path)
-        with patch.object(evolver, 'load_script', return_value='not_a_model'):
-            with pytest.raises(Exception, match='not a valid Model Script'):
-                evolver.start()
+        with patch.object(evolver, 'load_script', return_value='not_a_model'), \
+                pytest.raises(Exception, match='not a valid Model Script'):
+            evolver.start()
 
     @patch('darwin.evolver.save_to_json_file')
     def test_start_invalid_rosetta_stone_raises(self, mock_save, tmp_path):
@@ -468,9 +468,9 @@ class TestEvolverStart:
                 return 'not_a_rosetta_stone'
             return original_load(script, script_class_name)
 
-        with patch.object(evolver, 'load_script', side_effect=mock_load):
-            with pytest.raises(Exception, match='not a valid RosettaStone Script'):
-                evolver.start()
+        with patch.object(evolver, 'load_script', side_effect=mock_load), \
+                pytest.raises(Exception, match='not a valid RosettaStone Script'):
+            evolver.start()
 
     @patch('darwin.evolver.save_to_json_file')
     def test_start_invalid_fitness_function_raises(self, mock_save, tmp_path):
@@ -482,9 +482,9 @@ class TestEvolverStart:
                 return 'not_a_fitness_function'
             return original_load(script, script_class_name)
 
-        with patch.object(evolver, 'load_script', side_effect=mock_load):
-            with pytest.raises(Exception):
-                evolver.start()
+        with patch.object(evolver, 'load_script', side_effect=mock_load), \
+                pytest.raises(AttributeError):
+            evolver.start()
 
     @patch('darwin.evolver.save_to_json_file')
     def test_start_periodic_save(self, mock_save, tmp_path):

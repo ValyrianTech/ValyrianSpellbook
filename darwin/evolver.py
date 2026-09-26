@@ -1,30 +1,39 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Evolver process that drives the evolutionary loop in Darwin."""
 
+import importlib
 import os
 import platform
-import importlib
+import random
 import time
 from pprint import pprint
-import random
 
+from darwin.encodingtype import EncodingType
 from darwin.fitnessfunction.fitnessfunction import FitnessFunction
-from darwin.rosettastone.rosettastone import RosettaStone
 from darwin.model.model import Model
-
-from helpers.jsonhelpers import save_to_json_file
-from darwin.mutationchance import BooleanMutationChance, IntegerMutationChance, FloatMutationChance, StringMutationChance, ChromosomeMutationChance
-from darwin.parentselection import roulette_wheel_selection, rank_selection, stochastic_universal_sampling, tournament_selection
+from darwin.mutationchance import (
+    BooleanMutationChance,
+    ChromosomeMutationChance,
+    FloatMutationChance,
+    IntegerMutationChance,
+    StringMutationChance,
+)
+from darwin.parentselection import (
+    rank_selection,
+    roulette_wheel_selection,
+    stochastic_universal_sampling,
+    tournament_selection,
+)
 from darwin.population import Population
 from darwin.recombination import recombine
-from darwin.encodingtype import EncodingType
+from darwin.rosettastone.rosettastone import RosettaStone
+from helpers.jsonhelpers import save_to_json_file
 
 DARWIN_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__)))
 SPELLBOOK_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 
-class Evolver(object):
+class Evolver:
     """Evolver process that drives the evolutionary loop in Darwin."""
     def __init__(self):
         self.title = 'Title of this job'
@@ -83,7 +92,7 @@ class Evolver(object):
     def load_config(self, config):
         """Load config."""
         if not isinstance(config, dict):
-            raise Exception('config is not a dict!')
+            raise TypeError('config is not a dict!')
 
         self.title = config['title']
         self.description = config['description']
@@ -91,9 +100,9 @@ class Evolver(object):
         self.save_dir = config['save_dir']
         self.load_last_save = config['load_last_save']
         self.champions_dir = config['champions_dir']
-        self.load_champions = config['load_champions'] if 'load_champions' in config else False
+        self.load_champions = config.get('load_champions', False)
 
-        self.scripts_dir = config['scripts_dir'] if 'scripts_dir' in config else None
+        self.scripts_dir = config.get('scripts_dir', None)
         self.model_script = config['model_script']
         self.model_class = config['model_class']
         self.rosetta_stone_script = config['rosetta_stone_script']
@@ -111,7 +120,7 @@ class Evolver(object):
         self.n_parents = config['n_parents']
         self.recombination_type = config['recombination_type']  # RWS, SUS or tournament
         self.tournament_size = config['tournament_size']
-        self.parameters = config['parameters'] if 'parameters' in config else None
+        self.parameters = config.get('parameters', None)
 
         # Termination
         self.max_generations = config['max_generations']
@@ -204,7 +213,7 @@ class Evolver(object):
                                  script_class_name=self.model_class)
 
         if not isinstance(model, Model):
-            raise Exception('Script %s is not a valid Model Script, instead it is a %s' % (model, type(model)))
+            raise TypeError(f'Script {model} is not a valid Model Script, instead it is a {type(model)}')
 
         model.darwin_init_actions()
         model.info()
@@ -214,7 +223,7 @@ class Evolver(object):
                                          script_class_name=self.rosetta_stone_class)
 
         if not isinstance(rosetta_stone, RosettaStone):
-            raise Exception('Script %s is not a valid RosettaStone Script, instead it is a %s' % (rosetta_stone, type(rosetta_stone)))
+            raise TypeError(f'Script {rosetta_stone} is not a valid RosettaStone Script, instead it is a {type(rosetta_stone)}')
 
         # Load the FitnessFunction script
         fitness_function = self.load_script(script=self.fitness_function_script,
@@ -223,7 +232,7 @@ class Evolver(object):
         fitness_function.darwin_init_actions()
 
         if not isinstance(fitness_function, FitnessFunction):  # pragma: no cover
-            raise Exception('Script %s is not a valid FitnessFunction Script, instead it is a %s' % (fitness_function, type(fitness_function)))
+            raise TypeError(f'Script {fitness_function} is not a valid FitnessFunction Script, instead it is a {type(fitness_function)}')
 
         if self.load_last_save is True:
             # Load saved generation
@@ -256,7 +265,7 @@ class Evolver(object):
             self.current_generation += 1
             generation_start_time = time.time()
             print('\n\n=========================================')
-            print('Calculating generation %s in %s' % (self.current_generation, self.title))
+            print(f'Calculating generation {self.current_generation} in {self.title}')
             next_generation = Population()
 
             for j, genome in enumerate(population.genomes):
@@ -266,7 +275,7 @@ class Evolver(object):
 
                 genome.fitness = fitness_function.fitness(model=model).value
 
-                print('Genome %s (%s): %s' % (j, genome.id(), genome.fitness))
+                print(f'Genome {j} ({genome.id()}): {genome.fitness}')
 
                 if 0 < self.max_time_generation <= generation_start_time + self.max_time_generation:
                     print('Generation is taking too long to calculate, skipping to next generation')
@@ -274,7 +283,7 @@ class Evolver(object):
 
             # Sort the population by highest fitness
             population.genomes = sorted(population.genomes, key=lambda x: -x.fitness)
-            print('Best in generation: %s : %s' % (population.genomes[0].id(), population.genomes[0].fitness))
+            print(f'Best in generation: {population.genomes[0].id()} : {population.genomes[0].fitness}')
 
             # Periodically save the current population as json files
             if self.periodic_save > 0 and self.current_generation % self.periodic_save == 0:
@@ -290,23 +299,23 @@ class Evolver(object):
             else:
                 self.generations_since_new_champion += 1
 
-            print('Highest fitness: %s' % self.highest_fitness)
-            print('Generations since improvement: %s' % self.generations_since_new_champion)
+            print(f'Highest fitness: {self.highest_fitness}')
+            print(f'Generations since improvement: {self.generations_since_new_champion}')
 
             with open(self.progress_file, 'a') as output_file:
-                output_file.write('%s;%s;%s;%s\n' % (int(time.time()), self.current_generation, self.highest_fitness, (time.time()-generation_start_time)))
+                output_file.write(f'{int(time.time())};{self.current_generation};{self.highest_fitness};{time.time()-generation_start_time}\n')
 
             # Set a new random seed because some models might use a specific seed which could influence the evolution process
             random.seed(time.time())
 
             # Calculate how many different genomes are left after truncation
-            diversity = len(set([genome.id() for genome in population.genomes]))
-            print('Diversity: %s different genomes' % diversity)
+            diversity = len({genome.id() for genome in population.genomes})
+            print(f'Diversity: {diversity} different genomes')
 
             # If there is not enough diversity, then evolution will slow down, so set a multiplier for the mutation chances that gets bigger if diversity is low
             # or when there hasn't been a new champion for many generations
             mutation_multiplier = len(population.genomes) / float(diversity) + self.generations_since_new_champion * 0.01
-            print('Mutation multiplier: %s' % mutation_multiplier)
+            print(f'Mutation multiplier: {mutation_multiplier}')
 
             # Recombine the best genomes into the next generation
             for i in range(self.population_size - self.elitism):
@@ -319,14 +328,14 @@ class Evolver(object):
                 elif self.recombination_type == 4:
                     parent_a, parent_b = tournament_selection(genomes=population.genomes, n_parents=self.n_parents, tournament_size=self.tournament_size)
                 else:
-                    raise NotImplementedError('Unknown recombination type: %s' % self.recombination_type)
+                    raise NotImplementedError(f'Unknown recombination type: {self.recombination_type}')
 
                 offspring = recombine(parent_a=parent_a, parent_b=parent_b)
                 next_generation.add_genome(offspring)
 
             # Apply mutations to the next generation
             for genome in next_generation.genomes:
-                for chromosome_id, chromosome in genome.chromosomes.items():
+                for chromosome in genome.chromosomes.values():
                     # Apply chromosome mutations
                     chromosome.apply_mutations(mutation_chance=self.chromosome_mutation_chance, multiplier=mutation_multiplier)
 
@@ -341,7 +350,7 @@ class Evolver(object):
                         elif chromosome.encoding_type == EncodingType.STRING:
                             gene.apply_mutations(mutation_chance=self.string_mutation_chance, multiplier=mutation_multiplier)
                         else:  # pragma: no cover
-                            raise NotImplementedError('Unknown encoding type: %s' % chromosome.encoding_type)
+                            raise NotImplementedError(f'Unknown encoding type: {chromosome.encoding_type}')
 
             # Copy the n genomes with highest fitness to the next generation if elitism is greater than 0,
             # these genomes will not be modified by mutations
@@ -363,12 +372,12 @@ class Evolver(object):
         print(champion.info())
         model_template = rosetta_stone.genome_to_model(champion)
         pprint(model_template)
-        print('\nFitness: %s' % champion.fitness)
+        print(f'\nFitness: {champion.fitness}')
 
         model.configure(config=model_template)
         model.champion_actions()
 
-        champion_file = os.path.join(self.champions_dir, '%s.json' % champion.id())
+        champion_file = os.path.join(self.champions_dir, f'{champion.id()}.json')
         save_to_json_file(filename=champion_file, data=champion.to_dict())
 
         return champion.fitness
@@ -385,23 +394,23 @@ class Evolver(object):
             script_path = os.path.join(SPELLBOOK_DIR, script)
 
         if script_path is None:  # pragma: no cover
-            print('Can not find script %s' % script)
+            print(f'Can not find script {script}')
             print(os.getcwd())
             return
 
         if platform.system() == 'Windows':
-            script_module_name = '%s' % script_name.replace('\\', '.')
+            script_module_name = '{}'.format(script_name.replace('\\', '.'))
         elif platform.system() == 'Linux':
-            script_module_name = '%s' % script_name.replace('/', '.')
+            script_module_name = '{}'.format(script_name.replace('/', '.'))
         else:
             raise NotImplementedError('Unsupported platform: only windows and linux are supported')
 
-        print('Loading Script %s' % script_path)
-        print('Loading module %s' % script_module_name)
+        print(f'Loading Script {script_path}')
+        print(f'Loading module {script_module_name}')
         try:
             script_module = importlib.import_module(script_module_name)
-        except Exception as ex:
-            print('Failed to load Spellbook Script %s: %s' % (script_path, ex))
+        except (ImportError, ValueError, KeyError, TypeError, OSError) as ex:
+            print(f'Failed to load Spellbook Script {script_path}: {ex}')
             return
 
         darwin_script = getattr(script_module, script_class_name)

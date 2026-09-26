@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import unittest
-from unittest.mock import patch, MagicMock
 import sys
+import unittest
+from unittest.mock import MagicMock, patch
 
 # Mock tweepy before importing twitterhelpers
 mock_tweepy = MagicMock()
@@ -47,7 +46,7 @@ class TestGetTwitterApi(unittest.TestCase):
         from helpers.twitterhelpers import get_twitter_api
         
         mock_api_instance = MagicMock()
-        mock_api_instance.verify_credentials.side_effect = Exception('Auth failed')
+        mock_api_instance.verify_credentials.side_effect = ValueError('Auth failed')
         mock_api.return_value = mock_api_instance
         
         result = get_twitter_api()

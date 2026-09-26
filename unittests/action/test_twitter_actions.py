@@ -1,20 +1,19 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import mock
+from unittest import mock
 
+from action.actiontype import ActionType
 from action.create_tweet_action import CreateTweetAction
 from action.delete_tweet_action import DeleteTweetAction
-from action.like_tweet_action import LikeTweetAction
-from action.unlike_tweet_action import UnlikeTweetAction
-from action.retweet_action import RetweetAction
-from action.unretweet_action import UnretweetAction
 from action.follow_on_twitter_action import FollowOnTwitterAction
-from action.unfollow_on_twitter_action import UnfollowOnTwitterAction
+from action.like_tweet_action import LikeTweetAction
+from action.retweet_action import RetweetAction
 from action.send_dm_twitter_action import SendDMTwitterAction
-from action.actiontype import ActionType
+from action.unfollow_on_twitter_action import UnfollowOnTwitterAction
+from action.unlike_tweet_action import UnlikeTweetAction
+from action.unretweet_action import UnretweetAction
 
 
-class TestCreateTweetAction(object):
+class TestCreateTweetAction:
     """Tests for CreateTweetAction"""
 
     def test_createtweetaction_init(self):
@@ -74,14 +73,14 @@ class TestCreateTweetAction(object):
 
     @mock.patch('action.create_tweet_action.create_tweet')
     def test_createtweetaction_run_exception(self, mock_create_tweet):
-        mock_create_tweet.side_effect = Exception('Twitter API error')
+        mock_create_tweet.side_effect = ValueError('Twitter API error')
         action = CreateTweetAction('test_tweet_action')
         action.configure(text='Hello world')
         result = action.run()
         assert not result
 
 
-class TestDeleteTweetAction(object):
+class TestDeleteTweetAction:
     """Tests for DeleteTweetAction"""
 
     def test_deletetweetaction_init(self):
@@ -116,14 +115,14 @@ class TestDeleteTweetAction(object):
 
     @mock.patch('action.delete_tweet_action.delete_tweet')
     def test_deletetweetaction_run_exception(self, mock_delete_tweet):
-        mock_delete_tweet.side_effect = Exception('API error')
+        mock_delete_tweet.side_effect = ValueError('API error')
         action = DeleteTweetAction('test_delete_tweet')
         action.configure(tweet_id='123456')
         result = action.run()
         assert not result
 
 
-class TestLikeTweetAction(object):
+class TestLikeTweetAction:
     """Tests for LikeTweetAction"""
 
     def test_liketweetaction_init(self):
@@ -158,14 +157,14 @@ class TestLikeTweetAction(object):
 
     @mock.patch('action.like_tweet_action.like_tweet')
     def test_liketweetaction_run_exception(self, mock_like_tweet):
-        mock_like_tweet.side_effect = Exception('API error')
+        mock_like_tweet.side_effect = ValueError('API error')
         action = LikeTweetAction('test_like_tweet')
         action.configure(tweet_id='123456')
         result = action.run()
         assert not result
 
 
-class TestUnlikeTweetAction(object):
+class TestUnlikeTweetAction:
     """Tests for UnlikeTweetAction"""
 
     def test_unliketweetaction_init(self):
@@ -200,14 +199,14 @@ class TestUnlikeTweetAction(object):
 
     @mock.patch('action.unlike_tweet_action.unlike_tweet')
     def test_unliketweetaction_run_exception(self, mock_unlike_tweet):
-        mock_unlike_tweet.side_effect = Exception('API error')
+        mock_unlike_tweet.side_effect = ValueError('API error')
         action = UnlikeTweetAction('test_unlike_tweet')
         action.configure(tweet_id='123456')
         result = action.run()
         assert not result
 
 
-class TestRetweetAction(object):
+class TestRetweetAction:
     """Tests for RetweetAction"""
 
     def test_retweetaction_init(self):
@@ -242,14 +241,14 @@ class TestRetweetAction(object):
 
     @mock.patch('action.retweet_action.retweet')
     def test_retweetaction_run_exception(self, mock_retweet):
-        mock_retweet.side_effect = Exception('API error')
+        mock_retweet.side_effect = ValueError('API error')
         action = RetweetAction('test_retweet')
         action.configure(tweet_id='123456')
         result = action.run()
         assert not result
 
 
-class TestUnretweetAction(object):
+class TestUnretweetAction:
     """Tests for UnretweetAction"""
 
     def test_unretweetaction_init(self):
@@ -284,14 +283,14 @@ class TestUnretweetAction(object):
 
     @mock.patch('action.unretweet_action.retweet')
     def test_unretweetaction_run_exception(self, mock_retweet):
-        mock_retweet.side_effect = Exception('API error')
+        mock_retweet.side_effect = ValueError('API error')
         action = UnretweetAction('test_unretweet')
         action.configure(tweet_id='123456')
         result = action.run()
         assert not result
 
 
-class TestFollowOnTwitterAction(object):
+class TestFollowOnTwitterAction:
     """Tests for FollowOnTwitterAction"""
 
     def test_followontwitteraction_init(self):
@@ -326,14 +325,14 @@ class TestFollowOnTwitterAction(object):
 
     @mock.patch('action.follow_on_twitter_action.follow_user')
     def test_followontwitteraction_run_exception(self, mock_follow):
-        mock_follow.side_effect = Exception('API error')
+        mock_follow.side_effect = ValueError('API error')
         action = FollowOnTwitterAction('test_follow')
         action.configure(user_id='user123')
         result = action.run()
         assert not result
 
 
-class TestUnfollowOnTwitterAction(object):
+class TestUnfollowOnTwitterAction:
     """Tests for UnfollowOnTwitterAction"""
 
     def test_unfollowontwitteraction_init(self):
@@ -368,14 +367,14 @@ class TestUnfollowOnTwitterAction(object):
 
     @mock.patch('action.unfollow_on_twitter_action.unfollow_user')
     def test_unfollowontwitteraction_run_exception(self, mock_unfollow):
-        mock_unfollow.side_effect = Exception('API error')
+        mock_unfollow.side_effect = ValueError('API error')
         action = UnfollowOnTwitterAction('test_unfollow')
         action.configure(user_id='user123')
         result = action.run()
         assert not result
 
 
-class TestSendDMTwitterAction(object):
+class TestSendDMTwitterAction:
     """Tests for SendDMTwitterAction"""
 
     def test_senddmtwitteraction_init(self):
@@ -420,7 +419,7 @@ class TestSendDMTwitterAction(object):
 
     @mock.patch('action.send_dm_twitter_action.create_direct_message')
     def test_senddmtwitteraction_run_exception(self, mock_create_dm):
-        mock_create_dm.side_effect = Exception('API error')
+        mock_create_dm.side_effect = ValueError('API error')
         action = SendDMTwitterAction('test_dm')
         action.configure(participant_id='user123', text='Hello!')
         result = action.run()

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Tests for Darwin rosettastone subclasses.
 
@@ -14,21 +13,22 @@ it with an auto-incrementing integer key.
 
 The FullTestRosettaStone uses the new API and works without patching.
 """
-import darwin  # noqa: F401 - import side-effect: adds DARWIN_DIR to sys.path
+import rosettastone
 
 # Inject RosettaStone into the rosettastone package so 'from rosettastone import RosettaStone' works
-import rosettastone.rosettastone  # noqa: E402
-import rosettastone  # noqa: E402
+import rosettastone.rosettastone
+
+import darwin  # noqa: F401 - import side-effect: adds DARWIN_DIR to sys.path
+
 rosettastone.RosettaStone = rosettastone.rosettastone.RosettaStone
 
-from genome import Genome  # noqa: E402
-from chromosome import Chromosome  # noqa: E402
-
-from rosettastone.booleantestrosettastone import BooleanTestRosettaStone  # noqa: E402
-from rosettastone.floattestrosettastone import FloatTestRosettaStone  # noqa: E402
-from rosettastone.integertestrosettastone import IntegerTestRosettaStone  # noqa: E402
-from rosettastone.stringtestrosettastone import StringTestRosettaStone  # noqa: E402
-from rosettastone.fulltestrosettastone import FullTestRosettaStone  # noqa: E402
+from chromosome import Chromosome
+from genome import Genome
+from rosettastone.booleantestrosettastone import BooleanTestRosettaStone
+from rosettastone.floattestrosettastone import FloatTestRosettaStone
+from rosettastone.fulltestrosettastone import FullTestRosettaStone
+from rosettastone.integertestrosettastone import IntegerTestRosettaStone
+from rosettastone.stringtestrosettastone import StringTestRosettaStone
 
 
 def _patch_genome_add_chromosome():

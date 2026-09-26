@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Dashboard router - main pages and authentication
 """
@@ -9,11 +8,10 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from fastapi import APIRouter, Request, Form
+from auth import get_api_client, is_authenticated, login_user, logout_user
+from fastapi import APIRouter, Form, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
-
-from auth import is_authenticated, login_user, logout_user, get_api_client
 
 router = APIRouter()
 

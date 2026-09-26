@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import os
-import simplejson
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
-import listeners.block_listener as block_listener
+import simplejson
+
+from listeners import block_listener
 
 
 class TestOnMessage:

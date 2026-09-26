@@ -1,20 +1,18 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Helper functions for encoding, decoding, and manipulating Bitcoin private keys."""
 import re
-from .py3specials import bin_dbl_sha256, bin_to_b58check, changebase, decode, encode
 
-from .jacobianhelpers import fast_multiply, N, G
+from .jacobianhelpers import G, N, fast_multiply
 from .publickeyhelpers import encode_pubkey, pubkey_to_address
+from .py3specials import bin_dbl_sha256, bin_to_b58check, changebase, decode, encode
 
 # Regular expressions for private key formats
 wif_compressed_regex = '^[LK][1-9A-Za-z][^OIl]{50}$'
 wif_uncompressed_regex = '^5[HJK][1-9A-Za-z][^OIl]{48}$'
 hexadecimal_regex = '^[0-9a-fA-F]{64}$'
-base64_regex = '^[-A-Za-z0-9+=]{1,50}|=[^=]|={3,}$'
 
 
-class PrivateKey(object):
+class PrivateKey:
     """
     Represents a Bitcoin private key in multiple formats (WIF, hex, decimal, binary).
 
@@ -25,7 +23,6 @@ class PrivateKey(object):
 
         self.decimal = encode_privkey(private_key=private_key, formt='decimal', vbyte=vbyte)
         self.bin = encode_privkey(private_key=private_key, formt='bin', vbyte=vbyte)
-        self.binc = encode_privkey(private_key=private_key, formt='bin_compressed', vbyte=vbyte)
         self.hex = encode_privkey(private_key=private_key, formt='hex', vbyte=vbyte).upper()
         self.hexc = encode_privkey(private_key=private_key, formt='hex_compressed', vbyte=vbyte).upper()
         self.wif = encode_privkey(private_key=private_key, formt='wif', vbyte=vbyte)
@@ -33,15 +30,14 @@ class PrivateKey(object):
 
         if self.wifc is not None:
             if re.match(wif_compressed_regex, self.wifc) is None:
-                raise Exception('Invalid WIF compressed key: %s' % self.wifc)
+                raise ValueError(f'Invalid WIF compressed key: {self.wifc}')
 
         elif self.wif is not None:  # pragma: no cover
             if re.match(wif_uncompressed_regex, self.wif) is None:
-                raise Exception('Invalid WIF uncompressed key: %s' % self.wif)
+                raise ValueError(f'Invalid WIF uncompressed key: {self.wif}')
 
-        elif self.hex is not None:  # pragma: no cover
-            if re.match(hexadecimal_regex, self.hex) is None:
-                raise Exception('Invalid HEX key: %s' % self.hex)
+        elif self.hex is not None and re.match(hexadecimal_regex, self.hex) is None:  # pragma: no cover
+            raise ValueError(f'Invalid HEX key: {self.hex}')
 
 
 def encode_privkey(private_key, formt, vbyte=0):
@@ -64,7 +60,7 @@ def encode_privkey(private_key, formt, vbyte=0):
     elif formt == 'wif_compressed':
         return bin_to_b58check(encode(private_key, 256, 32) + b'\x01', 128 + int(vbyte))
     else:
-        raise Exception("Invalid format!")
+        raise ValueError("Invalid format!")
 
 
 def decode_privkey(private_key, formt=None):
@@ -87,7 +83,7 @@ def decode_privkey(private_key, formt=None):
     elif formt == 'wif_compressed':
         return decode(b58check_to_bin(private_key)[:32], 256)
     else:
-        raise Exception("WIF does not represent privkey")
+        raise ValueError("WIF does not represent privkey")
 
 
 def get_privkey_format(private_key):
@@ -109,7 +105,7 @@ def get_privkey_format(private_key):
         elif len(bin_p) == 33:
             return 'wif_compressed'
         else:
-            raise Exception("WIF does not represent privkey")
+            raise ValueError("WIF does not represent privkey")
 
 
 def b58check_to_bin(private_key):
@@ -125,7 +121,7 @@ def privkey_to_pubkey(privkey):
     f = get_privkey_format(privkey)
     privkey = decode_privkey(privkey, f)
     if privkey >= N:
-        raise Exception("Invalid privkey")
+        raise ValueError("Invalid privkey")
     if f in ['bin', 'bin_compressed', 'hex', 'hex_compressed', 'decimal']:
         return encode_pubkey(fast_multiply(G, privkey), f)
     else:

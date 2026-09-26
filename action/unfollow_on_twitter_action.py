@@ -1,18 +1,18 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Action that unfollows a user on Twitter."""
 
 from helpers.loghelpers import LOG
+from helpers.twitterhelpers import unfollow_user
+
 from .action import Action
 from .actiontype import ActionType
-from helpers.twitterhelpers import unfollow_user
 
 
 class UnfollowOnTwitterAction(Action):
     """Action that unfollows a user on Twitter."""
     def __init__(self, action_id):
-        super(UnfollowOnTwitterAction, self).__init__(action_id=action_id)
+        super().__init__(action_id=action_id)
         self.action_type = ActionType.UNFOLLOW_ON_TWITTER
         self.user_id = None
 
@@ -30,7 +30,7 @@ class UnfollowOnTwitterAction(Action):
 
         try:
             unfollow_user(target_user_id=self.user_id)
-        except Exception as ex:
+        except (ValueError, KeyError, TypeError, OSError) as ex:
             LOG.error(f'Unable to unfollow user {self.user_id}: {ex}')
             return False
 
@@ -43,7 +43,7 @@ class UnfollowOnTwitterAction(Action):
         :param config: A dict containing the configuration settings
                        - config['user_id']    : The id of the user to follow
         """
-        super(UnfollowOnTwitterAction, self).configure(**config)
+        super().configure(**config)
         if 'user_id' in config:
             self.user_id = config['user_id']
 
@@ -53,6 +53,6 @@ class UnfollowOnTwitterAction(Action):
 
         :return: A dict containing the configuration settings
         """
-        ret = super(UnfollowOnTwitterAction, self).json_encodable()
+        ret = super().json_encodable()
         ret.update({'user_id': self.user_id})
         return ret

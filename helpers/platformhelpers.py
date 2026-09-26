@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Helper functions for platform-specific (OS) operations."""
 import platform
 
@@ -15,7 +14,7 @@ def format_args(args):
     if platform.system() == 'Linux' and isinstance(args, list):
         formatted_string = ''
         for arg in args:
-            formatted_string += '%s ' % arg if ' ' not in arg else '"%s" ' % arg
+            formatted_string += f'{arg} ' if ' ' not in arg else f'"{arg}" '
         return formatted_string
     else:
         return args

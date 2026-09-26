@@ -1,10 +1,12 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 from unittest.mock import patch
 
-from darwin.parentselection import (roulette_wheel_selection, rank_selection,
-                                     stochastic_universal_sampling,
-                                     tournament_selection)
+from darwin.parentselection import (
+    rank_selection,
+    roulette_wheel_selection,
+    stochastic_universal_sampling,
+    tournament_selection,
+)
 
 
 class MockGenome:

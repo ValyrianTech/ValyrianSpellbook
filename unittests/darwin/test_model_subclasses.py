@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Tests for Darwin model subclasses: BooleanTest, FloatTest, FullTest, IntegerTest, StringTest.
 
@@ -7,18 +6,20 @@ These model modules use intra-package imports like ``from model import Model`` w
 only work when the darwin directory itself is on sys.path (done by ``darwin/__init__.py``).
 We inject the base class into the ``model`` package namespace so those imports succeed.
 """
-import darwin  # noqa: F401 - import side-effect: adds DARWIN_DIR to sys.path
+import model
 
 # Inject Model into the model package so 'from model import Model' works
-import model.model  # noqa: E402
-import model  # noqa: E402
+import model.model
+
+import darwin  # noqa: F401 - import side-effect: adds DARWIN_DIR to sys.path
+
 model.Model = model.model.Model
 
-from model.booleantest import BooleanTest  # noqa: E402
-from model.floattest import FloatTest  # noqa: E402
-from model.fulltest import FullTest  # noqa: E402
-from model.integertest import IntegerTest  # noqa: E402
-from model.stringtest import StringTest  # noqa: E402
+from model.booleantest import BooleanTest
+from model.floattest import FloatTest
+from model.fulltest import FullTest
+from model.integertest import IntegerTest
+from model.stringtest import StringTest
 
 
 class TestBooleanTest:

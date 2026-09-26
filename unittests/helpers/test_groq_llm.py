@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 
 class TestGroqLLM(unittest.TestCase):
@@ -30,13 +29,13 @@ class TestGroqLLM(unittest.TestCase):
         from helpers.groq_llm import GroqLLM
         
         mock_client = MagicMock()
-        mock_client.chat.completions.create.side_effect = Exception("API Error")
+        mock_client.chat.completions.create.side_effect = ValueError("API Error")
         mock_groq.return_value = mock_client
         
         llm = GroqLLM(model_name='llama-3', api_key='test-key')
         messages = [{'role': 'user', 'content': 'Hello'}]
         
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         self.assertIn('Error', result)
 
@@ -105,7 +104,7 @@ class TestGroqLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         # Should have stopped early
         self.assertEqual(result, '')
@@ -137,7 +136,7 @@ class TestGroqLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         self.assertIn('<think>', result)
 
@@ -172,7 +171,7 @@ class TestGroqLLMAdvanced(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages, thinking_level='high')
+        result, _usage = llm.get_completion_text(messages, thinking_level='high')
 
         self.assertEqual(result, 'Hello!')
 
@@ -215,7 +214,7 @@ class TestGroqLLMAdvanced(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
 
         self.assertIn('Final answer!', result)
 
@@ -246,7 +245,7 @@ class TestGroqLLMAdvanced(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
 
         self.assertIn('Final answer', result)
 
@@ -277,7 +276,7 @@ class TestGroqLLMAdvanced(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        _result, usage = llm.get_completion_text(messages)
 
         self.assertEqual(usage['prompt_tokens'], 0)
         self.assertEqual(usage['completion_tokens'], 0)

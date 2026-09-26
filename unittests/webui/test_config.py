@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Tests for webui.config Settings."""
 from unittest.mock import patch
 

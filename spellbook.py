@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Command-line interface for the Valyrian Spellbook."""
 
@@ -13,7 +12,13 @@ import simplejson
 
 import texts
 from authentication import signature
-from helpers.configurationhelpers import get_host, get_port, get_key, get_secret, get_spellbook_uri
+from helpers.configurationhelpers import (
+    get_host,
+    get_key,
+    get_port,
+    get_secret,
+    get_spellbook_uri,
+)
 from validators.validators import valid_distribution
 
 # Make sure we are in the correct working directory
@@ -544,7 +549,7 @@ def add_authentication_headers(headers=None, data=None):
     if headers is None:
         headers = {'Content-Type': 'application/json'}
 
-    nonce = int(round(time.time() * 1000))
+    nonce = round(time.time() * 1000)
 
     headers.update({'API_Key': args.api_key,
                     'API_Sign': signature(data, nonce, args.api_secret),
@@ -558,13 +563,13 @@ def add_authentication_headers(headers=None, data=None):
 #############################################
 def get_llms():
     """Retrieve and display the list of all configured LLMs from the Spellbook server."""
-    url = '{spellbook_uri}/spellbook/llms'.format(spellbook_uri=get_spellbook_uri())
+    url = f'{get_spellbook_uri()}/spellbook/llms'
     do_get_request(url)
 
 
 def get_llm_config():
     """Retrieve and display the configuration of a specific LLM by its id."""
-    url = '{spellbook_uri}/spellbook/llms/{llm_id}'.format(spellbook_uri=get_spellbook_uri(), llm_id=args.id)
+    url = f'{get_spellbook_uri()}/spellbook/llms/{args.id}'
     do_get_request(url=url)
 
 
@@ -576,13 +581,13 @@ def save_llm_config():
             'model_name': args.model_name,
             'description': args.description}
 
-    url = '{spellbook_uri}/spellbook/llms/{llm_id}'.format(spellbook_uri=get_spellbook_uri(), llm_id=args.id)
+    url = f'{get_spellbook_uri()}/spellbook/llms/{args.id}'
     do_post_request(url=url, data=data, authenticate=True)
 
 
 def delete_llm():
     """Delete a specific LLM from the Spellbook server by its id."""
-    url = '{spellbook_uri}/spellbook/llms/{llm_id}'.format(spellbook_uri=get_spellbook_uri(), llm_id=args.id)
+    url = f'{get_spellbook_uri()}/spellbook/llms/{args.id}'
     do_delete_request(url=url, authenticate=True)
 
 
@@ -593,13 +598,13 @@ def delete_llm():
 
 def get_explorers():
     """Retrieve and display the list of all configured blockchain explorers."""
-    url = '{spellbook_uri}/spellbook/explorers'.format(spellbook_uri=get_spellbook_uri())
+    url = f'{get_spellbook_uri()}/spellbook/explorers'
     do_get_request(url)
 
 
 def get_explorer_config():
     """Retrieve and display the configuration of a specific blockchain explorer by name."""
-    url = '{spellbook_uri}/spellbook/explorers/{explorer_id}'.format(spellbook_uri=get_spellbook_uri(), explorer_id=args.name)
+    url = f'{get_spellbook_uri()}/spellbook/explorers/{args.name}'
     do_get_request(url=url, authenticate=True)
 
 
@@ -611,13 +616,13 @@ def save_explorer():
             'priority': args.priority,
             'testnet': args.testnet}
 
-    url = '{spellbook_uri}/spellbook/explorers/{explorer_id}'.format(spellbook_uri=get_spellbook_uri(), explorer_id=args.name)
+    url = f'{get_spellbook_uri()}/spellbook/explorers/{args.name}'
     do_post_request(url=url, authenticate=True, data=data)
 
 
 def delete_explorer():
     """Delete a specific blockchain explorer from the Spellbook server by name."""
-    url = '{spellbook_uri}/spellbook/explorers/{explorer_id}'.format(spellbook_uri=get_spellbook_uri(), explorer_id=args.name)
+    url = f'{get_spellbook_uri()}/spellbook/explorers/{args.name}'
     do_delete_request(url=url, authenticate=True)
 
 
@@ -626,45 +631,43 @@ def delete_explorer():
 
 def get_latest_block():
     """Retrieve and display the latest block from the blockchain."""
-    url = '{spellbook_uri}/spellbook/blocks/latest'.format(spellbook_uri=get_spellbook_uri())
+    url = f'{get_spellbook_uri()}/spellbook/blocks/latest'
     do_get_request(url=url)
 
 
 def get_block():
     """Retrieve and display a block by its height or hash."""
-    url = '{spellbook_uri}/spellbook/blocks/{id}'.format(spellbook_uri=get_spellbook_uri(), id=args.id)
+    url = f'{get_spellbook_uri()}/spellbook/blocks/{args.id}'
     do_get_request(url=url)
 
 
 def get_prime_input_address():
     """Retrieve and display the prime input address of a specific transaction."""
-    url = '{spellbook_uri}/spellbook/transactions/{txid}/prime_input'.format(spellbook_uri=get_spellbook_uri(), txid=args.txid)
+    url = f'{get_spellbook_uri()}/spellbook/transactions/{args.txid}/prime_input'
     do_get_request(url=url)
 
 
 def get_transaction():
     """Retrieve and display a specific transaction by its txid."""
-    url = '{spellbook_uri}/spellbook/transactions/{txid}'.format(spellbook_uri=get_spellbook_uri(), txid=args.txid)
+    url = f'{get_spellbook_uri()}/spellbook/transactions/{args.txid}'
     do_get_request(url=url)
 
 
 def get_transactions():
     """Retrieve and display all transactions for a specific address."""
-    url = '{spellbook_uri}/spellbook/addresses/{address}/transactions'.format(spellbook_uri=get_spellbook_uri(), address=args.address)
+    url = f'{get_spellbook_uri()}/spellbook/addresses/{args.address}/transactions'
     do_get_request(url=url)
 
 
 def get_balance():
     """Retrieve and display the current balance of a specific address."""
-    url = '{spellbook_uri}/spellbook/addresses/{address}/balance'.format(spellbook_uri=get_spellbook_uri(), address=args.address)
+    url = f'{get_spellbook_uri()}/spellbook/addresses/{args.address}/balance'
     do_get_request(url=url)
 
 
 def get_utxos():
     """Retrieve and display the current UTXOs for a specific address."""
-    url = '{spellbook_uri}/spellbook/addresses/{address}/utxos?confirmations={confirmations}'.format(spellbook_uri=get_spellbook_uri(),
-                                                                                                     address=args.address,
-                                                                                                     confirmations=args.confirmations)
+    url = f'{get_spellbook_uri()}/spellbook/addresses/{args.address}/utxos?confirmations={args.confirmations}'
     do_get_request(url=url)
 
 
@@ -674,21 +677,21 @@ def get_utxos():
 def get_sil():
     """Retrieve and display the Simplified Inputs List (SIL) for a specific address."""
     data = {'block_height': args.block_height}
-    url = '{spellbook_uri}/spellbook/addresses/{address}/SIL'.format(spellbook_uri=get_spellbook_uri(), address=args.address)
+    url = f'{get_spellbook_uri()}/spellbook/addresses/{args.address}/SIL'
     do_get_request(url=url, data=data)
 
 
 def get_profile():
     """Retrieve and display the profile of a specific address."""
     data = {'block_height': args.block_height}
-    url = '{spellbook_uri}/spellbook/addresses/{address}/profile'.format(spellbook_uri=get_spellbook_uri(), address=args.address)
+    url = f'{get_spellbook_uri()}/spellbook/addresses/{args.address}/profile'
     do_get_request(url=url, data=data)
 
 
 def get_sul():
     """Retrieve and display the Simplified UTXO List (SUL) for a specific address."""
     data = {'confirmations': args.confirmations}
-    url = '{spellbook_uri}/spellbook/addresses/{address}/SUL'.format(spellbook_uri=get_spellbook_uri(), address=args.address)
+    url = f'{get_spellbook_uri()}/spellbook/addresses/{args.address}/SUL'
     do_get_request(url=url, data=data)
 
 
@@ -699,7 +702,7 @@ def get_lal():
     """Retrieve and display the Linked Address List (LAL) for an address and xpub key."""
     data = {'block_height': args.block_height,
             'xpub': args.xpub}
-    url = '{spellbook_uri}/spellbook/addresses/{address}/LAL'.format(spellbook_uri=get_spellbook_uri(), address=args.address)
+    url = f'{get_spellbook_uri()}/spellbook/addresses/{args.address}/LAL'
     do_get_request(url=url, data=data)
 
 
@@ -707,7 +710,7 @@ def get_lbl():
     """Retrieve and display the Linked Balance List (LBL) for an address and xpub key."""
     data = {'block_height': args.block_height,
             'xpub': args.xpub}
-    url = '{spellbook_uri}/spellbook/addresses/{address}/LBL'.format(spellbook_uri=get_spellbook_uri(), address=args.address)
+    url = f'{get_spellbook_uri()}/spellbook/addresses/{args.address}/LBL'
     do_get_request(url=url, data=data)
 
 
@@ -715,7 +718,7 @@ def get_lrl():
     """Retrieve and display the Linked Received List (LRL) for an address and xpub key."""
     data = {'block_height': args.block_height,
             'xpub': args.xpub}
-    url = '{spellbook_uri}/spellbook/addresses/{address}/LRL'.format(spellbook_uri=get_spellbook_uri(), address=args.address)
+    url = f'{get_spellbook_uri()}/spellbook/addresses/{args.address}/LRL'
     do_get_request(url=url, data=data)
 
 
@@ -723,7 +726,7 @@ def get_lsl():
     """Retrieve and display the Linked Sent List (LSL) for an address and xpub key."""
     data = {'block_height': args.block_height,
             'xpub': args.xpub}
-    url = '{spellbook_uri}/spellbook/addresses/{address}/LSL'.format(spellbook_uri=get_spellbook_uri(), address=args.address)
+    url = f'{get_spellbook_uri()}/spellbook/addresses/{args.address}/LSL'
     do_get_request(url=url, data=data)
 
 
@@ -735,9 +738,7 @@ def get_random_address():
     data = {'rng_block_height': args.rng_block_height,
             'sil_block_height': args.block_height,
             'xpub': args.xpub}
-    url = '{spellbook_uri}/spellbook/addresses/{address}/random/{source}'.format(spellbook_uri=get_spellbook_uri(),
-                                                                                 address=args.address,
-                                                                                 source=args.source)
+    url = f'{get_spellbook_uri()}/spellbook/addresses/{args.address}/random/{args.source}'
     do_get_request(url=url, data=data)
 
 
@@ -748,13 +749,13 @@ def get_random_address():
 
 def get_triggers():
     """Retrieve and display the list of all configured triggers."""
-    url = '{spellbook_uri}/spellbook/triggers'.format(spellbook_uri=get_spellbook_uri())
+    url = f'{get_spellbook_uri()}/spellbook/triggers'
     do_get_request(url=url)
 
 
 def get_trigger():
     """Retrieve and display the configuration of a specific trigger by its id."""
-    url = '{spellbook_uri}/spellbook/triggers/{trigger_id}'.format(spellbook_uri=get_spellbook_uri(), trigger_id=args.trigger_id)
+    url = f'{get_spellbook_uri()}/spellbook/triggers/{args.trigger_id}'
     do_get_request(url=url, authenticate=True)
 
 
@@ -833,19 +834,19 @@ def save_trigger():
     if args.actions is not None:
         data['actions'] = args.actions
 
-    url = '{spellbook_uri}/spellbook/triggers/{trigger_id}'.format(spellbook_uri=get_spellbook_uri(), trigger_id=args.trigger_id)
+    url = f'{get_spellbook_uri()}/spellbook/triggers/{args.trigger_id}'
     do_post_request(url=url, authenticate=True, data=data)
 
 
 def delete_trigger():
     """Delete a specific trigger from the Spellbook server by its id."""
-    url = '{spellbook_uri}/spellbook/triggers/{trigger_id}'.format(spellbook_uri=get_spellbook_uri(), trigger_id=args.trigger_id)
+    url = f'{get_spellbook_uri()}/spellbook/triggers/{args.trigger_id}'
     do_delete_request(url=url, authenticate=True)
 
 
 def activate_trigger():
     """Activate a specified manual trigger by its id."""
-    url = '{spellbook_uri}/spellbook/triggers/{trigger_id}/activate'.format(spellbook_uri=get_spellbook_uri(), trigger_id=args.trigger_id)
+    url = f'{get_spellbook_uri()}/spellbook/triggers/{args.trigger_id}/activate'
     do_get_request(url=url, authenticate=True)
 
 
@@ -865,7 +866,7 @@ def send_signed_message():
     if args.signature is not None:
         data['signature'] = args.signature
 
-    url = '{spellbook_uri}/spellbook/triggers/{trigger_id}/message'.format(spellbook_uri=get_spellbook_uri(), trigger_id=args.trigger_id)
+    url = f'{get_spellbook_uri()}/spellbook/triggers/{args.trigger_id}/message'
     do_post_request(url=url, data=data)
 
 
@@ -887,16 +888,16 @@ def sign_message():
         print('Message is to long: maximum 255 characters!')
         return
 
-    url = '{spellbook_uri}/api/sign_message'.format(spellbook_uri=get_spellbook_uri())
+    url = f'{get_spellbook_uri()}/api/sign_message'
     do_post_request(url=url, data=data, authenticate=True)
 
 
 def check_triggers():
     """Check triggers and activate them if their conditions have been fulfilled."""
     if args.trigger_id is not None:
-        url = '{spellbook_uri}/spellbook/triggers/{trigger_id}/check'.format(spellbook_uri=get_spellbook_uri(), trigger_id=args.trigger_id)
+        url = f'{get_spellbook_uri()}/spellbook/triggers/{args.trigger_id}/check'
     else:
-        url = '{spellbook_uri}/spellbook/check_triggers'.format(spellbook_uri=get_spellbook_uri())
+        url = f'{get_spellbook_uri()}/spellbook/check_triggers'
 
     do_get_request(url=url, authenticate=True)
 
@@ -908,13 +909,13 @@ def check_triggers():
 
 def get_actions():
     """Retrieve and display the list of all configured actions."""
-    url = '{spellbook_uri}/spellbook/actions'.format(spellbook_uri=get_spellbook_uri())
+    url = f'{get_spellbook_uri()}/spellbook/actions'
     do_get_request(url=url)
 
 
 def get_action():
     """Retrieve and display the configuration of a specific action by its id."""
-    url = '{spellbook_uri}/spellbook/actions/{action_id}'.format(spellbook_uri=get_spellbook_uri(), action_id=args.action_id)
+    url = f'{get_spellbook_uri()}/spellbook/actions/{args.action_id}'
     do_get_request(url=url, authenticate=True)
 
 
@@ -1003,36 +1004,36 @@ def save_action():
         with open(args.distribution, 'r') as input_file:
             try:
                 distribution = simplejson.load(input_file)
-            except Exception as ex:
-                print('Distribution file %s is not a valid json file: %s' % (args.distribution, ex), file=sys.stderr)
+            except (ValueError, KeyError, TypeError, OSError) as ex:
+                print(f'Distribution file {args.distribution} is not a valid json file: {ex}', file=sys.stderr)
                 sys.exit(1)
 
         if valid_distribution(distribution):
             data['distribution'] = distribution
         else:
-            print('Distribution file does not contain a valid distribution: %s' % distribution, file=sys.stderr)
+            print(f'Distribution file does not contain a valid distribution: {distribution}', file=sys.stderr)
             print('Must be a dict where all keys are a valid address and the value is a integer greater than or equal to zero', file=sys.stderr)
             sys.exit(1)
 
-    url = '{spellbook_uri}/spellbook/actions/{action_id}'.format(spellbook_uri=get_spellbook_uri(), action_id=args.action_id)
+    url = f'{get_spellbook_uri()}/spellbook/actions/{args.action_id}'
     do_post_request(url=url, authenticate=True, data=data)
 
 
 def delete_action():
     """Delete a specific action from the Spellbook server by its id."""
-    url = '{spellbook_uri}/spellbook/actions/{action_id}'.format(spellbook_uri=get_spellbook_uri(), action_id=args.action_id)
+    url = f'{get_spellbook_uri()}/spellbook/actions/{args.action_id}'
     do_delete_request(url=url, authenticate=True)
 
 
 def run_action():
     """Run a specified action by its id."""
-    url = '{spellbook_uri}/spellbook/actions/{action_id}/run'.format(spellbook_uri=get_spellbook_uri(), action_id=args.action_id)
+    url = f'{get_spellbook_uri()}/spellbook/actions/{args.action_id}/run'
     do_get_request(url=url, authenticate=True)
 
 
 def get_reveal():
     """Retrieve and display the reveal text or link from a RevealSecret action."""
-    url = '{spellbook_uri}/spellbook/actions/{action_id}/reveal'.format(spellbook_uri=get_spellbook_uri(), action_id=args.action_id)
+    url = f'{get_spellbook_uri()}/spellbook/actions/{args.action_id}/reveal'
     do_get_request(url=url)
 
 
@@ -1044,17 +1045,17 @@ def get_logs():
 
 def get_hivemind():
     """Retrieve and display information about a specific hivemind by its id."""
-    url = '{spellbook_uri}/spellbook/hiveminds/{hivemind_id}'.format(spellbook_uri=get_spellbook_uri(), hivemind_id=args.hivemind_id)
+    url = f'{get_spellbook_uri()}/spellbook/hiveminds/{args.hivemind_id}'
     do_get_request(url=url)
 
 
 def specify_explorer(url):
     """Append the explorer query parameter to the URL if specified."""
     try:
-        explorer = getattr(args, 'explorer')
+        explorer = args.explorer
         if explorer is not None:
             url += '?' if '?' not in url else '&'
-            url += 'explorer={explorer}'.format(explorer=args.explorer)
+            url += f'explorer={args.explorer}'
     except AttributeError:
         pass
 
@@ -1069,8 +1070,8 @@ def do_get_request(url, authenticate=False, data=None):
     try:
         r = requests.get(url, headers=headers, json=data)
         print(r.text)
-    except Exception as ex:
-        print('GET %s failed: %s' % (url, ex), file=sys.stderr)
+    except (ValueError, KeyError, TypeError, OSError) as ex:
+        print(f'GET {url} failed: {ex}', file=sys.stderr)
         sys.exit(1)
 
 
@@ -1082,8 +1083,8 @@ def do_post_request(url, authenticate=False, data=None):
     try:
         r = requests.post(url, headers=headers, json=data)
         print(r.text)
-    except Exception as ex:
-        print('POST %s failed: %s' % (url, ex), file=sys.stderr)
+    except (ValueError, KeyError, TypeError, OSError) as ex:
+        print(f'POST {url} failed: {ex}', file=sys.stderr)
         sys.exit(1)
 
 
@@ -1095,8 +1096,8 @@ def do_delete_request(url, authenticate=False, data=None):
     try:
         r = requests.delete(url, headers=headers, json=data)
         print(r.text)
-    except Exception as ex:
-        print('DELETE %s failed: %s' % (url, ex), file=sys.stderr)
+    except (ValueError, KeyError, TypeError, OSError) as ex:
+        print(f'DELETE {url} failed: {ex}', file=sys.stderr)
         sys.exit(1)
 
 

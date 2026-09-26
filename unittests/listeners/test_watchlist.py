@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import os
-import simplejson
+from unittest.mock import mock_open, patch
+
 import pytest
-from unittest.mock import patch, mock_open
+import simplejson
 
 from listeners.watchlist import Watchlist
 
@@ -138,7 +138,7 @@ class TestSaveFile:
         wl.watchlist = {"addr1": {"SEND": "cmd"}}
 
         with patch("builtins.open", mock_open()) as mock_file:
-            mock_file.side_effect = IOError("disk full")
+            mock_file.side_effect = OSError("disk full")
             with pytest.raises(Exception, match="Failed to write data"):
                 wl.save_file()
 

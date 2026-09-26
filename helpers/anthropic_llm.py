@@ -7,7 +7,12 @@ import anthropic
 
 from helpers.llm_interface import LLMInterface
 from helpers.loghelpers import LOG
-from helpers.websockethelpers import broadcast_message, get_broadcast_channel, get_broadcast_sender
+from helpers.websockethelpers import (
+    broadcast_message,
+    get_broadcast_channel,
+    get_broadcast_sender,
+)
+
 from .textgenerationhelpers import parse_generation
 from .thinking_levels import THINKING_LEVEL_ANTHROPIC
 
@@ -21,7 +26,7 @@ ANTHROPIC_THINKING_MODELS = [
 
 class AnthropicLLM(LLMInterface):
     """Anthropic Claude LLM client implementation."""
-    def __init__(self, model_name: str, api_key: str = ''):
+    def __init__(self, model_name: str, api_key: str | None = ''):
         super().__init__(model_name)
 
         self.client = anthropic.Anthropic(api_key=api_key)
@@ -121,11 +126,11 @@ class AnthropicLLM(LLMInterface):
                         data = {'message': completion.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion.lstrip())}
                         broadcast_message(message=json.dumps(data), channel=get_broadcast_channel())
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, OSError) as e:
             LOG.error(f'Error connecting to Anthropic: {e}')
             return 'Error: Unable to connect to Anthropic.\n', {}
 
-        print('')
+        print()
 
         # Broadcast end of message message to clear the streaming widget in the UI
         data = {'message': '<|end of message|>', 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation('')}

@@ -1,11 +1,10 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Abstract base class for blockchain explorer API implementations."""
 
-from abc import abstractmethod, ABCMeta
+from abc import ABCMeta, abstractmethod
 
 
-class ExplorerAPI(object):
+class ExplorerAPI:
     """
     Abstract base class defining the interface for blockchain explorer APIs.
 
@@ -26,7 +25,6 @@ class ExplorerAPI(object):
         """
         Get the latest block
         """
-        pass
 
     @abstractmethod
     def get_block_by_height(self, height):
@@ -35,7 +33,6 @@ class ExplorerAPI(object):
 
         :param height: The height of the block
         """
-        pass
 
     @abstractmethod
     def get_block_by_hash(self, block_hash):
@@ -44,7 +41,6 @@ class ExplorerAPI(object):
 
         :param block_hash: The block hash
         """
-        pass
 
     @abstractmethod
     def get_transactions(self, address):
@@ -53,7 +49,6 @@ class ExplorerAPI(object):
 
         :param address: The address
         """
-        pass
 
     @abstractmethod
     def get_balance(self, address):
@@ -62,7 +57,6 @@ class ExplorerAPI(object):
 
         :param address: The address
         """
-        pass
 
     @abstractmethod
     def get_utxos(self, address, confirmations=3):
@@ -72,7 +66,6 @@ class ExplorerAPI(object):
         :param address: The address
         :param confirmations: The minimum number of confirmations
         """
-        pass
 
     @abstractmethod
     def get_transaction(self, txid):
@@ -81,7 +74,6 @@ class ExplorerAPI(object):
 
         :param txid: The transaction id
         """
-        pass
 
     @abstractmethod
     def get_prime_input_address(self, txid):
@@ -90,7 +82,6 @@ class ExplorerAPI(object):
 
         :param txid: The transaction id
         """
-        pass
 
     def get_block(self, height_or_hash):
         """

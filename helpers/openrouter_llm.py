@@ -3,13 +3,18 @@
 import sys
 from pprint import pprint
 
-from openai import OpenAI
 import simplejson
+from openai import OpenAI, OpenAIError
 
+from helpers.configurationhelpers import get_openrouter_api_key
 from helpers.llm_interface import LLMInterface
 from helpers.loghelpers import LOG
-from helpers.websockethelpers import broadcast_message, get_broadcast_channel, get_broadcast_sender
-from helpers.configurationhelpers import get_openrouter_api_key
+from helpers.websockethelpers import (
+    broadcast_message,
+    get_broadcast_channel,
+    get_broadcast_sender,
+)
+
 from .textgenerationhelpers import parse_generation
 from .thinking_levels import THINKING_LEVEL_OPENROUTER
 
@@ -137,11 +142,11 @@ class OpenRouterLLM(LLMInterface):
                 data = {'message': completion.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion.lstrip())}
                 broadcast_message(message=simplejson.dumps(data), channel=get_broadcast_channel())
 
-        except Exception as e:
+        except (OpenAIError, ValueError, KeyError, TypeError, OSError) as e:
             LOG.error(f'Error connecting to OpenRouter LLM: {e}')
             return 'Error: Unable to connect to OpenRouter.\n'
 
-        print('')
+        print()
 
         # Broadcast end of message message to clear the streaming widget in the UI
         data = {'message': '<|end of message|>', 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation('')}

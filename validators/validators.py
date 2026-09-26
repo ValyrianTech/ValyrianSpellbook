@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Validation functions for Bitcoin addresses, transactions, and various input types."""
 
-import re
 import os
+import re
+
 from helpers.bech32 import bech32_decode
 from helpers.loghelpers import LOG
 
@@ -121,12 +121,12 @@ def valid_youtube_id(youtube):
 
 def valid_status(status):
     """Check if the given status is one of the allowed trigger status values."""
-    return True if status in ['Pending', 'Active', 'Disabled', 'Succeeded', 'Failed'] else False
+    return status in ['Pending', 'Active', 'Disabled', 'Succeeded', 'Failed']
 
 
 def valid_visibility(visibility):
     """Check if the given visibility is either 'Public' or 'Private'."""
-    return True if visibility in ['Public', 'Private'] else False
+    return visibility in ['Public', 'Private']
 
 
 def valid_private_key(private_key):  # Todo better validation
@@ -139,26 +139,25 @@ def valid_distribution(distribution):
     if not isinstance(distribution, dict) or len(distribution) == 0:
         return False
 
-    return all([valid_address(key) and valid_amount(value) for key, value in distribution.items()])
+    return all(valid_address(key) and valid_amount(value) for key, value in distribution.items())
 
 
 def valid_outputs(outputs):
     """Check if the given outputs list contains valid (address, amount) pairs."""
     valid = False
 
-    if isinstance(outputs, list):
-        if len(outputs) >= 1:
-            for recipient in outputs:
-                if isinstance(recipient, (tuple, list)):
-                    if len(recipient) == 2:
-                        if valid_address(recipient[0]) and isinstance(recipient[1], int) and recipient[1] > 0:
-                            valid = True
-                        else:
-                            valid = False
-                            break
+    if isinstance(outputs, list) and len(outputs) >= 1:
+        for recipient in outputs:
+            if isinstance(recipient, (tuple, list)):
+                if len(recipient) == 2:
+                    if valid_address(recipient[0]) and isinstance(recipient[1], int) and recipient[1] > 0:
+                        valid = True
                     else:
                         valid = False
                         break
+                else:
+                    valid = False
+                    break
     return valid
 
 
@@ -179,7 +178,7 @@ def valid_transaction_type(transaction_type):
 
 def valid_actions(actions):
     """Check if the given actions is a list of strings."""
-    return isinstance(actions, list) and all([isinstance(action_id, str) for action_id in actions])
+    return isinstance(actions, list) and all(isinstance(action_id, str) for action_id in actions)
 
 
 def valid_timestamp(timestamp):
@@ -198,16 +197,14 @@ def valid_script(script):
         return False
 
     if not script.endswith('.py'):
-        LOG.error('Script %s is invalid: does not end with .py extension' % script)
+        LOG.error(f'Script {script} is invalid: does not end with .py extension')
         return False
 
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    if os.path.isfile(os.path.join(project_root, 'spellbookscripts', script)):
-        return True
-    elif os.path.isfile(os.path.join(project_root, 'apps', script)):
+    if os.path.isfile(os.path.join(project_root, 'spellbookscripts', script)) or os.path.isfile(os.path.join(project_root, 'apps', script)):
         return True
     else:
-        LOG.error('Script %s is invalid: file not found in spellbookscripts or apps directory' % script)
+        LOG.error(f'Script {script} is invalid: file not found in spellbookscripts or apps directory')
         return False
 
 

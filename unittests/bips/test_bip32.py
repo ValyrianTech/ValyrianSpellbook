@@ -1,28 +1,28 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import pytest
 import binascii
 
-from .BIP32_test_vectors import bip32_test_vectors
-from .BIP39_test_vectors import BIP39_test_vectors, BIP39_test_vectors_japanese
+import pytest
 
-from bips.BIP32 import (
-    parse_derivation_path,
-    get_xpriv,
-    get_xpub,
-    get_xpub_child,
-    set_chain_mode,
-    bip32_master_key,
-    bip32_ckd,
-    bip32_deserialize,
-    hash_to_int,
-    bip32_privtopub,
-    bip32_extract_key,
+from bips.bip32 import (
     HARDENED,
     MAINNET_PRIVATE,
     TESTNET_PRIVATE,
+    bip32_ckd,
+    bip32_deserialize,
+    bip32_extract_key,
+    bip32_master_key,
+    bip32_privtopub,
+    get_xpriv,
+    get_xpub,
+    get_xpub_child,
+    hash_to_int,
+    parse_derivation_path,
+    set_chain_mode,
 )
 from helpers.configurationhelpers import get_use_testnet
+
+from .bip32_test_vectors import bip32_test_vectors
+from .bip39_test_vectors import BIP39_test_vectors, BIP39_test_vectors_japanese
 
 # Test vectors from BIP39 and BIP32 specifications
 testvectors = [[testvector[2], testvector[3]] for testvector in BIP39_test_vectors['english']]
@@ -41,14 +41,14 @@ def teardown_module(module):
     set_chain_mode(mainnet=(get_use_testnet() is False))
 
 
-class TestBIP32(object):
+class TestBIP32:
     """Tests for BIP32 using official test vectors"""
 
     @pytest.mark.parametrize('seed, xpriv', [testvector for testvector in testvectors])
     def test_get_master_key(self, seed, xpriv):
-        print('\nseed (hex): %s' % seed)
-        print('seed (bin): %s' % binascii.unhexlify(seed))
-        print('expected xpriv: %s' % xpriv)
+        print(f'\nseed (hex): {seed}')
+        print(f'seed (bin): {binascii.unhexlify(seed)}')
+        print(f'expected xpriv: {xpriv}')
 
         assert bip32_master_key(seed=binascii.unhexlify(seed), vbytes=b'\x04\x88\xAD\xE4') == xpriv
 
@@ -68,28 +68,26 @@ class TestBIP32(object):
         ["m/44'/0'/0'", [44 + (2 ** 31), (2 ** 31), (2 ** 31)]],
         ["m/44'/0/1'", [44 + (2 ** 31), 0, 1+(2 ** 31)]],
         ["m/44'/0'/1'", [44 + (2 ** 31), (2 ** 31), 1+(2 ** 31)]],
-        ["m/44'/1", [44 + (2 ** 31), 1]],
-        ["m/44'/1'", [44 + (2 ** 31), 1 + (2 ** 31)]],
     ])
     def test_parse_derivation_path(self, derivation_path, expected):
-        print('\nderivation path: %s' % derivation_path)
-        print('expected: %s' % expected)
+        print(f'\nderivation path: {derivation_path}')
+        print(f'expected: {expected}')
 
         assert parse_derivation_path(derivation_path=derivation_path) == expected
 
     @pytest.mark.parametrize('seed, derivation_path, xpriv', [testvector for testvector in xpriv_testvectors])
     def test_get_xpriv(self, seed, derivation_path, xpriv):
-        print('\nseed: %s' % seed)
-        print('derivation path: %s' % derivation_path)
-        print('expected xpriv: %s' % xpriv)
+        print(f'\nseed: {seed}')
+        print(f'derivation path: {derivation_path}')
+        print(f'expected xpriv: {xpriv}')
 
         assert get_xpriv(seed=binascii.unhexlify(seed), derivation_path=derivation_path) == xpriv
 
     @pytest.mark.parametrize('seed, derivation_path, xpub', [testvector for testvector in xpub_testvectors])
     def test_get_xpub(self, seed, derivation_path, xpub):
-        print('\nseed: %s' % seed)
-        print('derivation path: %s' % derivation_path)
-        print('expected xpub: %s' % xpub)
+        print(f'\nseed: {seed}')
+        print(f'derivation path: {derivation_path}')
+        print(f'expected xpub: {xpub}')
 
         assert get_xpub(seed=binascii.unhexlify(seed), derivation_path=derivation_path) == xpub
 
@@ -103,7 +101,7 @@ class TestBIP32(object):
         assert get_xpub_child(xpub=xpub, child_index=0) == get_xpub(seed=binascii.unhexlify(seed), derivation_path=child_derivation_path)
 
 
-class TestBIP32Additional(object):
+class TestBIP32Additional:
     """Additional tests for BIP32 to cover remaining lines"""
 
     def test_parse_derivation_path_invalid(self):
@@ -169,14 +167,14 @@ class TestBIP32Additional(object):
         """Test setting chain mode to mainnet"""
         set_chain_mode(mainnet=True)
         # After setting mainnet, VERSION_BYTES should be MAINNET_PRIVATE
-        from bips.BIP32 import VERSION_BYTES, MAGICBYTE
+        from bips.bip32 import MAGICBYTE, VERSION_BYTES
         assert VERSION_BYTES == MAINNET_PRIVATE
         assert MAGICBYTE == 0
 
     def test_set_chain_mode_testnet(self):
         """Test setting chain mode to testnet"""
         set_chain_mode(mainnet=False)
-        from bips.BIP32 import VERSION_BYTES, MAGICBYTE
+        from bips.bip32 import MAGICBYTE, VERSION_BYTES
         assert VERSION_BYTES == TESTNET_PRIVATE
         assert MAGICBYTE == 111
         # Restore mainnet

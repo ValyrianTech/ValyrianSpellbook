@@ -1,14 +1,14 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+from unittest import mock
+
 import pytest
-import mock
 
 import authentication
 
 NONCE = 1
 
 
-class TestAuthentication(object):
+class TestAuthentication:
     headers = None
     data = None
 
@@ -72,7 +72,7 @@ class TestAuthentication(object):
         assert authentication.check_authentication(self.headers, self.data) == authentication.AuthenticationStatus.INVALID_NONCE
 
 
-class TestAuthenticationStatus(object):
+class TestAuthenticationStatus:
     """Tests for AuthenticationStatus constants"""
 
     def test_authentication_status_constants(self):
@@ -86,7 +86,7 @@ class TestAuthenticationStatus(object):
         assert authentication.AuthenticationStatus.INVALID_NONCE == 'Invalid nonce'
 
 
-class TestHashMessage(object):
+class TestHashMessage:
     """Tests for hash_message function"""
 
     def test_hash_message(self):
@@ -109,7 +109,7 @@ class TestHashMessage(object):
         assert result1 != result2
 
 
-class TestSignature(object):
+class TestSignature:
     """Tests for signature function"""
 
     def test_signature_valid_secret(self):
@@ -128,7 +128,7 @@ class TestSignature(object):
         assert result1 == result2
 
 
-class TestInitializeApiKeysFile(object):
+class TestInitializeApiKeysFile:
     """Tests for initialize_api_keys_file function"""
 
     @mock.patch('builtins.open', new_callable=mock.mock_open)
@@ -163,7 +163,7 @@ class TestInitializeApiKeysFile(object):
         authentication.initialize_api_keys_file()
         saved_data = mock_save.call_args[0][1]
         assert len(saved_data) == 1
-        api_key = list(saved_data.keys())[0]
+        api_key = next(iter(saved_data.keys()))
         assert len(api_key) == 16
         assert 'secret' in saved_data[api_key]
         assert len(saved_data[api_key]['secret']) == 16

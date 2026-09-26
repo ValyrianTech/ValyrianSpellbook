@@ -1,15 +1,14 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Tests for webui.auth helpers."""
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from auth import (
     get_api_client,
     is_authenticated,
-    require_auth,
-    validate_credentials,
     login_user,
     logout_user,
+    require_auth,
+    validate_credentials,
 )
 
 

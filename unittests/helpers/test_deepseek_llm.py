@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 
 class TestDeepSeekLLM(unittest.TestCase):
@@ -29,7 +28,7 @@ class TestDeepSeekLLM(unittest.TestCase):
         from helpers.deepseek_llm import DeepSeekLLM
         
         mock_client = MagicMock()
-        mock_client.chat.completions.create.side_effect = Exception("API Error")
+        mock_client.chat.completions.create.side_effect = ValueError("API Error")
         mock_openai.return_value = mock_client
         
         llm = DeepSeekLLM(model_name='deepseek-chat', api_key='test-key')
@@ -38,6 +37,33 @@ class TestDeepSeekLLM(unittest.TestCase):
         result = llm.get_completion_text(messages)
         
         self.assertIn('Error', result)
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.deepseek_llm.OpenAI')
+    @patch('helpers.deepseek_llm.broadcast_message')
+    @patch('helpers.deepseek_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.deepseek_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.deepseek_llm.LOG')
+    def test_get_completion_text_openai_error(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_openai, mock_ws):
+        """Test get_completion_text handles OpenAIError via the general handler"""
+        from openai import OpenAIError
+
+        from helpers.deepseek_llm import DeepSeekLLM
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.side_effect = OpenAIError('API Error')
+        mock_openai.return_value = mock_client
+
+        llm = DeepSeekLLM(model_name='deepseek-chat', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result = llm.get_completion_text(messages)
+
+        self.assertIn('Error: Unable to connect to DeepSeek', result)
 
     @patch('helpers.llm_interface.init_websocket_server')
     @patch('helpers.deepseek_llm.OpenAI')
@@ -103,7 +129,7 @@ class TestDeepSeekLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         self.assertIn('<think>', result)
 
@@ -136,7 +162,7 @@ class TestDeepSeekLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         # Should have stopped early
         self.assertEqual(result, '')
@@ -211,7 +237,7 @@ class TestDeepSeekLLMAdvanced(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages, thinking_level='medium')
+        _result, _usage = llm.get_completion_text(messages, thinking_level='medium')
 
         call_kwargs = mock_client.chat.completions.create.call_args[1]
         self.assertIsNotNone(call_kwargs['extra_body'])
@@ -248,7 +274,7 @@ class TestDeepSeekLLMAdvanced(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages, thinking_level='off')
+        _result, _usage = llm.get_completion_text(messages, thinking_level='off')
 
         call_kwargs = mock_client.chat.completions.create.call_args[1]
         self.assertIsNotNone(call_kwargs['extra_body'])
@@ -263,8 +289,9 @@ class TestDeepSeekLLMAdvanced(unittest.TestCase):
     @patch('helpers.deepseek_llm.LOG')
     def test_api_connection_error_retry(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_sleep, mock_openai, mock_ws):
         """Test APIConnectionError triggers retry logic"""
-        from helpers.deepseek_llm import DeepSeekLLM
         from openai import APIConnectionError
+
+        from helpers.deepseek_llm import DeepSeekLLM
 
         mock_client = MagicMock()
         # Fail twice then succeed
@@ -291,7 +318,7 @@ class TestDeepSeekLLMAdvanced(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
 
         self.assertEqual(result, 'Hello!')
         self.assertEqual(mock_client.chat.completions.create.call_count, 3)
@@ -305,8 +332,9 @@ class TestDeepSeekLLMAdvanced(unittest.TestCase):
     @patch('helpers.deepseek_llm.LOG')
     def test_api_connection_error_all_retries_fail(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_sleep, mock_openai, mock_ws):
         """Test APIConnectionError exhausts all retries"""
-        from helpers.deepseek_llm import DeepSeekLLM
         from openai import APIConnectionError
+
+        from helpers.deepseek_llm import DeepSeekLLM
 
         mock_client = MagicMock()
         mock_client.chat.completions.create.side_effect = APIConnectionError(request=MagicMock())
@@ -367,7 +395,7 @@ class TestDeepSeekLLMAdvanced(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
 
         self.assertEqual(result, 'Recovered!')
         self.assertEqual(mock_client.chat.completions.create.call_count, 2)
@@ -403,7 +431,7 @@ class TestDeepSeekLLMAdvanced(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
 
         self.assertEqual(result, '')
         self.assertEqual(mock_client.chat.completions.create.call_count, 3)

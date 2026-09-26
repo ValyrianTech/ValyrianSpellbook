@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+from datetime import datetime, timezone
+from unittest import mock
+
 import pytest
-import mock
-from datetime import datetime
 
 from trigger.trigger import Trigger
 from trigger.triggertype import TriggerType
@@ -15,7 +15,7 @@ class ConcreteTrigger(Trigger):
         return True
 
 
-class TestTriggerType(object):
+class TestTriggerType:
     """Tests for TriggerType constants"""
 
     def test_trigger_type_constants(self):
@@ -36,7 +36,7 @@ class TestTriggerType(object):
         assert TriggerType.HTTPOPTIONSREQUEST == 'HTTPOptionsRequest'
 
 
-class TestTrigger(object):
+class TestTrigger:
     """Tests for the Trigger base class"""
 
     def test_trigger_init(self):
@@ -51,13 +51,13 @@ class TestTrigger(object):
     def test_trigger_configure_created_timestamp(self):
         trigger = ConcreteTrigger('test_trigger_id')
         trigger.configure(created=1609459200)
-        assert trigger.created == datetime.fromtimestamp(1609459200)
+        assert trigger.created == datetime.fromtimestamp(1609459200, tz=timezone.utc)
 
     def test_trigger_configure_created_default(self):
         trigger = ConcreteTrigger('test_trigger_id')
-        before = datetime.now()
+        before = datetime.now(tz=timezone.utc)
         trigger.configure()
-        after = datetime.now()
+        after = datetime.now(tz=timezone.utc)
         assert before <= trigger.created <= after
 
     @mock.patch('trigger.trigger.valid_trigger_type', return_value=True)
@@ -290,7 +290,7 @@ class TestTrigger(object):
         mock_script_instance = mock.MagicMock()
         mock_script_class.return_value = mock_script_instance
         mock_module = mock.MagicMock()
-        setattr(mock_module, 'testscript', mock_script_class)
+        mock_module.testscript = mock_script_class
         mock_import.return_value = mock_module
         
         # Mock isinstance to return True for SpellbookScript check
@@ -304,7 +304,7 @@ class TestTrigger(object):
 
     @mock.patch('trigger.trigger.valid_script', return_value=True)
     @mock.patch('os.path.isfile', return_value=True)
-    @mock.patch('importlib.import_module', side_effect=Exception('Import error'))
+    @mock.patch('importlib.import_module', side_effect=ValueError('Import error'))
     @mock.patch('platform.system', return_value='Linux')
     def test_trigger_load_script_import_error(self, mock_platform, mock_import, mock_isfile, mock_valid):
         trigger = ConcreteTrigger('test_trigger_id')
@@ -324,7 +324,7 @@ class TestTrigger(object):
             mock_script_instance = mock.MagicMock()
             mock_script_class.return_value = mock_script_instance
             mock_module = mock.MagicMock()
-            setattr(mock_module, 'testscript', mock_script_class)
+            mock_module.testscript = mock_script_class
             mock_import.return_value = mock_module
             
             with mock.patch('trigger.trigger.isinstance', return_value=True):
@@ -354,7 +354,7 @@ class TestTrigger(object):
         mock_script_instance = mock.MagicMock()
         mock_script_class.return_value = mock_script_instance
         mock_module = mock.MagicMock()
-        setattr(mock_module, 'testscript', mock_script_class)
+        mock_module.testscript = mock_script_class
         mock_import.return_value = mock_module
         
         trigger = ConcreteTrigger('test_trigger_id')

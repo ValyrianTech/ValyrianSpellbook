@@ -1,18 +1,17 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import pytest
 from unittest.mock import patch
 
+import pytest
+
 from randomaddress.randomaddress import (
-    random_number_from_blockhash,
-    random_address_from_sil,
-    random_address_from_sul,
+    RandomAddress,
     random_address_from_lbl,
     random_address_from_lrl,
     random_address_from_lsl,
-    RandomAddress,
+    random_address_from_sil,
+    random_address_from_sul,
+    random_number_from_blockhash,
 )
-
 
 VALID_ADDRESS = '1Bobk6PuJst6ot6ay2DcVugv8nxfJh5y'
 VALID_ADDRESS_2 = '1Alice3WtXqygdLq7BdvygPcQ9U2NQ9xX'

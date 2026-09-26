@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Helper functions for saving and loading JSON files with error handling."""
 
 import os
@@ -24,8 +23,8 @@ def save_to_json_file(filename, data):
     try:
         with open(filename, 'w') as output_file:
             simplejson.dump(data, output_file, indent=4, sort_keys=True)
-    except Exception as ex:
-        LOG.error('Failed to save data to json file %s: %s' % (filename, ex))
+    except (ValueError, KeyError, TypeError, OSError) as ex:
+        LOG.error(f'Failed to save data to json file {filename}: {ex}')
 
 
 def load_from_json_file(filename):
@@ -39,14 +38,14 @@ def load_from_json_file(filename):
     with open(filename, 'r') as input_file:
         try:
             data = simplejson.load(input_file)
-        except Exception as ex:
-            LOG.error('Failed to load %s: %s' % (filename, ex))
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Failed to load {filename}: {ex}')
             LOG.error('Sleeping for 1 second before retrying')
             time.sleep(1)
-            LOG.error('Retrying to load %s' % filename)
+            LOG.error(f'Retrying to load {filename}')
             try:
                 data = simplejson.load(input_file)
-            except Exception as ex:
-                LOG.error('Failed to load twice %s: %s' % (filename, ex))
+            except (ValueError, KeyError, TypeError, OSError) as ex:
+                LOG.error(f'Failed to load twice {filename}: {ex}')
 
     return data

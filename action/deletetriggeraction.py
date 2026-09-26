@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Action that deletes a trigger from the Spellbook."""
 
 from helpers.loghelpers import LOG
+
 from .action import Action
 from .actiontype import ActionType
 
@@ -11,7 +11,7 @@ from .actiontype import ActionType
 class DeleteTriggerAction(Action):
     """Action that deletes a trigger from the Spellbook."""
     def __init__(self, action_id):
-        super(DeleteTriggerAction, self).__init__(action_id=action_id)
+        super().__init__(action_id=action_id)
         self.action_type = ActionType.DELETETRIGGER
         self.trigger_ids = []
 
@@ -28,14 +28,14 @@ class DeleteTriggerAction(Action):
             LOG.error('Can not delete triggers: no trigger_ids set')
             return False
 
-        LOG.info('Deleting triggers %s' % self.trigger_ids)
+        LOG.info(f'Deleting triggers {self.trigger_ids}')
         configured_triggers = get_triggers()
         for trigger_id in self.trigger_ids:
             if trigger_id not in configured_triggers:
-                LOG.error('Can not delete trigger: unknown trigger id: %s' % self.trigger_ids)
+                LOG.error(f'Can not delete trigger: unknown trigger id: {self.trigger_ids}')
             else:
                 delete_trigger(trigger_id=trigger_id)
-                LOG.info('Trigger %s is deleted' % trigger_id)
+                LOG.info(f'Trigger {trigger_id} is deleted')
 
         return True
 
@@ -46,7 +46,7 @@ class DeleteTriggerAction(Action):
         :param config: A dict containing the configuration settings
                        - config['trigger_ids']  : A list of trigger_ids to delete
         """
-        super(DeleteTriggerAction, self).configure(**config)
+        super().configure(**config)
         if 'trigger_ids' in config:
             self.trigger_ids = config['trigger_ids']
 
@@ -56,6 +56,6 @@ class DeleteTriggerAction(Action):
 
         :return: A dict containing the configuration settings
         """
-        ret = super(DeleteTriggerAction, self).json_encodable()
+        ret = super().json_encodable()
         ret.update({'trigger_ids': self.trigger_ids})
         return ret

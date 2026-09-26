@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Valyrian Spellbook Web UI - FastAPI Application
 
@@ -13,13 +12,12 @@ import sys
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from config import settings
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from routers import actions, blockchain, dashboard, explorers, llms, triggers
 from starlette.middleware.sessions import SessionMiddleware
-
-from config import settings
-from routers import dashboard, triggers, actions, llms, explorers, blockchain
 
 # Create FastAPI app
 app = FastAPI(

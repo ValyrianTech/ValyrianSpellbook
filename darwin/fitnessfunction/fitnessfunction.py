@@ -1,11 +1,10 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Base fitness function class for Darwin."""
 
-from abc import abstractmethod, ABCMeta
+from abc import ABCMeta, abstractmethod
 
 
-class FitnessFunction(object):
+class FitnessFunction:
     """Base fitness function class for Darwin."""
     __metaclass__ = ABCMeta
 
@@ -15,7 +14,6 @@ class FitnessFunction(object):
     @abstractmethod
     def fitness(self, model):
         """Fitness."""
-        pass
 
     def log_results(self, filename):
         """Log results."""
@@ -23,10 +21,9 @@ class FitnessFunction(object):
 
     def darwin_init_actions(self):
         """Darwin init actions."""
-        pass
 
 
-class Fitness(object):
+class Fitness:
     """Holds a fitness value and associated data for a genome."""
     def __init__(self, value, data):
         self.value = value

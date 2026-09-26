@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import mock
+from unittest import mock
 
-from action.revealsecretaction import RevealSecretAction
 from action.actiontype import ActionType
+from action.revealsecretaction import RevealSecretAction
 
 
-class TestRevealSecretAction(object):
+class TestRevealSecretAction:
     """Tests for RevealSecretAction"""
 
     def test_revealsecretaction_init(self):

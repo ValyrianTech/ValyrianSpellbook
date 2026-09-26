@@ -1,19 +1,34 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import pytest
 
 from helpers.py3specials import (
-    bin_dbl_sha256, lpad, get_code_string, changebase,
-    bin_to_b58check, bytes_to_hex_string, safe_from_hex,
-    from_int_representation_to_bytes, from_int_to_byte,
-    from_byte_to_int, from_string_to_bytes, safe_hexlify,
-    encode, decode, random_string, print_to_stderr,
-    string_types, string_or_bytes_types, int_types,
-    code_strings, two, three, four
+    bin_dbl_sha256,
+    bin_to_b58check,
+    bytes_to_hex_string,
+    changebase,
+    code_strings,
+    decode,
+    encode,
+    four,
+    from_byte_to_int,
+    from_int_representation_to_bytes,
+    from_int_to_byte,
+    from_string_to_bytes,
+    get_code_string,
+    int_types,
+    lpad,
+    print_to_stderr,
+    random_string,
+    safe_from_hex,
+    safe_hexlify,
+    string_or_bytes_types,
+    string_types,
+    three,
+    two,
 )
 
 
-class TestConstants(object):
+class TestConstants:
     """Tests for module constants"""
 
     def test_string_types(self):
@@ -39,7 +54,7 @@ class TestConstants(object):
         assert 256 in code_strings
 
 
-class TestBinDblSha256(object):
+class TestBinDblSha256:
     """Tests for bin_dbl_sha256 function"""
 
     def test_bin_dbl_sha256_bytes(self):
@@ -53,7 +68,7 @@ class TestBinDblSha256(object):
         assert len(result) == 32
 
 
-class TestLpad(object):
+class TestLpad:
     """Tests for lpad function"""
 
     def test_lpad_shorter(self):
@@ -70,7 +85,7 @@ class TestLpad(object):
         assert result == 'abcdefg'
 
 
-class TestGetCodeString(object):
+class TestGetCodeString:
     """Tests for get_code_string function"""
 
     def test_get_code_string_binary(self):
@@ -97,7 +112,7 @@ class TestGetCodeString(object):
             get_code_string(7)
 
 
-class TestChangebase(object):
+class TestChangebase:
     """Tests for changebase function"""
 
     def test_changebase_same_base(self):
@@ -117,7 +132,7 @@ class TestChangebase(object):
         assert result == 'ff'
 
 
-class TestBinToB58check(object):
+class TestBinToB58check:
     """Tests for bin_to_b58check function"""
 
     def test_bin_to_b58check_zero_magicbyte(self):
@@ -143,7 +158,7 @@ class TestBinToB58check(object):
         assert result.startswith('1')
 
 
-class TestBytesToHexString(object):
+class TestBytesToHexString:
     """Tests for bytes_to_hex_string function"""
 
     def test_bytes_to_hex_string_bytes(self):
@@ -155,7 +170,7 @@ class TestBytesToHexString(object):
         assert result == 'already_string'
 
 
-class TestSafeFromHex(object):
+class TestSafeFromHex:
     """Tests for safe_from_hex function"""
 
     def test_safe_from_hex(self):
@@ -167,7 +182,7 @@ class TestSafeFromHex(object):
         assert result == b'\xaa\xbb\xcc'
 
 
-class TestFromIntRepresentationToBytes(object):
+class TestFromIntRepresentationToBytes:
     """Tests for from_int_representation_to_bytes function"""
 
     def test_from_int_representation_to_bytes(self):
@@ -179,7 +194,7 @@ class TestFromIntRepresentationToBytes(object):
         assert result == b'0'
 
 
-class TestFromIntToByte(object):
+class TestFromIntToByte:
     """Tests for from_int_to_byte function"""
 
     def test_from_int_to_byte(self):
@@ -195,7 +210,7 @@ class TestFromIntToByte(object):
         assert result == b'\xff'
 
 
-class TestFromByteToInt(object):
+class TestFromByteToInt:
     """Tests for from_byte_to_int function"""
 
     def test_from_byte_to_int(self):
@@ -203,7 +218,7 @@ class TestFromByteToInt(object):
         assert result == 65
 
 
-class TestFromStringToBytes(object):
+class TestFromStringToBytes:
     """Tests for from_string_to_bytes function"""
 
     def test_from_string_to_bytes_string(self):
@@ -215,7 +230,7 @@ class TestFromStringToBytes(object):
         assert result == b'hello'
 
 
-class TestSafeHexlify(object):
+class TestSafeHexlify:
     """Tests for safe_hexlify function"""
 
     def test_safe_hexlify(self):
@@ -224,7 +239,7 @@ class TestSafeHexlify(object):
         assert isinstance(result, str)
 
 
-class TestEncode(object):
+class TestEncode:
     """Tests for encode function"""
 
     def test_encode_base10(self):
@@ -258,7 +273,7 @@ class TestEncode(object):
         assert result == b'\x00\x00\x00\x01'
 
 
-class TestDecode(object):
+class TestDecode:
     """Tests for decode function"""
 
     def test_decode_base10(self):
@@ -286,7 +301,7 @@ class TestDecode(object):
         assert result == 255
 
 
-class TestRandomString(object):
+class TestRandomString:
     """Tests for random_string function"""
 
     def test_random_string(self):
@@ -299,7 +314,7 @@ class TestRandomString(object):
         assert result1 != result2
 
 
-class TestPrintToStderr(object):
+class TestPrintToStderr:
     """Tests for print_to_stderr function"""
 
     def test_print_to_stderr(self, capsys):

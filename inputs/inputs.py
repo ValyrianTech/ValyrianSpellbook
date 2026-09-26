@@ -1,10 +1,14 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Functions for building Simplified Inputs Lists (SIL), profiles, and Simplified UTXO Lists (SUL) from blockchain data."""
 
 import re
+
 from data import data
-from validators.validators import valid_address, valid_op_return, valid_blockprofile_message
+from validators.validators import (
+    valid_address,
+    valid_blockprofile_message,
+    valid_op_return,
+)
 
 
 def get_sil(address, block_height=0):
@@ -22,7 +26,7 @@ def get_sil(address, block_height=0):
     if 'transactions' in txs_data:
         return {'SIL': txs_2_sil(txs_data['transactions'], block_height)}
     else:
-        return {'error': 'Unable to retrieve transactions of address %s' % address}
+        return {'error': f'Unable to retrieve transactions of address {address}'}
 
 
 def txs_2_sil(txs, block_height=0):
@@ -42,7 +46,7 @@ def txs_2_sil(txs, block_height=0):
     for tx in txs:
         if tx['receiving'] is True and tx['block_height'] is not None and (block_height == 0 or tx['block_height'] <= block_height):
             recurring = False
-            for i in range(0, len(sil)):
+            for i in range(len(sil)):
                 if sil[i][0] == tx['prime_input_address']:
                     sil[i][1] += tx['receivedValue']
                     recurring = True
@@ -73,7 +77,7 @@ def get_profile(address, block_height=0):
     if 'transactions' in txs_data:
         return {'profile': txs_to_profile(txs_data['transactions'], address, block_height)}
     else:
-        return {'error': 'Unable to retrieve transactions of address %s' % address}
+        return {'error': f'Unable to retrieve transactions of address {address}'}
 
 
 def txs_to_profile(txs, address, block_height=0):
@@ -159,7 +163,7 @@ def get_sul(address, confirmations=1):
         sul = utxos_to_sul(utxos_data['utxos'])
         return {'SUL': sul} if 'error' not in sul else {'error': sul['error']}
     else:
-        return {'error': 'Unable to retrieve utxos of address %s' % address}
+        return {'error': f'Unable to retrieve utxos of address {address}'}
 
 
 def utxos_to_sul(utxos):
@@ -185,7 +189,7 @@ def utxos_to_sul(utxos):
             if not recurring:
                 sul.append([prime_input_address, utxo['value'], 0])  # Third value is a placeholder for the share
         else:
-            return {'error': 'Unable to retrieve prime input address of txid %s' % utxo['output_hash']}
+            return {'error': 'Unable to retrieve prime input address of txid {}'.format(utxo['output_hash'])}
 
     # Calculate the share of each prime input address
     total = float(sum([row[1] for row in sul]))
@@ -208,14 +212,14 @@ def get_sil_section(address, from_block_height, to_block_height):
         return {'error': 'from_block_height must be greater than 0'}
 
     if to_block_height <= from_block_height-1:
-        return {'error': 'from_block_height must be before or equal to_block_height: %s -> %s' % (from_block_height, to_block_height)}
+        return {'error': f'from_block_height must be before or equal to_block_height: {from_block_height} -> {to_block_height}'}
 
     before_sil = get_sil(address=address, block_height=from_block_height-1)['SIL']  # must get the SIL of 1 block before the from_block_height
     after_sil = get_sil(address=address, block_height=to_block_height)['SIL']
 
     sil_section = []
     for i, row in enumerate(after_sil):
-        input_address, value, share, block_height = row
+        input_address, value, _share, block_height = row
         if len(before_sil)-1 >= i:
             difference = value - before_sil[i][1]
             sil_section.append([input_address, difference, 0, block_height])  # Third value is placeholder for the share

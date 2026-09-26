@@ -1,14 +1,14 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import pytest
-import mock
+from unittest import mock
 
-from action.sendtransactionaction import SendTransactionAction
+import pytest
+
 from action.actiontype import ActionType
+from action.sendtransactionaction import SendTransactionAction
 from action.transactiontype import TransactionType
 
 
-class TestSendTransactionAction(object):
+class TestSendTransactionAction:
     """Tests for SendTransactionAction"""
 
     def test_sendtransactionaction_init(self):
@@ -366,7 +366,7 @@ class TestSendTransactionAction(object):
         assert 'Unknown wallet type' in str(exc_info.value)
 
 
-class TestSendTransactionActionRun(object):
+class TestSendTransactionActionRun:
     """Tests for SendTransactionAction run method"""
 
     @mock.patch('action.sendtransactionaction.utxos')
@@ -436,7 +436,7 @@ class TestSendTransactionActionRun(object):
         assert not result
 
 
-class TestTransactionInput(object):
+class TestTransactionInput:
     """Tests for TransactionInput class"""
 
     def test_transaction_input_init(self):
@@ -456,7 +456,7 @@ class TestTransactionInput(object):
         assert tx_input.output == 'abc123:0'
 
 
-class TestTransactionOutput(object):
+class TestTransactionOutput:
     """Tests for TransactionOutput class"""
 
     def test_transaction_output_init(self):
@@ -466,11 +466,14 @@ class TestTransactionOutput(object):
         assert tx_output.value == 45000
 
 
-class TestConstructTransactionOutputs(object):
+class TestConstructTransactionOutputs:
     """Tests for construct_transaction_outputs static method"""
 
     def test_with_receiving_outputs(self):
-        from action.sendtransactionaction import SendTransactionAction, TransactionOutput
+        from action.sendtransactionaction import (
+            SendTransactionAction,
+            TransactionOutput,
+        )
         receiving = [TransactionOutput('addr1', 10000), TransactionOutput('addr2', 20000)]
         outputs = SendTransactionAction.construct_transaction_outputs(receiving_outputs=receiving)
         assert len(outputs) == 2
@@ -478,7 +481,10 @@ class TestConstructTransactionOutputs(object):
         assert outputs[1]['address'] == 'addr2'
 
     def test_with_change_output(self):
-        from action.sendtransactionaction import SendTransactionAction, TransactionOutput
+        from action.sendtransactionaction import (
+            SendTransactionAction,
+            TransactionOutput,
+        )
         receiving = [TransactionOutput('addr1', 10000)]
         change = TransactionOutput('change_addr', 5000)
         outputs = SendTransactionAction.construct_transaction_outputs(
@@ -490,7 +496,10 @@ class TestConstructTransactionOutputs(object):
         assert outputs[1]['address'] == 'addr1'
 
     def test_with_spellbook_fee_output(self):
-        from action.sendtransactionaction import SendTransactionAction, TransactionOutput
+        from action.sendtransactionaction import (
+            SendTransactionAction,
+            TransactionOutput,
+        )
         receiving = [TransactionOutput('addr1', 10000)]
         fee = TransactionOutput('fee_addr', 1000)
         outputs = SendTransactionAction.construct_transaction_outputs(
@@ -502,7 +511,10 @@ class TestConstructTransactionOutputs(object):
         assert outputs[1]['address'] == 'fee_addr'
 
     def test_with_zero_value_outputs(self):
-        from action.sendtransactionaction import SendTransactionAction, TransactionOutput
+        from action.sendtransactionaction import (
+            SendTransactionAction,
+            TransactionOutput,
+        )
         receiving = [TransactionOutput('addr1', 0)]  # Zero value
         change = TransactionOutput('change_addr', 0)  # Zero value
         outputs = SendTransactionAction.construct_transaction_outputs(
@@ -512,7 +524,10 @@ class TestConstructTransactionOutputs(object):
         assert len(outputs) == 0
 
     def test_with_all_outputs(self):
-        from action.sendtransactionaction import SendTransactionAction, TransactionOutput
+        from action.sendtransactionaction import (
+            SendTransactionAction,
+            TransactionOutput,
+        )
         receiving = [TransactionOutput('addr1', 10000), TransactionOutput('addr2', 20000)]
         change = TransactionOutput('change_addr', 5000)
         fee = TransactionOutput('fee_addr', 1000)
@@ -527,7 +542,7 @@ class TestConstructTransactionOutputs(object):
         assert outputs[3]['address'] == 'fee_addr'
 
 
-class TestGetDistributionAdvanced(object):
+class TestGetDistributionAdvanced:
     """Advanced tests for get_distribution method"""
 
     @mock.patch('action.sendtransactionaction.valid_amount')
@@ -634,7 +649,7 @@ class TestGetDistributionAdvanced(object):
         assert distribution == {'addr1': 80, 'addr2': 20}
 
 
-class TestGetReceivingOutputs(object):
+class TestGetReceivingOutputs:
     """Tests for get_receiving_outputs method"""
 
     @mock.patch('action.sendtransactionaction.valid_amount')
@@ -689,7 +704,7 @@ class TestGetReceivingOutputs(object):
         assert total == 100
 
 
-class TestLogTransactionInfo(object):
+class TestLogTransactionInfo:
     """Tests for log_transaction_info method"""
 
     def test_log_transaction_info_send_all(self):
@@ -727,7 +742,7 @@ class TestLogTransactionInfo(object):
         action.log_transaction_info(tx_inputs, tx_outputs)
 
 
-class TestIsFeeAcceptable(object):
+class TestIsFeeAcceptable:
     """Tests for is_fee_acceptable static method"""
 
     @mock.patch('action.sendtransactionaction.get_max_tx_fee_percentage', return_value=0)
@@ -749,7 +764,7 @@ class TestIsFeeAcceptable(object):
         assert not result
 
 
-class TestSendTransactionActionRunDeep(object):
+class TestSendTransactionActionRunDeep:
     """Tests for deeper run method paths"""
 
     @mock.patch('action.sendtransactionaction.push_tx')
@@ -1051,7 +1066,7 @@ class TestSendTransactionActionRunDeep(object):
         assert not result
 
 
-class TestConstructTransactionInputs(object):
+class TestConstructTransactionInputs:
     """Tests for construct_transaction_inputs method"""
 
     def test_construct_transaction_inputs_with_utxos(self):
@@ -1077,7 +1092,7 @@ class TestConstructTransactionInputs(object):
         assert tx_inputs == []
 
 
-class TestGetDistributionSend2LAL(object):
+class TestGetDistributionSend2LAL:
     """Tests for Send2LAL distribution type"""
 
     @mock.patch('action.sendtransactionaction.valid_amount')
@@ -1155,7 +1170,7 @@ class TestGetDistributionSend2LAL(object):
         assert 'invalid LAL' in str(exc_info.value)
 
 
-class TestGetReceivingOutputsRemaining(object):
+class TestGetReceivingOutputsRemaining:
     """Tests for get_receiving_outputs with remaining amount handling"""
 
     @mock.patch('action.sendtransactionaction.valid_amount')
@@ -1175,7 +1190,7 @@ class TestGetReceivingOutputsRemaining(object):
         assert total == 101
 
 
-class TestConfigureChangeAddress(object):
+class TestConfigureChangeAddress:
     """Tests for change_address configuration"""
 
     @mock.patch('action.sendtransactionaction.valid_address')
@@ -1186,7 +1201,7 @@ class TestConfigureChangeAddress(object):
         assert action.receiving_address == '1ChangeAddress'
 
 
-class TestFixedFeeInvalid(object):
+class TestFixedFeeInvalid:
     """Tests for invalid fixed fee"""
 
     @mock.patch('action.sendtransactionaction.get_private_key')
@@ -1220,7 +1235,7 @@ class TestFixedFeeInvalid(object):
         assert 'Invalid fixed transaction fee' in str(exc_info.value)
 
 
-class TestGetDistributionValidationErrors(object):
+class TestGetDistributionValidationErrors:
     """Tests for get_distribution validation error paths"""
 
     @mock.patch('action.sendtransactionaction.valid_amount')
@@ -1513,7 +1528,7 @@ class TestGetDistributionValidationErrors(object):
         assert 'invalid registration_block_height' in str(exc_info.value)
 
 
-class TestRunEdgeCases(object):
+class TestRunEdgeCases:
     """Tests for run() method edge cases covering remaining uncovered lines"""
 
     @mock.patch('action.sendtransactionaction.push_tx')

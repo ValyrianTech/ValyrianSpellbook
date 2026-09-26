@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Gene-level mutation operations for Darwin."""
 
 import random
+
 import numpy as np
 
 
-class GeneMutation(object):
+class GeneMutation:
     """Gene-level mutation operations for Darwin."""
     def __init__(self, gene):
         self.gene = gene
@@ -20,17 +20,17 @@ class GeneMutation(object):
 class BooleanGeneMutation(GeneMutation):
     """Mutation operations specific to boolean genes."""
     def __init__(self, gene):
-        super(BooleanGeneMutation, self).__init__(gene)
+        super().__init__(gene)
 
     def flip(self):
         """Flip."""
-        self.gene.data = False if self.gene.data is True else True
+        self.gene.data = not self.gene.data is True
 
 
 class IntegerGeneMutation(GeneMutation):
     """Mutation operations specific to integer genes."""
     def __init__(self, gene):
-        super(IntegerGeneMutation, self).__init__(gene)
+        super().__init__(gene)
 
     def boundary(self):
         """Boundary."""
@@ -53,7 +53,7 @@ class IntegerGeneMutation(GeneMutation):
 class FloatGeneMutation(GeneMutation):
     """Mutation operations specific to float genes."""
     def __init__(self, gene):
-        super(FloatGeneMutation, self).__init__(gene)
+        super().__init__(gene)
 
     def boundary(self):
         """Boundary."""
@@ -76,7 +76,7 @@ class FloatGeneMutation(GeneMutation):
 class StringGeneMutation(GeneMutation):
     """Mutation operations specific to string genes."""
     def __init__(self, gene):
-        super(StringGeneMutation, self).__init__(gene)
+        super().__init__(gene)
 
     def bitstring(self):
         """Bitstring."""

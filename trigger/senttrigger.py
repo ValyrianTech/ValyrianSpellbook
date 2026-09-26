@@ -1,18 +1,18 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Trigger that activates when funds are sent from an address."""
 
-from .trigger import Trigger
-from .triggertype import TriggerType
 from data.data import balance
 from validators.validators import valid_address, valid_amount
+
+from .trigger import Trigger
+from .triggertype import TriggerType
 
 
 class SentTrigger(Trigger):
     """Trigger that activates when funds are sent from an address."""
     def __init__(self, trigger_id):
-        super(SentTrigger, self).__init__(trigger_id=trigger_id)
+        super().__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.SENT
         self.address = None
         self.amount = None
@@ -29,11 +29,11 @@ class SentTrigger(Trigger):
             # Something went wrong during retrieval of balance
             return False
 
-        return True if self.amount <= total_sent else False
+        return self.amount <= total_sent
 
     def configure(self, **config):
         """Configure."""
-        super(SentTrigger, self).configure(**config)
+        super().configure(**config)
         if 'address' in config and valid_address(config['address']):
             self.address = config['address']
 
@@ -42,7 +42,7 @@ class SentTrigger(Trigger):
 
     def json_encodable(self):
         """Json encodable."""
-        ret = super(SentTrigger, self).json_encodable()
+        ret = super().json_encodable()
 
         ret.update({
             'address': self.address,

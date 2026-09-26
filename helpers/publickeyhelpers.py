@@ -1,12 +1,20 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Helper functions for encoding, decoding, and manipulating Bitcoin public keys."""
 import binascii
 import hashlib
 
-from .py3specials import bin_to_b58check, decode, encode, four, from_byte_to_int, from_int_to_byte, safe_from_hex, three, two
-
-from .jacobianhelpers import fast_add, A, B, P
+from .jacobianhelpers import A, B, P, fast_add
+from .py3specials import (
+    bin_to_b58check,
+    decode,
+    encode,
+    four,
+    from_byte_to_int,
+    from_int_to_byte,
+    safe_from_hex,
+    three,
+    two,
+)
 from .py_ripemd160 import ripemd160
 
 
@@ -27,7 +35,7 @@ def get_pubkey_format(pub):
     elif len(pub) == 128:
         return 'hex_electrum'
     else:
-        raise Exception("Pubkey not in recognized format")
+        raise ValueError("Pubkey not in recognized format")
 
 
 def encode_pubkey(pub, formt):
@@ -49,7 +57,7 @@ def encode_pubkey(pub, formt):
     elif formt == 'hex_electrum':
         return encode(pub[0], 16, 64) + encode(pub[1], 16, 64)
     else:
-        raise Exception("Invalid format!")
+        raise ValueError("Invalid format!")
 
 
 def decode_pubkey(pub, formt=None):
@@ -75,7 +83,7 @@ def decode_pubkey(pub, formt=None):
     elif formt == 'hex_electrum':
         return decode(pub[:64], 16), decode(pub[64:128], 16)
     else:
-        raise Exception("Invalid format!")
+        raise ValueError("Invalid format!")
 
 
 def add_pubkeys(p1, p2):
@@ -117,6 +125,6 @@ def bin_hash160(string):
     intermed = hashlib.sha256(string).digest()
     try:
         digest = ripemd160(intermed)
-    except Exception as ex:
-        raise Exception('Unable to get ripemd160 digest: %s' % ex)
+    except (ValueError, KeyError, TypeError, OSError) as ex:
+        raise ValueError(f'Unable to get ripemd160 digest: {ex}')
     return digest

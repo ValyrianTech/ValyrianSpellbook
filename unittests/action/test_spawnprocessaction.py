@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import mock
+from unittest import mock
 
-from action.spawnprocessaction import SpawnProcessAction
 from action.actiontype import ActionType
+from action.spawnprocessaction import SpawnProcessAction
 
 
-class TestSpawnProcessAction(object):
+class TestSpawnProcessAction:
     """Tests for SpawnProcessAction"""
 
     def test_spawnprocessaction_init(self):
@@ -61,7 +60,7 @@ class TestSpawnProcessAction(object):
 
     @mock.patch('action.spawnprocessaction.RunCommandProcess')
     def test_spawnprocessaction_run_exception(self, mock_process_class):
-        mock_process_class.side_effect = Exception('Process error')
+        mock_process_class.side_effect = ValueError('Process error')
 
         action = SpawnProcessAction('test_spawn_action')
         action.configure(run_command='echo hello')

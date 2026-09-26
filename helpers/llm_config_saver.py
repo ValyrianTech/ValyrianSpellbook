@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Lightweight LLM configuration saver module.
 
@@ -7,12 +6,12 @@ This module provides a minimal interface for saving LLM configurations
 without importing heavy dependencies that create background threads.
 """
 
-import os
 import json
-from typing import Dict, Any
+import os
+from typing import Any
 
 
-def load_from_json_file(filename: str) -> Dict[str, Any]:
+def load_from_json_file(filename: str) -> dict[str, Any]:
     """Load data from a JSON file."""
     try:
         with open(filename, 'r', encoding='utf-8') as f:
@@ -21,7 +20,7 @@ def load_from_json_file(filename: str) -> Dict[str, Any]:
         return {}
 
 
-def save_to_json_file(data: Dict[str, Any], filename: str) -> None:
+def save_to_json_file(data: dict[str, Any], filename: str) -> None:
     """Save data to a JSON file."""
     # Ensure directory exists
     os.makedirs(os.path.dirname(filename), exist_ok=True)
@@ -40,13 +39,13 @@ def get_llms_file_path() -> str:
     )
 
 
-def load_llms() -> Dict[str, Any]:
+def load_llms() -> dict[str, Any]:
     """Load LLM configurations from the JSON file."""
     llms_file = get_llms_file_path()
     return load_from_json_file(llms_file) if os.path.exists(llms_file) else {}
 
 
-def save_llm_config_lightweight(llm_name: str, llm_config: Dict[str, Any]) -> None:
+def save_llm_config_lightweight(llm_name: str, llm_config: dict[str, Any]) -> None:
     """
     Save LLM configuration to the JSON file.
     
@@ -69,7 +68,7 @@ def save_llm_config_lightweight(llm_name: str, llm_config: Dict[str, Any]) -> No
     save_to_json_file(data=llms_data, filename=get_llms_file_path())
 
 
-def get_llm_config_lightweight(llm_name: str) -> Dict[str, Any]:
+def get_llm_config_lightweight(llm_name: str) -> dict[str, Any]:
     """Get LLM configuration from the JSON file."""
     llms_data = load_llms()
     return llms_data.get(llm_name, {})

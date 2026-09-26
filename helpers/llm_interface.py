@@ -1,6 +1,6 @@
 """Abstract LLM interface and utilities for loading LLM configurations and auto-routing."""
 import os
-from abc import abstractmethod, ABCMeta
+from abc import ABCMeta, abstractmethod
 
 from helpers.configurationhelpers import get_host, get_websocket_port
 from helpers.jsonhelpers import load_from_json_file
@@ -12,7 +12,7 @@ from helpers.websockethelpers import init_websocket_server
 if not os.environ.get('SKIP_WEBSOCKET_SERVER'):
     init_websocket_server(host=get_host(), port=get_websocket_port())
 
-class LLMInterface(object):
+class LLMInterface:
     """
     Abstract base class for all LLM implementations in the Spellbook.
 
@@ -54,7 +54,6 @@ class LLMInterface(object):
     @abstractmethod
     def get_completion_text(self, messages, stop, **kwargs):
         """Generate completion text from the LLM (implemented by subclasses)."""
-        pass
 
     def generate(self, messages, stop=None, **kwargs):
         """Generate a completion and wrap it in an LLMResult with usage metadata."""
@@ -108,7 +107,7 @@ def get_available_llms():
     available_llms_text = ''
     available_llms_names = []
     i = 0
-    for llm_name in llms_data.keys():
+    for llm_name in llms_data:
         if llms_data[llm_name].get('allow_auto_routing', False) is True:
             available_llms_text += f'{i}: {llm_name} -> {llms_data[llm_name]["description"]}\n'
             server_type = llms_data[llm_name].get('server_type', 'self-hosted')

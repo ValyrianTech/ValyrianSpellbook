@@ -1,7 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 from helpers.setupscripthelpers import spellbook_call
-
 
 print('Starting Spellbook integration test: bech32')
 print('----------------------------------------------\n')
@@ -17,9 +15,9 @@ testnet_P2WPKH = 'tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx'
 testnet_P2WSH = 'tb1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q0sl5k7'
 
 for explorer in configured_explorers:
-    response = spellbook_call('get_prime_input_address', txid, '-e=%s' % explorer)
+    response = spellbook_call('get_prime_input_address', txid, f'-e={explorer}')
     if response['prime_input_address'] is None:
-        print('%s does NOT support Bech32!' % explorer)
+        print(f'{explorer} does NOT support Bech32!')
 
 for explorer in configured_explorers:
-    response = spellbook_call('get_transactions', address, '-e=%s' % explorer)
+    response = spellbook_call('get_transactions', address, f'-e={explorer}')

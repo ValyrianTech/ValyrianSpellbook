@@ -1,17 +1,21 @@
 """Text-generation-webui (Oobabooga) LLM client using the OpenAI-compatible API."""
 
+import json
+import sys
 from pprint import pprint
 
 import requests
 import simplejson
 import sseclient
-import json
-import sys
 
 from helpers.llm_interface import LLMInterface
 from helpers.loghelpers import LOG
 from helpers.textgenerationhelpers import parse_generation
-from helpers.websockethelpers import broadcast_message, get_broadcast_channel, get_broadcast_sender
+from helpers.websockethelpers import (
+    broadcast_message,
+    get_broadcast_channel,
+    get_broadcast_sender,
+)
 
 
 class TextGenerationWebuiLLM(LLMInterface):
@@ -45,7 +49,7 @@ class TextGenerationWebuiLLM(LLMInterface):
                             prompt += '===Included image===\n'
 
         completion = ''
-        print('')
+        print()
         
         # Extract thinking_level from kwargs (text-generation-webui doesn't support thinking levels)
         thinking_level = kwargs.pop('thinking_level', None)
@@ -98,11 +102,11 @@ class TextGenerationWebuiLLM(LLMInterface):
                 data = {'message': completion.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion.lstrip())}
                 broadcast_message(message=simplejson.dumps(data), channel=get_broadcast_channel())
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, OSError) as e:
             LOG.error(f'Error connecting to LLM at {url}: {e}')
             return 'Error: text-generation-webui LLM is not running.\n'
 
-        print('')
+        print()
 
         # Broadcast end of message to clear the streaming widget in the UI
         data = {'message': '<|end of message|>', 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation('')}
