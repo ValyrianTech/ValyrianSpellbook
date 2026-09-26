@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking
+
+- `RunCommandProcess` (`helpers/runcommandprocess.py`) no longer runs commands through a shell (previously `Popen(..., shell=True)`, now `shlex.split` + `Popen(..., shell=False)`). As a result, shell features are no longer supported for string commands: pipes (`|`), redirection (`>`, `>>`, `<`), command chaining (`&&`, `||`, `;`), `$VAR`/`${VAR}` environment-variable expansion, command substitution (backticks / `$(...)`), glob expansion (`*`, `?`, `[...]`), subshells (`(...)`) and brace expansion (`{...}`).
+  - Metacharacters are now passed as literal arguments (previously they silently misbehaved).
+  - `RunCommandProcess` logs a `WARNING` by default when a string command contains shell metacharacters, and raises a `ValueError` when constructed with `strict=True`.
+  - To keep shell features, invoke a shell explicitly by passing an argv list such as `['sh', '-c', '...']` or `['bash', '-lc', '...']`, or refactor the command to avoid shell features.
+
 ### Changed
 
 - Renamed 37 files to follow PEP 8 snake_case naming conventions. Notable source module renames:

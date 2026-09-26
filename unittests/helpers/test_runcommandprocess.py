@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 from unittest import mock
 
+import pytest
+
 from helpers.runcommandprocess import PROCESS_LOG, RunCommandProcess
 
 
@@ -148,3 +150,74 @@ class TestRunCommandProcessWorkingDir:
         """Test that working_dir is None by default"""
         process = RunCommandProcess('echo hello')
         assert process.working_dir is None
+
+
+class TestShellMetacharacterDetection:
+    """Tests for shell metacharacter detection and the shell-removal breaking change."""
+
+    def test_contains_shell_metacharacters_rejects_non_string(self):
+        """argv lists (non-str) never contain metacharacters."""
+        assert RunCommandProcess.contains_shell_metacharacters(['echo', 'hello']) is False
+
+    def test_contains_shell_metacharacters_plain_string(self):
+        """A plain command string has no metacharacters."""
+        assert RunCommandProcess.contains_shell_metacharacters('echo hello') is False
+
+    def test_contains_shell_metacharacters_pipe(self):
+        assert RunCommandProcess.contains_shell_metacharacters('cat a | grep b') is True
+
+    def test_contains_shell_metacharacters_redirection(self):
+        assert RunCommandProcess.contains_shell_metacharacters('ls > out.txt') is True
+
+    def test_contains_shell_metacharacters_chaining(self):
+        assert RunCommandProcess.contains_shell_metacharacters('make && make install') is True
+
+    def test_contains_shell_metacharacters_variable(self):
+        assert RunCommandProcess.contains_shell_metacharacters('echo $HOME') is True
+
+    def test_init_warns_on_metacharacters(self):
+        """A string command with metacharacters logs a warning but does not raise."""
+        with mock.patch('helpers.runcommandprocess.PROCESS_LOG') as mock_log:
+            process = RunCommandProcess('cat a | grep b')
+
+        assert process.command == 'cat a | grep b'
+        assert process.strict is False
+        mock_log.warning.assert_called_once()
+        assert 'breaking change' in mock_log.warning.call_args[0][0]
+
+    def test_init_strict_raises_on_metacharacters(self):
+        """A string command with metacharacters raises ValueError when strict=True."""
+        with pytest.raises(ValueError) as exc_info:
+            RunCommandProcess('cat a | grep b', strict=True)
+
+        assert 'shell' in str(exc_info.value)
+
+    def test_init_strict_no_raise_without_metacharacters(self):
+        """strict=True is a no-op for commands without shell metacharacters."""
+        with mock.patch('helpers.runcommandprocess.PROCESS_LOG') as mock_log:
+            process = RunCommandProcess('echo hello', strict=True)
+
+        assert process.strict is True
+        mock_log.warning.assert_not_called()
+
+    def test_init_strict_no_raise_with_list_command(self):
+        """argv lists never trigger warnings or raises, even in strict mode."""
+        with mock.patch('helpers.runcommandprocess.PROCESS_LOG') as mock_log:
+            process = RunCommandProcess(['sh', '-c', 'echo $HOME'], strict=True)
+
+        assert process.strict is True
+        mock_log.warning.assert_not_called()
+
+    def test_explicit_shell_argv_list_is_supported(self):
+        """Passing an explicit shell argv list is the documented escape hatch."""
+        with mock.patch('helpers.runcommandprocess.Popen') as mock_popen:
+            mock_process = mock.MagicMock()
+            mock_process.stdout.readline.side_effect = ['']
+            mock_process.stderr.readline.side_effect = ['']
+            mock_popen.return_value = mock_process
+
+            process = RunCommandProcess(['sh', '-c', 'echo $HOME | cat'])
+            process.run()
+
+        assert mock_popen.call_args[0][0] == ['sh', '-c', 'echo $HOME | cat']
+        assert mock_popen.call_args.kwargs.get('shell') is not True
