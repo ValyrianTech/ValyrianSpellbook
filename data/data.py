@@ -136,7 +136,7 @@ def get_explorer_api(name):
         elif explorer['type'] == ExplorerType.BLOCKSTREAM:
             return BlockstreamAPI(url=explorer['url'], testnet=explorer['testnet'])
         else:
-            raise NotImplementedError('Unknown explorer API: %s' % name)
+            raise NotImplementedError(f'Unknown explorer API: {name}')
 
 
 def query(query_type, param=None):
@@ -182,13 +182,13 @@ def query(query_type, param=None):
             elif query_type == 'push_tx':
                 data = explorer_api.push_tx(param[0])
             else:
-                raise NotImplementedError('Unknown query type: %s' % query_type)
+                raise NotImplementedError(f'Unknown query type: {query_type}')
 
             if 'error' in data:
                 message = f'{explorers[i]} failed to provide data for query: {query_type}'
                 if param != '':
                     message += ' param: ' + str(param)
-                message += ' error: %s' % data['error']
+                message += ' error: {}'.format(data['error'])
                 LOG.error(message)
             else:
                 response = data
@@ -336,6 +336,5 @@ def get_last_explorer():
 
     :return: The id of the last used explorer
     """
-    global EXPLORER
     return EXPLORER
 

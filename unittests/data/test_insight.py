@@ -33,7 +33,7 @@ class TestGetLatestBlock:
 
     @mock.patch('data.blockexplorers.insight.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = InsightAPI(url='http://example.com')
         result = api.get_latest_block()
         assert 'error' in result
@@ -58,7 +58,7 @@ class TestGetBlockByHash:
 
     @mock.patch('data.blockexplorers.insight.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = InsightAPI(url='http://example.com')
         result = api.get_block_by_hash('abc')
         assert 'error' in result
@@ -84,7 +84,7 @@ class TestGetBlockByHeight:
 
     @mock.patch('data.blockexplorers.insight.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = InsightAPI(url='http://example.com')
         result = api.get_block_by_height(100)
         assert 'error' in result
@@ -114,7 +114,7 @@ class TestGetTransactions:
 
     @mock.patch('data.blockexplorers.insight.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = InsightAPI(url='http://example.com')
         result = api.get_transactions('addr1')
         assert 'error' in result
@@ -226,7 +226,7 @@ class TestGetBalance:
 
     @mock.patch('data.blockexplorers.insight.requests.get')
     def test_error_first_request(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = InsightAPI(url='http://example.com')
         result = api.get_balance('addr')
         assert 'error' in result
@@ -235,7 +235,7 @@ class TestGetBalance:
     def test_error_second_request(self, mock_get):
         mock_get.side_effect = [
             make_mock_response(text_data='100'),
-            mock.MagicMock(text='error', json=mock.MagicMock(side_effect=Exception('fail')))
+            mock.MagicMock(text='error', json=mock.MagicMock(side_effect=ValueError('fail')))
         ]
         api = InsightAPI(url='http://example.com')
         result = api.get_balance('addr')
@@ -246,7 +246,7 @@ class TestGetBalance:
         mock_get.side_effect = [
             make_mock_response(text_data='100'),
             make_mock_response(text_data='200'),
-            mock.MagicMock(text='error', json=mock.MagicMock(side_effect=Exception('fail')))
+            mock.MagicMock(text='error', json=mock.MagicMock(side_effect=ValueError('fail')))
         ]
         api = InsightAPI(url='http://example.com')
         result = api.get_balance('addr')
@@ -267,7 +267,7 @@ class TestGetTransaction:
 
     @mock.patch('data.blockexplorers.insight.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = InsightAPI(url='http://example.com')
         result = api.get_transaction('txid')
         assert 'error' in result
@@ -329,7 +329,7 @@ class TestGetPrimeInputAddress:
 
     @mock.patch('data.blockexplorers.insight.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = InsightAPI(url='http://example.com')
         result = api.get_prime_input_address('txid')
         assert 'error' in result
@@ -354,7 +354,7 @@ class TestGetUtxos:
 
     @mock.patch('data.blockexplorers.insight.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = InsightAPI(url='http://example.com')
         result = api.get_utxos('addr')
         assert 'error' in result
@@ -407,7 +407,7 @@ class TestPushTx:
 
     @mock.patch('data.blockexplorers.insight.requests.post')
     def test_request_error(self, mock_post):
-        mock_post.side_effect = Exception('fail')
+        mock_post.side_effect = ValueError('fail')
         api = InsightAPI(url='http://example.com')
         result = api.push_tx('rawtx')
         assert 'error' in result

@@ -126,20 +126,17 @@ def save_llm_config_direct(config: dict[str, Any], verbose: bool = False) -> boo
         print(f"✓ Successfully saved: {llm_name}")
         return True
             
-    except Exception as ex:
+    except (ValueError, KeyError, TypeError, OSError) as ex:
         print(f"✗ Exception saving {llm_name}: {ex}")
         return False
 
 
 def read_csv_models(csv_file_path: str) -> list:
     """Read and parse the CSV file containing LLM model data"""
-    models = []
-    
     try:
         with open(csv_file_path, 'r', newline='', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile)
-            for row in reader:
-                models.append(row)
+            models = list(reader)
         
         print(f"Read {len(models)} models from {csv_file_path}")
         return models
@@ -147,7 +144,7 @@ def read_csv_models(csv_file_path: str) -> list:
     except FileNotFoundError:
         print(f"Error: CSV file not found: {csv_file_path}")
         return []
-    except Exception as ex:
+    except (ValueError, KeyError, TypeError, OSError) as ex:
         print(f"Error reading CSV file: {ex}")
         return []
 
@@ -205,7 +202,7 @@ def main():
         # Create configuration
         try:
             config = create_llm_config(model_data)
-        except Exception as ex:
+        except (ValueError, KeyError, TypeError, OSError) as ex:
             print(f"✗ Error creating config for {model_data['Model_name']}: {ex}")
             continue
         

@@ -42,7 +42,7 @@ class TestGetLatestBlock:
 
     @mock.patch('data.blockexplorers.blockchain_info.requests.get')
     def test_get_latest_block_request_error(self, mock_get):
-        mock_get.side_effect = Exception('Network error')
+        mock_get.side_effect = ValueError('Network error')
         api = BlockchainInfoAPI()
         result = api.get_latest_block()
         assert 'error' in result
@@ -68,7 +68,7 @@ class TestGetLatestBlock:
     def test_get_latest_block_exception_on_block(self, mock_get):
         mock_get.side_effect = [
             make_mock_response(json_data={'height': 100, 'hash': 'abc', 'time': 12345}),
-            mock.MagicMock(status_code=500, json=mock.MagicMock(side_effect=Exception('fail')))
+            mock.MagicMock(status_code=500, json=mock.MagicMock(side_effect=ValueError('fail')))
         ]
         api = BlockchainInfoAPI()
         result = api.get_latest_block()
@@ -98,7 +98,7 @@ class TestGetBlockByHash:
 
     @mock.patch('data.blockexplorers.blockchain_info.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = BlockchainInfoAPI()
         result = api.get_block_by_hash('abc')
         assert 'error' in result
@@ -123,7 +123,7 @@ class TestGetBlockByHeight:
 
     @mock.patch('data.blockexplorers.blockchain_info.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = BlockchainInfoAPI()
         result = api.get_block_by_height(100)
         assert 'error' in result
@@ -174,7 +174,7 @@ class TestGetTransactions:
     @mock.patch('data.blockexplorers.blockchain_info.BlockchainInfoAPI.get_latest_block_height')
     def test_request_error(self, mock_height, mock_get):
         mock_height.return_value = 200
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = BlockchainInfoAPI()
         result = api.get_transactions('addr1')
         assert 'error' in result
@@ -295,7 +295,7 @@ class TestGetBalance:
 
     @mock.patch('data.blockexplorers.blockchain_info.requests.get')
     def test_error_first_request(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = BlockchainInfoAPI()
         result = api.get_balance('addr')
         assert 'error' in result
@@ -304,7 +304,7 @@ class TestGetBalance:
     def test_error_second_request(self, mock_get):
         mock_get.side_effect = [
             make_mock_response(text_data='100'),
-            mock.MagicMock(text='error', json=mock.MagicMock(side_effect=Exception('fail')))
+            mock.MagicMock(text='error', json=mock.MagicMock(side_effect=ValueError('fail')))
         ]
         api = BlockchainInfoAPI()
         result = api.get_balance('addr')
@@ -315,7 +315,7 @@ class TestGetBalance:
         mock_get.side_effect = [
             make_mock_response(text_data='100'),
             make_mock_response(text_data='200'),
-            mock.MagicMock(text='error', json=mock.MagicMock(side_effect=Exception('fail')))
+            mock.MagicMock(text='error', json=mock.MagicMock(side_effect=ValueError('fail')))
         ]
         api = BlockchainInfoAPI()
         result = api.get_balance('addr')
@@ -338,7 +338,7 @@ class TestGetTransaction:
 
     @mock.patch('data.blockexplorers.blockchain_info.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = BlockchainInfoAPI()
         result = api.get_transaction('txid')
         assert 'error' in result
@@ -391,7 +391,7 @@ class TestGetPrimeInputAddress:
 
     @mock.patch('data.blockexplorers.blockchain_info.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = BlockchainInfoAPI()
         result = api.get_prime_input_address('txid')
         assert 'error' in result
@@ -425,7 +425,7 @@ class TestGetUtxos:
 
     @mock.patch('data.blockexplorers.blockchain_info.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = BlockchainInfoAPI()
         result = api.get_utxos('addr')
         assert 'error' in result
@@ -464,7 +464,7 @@ class TestPushTx:
 
     @mock.patch('data.blockexplorers.blockchain_info.requests.post')
     def test_request_error(self, mock_post):
-        mock_post.side_effect = Exception('fail')
+        mock_post.side_effect = ValueError('fail')
         api = BlockchainInfoAPI()
         result = api.push_tx('rawtx')
         assert 'error' in result

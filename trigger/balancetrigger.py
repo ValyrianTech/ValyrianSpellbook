@@ -29,7 +29,7 @@ class BalanceTrigger(Trigger):
             # Something went wrong during retrieval of balance
             return False
 
-        return True if self.amount <= final_balance else False
+        return self.amount <= final_balance
 
     def configure(self, **config):
         """Configure."""

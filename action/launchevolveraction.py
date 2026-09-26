@@ -34,7 +34,7 @@ class LaunchEvolverAction(SpawnProcessAction):
         super().configure(**config)
         if 'job_config' in config:
             self.job_config = config['job_config']
-            self.run_command = '"%s" %s' % (DARWIN_PROGRAM, self.job_config)
+            self.run_command = f'"{DARWIN_PROGRAM}" {self.job_config}'
 
     def json_encodable(self):
         """
@@ -48,6 +48,6 @@ class LaunchEvolverAction(SpawnProcessAction):
 
     def run(self):
         """Run."""
-        self.run_command = 'python3.7 "%s" %s' % (DARWIN_PROGRAM, self.job_config)
-        LOG.info('Launching evolver with command: %s' % self.run_command)
+        self.run_command = f'python3.7 "{DARWIN_PROGRAM}" {self.job_config}'
+        LOG.info(f'Launching evolver with command: {self.run_command}')
         super().run()

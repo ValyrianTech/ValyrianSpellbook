@@ -81,7 +81,7 @@ def signature(data, nonce, secret):
     :return: A signature for the data and nonce
     """
     if len(secret) % 4 != 0:
-        raise Exception('The secret must be a string with a length of a multiple of 4!')
+        raise ValueError('The secret must be a string with a length of a multiple of 4!')
 
     return base64.b64encode(hmac.new(base64.b64decode(secret), hash_message(data, nonce), hashlib.sha512).digest()).decode()
 
@@ -98,8 +98,6 @@ def check_authentication(headers, data):
     :param data: The json data of the http request
     :return: An AuthenticationStatus
     """
-    global LAST_NONCES
-
     api_keys = load_from_json_file(API_KEYS_FILE)
     if api_keys is None:
         return AuthenticationStatus.INVALID_JSON_FILE
@@ -119,7 +117,7 @@ def check_authentication(headers, data):
 
     try:
         nonce = int(headers['API_Nonce'])
-    except Exception:
+    except (ValueError, KeyError, TypeError, OSError):
         return AuthenticationStatus.INVALID_NONCE
 
     if api_key in LAST_NONCES and LAST_NONCES[api_key] >= nonce:

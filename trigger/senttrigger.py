@@ -29,7 +29,7 @@ class SentTrigger(Trigger):
             # Something went wrong during retrieval of balance
             return False
 
-        return True if self.amount <= total_sent else False
+        return self.amount <= total_sent
 
     def configure(self, **config):
         """Configure."""

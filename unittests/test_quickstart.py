@@ -28,9 +28,7 @@ def _isfile_side_effect(path):
     """Return False for spellbook.conf (use example config), True for api_keys.json."""
     if isinstance(path, str) and 'spellbook.conf' in path:
         return False
-    if isinstance(path, str) and 'api_keys.json' in path:
-        return True
-    return False
+    return bool(isinstance(path, str) and 'api_keys.json' in path)
 
 
 def _import_quickstart(input_values=None, isfile_side_effect=None, extra_patches=None):
@@ -205,9 +203,7 @@ class TestQuickstartSpellbookConfExists:
         def isfile_spellbook_conf_exists(path):
             if isinstance(path, str) and 'spellbook.conf' in path:
                 return True
-            if isinstance(path, str) and 'api_keys.json' in path:
-                return True
-            return False
+            return bool(isinstance(path, str) and 'api_keys.json' in path)
 
         # Patch ConfigParser.read to always read the example config
         # so we have valid sections/options

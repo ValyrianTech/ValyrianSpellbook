@@ -58,7 +58,7 @@ class BooleanTestRosettaStone(RosettaStone):
 
     def genome_to_model(self, genome):
         """Genome to model."""
-        model = {'id': 'booleantest_%s' % genome.id(),
+        model = {'id': f'booleantest_{genome.id()}',
                  'name': 'booleantest',
                  'SingleTrue': genome.chromosomes[0].genes[0].data,
                  'SingleFalse': genome.chromosomes[1].genes[0].data,

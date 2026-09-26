@@ -20,7 +20,7 @@ class TestDarwinCli:
         """Running with --help covers the argparse setup."""
         import subprocess
         result = subprocess.run([sys.executable, _DARWIN_PATH, '--help'],
-                                capture_output=True, text=True)
+                                capture_output=True, text=True, check=False)
         assert result.returncode == 0
         assert 'config' in result.stdout
 
@@ -28,9 +28,9 @@ class TestDarwinCli:
         """Running via runpy with mocked Evolver covers the full __main__ guard."""
         mock_evolver = MagicMock()
         mock_config = {'title': 'test'}
-        with patch('sys.argv', ['darwin.py', 'test_config.json']):
-            with patch('darwin.evolver.Evolver', return_value=mock_evolver), \
-                 patch('helpers.jsonhelpers.load_from_json_file', return_value=mock_config):
+        with patch('sys.argv', ['darwin.py', 'test_config.json']), \
+             patch('darwin.evolver.Evolver', return_value=mock_evolver), \
+             patch('helpers.jsonhelpers.load_from_json_file', return_value=mock_config):
                 runpy.run_path(_DARWIN_PATH, run_name='__main__')
                 mock_evolver.load_config.assert_called_once_with(mock_config)
                 mock_evolver.print_settings.assert_called_once()

@@ -26,7 +26,7 @@ def verify_message(address, message, signature):
     """Verify that a signature was produced by the owner of the given address."""
     try:
         return VerifyMessage(address=address, message=BitcoinMessage(message), sig=signature)
-    except Exception:
+    except (ValueError, KeyError, TypeError, OSError):
         return False
 
 
@@ -59,7 +59,7 @@ def sign_data(message_data: dict, account: int, index: int):
 
     # calculate the sha256 hash of the ipfs_object
     sha256_hash = hashlib.sha256(simplejson.dumps(message_data, sort_keys=True, indent=2, ensure_ascii=False).encode('utf-8')).hexdigest()
-    message = '/sha256/%s' % sha256_hash
+    message = f'/sha256/{sha256_hash}'
 
     signature = sign_message(message=message, private_key=private_key)
     assert verify_message(address=address, message=message, signature=signature)

@@ -25,11 +25,11 @@ class RetweetAction(Action):
         if self.tweet_id is None:
             return False
 
-        LOG.info('Retweeting tweet: %s' % self.tweet_id)
+        LOG.info(f'Retweeting tweet: {self.tweet_id}')
 
         try:
             retweet(tweet_id=self.tweet_id)
-        except Exception as ex:
+        except (ValueError, KeyError, TypeError, OSError) as ex:
             LOG.error(f'Unable to retweet tweet {self.tweet_id}: {ex}')
             return False
 

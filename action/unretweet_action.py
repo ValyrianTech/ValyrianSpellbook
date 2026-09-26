@@ -25,11 +25,11 @@ class UnretweetAction(Action):
         if self.tweet_id is None:
             return False
 
-        LOG.info('Unretweeting tweet: %s' % self.tweet_id)
+        LOG.info(f'Unretweeting tweet: {self.tweet_id}')
 
         try:
             retweet(tweet_id=self.tweet_id)
-        except Exception as ex:
+        except (ValueError, KeyError, TypeError, OSError) as ex:
             LOG.error(f'Unable to unretweet tweet {self.tweet_id}: {ex}')
             return False
 

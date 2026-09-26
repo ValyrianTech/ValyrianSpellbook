@@ -105,7 +105,7 @@ class TestGetHotWallet(unittest.TestCase):
 
         mock_cipher = MagicMock()
         # First call (empty password) fails, second call (prompted password) succeeds
-        mock_cipher.decrypt.side_effect = [Exception('Decryption failed'), '{"mnemonic": ["word1"], "passphrase": ""}']
+        mock_cipher.decrypt.side_effect = [ValueError('Decryption failed'), '{"mnemonic": ["word1"], "passphrase": ""}']
         mock_cipher_class.return_value = mock_cipher
 
         mock_file = MagicMock()
@@ -139,7 +139,7 @@ class TestGetHotWallet(unittest.TestCase):
         mock_wallet.return_value = 'test_wallet'
         
         mock_cipher = MagicMock()
-        mock_cipher.decrypt.side_effect = Exception('Decryption failed')
+        mock_cipher.decrypt.side_effect = ValueError('Decryption failed')
         mock_cipher_class.return_value = mock_cipher
         
         mock_file = MagicMock()

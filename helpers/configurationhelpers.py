@@ -27,7 +27,7 @@ def what_is_my_ip() -> str:
     """
     try:
         ip = requests.get("https://api.ipify.org/?format=json").json()['ip']
-    except Exception as ex:
+    except (ValueError, KeyError, TypeError, OSError) as ex:
         print(f'Unable to get ip: {ex}')
         return ''
 
@@ -103,7 +103,7 @@ def get_default_wallet():
 @verify_config('Wallet', 'use_testnet')
 def get_use_testnet():
     """Get whether testnet mode is enabled from the configuration."""
-    return True if spellbook_config().get('Wallet', 'use_testnet') in ['True', 'true'] else False
+    return spellbook_config().get('Wallet', 'use_testnet') in ['True', 'true']
 
 
 @verify_config('Transactions', 'max_tx_fee_percentage')

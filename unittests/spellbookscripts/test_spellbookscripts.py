@@ -195,24 +195,24 @@ class TestProcessIpfsHash:
 
     @mock.patch('spellbookscripts.spellbookscript.valid_address', return_value=True)
     def test_process_ipfs_hash_get_json_raises(self, _mock_va):
-        with mock.patch('spellbookscripts.spellbookscript.get_json', side_effect=Exception('network error')):
+        with mock.patch('spellbookscripts.spellbookscript.get_json', side_effect=ValueError('network error')):
             script = ConcreteScript(message='/ipfs/QmHash')
         assert script.json is None
 
     @mock.patch('spellbookscripts.spellbookscript.valid_address', return_value=True)
     def test_process_ipfs_hash_with_matching_ipfs_object(self, _mock_va):
         obj = {'key': 'val'}
-        with mock.patch('spellbookscripts.spellbookscript.add_json', return_value='/ipfs/QmMatch'):
-            with mock.patch('spellbookscripts.spellbookscript.get_json', return_value=obj):
-                script = ConcreteScript(message='/ipfs/QmMatch', ipfs_object=obj)
+        with mock.patch('spellbookscripts.spellbookscript.add_json', return_value='/ipfs/QmMatch'), \
+                mock.patch('spellbookscripts.spellbookscript.get_json', return_value=obj):
+            script = ConcreteScript(message='/ipfs/QmMatch', ipfs_object=obj)
         assert script.json == obj
 
     @mock.patch('spellbookscripts.spellbookscript.valid_address', return_value=True)
     def test_process_ipfs_hash_with_mismatched_ipfs_object(self, _mock_va):
         obj = {'key': 'val'}
-        with mock.patch('spellbookscripts.spellbookscript.add_json', return_value='/ipfs/QmDifferent'):
-            with mock.patch('spellbookscripts.spellbookscript.get_json') as mock_get:
-                script = ConcreteScript(message='/ipfs/QmMatch', ipfs_object=obj)
+        with mock.patch('spellbookscripts.spellbookscript.add_json', return_value='/ipfs/QmDifferent'), \
+                mock.patch('spellbookscripts.spellbookscript.get_json') as mock_get:
+            script = ConcreteScript(message='/ipfs/QmMatch', ipfs_object=obj)
         assert script.json is None
         mock_get.assert_not_called()
 

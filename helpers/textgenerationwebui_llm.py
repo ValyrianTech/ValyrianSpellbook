@@ -102,7 +102,7 @@ class TextGenerationWebuiLLM(LLMInterface):
                 data = {'message': completion.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion.lstrip())}
                 broadcast_message(message=simplejson.dumps(data), channel=get_broadcast_channel())
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, OSError) as e:
             LOG.error(f'Error connecting to LLM at {url}: {e}')
             return 'Error: text-generation-webui LLM is not running.\n'
 

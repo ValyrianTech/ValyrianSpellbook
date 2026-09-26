@@ -14,7 +14,7 @@ class StringTestFitnessFunction(FitnessFunction):
         """Fitness."""
 
         if not isinstance(model, StringTest):
-            raise Exception('model for fitness function is not a StringTest!')
+            raise TypeError('model for fitness function is not a StringTest!')
 
         fitness = 0
         hello_world = 'HelloWorld'

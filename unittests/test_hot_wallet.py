@@ -94,7 +94,7 @@ class TestLoadWallet:
 
     @mock.patch('hot_wallet.sys.exit')
     @mock.patch('builtins.print')
-    @mock.patch('hot_wallet.simplejson.loads', side_effect=Exception('Bad decrypt'))
+    @mock.patch('hot_wallet.simplejson.loads', side_effect=ValueError('Bad decrypt'))
     @mock.patch('hot_wallet.AESCipher')
     @mock.patch('builtins.open', new_callable=mock.mock_open, read_data='enc')
     @mock.patch('hot_wallet.os.path.isfile', return_value=True)

@@ -108,7 +108,7 @@ class GoogleLLM(LLMInterface):
                 data = {'message': completion.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion.lstrip())}
                 broadcast_message(message=json.dumps(data), channel=get_broadcast_channel())
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, OSError) as e:
             LOG.error(f'Error connecting to Google: {e}')
             return 'Error: Unable to connect to Google.\n'
 

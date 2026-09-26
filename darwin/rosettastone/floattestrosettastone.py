@@ -38,7 +38,7 @@ class FloatTestRosettaStone(RosettaStone):
 
     def genome_to_model(self, genome):
         """Genome to model."""
-        model = {'id': 'floattest_%s' % genome.id(),
+        model = {'id': f'floattest_{genome.id()}',
                  'name': 'floattest',
                  'Single42': genome.chromosomes[0].genes[0].data,
                  'ZeroToNine': [gene.data for gene in genome.chromosomes[1].genes]}

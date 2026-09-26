@@ -30,7 +30,7 @@ class FollowOnTwitterAction(Action):
 
         try:
             follow_user(target_user_id=self.user_id)
-        except Exception as ex:
+        except (ValueError, KeyError, TypeError, OSError) as ex:
             LOG.error(f'Unable to follow user {self.user_id}: {ex}')
             return False
 

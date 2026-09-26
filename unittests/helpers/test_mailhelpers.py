@@ -125,7 +125,7 @@ class TestSendmail(unittest.TestCase):
                 f.write('Test content')
             
             with patch('helpers.mailhelpers.TEMPLATE_DIR', temp_dir):
-                mock_smtp.side_effect = Exception('Connection failed')
+                mock_smtp.side_effect = ValueError('Connection failed')
                 
                 result = sendmail(
                     recipients='test@example.com',

@@ -26,11 +26,11 @@ class BTCComAPI(ExplorerAPI):
         """Retrieve the latest block from the blockchain explorer."""
         url = f'{self.url}/block/latest'
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             data = r.json()
-        except Exception as ex:
-            LOG.error('Unable to get latest block from BTC.com: %s' % ex)
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get latest block from BTC.com: {ex}')
             return {'error': 'Unable to get latest block from BTC.com'}
         data = data['data'] if data['data'] is not None else {}
 
@@ -43,18 +43,18 @@ class BTCComAPI(ExplorerAPI):
 
             return {'block': block}
         else:
-            return {'error': 'Received invalid data: %s' % data}
+            return {'error': f'Received invalid data: {data}'}
 
     def get_block_by_height(self, height):
         """Retrieve a block by its height from the blockchain explorer."""
         url = f'{self.url}/block/{height}'
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             data = r.json()
-        except Exception as ex:
-            LOG.error('Unable to get block %s from Blocktrail.com: %s' % (height, ex))
-            return {'error': 'Unable to get block %s from Blocktrail.com' % height}
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get block {height} from Blocktrail.com: {ex}')
+            return {'error': f'Unable to get block {height} from Blocktrail.com'}
         data = data['data'] if data['data'] is not None else {}
 
         if all(key in data for key in ('height', 'hash', 'timestamp', 'mrkl_root', 'size')):
@@ -66,18 +66,18 @@ class BTCComAPI(ExplorerAPI):
 
             return {'block': block}
         else:
-            return {'error': 'Received invalid data: %s' % data}
+            return {'error': f'Received invalid data: {data}'}
 
     def get_block_by_hash(self, block_hash):
         """Retrieve a block by its hash from the blockchain explorer."""
         url = f'{self.url}/block/{block_hash}'
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             data = r.json()
-        except Exception as ex:
-            LOG.error('Unable to get block %s from Blocktrail.com: %s' % (block_hash, ex))
-            return {'error': 'Unable to get block %s from Blocktrail.com' % block_hash}
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get block {block_hash} from Blocktrail.com: {ex}')
+            return {'error': f'Unable to get block {block_hash} from Blocktrail.com'}
         data = data['data'] if data['data'] is not None else {}
 
         if all(key in data for key in ('height', 'hash', 'timestamp', 'mrkl_root', 'size')):
@@ -89,7 +89,7 @@ class BTCComAPI(ExplorerAPI):
 
             return {'block': block}
         else:
-            return {'error': 'Received invalid data: %s' % data}
+            return {'error': f'Received invalid data: {data}'}
 
     def get_transactions(self, address):
         """Retrieve all transactions for a given address from the explorer."""
@@ -101,12 +101,12 @@ class BTCComAPI(ExplorerAPI):
         while n_tx is None or len(transactions) < n_tx:
             url = f'{self.url}/address/{address}/tx?page={page}&pagesize={pagesize}&verbose=3'
             try:
-                LOG.info('GET %s' % url)
+                LOG.info(f'GET {url}')
                 r = requests.get(url)
                 data = r.json()
-            except Exception as ex:
-                LOG.error('Unable to get transactions of address %s from BTC.com: %s' % (address, ex))
-                return {'error': 'Unable to get transactions of address %s from BTC.com' % address}
+            except (ValueError, KeyError, TypeError, OSError) as ex:
+                LOG.error(f'Unable to get transactions of address {address} from BTC.com: {ex}')
+                return {'error': f'Unable to get transactions of address {address} from BTC.com'}
 
             data = data['data'] if data['data'] is not None else {}
 
@@ -115,7 +115,7 @@ class BTCComAPI(ExplorerAPI):
                 transactions += data['list']
                 page += 1
             else:
-                return {'error': 'Received invalid data: %s' % data}
+                return {'error': f'Received invalid data: {data}'}
 
             if len(transactions) < n_tx:
                 sleep(1)
@@ -145,7 +145,7 @@ class BTCComAPI(ExplorerAPI):
                 tx_output.address = item['addresses'][0] if len(item['addresses']) > 0 else None
                 tx_output.value = item['value']
                 tx_output.n = i
-                tx_output.spent = False if item['spent_by_tx'] is None else True
+                tx_output.spent = not item['spent_by_tx'] is None
                 tx_output.script = item['script_hex']
 
                 if item['script_hex'][:2] == '6a':
@@ -169,12 +169,12 @@ class BTCComAPI(ExplorerAPI):
         """Retrieve the balance (final, received, sent) for a given address."""
         url = f'{self.url}/address/{address}'
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             data = r.json()
-        except Exception as ex:
-            LOG.error('Unable to get balance of address %s from Blocktrail.com: %s' % (address, ex))
-            return {'error': 'Unable to get balance of address %s from Blocktrail.com' % address}
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get balance of address {address} from Blocktrail.com: {ex}')
+            return {'error': f'Unable to get balance of address {address} from Blocktrail.com'}
 
         data = data['data'] if data['data'] is not None else {}
 
@@ -184,18 +184,18 @@ class BTCComAPI(ExplorerAPI):
                        'sent': data['sent'] - data['unconfirmed_sent']}
             return {'balance': balance}
         else:
-            return {'error': 'Received invalid data: %s' % data}
+            return {'error': f'Received invalid data: {data}'}
 
     def get_transaction(self, txid):
         """Retrieve a single transaction by its txid from the explorer."""
         url = f'{self.url}/tx/{txid}?verbose=3'
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             data = r.json()
-        except Exception as ex:
-            LOG.error('Unable to get transaction %s from BTC.com: %s' % (txid, ex))
-            return {'error': 'Unable to get transaction %s from BTC.com' % txid}
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get transaction {txid} from BTC.com: {ex}')
+            return {'error': f'Unable to get transaction {txid} from BTC.com'}
 
         data = data['data'] if data['data'] is not None else {}
 
@@ -205,7 +205,7 @@ class BTCComAPI(ExplorerAPI):
         tx.wtxid = data['witness_hash']
         tx.lock_time = data['lock_time']
         tx.block_height = data['block_height'] if 'block_height' in data and data['block_height'] != -1 else None
-        tx.confirmations = data['confirmations'] if 'confirmations' in data else None
+        tx.confirmations = data.get('confirmations', None)
 
         for item in data['inputs']:
             tx_input = TxInput()
@@ -223,7 +223,7 @@ class BTCComAPI(ExplorerAPI):
             tx_output.address = item['addresses'][0] if len(item['addresses']) > 0 else None
             tx_output.value = item['value']
             tx_output.n = i
-            tx_output.spent = False if item['spent_by_tx'] is None else True
+            tx_output.spent = not item['spent_by_tx'] is None
             tx_output.script = item['script_hex']
 
             if item['script_hex'][:2] == '6a':
@@ -246,10 +246,10 @@ class BTCComAPI(ExplorerAPI):
                 input_addresses.append(tx_inputs[i]['address'])
 
             if len(input_addresses) > 0:
-                prime_input_address = sorted(input_addresses)[0]
+                prime_input_address = min(input_addresses)
                 return {'prime_input_address': prime_input_address}
 
-        return {'error': 'Received invalid data: %s' % transaction_data}
+        return {'error': f'Received invalid data: {transaction_data}'}
 
     def get_utxos(self, address, confirmations=3):
         """Retrieve unspent transaction outputs (UTXOs) for a given address."""
@@ -261,12 +261,12 @@ class BTCComAPI(ExplorerAPI):
         while n_outputs is None or len(unspent_outputs) < n_outputs:
             url = f'{self.url}/address/{address}/unspent?page={page}&pagesize={pagesize}&verbose=3'
             try:
-                LOG.info('GET %s' % url)
+                LOG.info(f'GET {url}')
                 r = requests.get(url)
                 data = r.json()
-            except Exception as ex:
-                LOG.error('Unable to get utxos of address %s from BTC.com: %s' % (address, ex))
-                return {'error': 'Unable to get utxos of address %s block from BTC.com' % address}
+            except (ValueError, KeyError, TypeError, OSError) as ex:
+                LOG.error(f'Unable to get utxos of address {address} from BTC.com: {ex}')
+                return {'error': f'Unable to get utxos of address {address} block from BTC.com'}
 
             data = data['data'] if data['data'] is not None else {}
 
@@ -275,7 +275,7 @@ class BTCComAPI(ExplorerAPI):
                 unspent_outputs += data['list']
                 page += 1
             else:
-                return {'error': 'Received invalid data: %s' % data}
+                return {'error': f'Received invalid data: {data}'}
 
             # Sometimes the 'total_count' value from btc.com is just wrong!
             if not data['list']:

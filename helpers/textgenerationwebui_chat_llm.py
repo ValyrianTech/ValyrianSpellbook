@@ -107,7 +107,7 @@ class TextGenerationWebuiChatLLM(LLMInterface):
             # Final post-process to ensure clean output
             completion = self._extract_thinking_content(raw_response)
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, OSError) as e:
             LOG.error(f'Error connecting to text-generation-webui: {e}')
             return 'Error: Unable to connect to text-generation-webui.\n', {}
 

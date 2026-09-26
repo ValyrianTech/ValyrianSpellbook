@@ -14,7 +14,7 @@ class FloatTestFitnessFunction(FitnessFunction):
         """Fitness."""
 
         if not isinstance(model, FloatTest):
-            raise Exception('model for fitness function is not a FloatTest!')
+            raise TypeError('model for fitness function is not a FloatTest!')
 
         fitness = 100 - abs(model.Single42 - 42.0)
         fitness -= abs(len(model.ZeroToNine) - 10)

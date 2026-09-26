@@ -3,9 +3,8 @@
 """Base Action class and registry for all Spellbook actions."""
 
 import os
-import time
 from abc import ABCMeta, abstractmethod
-from datetime import datetime
+from datetime import datetime, timezone
 
 from helpers.jsonhelpers import save_to_json_file
 from validators.validators import valid_action_type
@@ -36,7 +35,7 @@ class Action:
                        - config['created']     : A timestamp when the action was created
                        - config['action_type'] : The type of action ['Command', 'SpawnProcess', 'RevealSecret', 'SendMail', 'SendTransaction', 'Webhook']
         """
-        self.created = datetime.fromtimestamp(config['created']) if 'created' in config else datetime.now()
+        self.created = datetime.fromtimestamp(config['created'], tz=timezone.utc) if 'created' in config else datetime.now(tz=timezone.utc)
 
         if 'action_type' in config and valid_action_type(config['action_type']):
             self.action_type = config['action_type']
@@ -45,8 +44,8 @@ class Action:
         """
         Save the action as a json file
         """
-        print('save action to json file: %s' % os.path.join(ACTIONS_DIR, '%s.json' % self.id))
-        save_to_json_file(os.path.join(ACTIONS_DIR, '%s.json' % self.id), self.json_encodable())
+        print('save action to json file: {}'.format(os.path.join(ACTIONS_DIR, f'{self.id}.json')))
+        save_to_json_file(os.path.join(ACTIONS_DIR, f'{self.id}.json'), self.json_encodable())
 
     def json_encodable(self):
         """
@@ -55,11 +54,11 @@ class Action:
         :return: A dict containing the configuration settings
         """
         if self.created is None:
-            self.created = datetime.now()
+            self.created = datetime.now(tz=timezone.utc)
 
         return {'id': self.id,
                 'action_type': self.action_type,
-                'created': int(time.mktime(self.created.timetuple()))}
+                'created': int(self.created.timestamp())}
 
     @abstractmethod
     def run(self, **kwargs):

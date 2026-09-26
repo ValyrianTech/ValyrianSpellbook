@@ -107,7 +107,7 @@ def get_available_llms():
     available_llms_text = ''
     available_llms_names = []
     i = 0
-    for llm_name in llms_data.keys():
+    for llm_name in llms_data:
         if llms_data[llm_name].get('allow_auto_routing', False) is True:
             available_llms_text += f'{i}: {llm_name} -> {llms_data[llm_name]["description"]}\n'
             server_type = llms_data[llm_name].get('server_type', 'self-hosted')

@@ -56,7 +56,7 @@ class FullTestRosettaStone(RosettaStone):
 
     def genome_to_model(self, genome):
         """Genome to model."""
-        model = {'id': 'fulltest_%s' % genome.id(),
+        model = {'id': f'fulltest_{genome.id()}',
                  'name': 'fulltest',
                  'SingleTrue': genome.chromosomes['SingleTrue'].value(),
                  'SingleFalse': genome.chromosomes['SingleFalse'].value(),

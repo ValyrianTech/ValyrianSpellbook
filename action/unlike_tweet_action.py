@@ -25,11 +25,11 @@ class UnlikeTweetAction(Action):
         if self.tweet_id is None:
             return False
 
-        LOG.info('Unliking tweet: %s' % self.tweet_id)
+        LOG.info(f'Unliking tweet: {self.tweet_id}')
 
         try:
             unlike_tweet(tweet_id=self.tweet_id)
-        except Exception as ex:
+        except (ValueError, KeyError, TypeError, OSError) as ex:
             LOG.error(f'Unable to unlike tweet {self.tweet_id}: {ex}')
             return False
 

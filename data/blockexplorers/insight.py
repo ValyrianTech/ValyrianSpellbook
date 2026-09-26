@@ -15,28 +15,28 @@ class InsightAPI(ExplorerAPI):
         """Retrieve the latest block from the blockchain explorer."""
         url = self.url + '/status?q=getBestBlockHash'
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             data = r.json()
-        except Exception as ex:
-            LOG.error('Unable to get latest blockhash from %s: %s' % (self.url, ex))
-            return {'error': 'Unable to get latest blockhash from %s' % self.url}
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get latest blockhash from {self.url}: {ex}')
+            return {'error': f'Unable to get latest blockhash from {self.url}'}
 
         if 'bestblockhash' in data:
             return self.get_block_by_hash(data['bestblockhash'])
         else:
-            return {'error': 'Received invalid data: %s' % data}
+            return {'error': f'Received invalid data: {data}'}
 
     def get_block_by_hash(self, block_hash):
         """Retrieve a block by its hash from the blockchain explorer."""
         url = self.url + '/block/' + block_hash
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             data = r.json()
-        except Exception as ex:
-            LOG.error('Unable to get block %s from %s: %s' % (block_hash, self.url, ex))
-            return {'error': 'Unable to get block %s from %s' % (block_hash, self.url)}
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get block {block_hash} from {self.url}: {ex}')
+            return {'error': f'Unable to get block {block_hash} from {self.url}'}
 
         block = {}
         if all(key in data for key in ('height', 'hash', 'time', 'merkleroot', 'size')):
@@ -47,23 +47,23 @@ class InsightAPI(ExplorerAPI):
             block['size'] = data['size']
             return {'block': block}
         else:
-            return {'error': 'Received invalid data: %s' % data}
+            return {'error': f'Received invalid data: {data}'}
 
     def get_block_by_height(self, height):
         """Retrieve a block by its height from the blockchain explorer."""
         url = self.url + '/block-index/' + str(height)
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             data = r.json()
-        except Exception as ex:
-            LOG.error('Unable to get hash of block at height %s from %s: %s' % (height, self.url, ex))
-            return {'error': 'Unable to get hash of block at height %s from %s' % (height, self.url)}
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get hash of block at height {height} from {self.url}: {ex}')
+            return {'error': f'Unable to get hash of block at height {height} from {self.url}'}
 
         if 'blockHash' in data:
             return self.get_block_by_hash(data['blockHash'])
         else:
-            return {'error': 'Received invalid data: %s' % data}
+            return {'error': f'Received invalid data: {data}'}
 
     def get_transactions(self, address):
         """Retrieve all transactions for a given address from the explorer."""
@@ -75,19 +75,19 @@ class InsightAPI(ExplorerAPI):
         while n_tx is None or len(transactions) < n_tx:
             url = self.url + '/addrs/' + address + '/txs?from=' + str(limit*i) + '&to=' + str(limit*(i+1))
             try:
-                LOG.info('GET %s' % url)
+                LOG.info(f'GET {url}')
                 r = requests.get(url)
                 data = r.json()
-            except Exception as ex:
-                LOG.error('Unable to get transactions of address %s from %s: %s' % (address, url, ex))
-                return {'error': 'Unable to get transactions of address %s from %s' % (address, url)}
+            except (ValueError, KeyError, TypeError, OSError) as ex:
+                LOG.error(f'Unable to get transactions of address {address} from {url}: {ex}')
+                return {'error': f'Unable to get transactions of address {address} from {url}'}
 
             if all(key in data for key in ('totalItems', 'items')):
                 n_tx = data['totalItems']
                 transactions += data['items']
                 i += 1
             else:
-                return {'error': 'Received Invalid data: %s' % data}
+                return {'error': f'Received Invalid data: {data}'}
 
         txs = []
         for transaction in transactions:
@@ -99,9 +99,9 @@ class InsightAPI(ExplorerAPI):
 
             for item in transaction['vin']:
                 tx_input = TxInput()
-                tx_input.address = item['addr'] if 'addr' in item else None
+                tx_input.address = item.get('addr', None)
                 tx_input.value = item['valueSat'] if 'value' in item else 0
-                tx_input.txid = item['txid'] if 'txid' in item else None
+                tx_input.txid = item.get('txid', None)
                 tx_input.n = item['vout'] if 'coinbase' not in item else None
                 tx_input.script = item['scriptSig']['hex'] if 'scriptSig' in item else None
                 if 'coinbase' in item:
@@ -115,7 +115,7 @@ class InsightAPI(ExplorerAPI):
                 tx_output.address = item['scriptPubKey']['addresses'][0] if 'addresses' in item['scriptPubKey'] else None
                 tx_output.value = int(int(item['value'][:-9]) * 1e8 + int(item['value'][-8:]))
                 tx_output.n = item['n']
-                tx_output.spent = True if 'spentTxId' in item and item['spentTxId'] is not None else False
+                tx_output.spent = bool('spentTxId' in item and item['spentTxId'] is not None)
                 tx_output.script = item['scriptPubKey']['hex']
                 if item['scriptPubKey']['hex'][:2] == '6a':
                     tx_output.op_return = tx.decode_op_return(item['scriptPubKey']['hex'])
@@ -138,34 +138,34 @@ class InsightAPI(ExplorerAPI):
         """Retrieve the balance (final, received, sent) for a given address."""
         url = f'{self.url}/addr/{address}/balance'
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             data = int(r.text)
-        except Exception as ex:
-            LOG.error('Unable to get balance of %s from %s: %s' % (address, self.url, ex))
-            return {'error': 'Unable to get balance %s from %s' % (address, self.url)}
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get balance of {address} from {self.url}: {ex}')
+            return {'error': f'Unable to get balance {address} from {self.url}'}
 
         balance = {'final': data}
 
         url = f'{self.url}/addr/{address}/totalReceived'
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             data = int(r.text)
-        except Exception as ex:
-            LOG.error('Unable to get total received of %s from %s: %s' % (address, self.url, ex))
-            return {'error': 'Unable to get total received %s from %s' % (address, self.url)}
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get total received of {address} from {self.url}: {ex}')
+            return {'error': f'Unable to get total received {address} from {self.url}'}
 
         balance['received'] = data
 
         url = f'{self.url}/addr/{address}/totalSent'
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             data = int(r.text)
-        except Exception as ex:
-            LOG.error('Unable to get total sent of %s from %s: %s' % (address, self.url, ex))
-            return {'error': 'Unable to get total sent %s from %s' % (address, self.url)}
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get total sent of {address} from {self.url}: {ex}')
+            return {'error': f'Unable to get total sent {address} from {self.url}'}
 
         balance['sent'] = data
 
@@ -200,23 +200,23 @@ class InsightAPI(ExplorerAPI):
         """Retrieve a single transaction by its txid from the explorer."""
         url = self.url + '/tx/' + str(txid)
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             data = r.json()
-        except Exception as ex:
-            LOG.error('Unable to get transaction %s from %s: %s' % (txid, self.url, ex))
-            return {'error': 'Unable to get transaction %s from %s' % (txid, self.url)}
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get transaction {txid} from {self.url}: {ex}')
+            return {'error': f'Unable to get transaction {txid} from {self.url}'}
 
         tx = TX()
         tx.txid = txid
-        tx.block_height = data['blockheight'] if 'blockheight' in data else None
+        tx.block_height = data.get('blockheight', None)
         tx.lock_time = data['locktime']
 
         for item in data['vin']:
             tx_input = TxInput()
-            tx_input.address = item['addr'] if 'addr' in item else None
-            tx_input.value = item['valueSat'] if 'valueSat' in item else 0
-            tx_input.txid = item['txid'] if 'txid' in item else None
+            tx_input.address = item.get('addr', None)
+            tx_input.value = item.get('valueSat', 0)
+            tx_input.txid = item.get('txid', None)
             tx_input.n = item['n'] if 'coinbase' not in item else None
             tx_input.script = item['scriptSig']['hex'] if 'scriptSig' in item else None
             if 'coinbase' in item:
@@ -230,14 +230,14 @@ class InsightAPI(ExplorerAPI):
             tx_output.address = item['scriptPubKey']['addresses'][0] if 'addresses' in item['scriptPubKey'] else None
             tx_output.value = int(float(item['value']) * 1e8)
             tx_output.n = item['n']
-            tx_output.spent = True if 'spentTxId' in item and item['spentTxId'] is not None else False
+            tx_output.spent = bool('spentTxId' in item and item['spentTxId'] is not None)
             tx_output.script = item['scriptPubKey']['hex']
             if item['scriptPubKey']['hex'][:2] == '6a':
                 tx_output.op_return = tx.decode_op_return(item['scriptPubKey']['hex'])
 
             tx.outputs.append(tx_output)
 
-        tx.confirmations = data['confirmations'] if 'confirmations' in data else None
+        tx.confirmations = data.get('confirmations', None)
 
         return {'transaction': tx.json_encodable()}
 
@@ -245,12 +245,12 @@ class InsightAPI(ExplorerAPI):
         """Retrieve the prime input address of a transaction by txid."""
         url = self.url + '/tx/' + str(txid)
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             data = r.json()
-        except Exception as ex:
-            LOG.error('Unable to get prime input address of transaction %s from %s: %s' % (txid, self.url, ex))
-            return {'error': 'Unable to get prime input address of transaction %s from %s' % (txid, self.url)}
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get prime input address of transaction {txid} from {self.url}: {ex}')
+            return {'error': f'Unable to get prime input address of transaction {txid} from {self.url}'}
 
         if 'vin' in data:
             tx_inputs = data['vin']
@@ -260,21 +260,21 @@ class InsightAPI(ExplorerAPI):
                 input_addresses.append(tx_inputs[i]['addr'])
 
             if len(input_addresses) > 0:
-                prime_input_address = sorted(input_addresses)[0]
+                prime_input_address = min(input_addresses)
                 return {'prime_input_address': prime_input_address}
 
-        return {'error': 'Received invalid data: %s' % data}
+        return {'error': f'Received invalid data: {data}'}
 
     def get_utxos(self, address, confirmations=3):
         """Retrieve unspent transaction outputs (UTXOs) for a given address."""
         url = self.url + '/addrs/' + address + '/utxo?noCache=1'
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             data = r.json()
-        except Exception as ex:
-            LOG.error('Unable to get utxos of address %s from %s: %s' % (address, url, ex))
-            return {'error': 'Unable to get utxos of address %s from %s' % (address, url)}
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get utxos of address {address} from {url}: {ex}')
+            return {'error': f'Unable to get utxos of address {address} from {url}'}
 
         utxos = []
         for output in data:
@@ -293,12 +293,12 @@ class InsightAPI(ExplorerAPI):
     def push_tx(self, tx):
         """Broadcast a signed raw transaction to the blockchain network."""
         url = f'{self.url}/tx/send'
-        LOG.info('POST %s' % url)
+        LOG.info(f'POST {url}')
         try:
-            r = requests.post(url, data=dict(rawtx=tx))
-        except Exception as ex:
-            LOG.error('Unable to push tx via %s: %s' % (self.url, ex))
-            return {'error': 'Unable to push tx via %s: %s' % (self.url, ex)}
+            r = requests.post(url, data={'rawtx': tx})
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to push tx via {self.url}: {ex}')
+            return {'error': f'Unable to push tx via {self.url}: {ex}'}
 
         try:
             data = r.json()
@@ -308,5 +308,5 @@ class InsightAPI(ExplorerAPI):
         if r.status_code == 200 and isinstance(data, dict) and 'txid' in data:
             return {'success': True}
         else:
-            LOG.error('Unable to push tx via %s: %s' % (self.url, data))
-            return {'error': 'Unable to push tx via %s: %s' % (self.url, data)}
+            LOG.error(f'Unable to push tx via {self.url}: {data}')
+            return {'error': f'Unable to push tx via {self.url}: {data}'}

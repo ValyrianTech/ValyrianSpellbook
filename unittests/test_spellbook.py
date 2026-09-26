@@ -91,7 +91,7 @@ def get_call_url(mock_call):
 
 def get_call_data(mock_call):
     """Extract data from a mock call, handling both positional and keyword args."""
-    args, kwargs = mock_call.call_args
+    _args, kwargs = mock_call.call_args
     return kwargs.get('data', {})
 
 
@@ -165,7 +165,7 @@ class TestDoGetRequest:
         spellbook.args = make_args(api_key='k', api_secret=VALID_SECRET, explorer=None)
         mock_requests.get.return_value.text = 'response'
         do_get_request('http://localhost/test', authenticate=True)
-        args, kwargs = mock_requests.get.call_args
+        _args, kwargs = mock_requests.get.call_args
         assert kwargs['headers'] is not None
         assert kwargs['headers']['API_Key'] == 'k'
 
@@ -176,14 +176,14 @@ class TestDoGetRequest:
         mock_requests.get.return_value.text = 'response'
         data = {'block_height': 100}
         do_get_request('http://localhost/test', data=data)
-        args, kwargs = mock_requests.get.call_args
+        _args, kwargs = mock_requests.get.call_args
         assert kwargs['json'] == data
 
     @mock.patch('spellbook.requests')
     @mock.patch('spellbook.sys')
     @mock.patch('spellbook.print')
     def test_get_request_exception(self, mock_print, mock_sys, mock_requests):
-        mock_requests.get.side_effect = Exception('connection error')
+        mock_requests.get.side_effect = ValueError('connection error')
         do_get_request('http://localhost/test')
         mock_sys.exit.assert_called_once_with(1)
 
@@ -197,7 +197,7 @@ class TestDoPostRequest:
         mock_requests.post.return_value.text = 'response'
         do_post_request('http://localhost/test', data={'key': 'value'})
         mock_requests.post.assert_called_once()
-        args, kwargs = mock_requests.post.call_args
+        _args, kwargs = mock_requests.post.call_args
         assert kwargs['json'] == {'key': 'value'}
 
     @mock.patch('spellbook.requests')
@@ -206,7 +206,7 @@ class TestDoPostRequest:
         spellbook.args = make_args(api_key='k', api_secret=VALID_SECRET, explorer=None)
         mock_requests.post.return_value.text = 'response'
         do_post_request('http://localhost/test', authenticate=True, data={'x': 1})
-        args, kwargs = mock_requests.post.call_args
+        _args, kwargs = mock_requests.post.call_args
         assert kwargs['headers'] is not None
 
     @mock.patch('spellbook.requests')
@@ -214,7 +214,7 @@ class TestDoPostRequest:
     @mock.patch('spellbook.print')
     def test_post_request_exception(self, mock_print, mock_sys, mock_requests):
         spellbook.args = make_args(explorer=None)
-        mock_requests.post.side_effect = Exception('fail')
+        mock_requests.post.side_effect = ValueError('fail')
         do_post_request('http://localhost/test')
         mock_sys.exit.assert_called_once_with(1)
 
@@ -235,7 +235,7 @@ class TestDoDeleteRequest:
         spellbook.args = make_args(api_key='k', api_secret=VALID_SECRET, explorer=None)
         mock_requests.delete.return_value.text = 'deleted'
         do_delete_request('http://localhost/test', authenticate=True)
-        args, kwargs = mock_requests.delete.call_args
+        _args, kwargs = mock_requests.delete.call_args
         assert kwargs['headers'] is not None
 
     @mock.patch('spellbook.requests')
@@ -243,7 +243,7 @@ class TestDoDeleteRequest:
     @mock.patch('spellbook.print')
     def test_delete_request_exception(self, mock_print, mock_sys, mock_requests):
         spellbook.args = make_args(explorer=None)
-        mock_requests.delete.side_effect = Exception('fail')
+        mock_requests.delete.side_effect = ValueError('fail')
         do_delete_request('http://localhost/test')
         mock_sys.exit.assert_called_once_with(1)
 

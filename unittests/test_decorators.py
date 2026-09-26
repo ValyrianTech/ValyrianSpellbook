@@ -217,7 +217,7 @@ class TestRetry:
         def test_func():
             call_count[0] += 1
             if call_count[0] < 3:
-                raise Exception('Temporary error')
+                raise ValueError('Temporary error')
             return 'success'
 
         result = test_func()
@@ -232,7 +232,7 @@ class TestRetry:
         @retry(retries=3)
         def test_func():
             call_count[0] += 1
-            raise Exception('Permanent error')
+            raise ValueError('Permanent error')
 
         result = test_func()
         assert result is None

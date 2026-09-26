@@ -24,17 +24,17 @@ config.read(spellbook_configuration_file)
 
 # Check if the spellbook configuration file contains a [Wallet] section
 if not config.has_section('Wallet'):  # pragma: no cover
-    raise Exception('Configuration file %s does not have a [Wallet] section ' % spellbook_configuration_file)
+    raise ValueError(f'Configuration file {spellbook_configuration_file} does not have a [Wallet] section ')
 
 # Check if the [Wallet] section has options for 'wallet_dir' and 'default_wallet'
 if not config.has_option('Wallet', 'wallet_dir'):  # pragma: no cover
-    raise Exception(
-        "Configuration file %s does not have an option 'wallet_dir' in the [Wallet] section" % spellbook_configuration_file)
+    raise ValueError(
+        f"Configuration file {spellbook_configuration_file} does not have an option 'wallet_dir' in the [Wallet] section")
 WALLET_DIR = config.get('Wallet', 'wallet_dir')
 
 if not config.has_option('Wallet', 'default_wallet'):  # pragma: no cover
-    raise Exception(
-        "Configuration file %s does not have an option 'default_wallet' in the [Wallet] section" % spellbook_configuration_file)
+    raise ValueError(
+        f"Configuration file {spellbook_configuration_file} does not have an option 'default_wallet' in the [Wallet] section")
 WALLET_ID = config.get('Wallet', 'default_wallet')
 
 # ----------------------------------------------------------------------------------------------------------------
@@ -140,7 +140,7 @@ def load_wallet():
     if args.wallet is not None:
         WALLET_ID = args.wallet
 
-    if not os.path.isfile(os.path.join(WALLET_DIR, '%s.enc' % WALLET_ID)):
+    if not os.path.isfile(os.path.join(WALLET_DIR, f'{WALLET_ID}.enc')):
         return {}
 
     if args.wallet_password is not None:
@@ -149,15 +149,15 @@ def load_wallet():
         cipher = AESCipher(key=getpass.getpass('Enter the password to decrypt the hot wallet: '))
 
     try:
-        with open(os.path.join(WALLET_DIR, '%s.enc' % WALLET_ID), 'r') as input_file:
+        with open(os.path.join(WALLET_DIR, f'{WALLET_ID}.enc'), 'r') as input_file:
             encrypted_data = input_file.read()
             return simplejson.loads(cipher.decrypt(encrypted_data))
 
     except OSError as ex:
-        print('Unable to load encrypted wallet: %s' % ex, file=sys.stderr)
+        print(f'Unable to load encrypted wallet: {ex}', file=sys.stderr)
         sys.exit(1)
-    except Exception as ex:
-        print('Unable to decrypt wallet: %s' % ex, file=sys.stderr)
+    except (ValueError, KeyError, TypeError) as ex:
+        print(f'Unable to decrypt wallet: {ex}', file=sys.stderr)
         sys.exit(1)
 
 
@@ -177,7 +177,7 @@ def save_wallet(wallet):
     cipher = AESCipher(key=password1)
     unencrypted_data = bytes(simplejson.dumps(wallet, sort_keys=True, indent=4), 'utf-8')
 
-    with open(os.path.join(WALLET_DIR, '%s.enc' % WALLET_ID), 'w') as output_file:
+    with open(os.path.join(WALLET_DIR, f'{WALLET_ID}.enc'), 'w') as output_file:
         output_file.write(str(cipher.encrypt(unencrypted_data), 'utf-8'))
 
 
@@ -188,7 +188,7 @@ def add_key():
     try:
         address = privkey_to_address(args.private_key, magicbyte=0 if get_use_testnet() is False else 111)
     except AssertionError:
-        print('Invalid private key: %s' % args.private_key, file=sys.stderr)
+        print(f'Invalid private key: {args.private_key}', file=sys.stderr)
         sys.exit(1)
 
     new_key = {address: args.private_key}

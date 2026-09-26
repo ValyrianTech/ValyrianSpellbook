@@ -56,7 +56,7 @@ class TestVerifyMessage(unittest.TestCase):
         """Test verify_message when exception occurs"""
         from helpers.messagehelpers import verify_message
         
-        mock_verify.side_effect = Exception('Verification error')
+        mock_verify.side_effect = ValueError('Verification error')
         
         result = verify_message('1Address', 'test message', 'signature')
         

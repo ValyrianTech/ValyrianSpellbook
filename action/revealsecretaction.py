@@ -23,7 +23,7 @@ class RevealSecretAction(Action):
 
         :return: True upon success, False upon failure
         """
-        LOG.info('Allowing reveal of RevealSecret action %s' % self.id)
+        LOG.info(f'Allowing reveal of RevealSecret action {self.id}')
         self.allow_reveal = True
         self.save()
         return True

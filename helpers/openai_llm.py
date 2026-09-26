@@ -130,7 +130,7 @@ class OpenAILLM(LLMInterface):
                 data = {'message': completion.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion.lstrip())}
                 broadcast_message(message=json.dumps(data), channel=get_broadcast_channel())
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, OSError) as e:
             LOG.error(f'Error connecting to OpenAI: {e}')
             return 'Error: Unable to connect to OpenAI.\n'
 

@@ -29,11 +29,11 @@ def get_recommended_fee():
     url = 'https://bitcoinfees.earn.com/api/v1/fees/recommended'
 
     try:
-        LOG.info('GET %s' % url)
+        LOG.info(f'GET {url}')
         r = requests.get(url=url)
         data = r.json()
-    except Exception as ex:
-        raise Exception('Unable get recommended fee from bitcoinfees.earn.com: %s' % ex)
+    except (ValueError, KeyError, TypeError, OSError) as ex:
+        raise ValueError(f'Unable get recommended fee from bitcoinfees.earn.com: {ex}')
 
     return {'high_priority': data['fastestFee']*1024,
             'low_priority': data['hourFee']*1024,
@@ -45,11 +45,11 @@ def get_recommended_fee_blockcypher():
     url = 'https://api.blockcypher.com/v1/btc/test3' if get_use_testnet() is True else 'https://api.blockcypher.com/v1/btc/main'
 
     try:
-        LOG.info('GET %s' % url)
+        LOG.info(f'GET {url}')
         r = requests.get(url=url)
         data = r.json()
-    except Exception as ex:
-        raise Exception('Unable get recommended fee from blockcypher.com: %s' % ex)
+    except (ValueError, KeyError, TypeError, OSError) as ex:
+        raise ValueError(f'Unable get recommended fee from blockcypher.com: {ex}')
 
     return {'high_priority': data['high_fee_per_kb'],
             'low_priority': data['low_fee_per_kb'],

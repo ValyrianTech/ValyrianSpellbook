@@ -30,7 +30,7 @@ class TestTextGenerationWebuiLLM(unittest.TestCase):
         """Test get_completion_text handles errors"""
         from helpers.textgenerationwebui_llm import TextGenerationWebuiLLM
 
-        mock_post.side_effect = Exception("Connection Error")
+        mock_post.side_effect = ValueError("Connection Error")
 
         llm = TextGenerationWebuiLLM(model_name='test-model', host='http://localhost', port=5000)
         messages = [{'role': 'user', 'content': 'Hello'}]
@@ -102,7 +102,7 @@ class TestTextGenerationWebuiLLM(unittest.TestCase):
         messages = [
             {'role': 'user', 'content': [{'type': 'text', 'text': 'Describe this'}, {'type': 'image_url', 'image_url': 'data:image/jpeg;base64,...'}]}
         ]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
 
         self.assertEqual(result, 'I see an image')
 
@@ -135,7 +135,7 @@ class TestTextGenerationWebuiLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
 
         self.assertEqual(result, '')
 
@@ -167,7 +167,7 @@ class TestTextGenerationWebuiLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
 
         self.assertEqual(result, 'Hello!')
         # Verify URL was constructed without port
@@ -203,7 +203,7 @@ class TestTextGenerationWebuiLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages, thinking_level='high')
+        result, _usage = llm.get_completion_text(messages, thinking_level='high')
 
         self.assertEqual(result, 'Hello!')
 
@@ -238,7 +238,7 @@ class TestTextGenerationWebuiLLM(unittest.TestCase):
             {'role': 'system', 'content': 'You are helpful'},
             {'role': 'user', 'content': 'Hello'}
         ]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
 
         self.assertEqual(result, 'Response')
 

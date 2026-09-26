@@ -29,16 +29,16 @@ class ChainSoAPI(ExplorerAPI):
         LOG.warning('DO NOT USE CHAIN.SO TO GET ADDRESS TRANSACTIONS!!!!!!!!!!!!!')
         url = f'{self.url}/address/{self.network}/{address}'
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             data = r.json()
-        except Exception as ex:
-            LOG.error('Unable to get transactions of address %s from Chain.so: %s' % (address, ex))
-            return {'error': 'Unable to get transactions of address %s from Chain.so' % address}
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get transactions of address {address} from Chain.so: {ex}')
+            return {'error': f'Unable to get transactions of address {address} from Chain.so'}
 
         if 'data' not in data:
-            LOG.error('Invalid response data from Chain.so: %s' % data)
-            return {'error': 'Invalid response data from Chain.so: %s' % data}
+            LOG.error(f'Invalid response data from Chain.so: {data}')
+            return {'error': f'Invalid response data from Chain.so: {data}'}
 
         data = data['data']
 
@@ -58,16 +58,16 @@ class ChainSoAPI(ExplorerAPI):
         """Retrieve a block by its height from the blockchain explorer."""
         url = f'{self.url}/get_block/{self.network}/{height}'
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             data = r.json()
-        except Exception as ex:
-            LOG.error('Unable to get block %s from Chain.so: %s' % (height, ex))
-            return {'error': 'Unable to get block %s from Chain.so' % height}
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get block {height} from Chain.so: {ex}')
+            return {'error': f'Unable to get block {height} from Chain.so'}
 
         if 'data' not in data:
-            LOG.error('Invalid response data from Chain.so: %s' % data)
-            return {'error': 'Invalid response data from Chain.so: %s' % data}
+            LOG.error(f'Invalid response data from Chain.so: {data}')
+            return {'error': f'Invalid response data from Chain.so: {data}'}
 
         data = data['data']
 
@@ -79,22 +79,22 @@ class ChainSoAPI(ExplorerAPI):
                      'size': data['size']}
             return {'block': block}
         else:
-            return {'error': 'Received invalid data: %s' % data}
+            return {'error': f'Received invalid data: {data}'}
 
     def get_latest_block(self):
         """Retrieve the latest block from the blockchain explorer."""
         url = f'{self.url}/get_info/{self.network}'
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             data = r.json()
-        except Exception as ex:
-            LOG.error('Unable to get latest block from Chain.so: %s' % ex)
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get latest block from Chain.so: {ex}')
             return {'error': 'Unable to get latest block from Chain.so'}
 
         if 'data' not in data:
-            LOG.error('Invalid response data from Chain.so: %s' % data)
-            return {'error': 'Invalid response data from Chain.so: %s' % data}
+            LOG.error(f'Invalid response data from Chain.so: {data}')
+            return {'error': f'Invalid response data from Chain.so: {data}'}
 
         data = data['data']
 
@@ -108,16 +108,16 @@ class ChainSoAPI(ExplorerAPI):
         """Retrieve unspent transaction outputs (UTXOs) for a given address."""
         url = f'{self.url}/get_tx_unspent/{self.network}/{address}'
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             data = r.json()
-        except Exception as ex:
-            LOG.error('Unable to get transaction of address %s from Chain.so: %s' % (address, ex))
-            return {'error': 'Unable to get transactions of address %s from Chain.so' % address}
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get transaction of address {address} from Chain.so: {ex}')
+            return {'error': f'Unable to get transactions of address {address} from Chain.so'}
 
         if 'data' not in data:
-            LOG.error('Invalid response data from Chain.so: %s' % data)
-            return {'error': 'Invalid response data from Chain.so: %s' % data}
+            LOG.error(f'Invalid response data from Chain.so: {data}')
+            return {'error': f'Invalid response data from Chain.so: {data}'}
 
         data = data['data']
 
@@ -137,16 +137,16 @@ class ChainSoAPI(ExplorerAPI):
         """Retrieve a block by its hash from the blockchain explorer."""
         url = f'{self.url}/get_block/{self.network}/{block_hash}'
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             data = r.json()
-        except Exception as ex:
-            LOG.error('Unable to get block %s from Chain.so: %s' % (block_hash, ex))
-            return {'error': 'Unable to get block %s from Chain.so' % block_hash}
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get block {block_hash} from Chain.so: {ex}')
+            return {'error': f'Unable to get block {block_hash} from Chain.so'}
 
         if 'data' not in data:
-            LOG.error('Invalid response data from Chain.so: %s' % data)
-            return {'error': 'Invalid response data from Chain.so: %s' % data}
+            LOG.error(f'Invalid response data from Chain.so: {data}')
+            return {'error': f'Invalid response data from Chain.so: {data}'}
 
         data = data['data']
 
@@ -158,22 +158,22 @@ class ChainSoAPI(ExplorerAPI):
                      'size': data['size']}
             return {'block': block}
         else:
-            return {'error': 'Received invalid data: %s' % data}
+            return {'error': f'Received invalid data: {data}'}
 
     def get_balance(self, address):
         """Retrieve the balance (final, received, sent) for a given address."""
         url = f'{self.url}/address/{self.network}/{address}'
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             data = r.json()
-        except Exception as ex:
-            LOG.error('Unable to get balance of address %s from Chain.so: %s' % (address, ex))
-            return {'error': 'Unable to get balance of address %s from Chain.so' % address}
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get balance of address {address} from Chain.so: {ex}')
+            return {'error': f'Unable to get balance of address {address} from Chain.so'}
 
         if 'data' not in data:
-            LOG.error('Invalid response data from Chain.so: %s' % data)
-            return {'error': 'Invalid response data from Chain.so: %s' % data}
+            LOG.error(f'Invalid response data from Chain.so: {data}')
+            return {'error': f'Invalid response data from Chain.so: {data}'}
 
         data = data['data']
 
@@ -199,25 +199,25 @@ class ChainSoAPI(ExplorerAPI):
                 input_addresses.append(tx_inputs[i]['address'])
 
             if len(input_addresses) > 0:
-                prime_input_address = sorted(input_addresses)[0]
+                prime_input_address = min(input_addresses)
                 return {'prime_input_address': prime_input_address}
 
-        return {'error': 'Received invalid data: %s' % transaction_data}
+        return {'error': f'Received invalid data: {transaction_data}'}
 
     def get_transaction(self, txid):
         """Retrieve a single transaction by its txid from the explorer."""
         url = f'{self.url}/get_tx/{self.network}/{txid}'
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             data = r.json()
-        except Exception as ex:
-            LOG.error('Unable to get transaction %s from Chain.so: %s' % (txid, ex))
-            return {'error': 'Unable to get transaction %s from Chain.so' % txid}
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get transaction {txid} from Chain.so: {ex}')
+            return {'error': f'Unable to get transaction {txid} from Chain.so'}
 
         if 'data' not in data:
-            LOG.error('Invalid response data from Chain.so: %s' % data)
-            return {'error': 'Invalid response data from Chain.so: %s' % data}
+            LOG.error(f'Invalid response data from Chain.so: {data}')
+            return {'error': f'Invalid response data from Chain.so: {data}'}
 
         data = data['data']
 
@@ -226,8 +226,8 @@ class ChainSoAPI(ExplorerAPI):
 
         block_data = self.get_block_by_hash(block_hash=data['blockhash'])
         if not ('block' in block_data and 'height' in block_data['block']):
-            LOG.error('Unable to get block %s to get the block height from chain.so' % data['blockhash'])
-            return {'error': 'Unable to get block %s to get the block height from chain.so' % data['blockhash']}
+            LOG.error('Unable to get block {} to get the block height from chain.so'.format(data['blockhash']))
+            return {'error': 'Unable to get block {} to get the block height from chain.so'.format(data['blockhash'])}
 
         tx.block_height = block_data['block']['height']
         tx.confirmations = data['confirmations']
@@ -259,8 +259,8 @@ class ChainSoAPI(ExplorerAPI):
                 except UnicodeDecodeError:
                     try:
                         tx_output.op_return = tx_output.op_return.decode('cp1252')
-                    except Exception as ex:
-                        LOG.error('Unable to decode OP_RETURN data %s in utf-8 or cp1252: %s' % (tx_output.op_return, ex))
+                    except (ValueError, KeyError, TypeError, OSError) as ex:
+                        LOG.error(f'Unable to decode OP_RETURN data {tx_output.op_return} in utf-8 or cp1252: {ex}')
                         tx_output.op_return = 'Unable to decode hex data'
 
             tx.outputs.append(tx_output)

@@ -230,7 +230,7 @@ class TestWebSocketHandlerHandler(unittest.TestCase):
             
             # Simulate error during iteration
             async def mock_aiter():
-                raise Exception("Connection error")
+                raise ValueError("Connection error")
                 yield  # Never reached
             
             mock_websocket.__aiter__ = mock_aiter
@@ -315,8 +315,8 @@ class TestRunWebsocketServer(unittest.TestCase):
 
         try:
             asyncio.run(asyncio.wait_for(run_websocket_server('localhost', 8765), timeout=0.1))
-        except (asyncio.TimeoutError, Exception):
-            pass
+        except (asyncio.TimeoutError, OSError):
+            mock_log.info('Websocket server run timed out as expected')
 
         mock_serve.assert_called_once()
 
@@ -335,8 +335,8 @@ class TestRunWebsocketServer(unittest.TestCase):
 
         try:
             asyncio.run(asyncio.wait_for(run_websocket_server('localhost', 8765), timeout=0.1))
-        except (asyncio.TimeoutError, Exception):
-            pass
+        except (asyncio.TimeoutError, OSError):
+            mock_log.info('Websocket server run timed out as expected')
 
         mock_ssl_ctx.assert_called_once()
         mock_serve.assert_called_once()
@@ -352,7 +352,7 @@ class TestStartWebsocketServerError(unittest.TestCase):
         """Test start_websocket_server handles errors"""
         from helpers.websockethelpers import start_websocket_server
 
-        mock_loop.run_until_complete.side_effect = Exception("Server error")
+        mock_loop.run_until_complete.side_effect = ValueError("Server error")
 
         start_websocket_server('localhost', 8765)
 
@@ -457,7 +457,7 @@ class TestWebSocketHandlerBroadcastWithTasks(unittest.TestCase):
 
             async def msg_iter():
                 yield 'msg1'
-                raise Exception('Connection lost')
+                raise ValueError('Connection lost')
 
             mock_ws.__aiter__ = lambda self: msg_iter()
             mock_ws.__anext__ = msg_iter().__anext__

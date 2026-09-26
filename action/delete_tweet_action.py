@@ -25,11 +25,11 @@ class DeleteTweetAction(Action):
         if self.tweet_id is None:
             return False
 
-        LOG.info('Deleting tweet: %s' % self.tweet_id)
+        LOG.info(f'Deleting tweet: {self.tweet_id}')
 
         try:
             delete_tweet(tweet_id=self.tweet_id)
-        except Exception as ex:
+        except (ValueError, KeyError, TypeError, OSError) as ex:
             LOG.error(f'Unable to delete tweet {self.tweet_id}: {ex}')
             return False
 

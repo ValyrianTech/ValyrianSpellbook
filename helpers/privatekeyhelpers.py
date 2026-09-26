@@ -32,15 +32,14 @@ class PrivateKey:
 
         if self.wifc is not None:
             if re.match(wif_compressed_regex, self.wifc) is None:
-                raise Exception('Invalid WIF compressed key: %s' % self.wifc)
+                raise ValueError(f'Invalid WIF compressed key: {self.wifc}')
 
         elif self.wif is not None:  # pragma: no cover
             if re.match(wif_uncompressed_regex, self.wif) is None:
-                raise Exception('Invalid WIF uncompressed key: %s' % self.wif)
+                raise ValueError(f'Invalid WIF uncompressed key: {self.wif}')
 
-        elif self.hex is not None:  # pragma: no cover
-            if re.match(hexadecimal_regex, self.hex) is None:
-                raise Exception('Invalid HEX key: %s' % self.hex)
+        elif self.hex is not None and re.match(hexadecimal_regex, self.hex) is None:  # pragma: no cover
+            raise ValueError(f'Invalid HEX key: {self.hex}')
 
 
 def encode_privkey(private_key, formt, vbyte=0):
@@ -63,7 +62,7 @@ def encode_privkey(private_key, formt, vbyte=0):
     elif formt == 'wif_compressed':
         return bin_to_b58check(encode(private_key, 256, 32) + b'\x01', 128 + int(vbyte))
     else:
-        raise Exception("Invalid format!")
+        raise ValueError("Invalid format!")
 
 
 def decode_privkey(private_key, formt=None):
@@ -86,7 +85,7 @@ def decode_privkey(private_key, formt=None):
     elif formt == 'wif_compressed':
         return decode(b58check_to_bin(private_key)[:32], 256)
     else:
-        raise Exception("WIF does not represent privkey")
+        raise ValueError("WIF does not represent privkey")
 
 
 def get_privkey_format(private_key):
@@ -108,7 +107,7 @@ def get_privkey_format(private_key):
         elif len(bin_p) == 33:
             return 'wif_compressed'
         else:
-            raise Exception("WIF does not represent privkey")
+            raise ValueError("WIF does not represent privkey")
 
 
 def b58check_to_bin(private_key):
@@ -124,7 +123,7 @@ def privkey_to_pubkey(privkey):
     f = get_privkey_format(privkey)
     privkey = decode_privkey(privkey, f)
     if privkey >= N:
-        raise Exception("Invalid privkey")
+        raise ValueError("Invalid privkey")
     if f in ['bin', 'bin_compressed', 'hex', 'hex_compressed', 'decimal']:
         return encode_pubkey(fast_multiply(G, privkey), f)
     else:

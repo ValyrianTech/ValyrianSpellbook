@@ -30,22 +30,22 @@ class CommandAction(Action):
 
         placeholders = kwargs.get('placeholders', {})
         for key, value in placeholders.items():
-            LOG.info('Replacing placeholder %s with %s' % (key, value))
+            LOG.info(f'Replacing placeholder {key} with {value}')
             self.run_command = self.run_command.replace(key, value)
 
-        LOG.info('Running command: %s' % self.run_command)
+        LOG.info(f'Running command: {self.run_command}')
         if self.working_dir is not None:
-            LOG.info('Working dir: %s' % self.working_dir)
+            LOG.info(f'Working dir: {self.working_dir}')
         
         # Use cwd parameter instead of os.chdir() for thread-safety
         command_process = Popen(self.run_command, stdout=PIPE, stderr=PIPE, shell=True, cwd=self.working_dir)
         output, error = command_process.communicate()
         stripped_output = output.strip()
-        LOG.info('Command output: %s' % stripped_output)
+        LOG.info(f'Command output: {stripped_output}')
 
         stripped_error = error.strip()
         if len(stripped_error):
-            LOG.error('Command error: %s' % stripped_error)
+            LOG.error(f'Command error: {stripped_error}')
 
         if command_process.returncode == 0:
             return True, stripped_output, stripped_error

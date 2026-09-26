@@ -56,7 +56,7 @@ class ChromosomeMutation:
                     gene.charset = self.chromosome.charset
 
             else:
-                raise NotImplementedError('Unknown encoding type: %s' % self.chromosome.encoding_type)
+                raise NotImplementedError(f'Unknown encoding type: {self.chromosome.encoding_type}')
 
             gene.set_random_data()
             self.chromosome.genes.insert(random.randint(0, len(self.chromosome.genes)), gene)
@@ -73,7 +73,7 @@ class ChromosomeMutation:
     def split(self):
         """Split."""
         # Split a string gene in 2 genes
-        if not self.chromosome.encoding_type == EncodingType.STRING:
+        if self.chromosome.encoding_type != EncodingType.STRING:
             return
 
         if self.chromosome.n_genes is None and 0 < len(self.chromosome.genes) < 1000:
@@ -90,7 +90,7 @@ class ChromosomeMutation:
     def merge(self):
         """Merge."""
         # Merge 2 genes together
-        if not self.chromosome.encoding_type == EncodingType.STRING:
+        if self.chromosome.encoding_type != EncodingType.STRING:
             return
 
         n_genes = len(self.chromosome.genes)

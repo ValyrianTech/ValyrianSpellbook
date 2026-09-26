@@ -18,8 +18,8 @@ from helpers.runcommandprocess import RunCommandProcess
 
 def uptime_check(email, ipfs=False, reboot=False, ssl=None):
     """Check if the Spellbook server is online and optionally verify IPFS node status."""
-    LOG.info('CPU: %s%%' % psutil.cpu_percent())
-    LOG.info('RAM: %s' % str(psutil.virtual_memory()))
+    LOG.info(f'CPU: {psutil.cpu_percent()}%')
+    LOG.info(f'RAM: {psutil.virtual_memory()!s}')
     LOG.info('Checking if spellbook server is still online')
 
     if ssl is None:
@@ -29,11 +29,11 @@ def uptime_check(email, ipfs=False, reboot=False, ssl=None):
     try:
         r = requests.get(url=url, timeout=10)
         response = r.json()
-    except Exception as ex:
-        LOG.error('Unable to ping spellbook server: %s' % ex)
+    except (ValueError, KeyError, TypeError, OSError) as ex:
+        LOG.error(f'Unable to ping spellbook server: {ex}')
         response = {}
 
-    online = True if 'success' in response and response['success'] is True else False
+    online = bool('success' in response and response['success'] is True)
 
     if not online:
         LOG.error('Spellbook server is not online!')
@@ -43,7 +43,7 @@ def uptime_check(email, ipfs=False, reboot=False, ssl=None):
                          'REQUESTS_LOG': get_recent_requests_log()}
             body_template = os.path.join('server_offline')
             success = sendmail(recipients=email,
-                               subject='Spellbookserver @ %s is offline!' % get_host(),
+                               subject=f'Spellbookserver @ {get_host()} is offline!',
                                body_template=body_template,
                                variables=variables)
             if success is True:
@@ -54,20 +54,20 @@ def uptime_check(email, ipfs=False, reboot=False, ssl=None):
                     RunCommandProcess(command='sudo reboot').run()
 
             else:
-                LOG.error('Email to %s failed!' % email)
+                LOG.error(f'Email to {email} failed!')
     else:
         LOG.info('Server is online')
 
     if ipfs is True:
         try:
             response = check_ipfs()
-        except Exception as ex:
-            LOG.error('IPFS node is offline: %s' % ex)
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'IPFS node is offline: {ex}')
             if email is not None:
                 variables = {'HOST': get_host()}
                 body_template = os.path.join('ipfs_offline')
                 success = sendmail(recipients=email,
-                                   subject='IPFS node @ %s is offline!' % get_host(),
+                                   subject=f'IPFS node @ {get_host()} is offline!',
                                    body_template=body_template,
                                    variables=variables)
                 if success is True:
@@ -78,7 +78,7 @@ def uptime_check(email, ipfs=False, reboot=False, ssl=None):
                         RunCommandProcess(command='sudo reboot').run()
 
                 else:
-                    LOG.error('Email to %s failed!' % email)
+                    LOG.error(f'Email to {email} failed!')
 
 
 def get_recent_spellbook_log():

@@ -41,7 +41,7 @@ class TestOpenAILLM(unittest.TestCase):
         """Test get_completion_text handles errors"""
         from helpers.openai_llm import OpenAILLM
         
-        mock_openai.chat.completions.create.side_effect = Exception("API Error")
+        mock_openai.chat.completions.create.side_effect = ValueError("API Error")
         
         llm = OpenAILLM(model_name='gpt-4', api_key='test-key')
         messages = [{'role': 'user', 'content': 'Hello'}]
@@ -149,7 +149,7 @@ class TestOpenAILLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         # Should have stopped early
         self.assertEqual(result, '')
@@ -193,7 +193,7 @@ class TestOpenAILLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages, stop=['STOP'])
+        result, _usage = llm.get_completion_text(messages, stop=['STOP'])
         
         # Should contain content up to stop sequence
         self.assertIn('Hello STOP', result)
@@ -237,7 +237,7 @@ class TestOpenAILLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages, stop=['STOP'])
+        _result, _usage = llm.get_completion_text(messages, stop=['STOP'])
         
         # Should have logged warning about token waste
         mock_log.warning.assert_called()
@@ -314,7 +314,7 @@ class TestOpenAILLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages, thinking_level='off')
+        _result, _usage = llm.get_completion_text(messages, thinking_level='off')
 
         # Should log that reasoning is not applied (off)
         mock_log.info.assert_called()
@@ -351,7 +351,7 @@ class TestOpenAILLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages, thinking_level='high')
+        result, _usage = llm.get_completion_text(messages, thinking_level='high')
 
         self.assertEqual(result, 'Hello')
         # Should log that thinking_level is ignored for non-reasoning model

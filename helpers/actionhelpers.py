@@ -37,7 +37,7 @@ def get_action_config(action_id):
     :return: a dict containing the configuration of the action
     """
     try:
-        action_config = load_from_json_file(os.path.join(ACTIONS_DIR, '%s.json' % action_id))
+        action_config = load_from_json_file(os.path.join(ACTIONS_DIR, f'{action_id}.json'))
     except OSError:
         # Action does not exist yet, return empty dict
         action_config = {}
@@ -86,7 +86,7 @@ def get_action(action_id, action_type=None):
     elif action_config['action_type'] == ActionType.LAUNCHEVOLVER:
         action = LaunchEvolverAction(action_id)
     else:
-        raise NotImplementedError('Unknown action type: %s' % action_config['action_type'])
+        raise NotImplementedError('Unknown action type: {}'.format(action_config['action_type']))
 
     action.configure(**action_config)
 
@@ -115,11 +115,11 @@ def delete_action(action_id):
 
     :param action_id: The id of the action to delete
     """
-    filename = os.path.join(ACTIONS_DIR, '%s.json' % action_id)
+    filename = os.path.join(ACTIONS_DIR, f'{action_id}.json')
     if os.path.isfile(filename):
         os.remove(filename)
     else:
-        return {'error': 'Unknown action id: %s' % action_id}
+        return {'error': f'Unknown action id: {action_id}'}
 
 
 def run_action(action_id):

@@ -23,7 +23,7 @@ class TestNotifyTransaction(unittest.TestCase):
         pr = 'payment123'
         txid = 'tx456'
         
-        expected_command = r'curl %s -H "Content-Type: application/json" -d "{\"payment_request_id\":\"%s\",\"txid\":\"%s\"}"' % (url, pr, txid)
+        expected_command = rf'curl {url} -H "Content-Type: application/json" -d "{{\"payment_request_id\":\"{pr}\",\"txid\":\"{txid}\"}}"'
         
         # Verify the command format is correct
         self.assertIn(url, expected_command)
@@ -38,6 +38,7 @@ class TestNotifyTransaction(unittest.TestCase):
         mock_process.communicate.return_value = (b'OK', b'')
         mock_popen.return_value = mock_process
 
+        import runpy
         import sys
 
         import helpers.notify_transaction as nt_module
@@ -46,9 +47,7 @@ class TestNotifyTransaction(unittest.TestCase):
         sys.argv = ['notify_transaction', 'http://example.com/notify', 'pr123', 'tx456']
 
         try:
-            with open(nt_module.__file__) as f:
-                source = f.read()
-            exec(compile(source, nt_module.__file__, 'exec'), {'__name__': '__main__'})
+            runpy.run_path(nt_module.__file__, run_name='__main__')
         except SystemExit:
             pass
         finally:

@@ -53,7 +53,7 @@ def on_message(ws, message):
         return
 
     address_list = []
-    LISTENER_LOG.info('New transaction: %s' % transaction['data']['txid'])
+    LISTENER_LOG.info('New transaction: {}'.format(transaction['data']['txid']))
     LISTENER_LOG.info('\tFrom: ')
     for tx_input in transaction['data']['inputs']:
         input_address = tx_input['address']
@@ -62,13 +62,13 @@ def on_message(ws, message):
         if args.send is True and input_address != '':
             address_list.append(input_address)
 
-        LISTENER_LOG.info('\t\t%s -> %s' % (input_address, tx_input['amount']))
+        LISTENER_LOG.info('\t\t{} -> {}'.format(input_address, tx_input['amount']))
         if input_address in WATCHLIST and 'SEND' in WATCHLIST[input_address]:
 
             event_found = True
             command = WATCHLIST[input_address]['SEND']
             command = command.replace('#txid#', transaction['data']['txid'])
-            LISTENER_LOG.info('Executing command: %s' % command)
+            LISTENER_LOG.info(f'Executing command: {command}')
             run_command_process = RunCommandProcess(command=command)
             run_command_process.start()
 
@@ -81,13 +81,13 @@ def on_message(ws, message):
         if args.receive is True and output_address != '':
             address_list.append(output_address)
 
-        LISTENER_LOG.info('\t\t%s -> %s' % (output_address, tx_output['amount']))
+        LISTENER_LOG.info('\t\t{} -> {}'.format(output_address, tx_output['amount']))
         if output_address in WATCHLIST and 'RECEIVE' in WATCHLIST[output_address]:
 
             event_found = True
             command = WATCHLIST[output_address]['RECEIVE']
             command = command.replace('#txid#', transaction['data']['txid'])
-            LISTENER_LOG.info('Executing command: %s' % command)
+            LISTENER_LOG.info(f'Executing command: {command}')
             run_command_process = RunCommandProcess(command=command)
             run_command_process.start()
 
@@ -123,7 +123,7 @@ def on_message(ws, message):
 
 def on_error(ws, error):
     """Handle websocket errors by logging them."""
-    LISTENER_LOG.info('ERROR: %s' % error)  # use info level here instead of error level because for some reason an error is raised when the program exits
+    LISTENER_LOG.info(f'ERROR: {error}')  # use info level here instead of error level because for some reason an error is raised when the program exits
 
 
 def on_close(ws):
@@ -196,7 +196,7 @@ if __name__ == "__main__":
             sys.exit(1)
 
         COMMAND = ''.join(args.command)
-        LISTENER_LOG.info('Command to run when event is detected: %s' % COMMAND)
+        LISTENER_LOG.info(f'Command to run when event is detected: {COMMAND}')
 
         if args.send is False and args.receive is False:
             LISTENER_LOG.error('Must specify at least on of the options --send or --receive')
@@ -235,10 +235,10 @@ if __name__ == "__main__":
             with open(args.watchlist, 'r') as input_file:
                 try:
                     WATCHLIST = simplejson.load(input_file)
-                except Exception as ex:
-                    raise Exception('%s does not contain a valid dictionary: %s' % (args.watchlist, ex))
+                except (ValueError, KeyError, TypeError, OSError) as ex:
+                    raise ValueError(f'{args.watchlist} does not contain a valid dictionary: {ex}')
         except OSError:
-            raise Exception('File %s does not exists' % args.watchlist)
+            raise ValueError(f'File {args.watchlist} does not exists')
 
         LISTENER_LOG.info('Watchlist:')
         LISTENER_LOG.info(WATCHLIST)

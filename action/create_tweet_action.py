@@ -65,7 +65,7 @@ class CreateTweetAction(Action):
                          direct_message_deep_link=self.direct_message_deep_link,
                          user_auth=self.user_auth)
 
-        except Exception as ex:
+        except (ValueError, KeyError, TypeError, OSError) as ex:
             LOG.error(f'Unable to create tweet: {ex}')
             return False
 

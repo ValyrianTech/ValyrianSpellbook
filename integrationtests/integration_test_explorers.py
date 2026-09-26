@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import sys
 
 from helpers.setupscripthelpers import spellbook_call
 
@@ -16,9 +17,9 @@ configured_explorers = spellbook_call('get_explorers')
 if configured_explorers:
     print('--> Explorers found at beginning of test, deleting them before continuing')
     for explorer_id in configured_explorers:
-        print('----> Get explorer config %s' % explorer_id)
+        print(f'----> Get explorer config {explorer_id}')
         response = spellbook_call('get_explorer_config', explorer_id)
-        print('----> Deleting explorer %s' % explorer_id)
+        print(f'----> Deleting explorer {explorer_id}')
         response = spellbook_call('delete_explorer', explorer_id)
         assert response is None
 
@@ -51,7 +52,7 @@ assert response['type'] == 'BTC.com'
 
 print('--------------------------------------------------------------------------------------------------------')
 print('Saving blockexplorer.com')
-response = spellbook_call('save_explorer', 'blockexplorer.com', 'Insight', 3, '--url=%s' % "https://blockexplorer.com/api")
+response = spellbook_call('save_explorer', 'blockexplorer.com', 'Insight', 3, '--url={}'.format("https://blockexplorer.com/api"))
 assert response is None
 
 response = spellbook_call('get_explorer_config', 'blockexplorer.com')
@@ -67,11 +68,11 @@ try:
     blocktrail_key_file = os.path.join(PROGRAM_DIR, "blocktrail_key.txt")
     with open(blocktrail_key_file, 'r') as input_file:
         blocktrail_key = input_file.readline()
-except Exception as ex:
-    print('Unable to get the blocktrail key: %s' % ex)
-    exit(1)
+except (ValueError, KeyError, TypeError, OSError) as ex:
+    print(f'Unable to get the blocktrail key: {ex}')
+    sys.exit(1)
 
-response = spellbook_call('save_explorer', 'blocktrail.com', 'Blocktrail.com', 4, '--blocktrail_key=%s' % blocktrail_key)
+response = spellbook_call('save_explorer', 'blocktrail.com', 'Blocktrail.com', 4, f'--blocktrail_key={blocktrail_key}')
 assert response is None
 
 response = spellbook_call('get_explorer_config', 'blocktrail.com')

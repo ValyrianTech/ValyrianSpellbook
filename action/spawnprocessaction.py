@@ -29,8 +29,8 @@ class SpawnProcessAction(Action):
         try:
             process = RunCommandProcess(command=self.run_command, working_dir=self.working_dir)
             process.start()
-        except Exception as ex:
-            LOG.error('Spawning process failed: %s' % ex)
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Spawning process failed: {ex}')
             return False
 
         return True

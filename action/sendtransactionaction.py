@@ -4,7 +4,7 @@
 
 import operator
 
-from bips.BIP44 import get_private_key, get_xpriv_key
+from bips.bip44 import get_private_key, get_xpriv_key
 from data.data import prime_input_address, push_tx, utxos
 from helpers.configurationhelpers import (
     get_max_tx_fee_percentage,
@@ -209,7 +209,7 @@ class SendTransactionAction(Action):
             LOG.error('Can not activate SendTransaction action: sending address is None!')
             return False
 
-        LOG.info('Activating SendTransaction action %s' % self.id)
+        LOG.info(f'Activating SendTransaction action {self.id}')
 
         # Retrieve the available utxos of the sending address and construct a list of TransactionInput objects containing the necessary information for the inputs of a transaction
         # All available utxos will be used even if a subset would be enough, this is to avoid a scenario where the transaction fee would cause another utxo to be needed
@@ -225,8 +225,8 @@ class SendTransactionAction(Action):
                                                      output_n=utxo['output_n'],
                                                      confirmations=utxo['confirmations']) for utxo in data['utxos']]
         else:
-            error_msg = data['error'] if 'error' in data else ''
-            LOG.error('Error while retrieving utxos: %s' % error_msg)
+            error_msg = data.get('error', '')
+            LOG.error(f'Error while retrieving utxos: {error_msg}')
             return False
 
         tx_inputs = self.construct_transaction_inputs()
@@ -234,19 +234,19 @@ class SendTransactionAction(Action):
             return False
 
         total_value_in_inputs = int(sum([utxo['value'] for utxo in tx_inputs]))
-        LOG.info('Total available value in utxos: %d' % total_value_in_inputs)
+        LOG.info(f'Total available value in utxos: {total_value_in_inputs}')
 
         if self.minimum_amount is not None and total_value_in_inputs < self.minimum_amount:
-            LOG.error('SendTransaction action aborted: Total value is less than minimum amount: %s' % self.minimum_amount)
+            LOG.error(f'SendTransaction action aborted: Total value is less than minimum amount: {self.minimum_amount}')
             return False
 
         spellbook_fee = self.calculate_spellbook_fee(total_value_in_inputs)
 
         if self.amount == 0 and total_value_in_inputs < spellbook_fee:
-            LOG.error('SendTransaction action aborted: Total input value is less than the spellbook fee: %s < %s' % (total_value_in_inputs, spellbook_fee))
+            LOG.error(f'SendTransaction action aborted: Total input value is less than the spellbook fee: {total_value_in_inputs} < {spellbook_fee}')
             return False
         elif total_value_in_inputs < spellbook_fee + self.amount:
-            LOG.error('SendTransaction action aborted: Total input value is not enough: %s < %s + %s' % (total_value_in_inputs, self.amount, spellbook_fee))
+            LOG.error(f'SendTransaction action aborted: Total input value is not enough: {total_value_in_inputs} < {self.amount} + {spellbook_fee}')
             return False
 
         sending_amount = total_value_in_inputs - spellbook_fee if self.amount == 0 else self.amount
@@ -279,7 +279,7 @@ class SendTransactionAction(Action):
             return False
 
         # Make transaction without fee first to get the size
-        transaction = make_custom_tx(private_keys=private_keys, tx_inputs=tx_inputs, tx_outputs=tx_outputs, op_return_data=self.op_return_data, allow_zero_conf=True if self.utxo_confirmations == 0 else False)
+        transaction = make_custom_tx(private_keys=private_keys, tx_inputs=tx_inputs, tx_outputs=tx_outputs, op_return_data=self.op_return_data, allow_zero_conf=self.utxo_confirmations == 0)
 
         if transaction is None:
             return False
@@ -294,28 +294,28 @@ class SendTransactionAction(Action):
         elif self.tx_fee_type == 'Fixed' and isinstance(self.tx_fee, int) and self.tx_fee >= 0:
             satoshis_per_byte = self.tx_fee
         elif self.tx_fee_type == 'Fixed':
-            raise Exception('Invalid fixed transaction fee amount: %s' % self.tx_fee)
+            raise ValueError(f'Invalid fixed transaction fee amount: {self.tx_fee}')
         else:
-            raise NotImplementedError('Unknown transaction fee type: %s' % self.tx_fee_type)
+            raise NotImplementedError(f'Unknown transaction fee type: {self.tx_fee_type}')
 
-        LOG.info('%s transaction fee is %s sat/b' % (self.tx_fee_type, satoshis_per_byte))
+        LOG.info(f'{self.tx_fee_type} transaction fee is {satoshis_per_byte} sat/b')
 
         # Because the transaction is in hexadecimal, to calculate the size in bytes all we need to do is divide the number of characters by 2
         transaction_size = int(len(transaction) / 2)
         transaction_fee = transaction_size * satoshis_per_byte
-        LOG.info('Transaction size is %s bytes, total transaction fee = %s (%s sat/b)' % (transaction_size, transaction_fee, satoshis_per_byte))
+        LOG.info(f'Transaction size is {transaction_size} bytes, total transaction fee = {transaction_fee} ({satoshis_per_byte} sat/b)')
 
         # if the total available amount needs to be sent, then transaction fee should be equally subtracted from all receiving_outputs
         if self.amount == 0:
             total_sending_value = sum([output.value for output in receiving_outputs])
             if total_sending_value < transaction_fee:
-                LOG.error('Aborting SendTransaction: The total value of the receiving outputs is less than the transaction fee: %s < %s' % (total_sending_value, transaction_fee))
+                LOG.error(f'Aborting SendTransaction: The total value of the receiving outputs is less than the transaction fee: {total_sending_value} < {transaction_fee}')
                 return False
 
             fee_share = int(transaction_fee/len(receiving_outputs))
             for receiving_output in receiving_outputs:
                 if receiving_output.value < fee_share:
-                    LOG.error('Aborting SendTransaction: The value of at least one receiving output is not enough to subtract its share of the transaction fee: %s < %s' % (receiving_output.value, fee_share))
+                    LOG.error(f'Aborting SendTransaction: The value of at least one receiving output is not enough to subtract its share of the transaction fee: {receiving_output.value} < {fee_share}')
                     return False
                 else:
                     receiving_output.value -= fee_share
@@ -326,7 +326,7 @@ class SendTransactionAction(Action):
         # if a specific amount needs to be sent, then the transaction fee should be subtracted from the change output
         elif self.amount > 0 and change_output is not None:
             if change_output.value < transaction_fee:
-                LOG.error('Aborting SendTransaction: The value of the change output is less than the transaction fee: %s < %s' % (change_output.value, transaction_fee))
+                LOG.error(f'Aborting SendTransaction: The value of the change output is less than the transaction fee: {change_output.value} < {transaction_fee}')
                 return False
             else:
                 change_output.value -= transaction_fee
@@ -343,7 +343,7 @@ class SendTransactionAction(Action):
             return False
 
         # Now make the real transaction including the transaction fee
-        transaction = make_custom_tx(private_keys=private_keys, tx_inputs=tx_inputs, tx_outputs=tx_outputs, op_return_data=self.op_return_data, tx_fee=transaction_fee, allow_zero_conf=True if self.utxo_confirmations == 0 else False)
+        transaction = make_custom_tx(private_keys=private_keys, tx_inputs=tx_inputs, tx_outputs=tx_outputs, op_return_data=self.op_return_data, tx_fee=transaction_fee, allow_zero_conf=self.utxo_confirmations == 0)
 
         # explicitly delete local variable private_keys for security reasons as soon as possible
         del private_keys
@@ -352,17 +352,17 @@ class SendTransactionAction(Action):
             LOG.error('No transaction to be sent!')
             return False
 
-        LOG.info('Raw transaction: %s' % transaction)
+        LOG.info(f'Raw transaction: {transaction}')
 
         self.txid = txhash(tx=transaction)
-        LOG.info('Txid: %s' % self.txid)
+        LOG.info(f'Txid: {self.txid}')
 
         # Broadcast the transaction to the network
         response = push_tx(tx=transaction)
         if 'success' in response and response['success'] is True:
             return True
         else:
-            LOG.error('Broadcasting tx failed: %s' % response['error'])
+            LOG.error('Broadcasting tx failed: {}'.format(response['error']))
             return False
 
     def get_private_key(self):
@@ -378,7 +378,7 @@ class SendTransactionAction(Action):
             if self.sending_address in hot_wallet:
                 private_keys[self.sending_address] = hot_wallet[self.sending_address]
             else:
-                LOG.error('Private key for address %s not found in hot wallet!' % self.sending_address)
+                LOG.error(f'Private key for address {self.sending_address} not found in hot wallet!')
 
             # explicitly delete local variable hot_wallet for security reasons as soon as possible
             del hot_wallet
@@ -391,7 +391,7 @@ class SendTransactionAction(Action):
         else:
             # explicitly delete local variable hot_wallet for security reasons as soon as possible
             del hot_wallet
-            raise NotImplementedError('Unknown wallet type: %s' % self.wallet_type)
+            raise NotImplementedError(f'Unknown wallet type: {self.wallet_type}')
 
         return private_keys
 
@@ -411,7 +411,7 @@ class SendTransactionAction(Action):
 
             spellbook_fee = max(spellbook_fee, self.fee_minimum_amount)
 
-            LOG.info('Spellbook fee: %s' % spellbook_fee)
+            LOG.info(f'Spellbook fee: {spellbook_fee}')
 
         return spellbook_fee
 
@@ -423,9 +423,9 @@ class SendTransactionAction(Action):
         """
 
         if self.unspent_outputs is not None and len(self.unspent_outputs) > 0:
-            LOG.info('Found %s utxos for address %s' % (len(self.unspent_outputs), self.sending_address))
+            LOG.info(f'Found {len(self.unspent_outputs)} utxos for address {self.sending_address}')
         else:
-            LOG.error('No utxos found for address %s' % self.sending_address)
+            LOG.error(f'No utxos found for address {self.sending_address}')
 
         # Construct the transaction inputs
         tx_inputs = [{'address': utxo.address,
@@ -469,122 +469,122 @@ class SendTransactionAction(Action):
     def get_distribution(self, transaction_type, sending_amount):
         """Get distribution."""
         if not valid_amount(sending_amount) or sending_amount == 0:
-            LOG.error('Unable to get distribution: invalid sending_amount: %s' % sending_amount)
-            raise Exception('Unable to get distribution: invalid sending_amount: %s' % sending_amount)
+            LOG.error(f'Unable to get distribution: invalid sending_amount: {sending_amount}')
+            raise ValueError(f'Unable to get distribution: invalid sending_amount: {sending_amount}')
 
         if transaction_type == 'Send2Single':
             if not valid_address(self.receiving_address):
-                LOG.error('Unable to get distribution: invalid receiving_address: %s' % self.receiving_address)
-                raise Exception('Unable to get distribution: invalid receiving_address: %s' % self.receiving_address)
+                LOG.error(f'Unable to get distribution: invalid receiving_address: {self.receiving_address}')
+                raise ValueError(f'Unable to get distribution: invalid receiving_address: {self.receiving_address}')
             distribution = {self.receiving_address: sending_amount}
 
         elif transaction_type == 'Send2Many':
             if not valid_distribution(self.distribution):
-                LOG.error('Unable to get distribution: invalid distribution: %s' % self.distribution)
-                raise Exception('Unable to get distribution: invalid distribution: %s' % self.distribution)
+                LOG.error(f'Unable to get distribution: invalid distribution: {self.distribution}')
+                raise ValueError(f'Unable to get distribution: invalid distribution: {self.distribution}')
             distribution = self.distribution
 
         elif transaction_type == 'Send2SIL':
             if not valid_address(self.registration_address):
-                LOG.error('Unable to get distribution: invalid registration_address: %s' % self.registration_address)
-                raise Exception('Unable to get distribution: invalid registration_address: %s' % self.registration_address)
+                LOG.error(f'Unable to get distribution: invalid registration_address: {self.registration_address}')
+                raise ValueError(f'Unable to get distribution: invalid registration_address: {self.registration_address}')
             if not valid_block_height(self.registration_block_height):
-                LOG.error('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
-                raise Exception('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
+                LOG.error(f'Unable to get distribution: invalid registration_block_height: {self.registration_block_height}')
+                raise ValueError(f'Unable to get distribution: invalid registration_block_height: {self.registration_block_height}')
 
             data = get_sil(address=self.registration_address, block_height=self.registration_block_height)
             if 'SIL' not in data:
-                LOG.error('Unable to get distribution: invalid SIL data: %s' % data)
-                raise Exception('Unable to get distribution: invalid SIL: %s' % data)
+                LOG.error(f'Unable to get distribution: invalid SIL data: {data}')
+                raise ValueError(f'Unable to get distribution: invalid SIL: {data}')
             distribution = {recipient[0]: recipient[1] for recipient in data['SIL']}
 
         elif transaction_type == 'Send2LBL':
             if not valid_address(self.registration_address):
-                LOG.error('Unable to get distribution: invalid registration_address: %s' % self.registration_address)
-                raise Exception('Unable to get distribution: invalid registration_address: %s' % self.registration_address)
+                LOG.error(f'Unable to get distribution: invalid registration_address: {self.registration_address}')
+                raise ValueError(f'Unable to get distribution: invalid registration_address: {self.registration_address}')
             if not valid_xpub(self.registration_xpub):
-                LOG.error('Unable to get distribution: invalid registration_xpub: %s' % self.registration_xpub)
-                raise Exception('Unable to get distribution: invalid registration_xpub: %s' % self.registration_xpub)
+                LOG.error(f'Unable to get distribution: invalid registration_xpub: {self.registration_xpub}')
+                raise ValueError(f'Unable to get distribution: invalid registration_xpub: {self.registration_xpub}')
             if not valid_block_height(self.registration_block_height):
-                LOG.error('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
-                raise Exception('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
+                LOG.error(f'Unable to get distribution: invalid registration_block_height: {self.registration_block_height}')
+                raise ValueError(f'Unable to get distribution: invalid registration_block_height: {self.registration_block_height}')
 
             data = get_lbl(address=self.registration_address, xpub=self.registration_xpub, block_height=self.registration_block_height)
             if 'LBL' not in data:
-                LOG.error('Unable to get distribution: invalid LBL data: %s' % data)
-                raise Exception('Unable to get distribution: invalid LBL: %s' % data)
+                LOG.error(f'Unable to get distribution: invalid LBL data: {data}')
+                raise ValueError(f'Unable to get distribution: invalid LBL: {data}')
             distribution = {recipient[0]: recipient[1] for recipient in data['LBL']}
 
         elif transaction_type == 'Send2LRL':
             if not valid_address(self.registration_address):
-                LOG.error('Unable to get distribution: invalid registration_address: %s' % self.registration_address)
-                raise Exception('Unable to get distribution: invalid registration_address: %s' % self.registration_address)
+                LOG.error(f'Unable to get distribution: invalid registration_address: {self.registration_address}')
+                raise ValueError(f'Unable to get distribution: invalid registration_address: {self.registration_address}')
             if not valid_xpub(self.registration_xpub):
-                LOG.error('Unable to get distribution: invalid registration_xpub: %s' % self.registration_xpub)
-                raise Exception('Unable to get distribution: invalid registration_xpub: %s' % self.registration_xpub)
+                LOG.error(f'Unable to get distribution: invalid registration_xpub: {self.registration_xpub}')
+                raise ValueError(f'Unable to get distribution: invalid registration_xpub: {self.registration_xpub}')
             if not valid_block_height(self.registration_block_height):
-                LOG.error('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
-                raise Exception('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
+                LOG.error(f'Unable to get distribution: invalid registration_block_height: {self.registration_block_height}')
+                raise ValueError(f'Unable to get distribution: invalid registration_block_height: {self.registration_block_height}')
 
             data = get_lrl(address=self.registration_address, xpub=self.registration_xpub, block_height=self.registration_block_height)
             if 'LRL' not in data:
-                LOG.error('Unable to get distribution: invalid LRL data: %s' % data)
-                raise Exception('Unable to get distribution: invalid LRL: %s' % data)
+                LOG.error(f'Unable to get distribution: invalid LRL data: {data}')
+                raise ValueError(f'Unable to get distribution: invalid LRL: {data}')
             distribution = {recipient[0]: recipient[1] for recipient in data['LRL']}
 
         elif transaction_type == 'Send2LSL':
             if not valid_address(self.registration_address):
-                LOG.error('Unable to get distribution: invalid registration_address: %s' % self.registration_address)
-                raise Exception('Unable to get distribution: invalid registration_address: %s' % self.registration_address)
+                LOG.error(f'Unable to get distribution: invalid registration_address: {self.registration_address}')
+                raise ValueError(f'Unable to get distribution: invalid registration_address: {self.registration_address}')
             if not valid_xpub(self.registration_xpub):
-                LOG.error('Unable to get distribution: invalid registration_xpub: %s' % self.registration_xpub)
-                raise Exception('Unable to get distribution: invalid registration_xpub: %s' % self.registration_xpub)
+                LOG.error(f'Unable to get distribution: invalid registration_xpub: {self.registration_xpub}')
+                raise ValueError(f'Unable to get distribution: invalid registration_xpub: {self.registration_xpub}')
             if not valid_block_height(self.registration_block_height):
-                LOG.error('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
-                raise Exception('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
+                LOG.error(f'Unable to get distribution: invalid registration_block_height: {self.registration_block_height}')
+                raise ValueError(f'Unable to get distribution: invalid registration_block_height: {self.registration_block_height}')
 
             data = get_lsl(address=self.registration_address, xpub=self.registration_xpub, block_height=self.registration_block_height)
             if 'LSL' not in data:
-                LOG.error('Unable to get distribution: invalid LSL data: %s' % data)
-                raise Exception('Unable to get distribution: invalid LSL: %s' % data)
+                LOG.error(f'Unable to get distribution: invalid LSL data: {data}')
+                raise ValueError(f'Unable to get distribution: invalid LSL: {data}')
             distribution = {recipient[0]: recipient[1] for recipient in data['LSL']}
 
         elif transaction_type == 'Send2LAL':
             if not valid_address(self.sending_address):
-                LOG.error('Unable to get distribution: invalid sending_address: %s' % self.sending_address)
-                raise Exception('Unable to get distribution: invalid sending_address: %s' % self.sending_address)
+                LOG.error(f'Unable to get distribution: invalid sending_address: {self.sending_address}')
+                raise ValueError(f'Unable to get distribution: invalid sending_address: {self.sending_address}')
             if not valid_xpub(self.registration_xpub):
-                LOG.error('Unable to get distribution: invalid registration_xpub: %s' % self.registration_xpub)
-                raise Exception('Unable to get distribution: invalid registration_xpub: %s' % self.registration_xpub)
+                LOG.error(f'Unable to get distribution: invalid registration_xpub: {self.registration_xpub}')
+                raise ValueError(f'Unable to get distribution: invalid registration_xpub: {self.registration_xpub}')
             if not valid_block_height(self.registration_block_height):
-                LOG.error('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
-                raise Exception('Unable to get distribution: invalid registration_block_height: %s' % self.registration_block_height)
+                LOG.error(f'Unable to get distribution: invalid registration_block_height: {self.registration_block_height}')
+                raise ValueError(f'Unable to get distribution: invalid registration_block_height: {self.registration_block_height}')
 
             # The registration address of a LAL must always be the sending address
             data = get_lal(address=self.sending_address, xpub=self.registration_xpub, block_height=self.registration_block_height)
             if 'LAL' not in data:
-                LOG.error('Unable to get distribution: invalid LAL data: %s' % data)
-                raise Exception('Unable to get distribution: invalid LAL: %s' % data)
+                LOG.error(f'Unable to get distribution: invalid LAL data: {data}')
+                raise ValueError(f'Unable to get distribution: invalid LAL: {data}')
 
-            LOG.info('LAL: %s' % data['LAL'])
+            LOG.info('LAL: {}'.format(data['LAL']))
             distribution = {}
             for utxo in self.unspent_outputs:
                 prime_input_address_data = prime_input_address(utxo.output_hash)
-                prime_input_address_of_utxo = prime_input_address_data['prime_input_address'] if 'prime_input_address' in prime_input_address_data else None
-                LOG.info('Prime input address of %s is %s' % (utxo.output_hash, prime_input_address_of_utxo))
+                prime_input_address_of_utxo = prime_input_address_data.get('prime_input_address', None)
+                LOG.info(f'Prime input address of {utxo.output_hash} is {prime_input_address_of_utxo}')
 
                 linked_address = [linked_address for input_address, linked_address in data['LAL'] if input_address == prime_input_address_of_utxo]
                 # There should be exactly 1 linked address
                 if len(linked_address) == 1:
                     distribution[linked_address[0]] = utxo.value
                 else:
-                    LOG.error('Something went wrong with the LAL: found %s linked addresses, should be exactly 1!' % len(linked_address))
-                    raise Exception('Something went wrong with the LAL: found %s linked addresses, should be exactly 1!' % len(linked_address))
+                    LOG.error(f'Something went wrong with the LAL: found {len(linked_address)} linked addresses, should be exactly 1!')
+                    raise ValueError(f'Something went wrong with the LAL: found {len(linked_address)} linked addresses, should be exactly 1!')
 
         else:
-            raise NotImplementedError('Unknown transaction type %s' % transaction_type)
+            raise NotImplementedError(f'Unknown transaction type {transaction_type}')
 
-        LOG.info('distribution: %s' % distribution)
+        LOG.info(f'distribution: {distribution}')
         return distribution
 
     def get_receiving_outputs(self, sending_amount):
@@ -619,16 +619,16 @@ class SendTransactionAction(Action):
             receiving_value = int(share * sending_amount)
 
             if receiving_value < self.minimum_output_value:
-                LOG.info('Excluding %s from distribution because output value is less than minimum output value: %s < %s' % (address, receiving_value, self.minimum_output_value))
+                LOG.info(f'Excluding {address} from distribution because output value is less than minimum output value: {receiving_value} < {self.minimum_output_value}')
                 del sorted_distribution[i]
             else:
                 remaining_amount -= receiving_value
                 receiving_outputs.append(TransactionOutput(address, receiving_value))
-                LOG.info('receiving output: %s -> %s' % (receiving_value, address))
+                LOG.info(f'receiving output: {receiving_value} -> {address}')
 
         # If rounding errors are causing a few satoshis remaining, the first output gets them
         if remaining_amount > 0 and len(receiving_outputs) > 0:
-            LOG.info('Remaining %s Satoshi(s) go to address %s' % (remaining_amount, receiving_outputs[0].address))
+            LOG.info(f'Remaining {remaining_amount} Satoshi(s) go to address {receiving_outputs[0].address}')
             receiving_outputs[0].value += remaining_amount
 
         return receiving_outputs
@@ -641,18 +641,18 @@ class SendTransactionAction(Action):
         :param tx_outputs: The transaction outputs
         """
         if self.amount == 0:
-            LOG.info('New %s transaction: sending ALL available funds' % self.transaction_type)
+            LOG.info(f'New {self.transaction_type} transaction: sending ALL available funds')
         else:
-            LOG.info('New %s transaction: sending %s satoshis' % (self.transaction_type, self.amount))
+            LOG.info(f'New {self.transaction_type} transaction: sending {self.amount} satoshis')
 
         for tx_input in tx_inputs:
-            LOG.info('INPUT: %s -> %s (%s)' % (tx_input['address'], tx_input['value'], tx_input['output']))
+            LOG.info('INPUT: {} -> {} ({})'.format(tx_input['address'], tx_input['value'], tx_input['output']))
 
         for tx_output in tx_outputs:
-            LOG.info('OUTPUT: %s -> %s' % (tx_output['address'], tx_output['value']))
+            LOG.info('OUTPUT: {} -> {}'.format(tx_output['address'], tx_output['value']))
 
         if self.op_return_data is not None:
-            LOG.info('OUTPUT: OP_RETURN -> %s' % self.op_return_data)
+            LOG.info(f'OUTPUT: OP_RETURN -> {self.op_return_data}')
 
     @staticmethod
     def is_fee_acceptable(transaction_fee, total_value_in_inputs):
@@ -667,10 +667,10 @@ class SendTransactionAction(Action):
         tx_fee_percentage = transaction_fee/float(total_value_in_inputs)*100
 
         if 0 < get_max_tx_fee_percentage() < tx_fee_percentage:
-            LOG.error('Aborting SendTransaction: The transaction fee is too damn high: %s (%s percent of total input value)' % (transaction_fee, tx_fee_percentage))
+            LOG.error(f'Aborting SendTransaction: The transaction fee is too damn high: {transaction_fee} ({tx_fee_percentage} percent of total input value)')
             return False
         else:
-            LOG.info('TRANSACTION FEE: %s (%s percent of total input value)' % (transaction_fee, tx_fee_percentage))
+            LOG.info(f'TRANSACTION FEE: {transaction_fee} ({tx_fee_percentage} percent of total input value)')
             return True
 
 
@@ -683,7 +683,7 @@ class TransactionInput:
         self.output_n = output_n
         self.confirmations = confirmations
 
-        self.output = '%s:%s' % (self.output_hash, self.output_n)
+        self.output = f'{self.output_hash}:{self.output_n}'
 
 
 class TransactionOutput:

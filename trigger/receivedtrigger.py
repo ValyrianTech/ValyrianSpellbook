@@ -29,7 +29,7 @@ class ReceivedTrigger(Trigger):
             # Something went wrong during retrieval of balance
             return False
 
-        return True if self.amount <= total_received else False
+        return self.amount <= total_received
 
     def configure(self, **config):
         """Configure."""

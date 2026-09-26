@@ -29,25 +29,25 @@ class WebhookAction(Action):
         if self.webhook is None:
             return False
 
-        LOG.info('executing webhook: %s' % self.webhook)
+        LOG.info(f'executing webhook: {self.webhook}')
         try:
             if self.request_type == 'GET':
                 r = requests.get(self.webhook)
             elif self.request_type == 'POST':
                 r = requests.post(self.webhook, data=self.body)
             else:
-                LOG.error('Webhook failed: unsupported request type: %s' % self.request_type)
+                LOG.error(f'Webhook failed: unsupported request type: {self.request_type}')
                 return False
 
-        except Exception as ex:
-            LOG.error('Webhook failed: %s' % ex)
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Webhook failed: {ex}')
             return False
         else:
             if r.status_code == 200:
-                LOG.info('status code webhook: %s' % r.status_code)
+                LOG.info(f'status code webhook: {r.status_code}')
                 return True, r.text
             else:
-                LOG.error('Webhook failed: status code webhook: %s' % r.status_code)
+                LOG.error(f'Webhook failed: status code webhook: {r.status_code}')
                 return False, r.text
 
     def configure(self, **config):

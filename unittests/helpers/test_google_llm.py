@@ -28,7 +28,7 @@ class TestGoogleLLM(unittest.TestCase):
         from helpers.google_llm import GoogleLLM
         
         mock_client = MagicMock()
-        mock_client.chat.completions.create.side_effect = Exception("API Error")
+        mock_client.chat.completions.create.side_effect = ValueError("API Error")
         mock_openai.return_value = mock_client
         
         llm = GoogleLLM(model_name='gemini-pro', api_key='test-key')
@@ -102,7 +102,7 @@ class TestGoogleLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         # Should have stopped early
         self.assertEqual(result, '')
@@ -220,7 +220,7 @@ class TestGoogleLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages, thinking_level='high')
+        result, _usage = llm.get_completion_text(messages, thinking_level='high')
         
         self.assertEqual(result, 'Hello!')
         # Verify reasoning_effort was added to request_kwargs

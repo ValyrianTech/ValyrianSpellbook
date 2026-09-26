@@ -28,7 +28,7 @@ class TestMistralLLM(unittest.TestCase):
         from helpers.mistral_llm import MistralLLM
         
         mock_client = MagicMock()
-        mock_client.chat.stream.side_effect = Exception("API Error")
+        mock_client.chat.stream.side_effect = ValueError("API Error")
         mock_mistral.return_value = mock_client
         
         llm = MistralLLM(model_name='mistral-large', api_key='test-key')
@@ -103,7 +103,7 @@ class TestMistralLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         self.assertIn('<think>', result)
         self.assertIn('Thinking...', result)
@@ -138,7 +138,7 @@ class TestMistralLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         self.assertIn('<think>', result)
 
@@ -176,7 +176,7 @@ class TestMistralLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         self.assertIn('<think>', result)
 
@@ -208,7 +208,7 @@ class TestMistralLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         self.assertEqual(result, '')
 
@@ -242,7 +242,7 @@ class TestMistralLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': [{'text': 'Describe this'}, {'image_url': 'data:image/jpeg;base64,abc'}]}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         self.assertEqual(result, 'Image description')
 
@@ -277,7 +277,7 @@ class TestMistralLLM(unittest.TestCase):
         llm.stop_generation = True  # Set stop flag
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         # Should stop early
         self.assertIsInstance(result, str)
@@ -310,7 +310,7 @@ class TestMistralLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         # Should have stopped early
         self.assertEqual(result, '')
@@ -350,7 +350,7 @@ class TestMistralLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         self.assertIn('think', result)
 
@@ -391,7 +391,7 @@ class TestMistralLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         self.assertIn('think', result)
 
@@ -425,7 +425,7 @@ class TestMistralLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages, thinking_level='high')
+        result, _usage = llm.get_completion_text(messages, thinking_level='high')
         
         self.assertEqual(result, 'Hello!')
         mock_log.info.assert_any_call('Thinking level: high -> Ignored (Mistral does not support thinking levels)')

@@ -81,6 +81,6 @@ def tournament_selection(genomes, n_parents=2, tournament_size=5):
         tournament = numpy.random.choice(range(len(genomes)), size=tournament_size, replace=False)
 
         # The genomes are already sorted by highest fitness, so add the genome with the index of the winner of the tournament
-        selection.append(genomes[sorted(tournament)[0]])
+        selection.append(genomes[min(tournament)])
 
     return selection

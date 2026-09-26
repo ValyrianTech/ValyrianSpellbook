@@ -14,7 +14,7 @@ class IntegerTestFitnessFunction(FitnessFunction):
         """Fitness."""
 
         if not isinstance(model, IntegerTest):
-            raise Exception('model for fitness function is not a IntegerTest!')
+            raise TypeError('model for fitness function is not a IntegerTest!')
 
         fitness = 100 - abs(model.Single42 - 42)
         fitness -= abs(len(model.ZeroToNine) - 10)

@@ -13,7 +13,7 @@ def create_database(cursor, database):
     :param cursor: A MySQL cursor object
     :param database: The name of the database (string)
     """
-    LOG.info('Creating database %s' % database)
+    LOG.info(f'Creating database {database}')
 
     try:
         cursor.execute(f"CREATE DATABASE {database} DEFAULT CHARACTER SET 'utf8'")
@@ -80,7 +80,7 @@ def log_sql_query(sql_query):
     """
     LOG.info('=== Begin SQL query ===')
     for line in sql_query.split('\n'):
-        LOG.info(' SQL | %s' % line.strip())
+        LOG.info(f' SQL | {line.strip()}')
 
     LOG.info('=== End SQL query ===')
 
@@ -102,7 +102,7 @@ class mysql_cursor:
 
     def __enter__(self):
         """Create and return a MySQL cursor when entering a 'with' block."""
-        LOG.info('Creating mysql cursor to database %s @ %s:%s' % (self.database, self.host, self.port))
+        LOG.info(f'Creating mysql cursor to database {self.database} @ {self.host}:{self.port}')
         self.cnx = mysql.connector.connect(user=self.user,
                                            password=self.password,
                                            database=self.database,

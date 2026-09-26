@@ -43,7 +43,7 @@ class StringTestRosettaStone(RosettaStone):
 
     def genome_to_model(self, genome):
         """Genome to model."""
-        model = {'id': 'stringtest_%s' % genome.id(),
+        model = {'id': f'stringtest_{genome.id()}',
                  'name': 'stringtest',
                  'HelloWorld': genome.chromosomes[0].genes[0].data,
                  'Alphabet': ''.join([gene.data for gene in genome.chromosomes[1].genes]),

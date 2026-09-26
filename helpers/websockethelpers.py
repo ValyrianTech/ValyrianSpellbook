@@ -64,7 +64,7 @@ class WebSocketHandler:
                         self.subscriptions[websocket].remove(message.split(':')[1])
                 else:
                     await self.broadcast(message, 'general')
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, OSError) as e:
             LOG.error(f'Error in handler: {e}')
         finally:
             # Unregister.
@@ -118,7 +118,7 @@ def start_websocket_server(host: str, port: int):
     asyncio.set_event_loop(LOOP)
     try:
         LOOP.run_until_complete(run_websocket_server(host, port))
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, OSError) as e:
         LOG.error(f'Websocket server error: {e}')
     finally:
         LOG.info('Websocket server stopped.')

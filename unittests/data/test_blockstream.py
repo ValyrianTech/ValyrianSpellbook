@@ -39,7 +39,7 @@ class TestGetLatestBlock:
 
     @mock.patch('data.blockexplorers.blockstream.requests.get')
     def test_request_error_on_hash(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = BlockstreamAPI()
         result = api.get_latest_block()
         assert 'error' in result
@@ -57,7 +57,7 @@ class TestGetBlockByHash:
 
     @mock.patch('data.blockexplorers.blockstream.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = BlockstreamAPI()
         result = api.get_block_by_hash('abc')
         assert 'error' in result
@@ -83,7 +83,7 @@ class TestGetBlockByHeight:
 
     @mock.patch('data.blockexplorers.blockstream.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = BlockstreamAPI()
         result = api.get_block_by_height(100)
         assert 'error' in result
@@ -107,7 +107,7 @@ class TestGetTransactions:
     @mock.patch('data.blockexplorers.blockstream.requests.get')
     def test_error_getting_height(self, mock_get):
         mock_get.side_effect = [
-            mock.MagicMock(text='error', json=mock.MagicMock(side_effect=Exception('fail')))
+            mock.MagicMock(text='error', json=mock.MagicMock(side_effect=ValueError('fail')))
         ]
         api = BlockstreamAPI()
         result = api.get_transactions('addr1')
@@ -117,7 +117,7 @@ class TestGetTransactions:
     def test_error_getting_txs(self, mock_get):
         mock_get.side_effect = [
             make_mock_response(text_data='200'),
-            mock.MagicMock(json=mock.MagicMock(side_effect=Exception('fail')))
+            mock.MagicMock(json=mock.MagicMock(side_effect=ValueError('fail')))
         ]
         api = BlockstreamAPI()
         result = api.get_transactions('addr1')
@@ -141,7 +141,7 @@ class TestGetTransactions:
         mock_get.side_effect = [
             make_mock_response(text_data='200'),
             make_mock_response(json_data=[{
-                'txid': 'tx%d' % i, 'locktime': 0, 'status': {'confirmed': True, 'block_height': 100},
+                'txid': f'tx{i}', 'locktime': 0, 'status': {'confirmed': True, 'block_height': 100},
                 'vin': [{'prevout': {'scriptpubkey_address': 'addr1', 'value': 100}, 'vout': 0, 'is_coinbase': False, 'txid': 'intx', 'scriptsig': 'sig', 'sequence': 1}],
                 'vout': [{'scriptpubkey_address': 'addr2', 'value': 50, 'scriptpubkey': '76a9'}]
             } for i in range(25)]),
@@ -156,11 +156,11 @@ class TestGetTransactions:
         mock_get.side_effect = [
             make_mock_response(text_data='200'),
             make_mock_response(json_data=[{
-                'txid': 'tx%d' % i, 'locktime': 0, 'status': {'confirmed': True, 'block_height': 100},
+                'txid': f'tx{i}', 'locktime': 0, 'status': {'confirmed': True, 'block_height': 100},
                 'vin': [{'prevout': {'scriptpubkey_address': 'addr1', 'value': 100}, 'vout': 0, 'is_coinbase': False, 'txid': 'intx', 'scriptsig': 'sig', 'sequence': 1}],
                 'vout': [{'scriptpubkey_address': 'addr2', 'value': 50, 'scriptpubkey': '76a9'}]
             } for i in range(25)]),
-            mock.MagicMock(json=mock.MagicMock(side_effect=Exception('fail')))
+            mock.MagicMock(json=mock.MagicMock(side_effect=ValueError('fail')))
         ]
         api = BlockstreamAPI()
         result = api.get_transactions('addr1')
@@ -170,7 +170,7 @@ class TestGetTransactions:
     @mock.patch('data.blockexplorers.blockstream.requests.get')
     def test_pagination_with_confirmed_second_page(self, mock_get, mock_sleep):
         first_page = [{
-            'txid': 'tx%d' % i, 'locktime': 0, 'status': {'confirmed': True, 'block_height': 100},
+            'txid': f'tx{i}', 'locktime': 0, 'status': {'confirmed': True, 'block_height': 100},
             'vin': [{'prevout': {'scriptpubkey_address': 'addr1', 'value': 100}, 'vout': 0, 'is_coinbase': False, 'txid': 'intx', 'scriptsig': 'sig', 'sequence': 1}],
             'vout': [{'scriptpubkey_address': 'addr2', 'value': 50, 'scriptpubkey': '76a9'}]
         } for i in range(25)]
@@ -203,7 +203,7 @@ class TestGetBalance:
 
     @mock.patch('data.blockexplorers.blockstream.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = BlockstreamAPI()
         result = api.get_balance('addr')
         assert 'error' in result
@@ -223,7 +223,7 @@ class TestGetTransaction:
 
     @mock.patch('data.blockexplorers.blockstream.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = BlockstreamAPI()
         result = api.get_transaction('txid')
         assert 'error' in result
@@ -257,7 +257,7 @@ class TestParseTransaction:
 
     @mock.patch('data.blockexplorers.blockstream.requests.get')
     def test_error_getting_height(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         data = {
             'txid': 'tx1', 'locktime': 0, 'status': {},
             'vin': [], 'vout': []
@@ -311,7 +311,7 @@ class TestGetUtxos:
     @mock.patch('data.blockexplorers.blockstream.requests.get')
     def test_error_getting_height(self, mock_get):
         mock_get.side_effect = [
-            mock.MagicMock(text='error', json=mock.MagicMock(side_effect=Exception('fail')))
+            mock.MagicMock(text='error', json=mock.MagicMock(side_effect=ValueError('fail')))
         ]
         api = BlockstreamAPI()
         result = api.get_utxos('addr')
@@ -321,7 +321,7 @@ class TestGetUtxos:
     def test_error_getting_utxos(self, mock_get):
         mock_get.side_effect = [
             make_mock_response(text_data='200'),
-            mock.MagicMock(json=mock.MagicMock(side_effect=Exception('fail')))
+            mock.MagicMock(json=mock.MagicMock(side_effect=ValueError('fail')))
         ]
         api = BlockstreamAPI()
         result = api.get_utxos('addr')
@@ -362,7 +362,7 @@ class TestPushTx:
 
     @mock.patch('data.blockexplorers.blockstream.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = BlockstreamAPI()
         result = api.push_tx('rawtx')
         assert 'error' in result

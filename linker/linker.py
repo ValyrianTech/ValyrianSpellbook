@@ -2,7 +2,7 @@
 
 """Linked list implementation for the Spellbook."""
 
-from bips.BIP44 import get_addresses_from_xpub
+from bips.bip44 import get_addresses_from_xpub
 from data.data import balance
 from inputs.inputs import get_sil
 from validators.validators import valid_address, valid_xpub
@@ -11,10 +11,10 @@ from validators.validators import valid_address, valid_xpub
 def get_lal(address, xpub, block_height=0):
     """Build a Linked Address List by pairing SIL inputs with addresses derived from an xpub."""
     if not valid_address(address):
-        return {'error': 'Invalid address: %s' % address}
+        return {'error': f'Invalid address: {address}'}
 
     if not valid_xpub(xpub):
-        return {'error': 'Invalid xpub: %s' % xpub}
+        return {'error': f'Invalid xpub: {xpub}'}
 
     sil_data = get_sil(address, block_height)
 
@@ -28,7 +28,7 @@ def get_lal(address, xpub, block_height=0):
 
         return {'LAL': lal}
     else:
-        return {'error': 'Received invalid SIL data: %s' % sil_data}
+        return {'error': f'Received invalid SIL data: {sil_data}'}
 
 
 def get_lbl(address, xpub, block_height=0):
@@ -47,7 +47,7 @@ def get_lbl(address, xpub, block_height=0):
         if 'balance' in linked_balance and 'final' in linked_balance['balance']:
             lbl.append([address, linked_balance['balance']['final']])
         else:
-            return {'error': 'Failed to retrieve balance of %s' % lal[i][1]}
+            return {'error': f'Failed to retrieve balance of {lal[i][1]}'}
 
     total = float(sum([row[1] for row in lbl]))
     for row in lbl:
@@ -72,7 +72,7 @@ def get_lrl(address, xpub, block_height=0):
         if 'balance' in linked_balance and 'received' in linked_balance['balance']:
             lrl.append([address, linked_balance['balance']['received']])
         else:
-            return {'error': 'Failed to retrieve balance of %s' % lal[i][1]}
+            return {'error': f'Failed to retrieve balance of {lal[i][1]}'}
 
     total = float(sum([row[1] for row in lrl]))
     for row in lrl:
@@ -97,7 +97,7 @@ def get_lsl(address, xpub, block_height=0):
         if 'balance' in linked_balance and 'sent' in linked_balance['balance']:
             lsl.append([address, linked_balance['balance']['sent']])
         else:
-            return {'error': 'Failed to retrieve balance of %s' % lal[i][1]}
+            return {'error': f'Failed to retrieve balance of {lal[i][1]}'}
 
     total = float(sum([row[1] for row in lsl]))
     for row in lsl:

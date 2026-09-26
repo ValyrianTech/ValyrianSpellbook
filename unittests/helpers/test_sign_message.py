@@ -3,7 +3,7 @@ from unittest import mock
 
 import pytest
 
-from bips.BIP32 import set_chain_mode
+from bips.bip32 import set_chain_mode
 from helpers.configurationhelpers import get_use_testnet
 from helpers.hotwallethelpers import (
     get_address_from_wallet,

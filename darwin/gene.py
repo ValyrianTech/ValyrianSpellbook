@@ -36,7 +36,7 @@ class BooleanGene(Gene):
 
     def set_random_data(self):
         """Set random data."""
-        self.data = True if random.randint(0, 1) else False
+        self.data = bool(random.randint(0, 1))
 
     def apply_mutations(self, mutation_chance, multiplier=1.0):
         """Apply mutations."""

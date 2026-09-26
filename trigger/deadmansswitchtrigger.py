@@ -2,7 +2,7 @@
 """Dead man's switch trigger that activates when check-ins stop."""
 
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 from helpers.loghelpers import LOG
 from helpers.mailhelpers import sendmail
@@ -32,34 +32,34 @@ class DeadMansSwitchTrigger(Trigger):
         if self.timeout is None or self.activation_time is None or self.warning_email is None:
             return False
 
-        email_variables = {'activation_time': datetime.fromtimestamp(self.activation_time).strftime('%Y-%m-%d %H:%M:%S')}
+        email_variables = {'activation_time': datetime.fromtimestamp(self.activation_time, tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}
 
         if self.phase == SwitchPhase.PHASE_1 and int(time.time()) >= int(self.activation_time - (self.timeout * 0.5)):
             # 50% of timeout has passed, send first warning and move to phase 2
             self.phase = SwitchPhase.PHASE_2
-            LOG.info("Dead Man's Switch %s is now in phase %s, sending first warning email" % (self.id, self.phase))
-            sendmail(self.warning_email, "First warning: Dead Man's Switch %s at 50 percent" % self.id, 'deadmansswitchwarning', email_variables)
+            LOG.info(f"Dead Man's Switch {self.id} is now in phase {self.phase}, sending first warning email")
+            sendmail(self.warning_email, f"First warning: Dead Man's Switch {self.id} at 50 percent", 'deadmansswitchwarning', email_variables)
             self.save()
 
         if self.phase == SwitchPhase.PHASE_2 and int(time.time()) >= int(self.activation_time - (self.timeout * 0.25)):
             # 75% of timeout has passed, send second warning and move to phase 3
             self.phase = SwitchPhase.PHASE_3
-            LOG.info("Dead Man's Switch %s is now in phase %s, sending second warning email" % (self.id, self.phase))
-            sendmail(self.warning_email, "Second warning: Dead Man's Switch %s at 75 percent" % self.id, 'deadmansswitchwarning', email_variables)
+            LOG.info(f"Dead Man's Switch {self.id} is now in phase {self.phase}, sending second warning email")
+            sendmail(self.warning_email, f"Second warning: Dead Man's Switch {self.id} at 75 percent", 'deadmansswitchwarning', email_variables)
             self.save()
 
         if self.phase == SwitchPhase.PHASE_3 and int(time.time()) >= int(self.activation_time - (self.timeout * 0.1)):
             # 90% of timeout has passed, send final warning and move to phase 4
             self.phase = SwitchPhase.PHASE_4
-            LOG.info("Dead Man's Switch %s is now in phase %s, sending final warning email" % (self.id, self.phase))
-            sendmail(self.warning_email, "Final warning: Dead Man's Switch %s at 90 percent" % self.id, 'deadmansswitchwarning', email_variables)
+            LOG.info(f"Dead Man's Switch {self.id} is now in phase {self.phase}, sending final warning email")
+            sendmail(self.warning_email, f"Final warning: Dead Man's Switch {self.id} at 90 percent", 'deadmansswitchwarning', email_variables)
             self.save()
 
         if self.phase == SwitchPhase.PHASE_4 and int(time.time()) >= int(self.activation_time):
             # 90% of timeout has passed, send final warning and move to phase 4
             self.phase = SwitchPhase.PHASE_5
-            LOG.info("Dead Man's Switch %s is now in phase %s, activating trigger" % (self.id, self.phase))
-            sendmail(self.warning_email, "Dead Man's Switch %s activated" % self.id, 'deadmansswitchactivated', email_variables)
+            LOG.info(f"Dead Man's Switch {self.id} is now in phase {self.phase}, activating trigger")
+            sendmail(self.warning_email, f"Dead Man's Switch {self.id} activated", 'deadmansswitchactivated', email_variables)
             self.save()
 
         return self.phase == SwitchPhase.PHASE_5
@@ -69,9 +69,9 @@ class DeadMansSwitchTrigger(Trigger):
         if self.phase == SwitchPhase.PHASE_0:
             self.phase = SwitchPhase.PHASE_1
             self.activation_time = int(time.time()) + self.timeout
-            LOG.info("Dead Man's Switch %s has been armed, will activate in %s seconds on %s" % (self.id, self.timeout, datetime.fromtimestamp(self.activation_time).strftime('%Y-%m-%d %H:%M:%S')))
-            email_variables = {'activation_time': datetime.fromtimestamp(self.activation_time).strftime('%Y-%m-%d %H:%M:%S')}
-            sendmail(self.warning_email, "Warning: Dead Man's Switch %s has been armed" % self.id, 'deadmansswitchwarning', email_variables)
+            LOG.info("Dead Man's Switch {} has been armed, will activate in {} seconds on {}".format(self.id, self.timeout, datetime.fromtimestamp(self.activation_time, tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')))
+            email_variables = {'activation_time': datetime.fromtimestamp(self.activation_time, tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}
+            sendmail(self.warning_email, f"Warning: Dead Man's Switch {self.id} has been armed", 'deadmansswitchwarning', email_variables)
             self.save()
 
     def configure(self, **config):
@@ -98,8 +98,7 @@ class DeadMansSwitchTrigger(Trigger):
             if self.activation_time is not None and self.timeout is not None and self.phase >= 1:
                 self.activation_time = int(time.time()) + self.timeout
                 self.phase = 1
-                LOG.info("Dead Man's Switch %s has been reset, will activate in %s seconds on %s" % (
-                    self.id, self.timeout, datetime.fromtimestamp(self.activation_time)))
+                LOG.info(f"Dead Man's Switch {self.id} has been reset, will activate in {self.timeout} seconds on {datetime.fromtimestamp(self.activation_time, tz=timezone.utc)}")
 
     def json_encodable(self):
         """Json encodable."""

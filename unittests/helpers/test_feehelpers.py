@@ -55,7 +55,7 @@ class TestFeeHelpers:
     @mock.patch('helpers.feehelpers.requests.get')
     def test_get_recommended_fee_error(self, mock_get):
         """Test error handling when API fails"""
-        mock_get.side_effect = Exception('Network error')
+        mock_get.side_effect = ValueError('Network error')
         
         with pytest.raises(Exception) as excinfo:
             get_recommended_fee()
@@ -98,7 +98,7 @@ class TestFeeHelpers:
     @mock.patch('helpers.feehelpers.requests.get')
     def test_get_recommended_fee_blockcypher_error(self, mock_get, mock_testnet):
         """Test error handling when blockcypher API fails"""
-        mock_get.side_effect = Exception('Network error')
+        mock_get.side_effect = ValueError('Network error')
         
         with pytest.raises(Exception) as excinfo:
             get_recommended_fee_blockcypher()

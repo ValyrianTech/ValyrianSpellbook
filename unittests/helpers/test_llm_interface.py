@@ -255,7 +255,7 @@ class TestGetAvailableLlmsServerTypes(unittest.TestCase):
             'model1': {'allow_auto_routing': True, 'description': 'Model 1', 'server_type': 'Oobabooga'},
         }
         
-        text, names = get_available_llms()
+        _text, names = get_available_llms()
         
         self.assertIn('self-hosted:model1', names)
 
@@ -269,7 +269,7 @@ class TestGetAvailableLlmsServerTypes(unittest.TestCase):
             'model1': {'allow_auto_routing': True, 'description': 'Model 1', 'server_type': 'vLLM'},
         }
         
-        text, names = get_available_llms()
+        _text, names = get_available_llms()
         
         self.assertIn('self-hosted:model1', names)
 

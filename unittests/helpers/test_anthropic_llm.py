@@ -29,13 +29,13 @@ class TestAnthropicLLM(unittest.TestCase):
         from helpers.anthropic_llm import AnthropicLLM
         
         mock_client = MagicMock()
-        mock_client.messages.create.side_effect = Exception("API Error")
+        mock_client.messages.create.side_effect = ValueError("API Error")
         mock_anthropic.return_value = mock_client
         
         llm = AnthropicLLM(model_name='claude-3-opus', api_key='test-key')
         messages = [{'role': 'user', 'content': 'Hello'}]
         
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         self.assertIn('Error', result)
 
@@ -106,7 +106,7 @@ class TestAnthropicLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         # Should have stopped early with empty completion
         self.assertEqual(result, '')
@@ -165,7 +165,7 @@ class TestAnthropicLLMAdvanced(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages, thinking_level='medium')
+        _result, _usage = llm.get_completion_text(messages, thinking_level='medium')
 
         call_kwargs = mock_client.messages.create.call_args[1]
         self.assertIn('thinking', call_kwargs)
@@ -200,7 +200,7 @@ class TestAnthropicLLMAdvanced(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages, thinking_level='invalid')
+        _result, _usage = llm.get_completion_text(messages, thinking_level='invalid')
 
         call_kwargs = mock_client.messages.create.call_args[1]
         self.assertNotIn('thinking', call_kwargs)
@@ -234,7 +234,7 @@ class TestAnthropicLLMAdvanced(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages, thinking_level='high')
+        _result, _usage = llm.get_completion_text(messages, thinking_level='high')
 
         call_kwargs = mock_client.messages.create.call_args[1]
         self.assertNotIn('thinking', call_kwargs)
@@ -282,7 +282,7 @@ class TestAnthropicLLMAdvanced(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages, thinking_level='medium')
+        result, _usage = llm.get_completion_text(messages, thinking_level='medium')
 
         self.assertIn('Let me think', result)
         self.assertIn('The answer is 42', result)
@@ -317,7 +317,7 @@ class TestAnthropicLLMAdvanced(unittest.TestCase):
 
         messages = [{'role': 'user', 'content': 'Hello'}]
         # Pass a small max_tokens that will need to be adjusted
-        result, usage = llm.get_completion_text(messages, thinking_level='high', max_tokens=100)
+        _result, _usage = llm.get_completion_text(messages, thinking_level='high', max_tokens=100)
 
         call_kwargs = mock_client.messages.create.call_args[1]
         # max_tokens should have been adjusted to budget_tokens + 4096

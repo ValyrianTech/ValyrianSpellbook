@@ -46,7 +46,7 @@ class TestGetTwitterApi(unittest.TestCase):
         from helpers.twitterhelpers import get_twitter_api
         
         mock_api_instance = MagicMock()
-        mock_api_instance.verify_credentials.side_effect = Exception('Auth failed')
+        mock_api_instance.verify_credentials.side_effect = ValueError('Auth failed')
         mock_api.return_value = mock_api_instance
         
         result = get_twitter_api()

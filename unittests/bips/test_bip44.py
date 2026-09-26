@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-from bips.BIP32 import set_chain_mode
-from bips.BIP44 import (
+from bips.bip32 import set_chain_mode
+from bips.bip44 import (
     get_address_from_xpub,
     get_addresses_from_xpub,
     get_change_addresses_from_xpub,
@@ -129,4 +129,4 @@ class TestBIP44:
         private_keys_normal = get_private_key(xpriv=xpriv, i=0, k=0)
         private_keys_change = get_private_key(xpriv=xpriv, i=0, k=1)
         # Change and normal keys should be different
-        assert list(private_keys_normal.keys())[0] != list(private_keys_change.keys())[0]
+        assert next(iter(private_keys_normal.keys())) != next(iter(private_keys_change.keys()))

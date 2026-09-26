@@ -47,21 +47,19 @@ from .ollama_chat_llm import OllamaChatLLM
 from .ollama_llm import OllamaLLM
 from .openai_llm import OpenAILLM
 from .openrouter_llm import OpenRouterLLM
-from .self_hosted_LLM import SelfHostedLLM
+from .self_hosted_llm import SelfHostedLLM
 from .textgenerationhelpers import CodeGeneration, parse_generation
 from .textgenerationwebui_chat_llm import TextGenerationWebuiChatLLM
 from .textgenerationwebui_llm import TextGenerationWebuiLLM
-from .together_ai_LLM import TogetherAILLM
-from .vLLM_llm import VLLMLLM
-from .vLLMchat_llm import VLLMchatLLM
+from .together_ai_llm import TogetherAILLM
+from .vllm_llm import VLLMLLM
+from .vllmchat_llm import VLLMchatLLM
 
 CLIENTS: dict[str, LLMInterface] = {}
 
 
 def get_llm(model_name: str = 'default_model', temperature: float = 0.0):
     """Retrieve or create an LLM client for the given model name and temperature."""
-    global CLIENTS
-
     if model_name == 'default_model':
         model_name = get_llms_default_model()
 
@@ -188,7 +186,7 @@ def get_llm(model_name: str = 'default_model', temperature: float = 0.0):
             llm = ChatOpenAI(model_name=model_name, temperature=temperature, openai_api_key=get_openai_api_key(), request_timeout=300, streaming=True, callbacks=[CustomStreamingCallbackHandler()])  # type: ignore[call-arg, assignment]
 
     else:
-        raise Exception("OpenAI is not enabled")
+        raise ValueError("OpenAI is not enabled")
 
     CLIENTS[model_name] = llm
 
@@ -249,7 +247,7 @@ def get_llm_api_key(model_name: str, server_type: str) -> str | None:
         else:
             LOG.info(f'Model {model_name} not found in LLM configuration')
             
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, OSError) as e:
         LOG.warning(f'Error loading LLM configuration: {e}')
     
     # If no API key found in config, check .env file (backup source)
@@ -323,7 +321,7 @@ def get_role(message: BaseMessage):
     elif isinstance(message, ChatMessage):
         return message.role
     else:
-        raise Exception("Unknown message type")
+        raise TypeError("Unknown message type")
 
 
 def comparison_prompt(messages: list[BaseMessage], generations: list[LLMResult]):
@@ -472,7 +470,7 @@ class LLM:
                 text_completion = text_completion[1:]
 
             selection = int(text_completion[0])
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, OSError) as e:
             LOG.error(f"Unable to parse generation: {e}")
             LOG.error("Defaulting to default model")
             return llm_config_name
@@ -495,7 +493,7 @@ class LLM:
 
         try:
             parsed = parse_generation(result.generations[0][0].text)
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, OSError) as e:
             LOG.error(f"Unable to parse generation, defaulting to first generation, invalid JSON: {e}")
             return 0
 
@@ -504,7 +502,7 @@ class LLM:
             if isinstance(generation, CodeGeneration):
                 try:
                     as_json = simplejson.loads(generation.content)
-                except Exception as e:
+                except (ValueError, KeyError, TypeError, OSError) as e:
                     LOG.info(f"Unable to parse generation section as json: {e}")
                 else:
                     break

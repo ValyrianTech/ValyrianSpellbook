@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest import mock
 
 import pytest
@@ -51,13 +51,13 @@ class TestTrigger:
     def test_trigger_configure_created_timestamp(self):
         trigger = ConcreteTrigger('test_trigger_id')
         trigger.configure(created=1609459200)
-        assert trigger.created == datetime.fromtimestamp(1609459200)
+        assert trigger.created == datetime.fromtimestamp(1609459200, tz=timezone.utc)
 
     def test_trigger_configure_created_default(self):
         trigger = ConcreteTrigger('test_trigger_id')
-        before = datetime.now()
+        before = datetime.now(tz=timezone.utc)
         trigger.configure()
-        after = datetime.now()
+        after = datetime.now(tz=timezone.utc)
         assert before <= trigger.created <= after
 
     @mock.patch('trigger.trigger.valid_trigger_type', return_value=True)
@@ -304,7 +304,7 @@ class TestTrigger:
 
     @mock.patch('trigger.trigger.valid_script', return_value=True)
     @mock.patch('os.path.isfile', return_value=True)
-    @mock.patch('importlib.import_module', side_effect=Exception('Import error'))
+    @mock.patch('importlib.import_module', side_effect=ValueError('Import error'))
     @mock.patch('platform.system', return_value='Linux')
     def test_trigger_load_script_import_error(self, mock_platform, mock_import, mock_isfile, mock_valid):
         trigger = ConcreteTrigger('test_trigger_id')

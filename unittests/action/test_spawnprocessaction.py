@@ -60,7 +60,7 @@ class TestSpawnProcessAction:
 
     @mock.patch('action.spawnprocessaction.RunCommandProcess')
     def test_spawnprocessaction_run_exception(self, mock_process_class):
-        mock_process_class.side_effect = Exception('Process error')
+        mock_process_class.side_effect = ValueError('Process error')
 
         action = SpawnProcessAction('test_spawn_action')
         action.configure(run_command='echo hello')

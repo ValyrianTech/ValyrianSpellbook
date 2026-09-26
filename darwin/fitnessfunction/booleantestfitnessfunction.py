@@ -14,7 +14,7 @@ class BooleanTestFitnessFunction(FitnessFunction):
         """Fitness."""
 
         if not isinstance(model, BooleanTest):
-            raise Exception('model for fitness function is not a BooleanTest!')
+            raise TypeError('model for fitness function is not a BooleanTest!')
 
         fitness = 0
 

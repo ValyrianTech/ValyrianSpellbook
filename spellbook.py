@@ -549,7 +549,7 @@ def add_authentication_headers(headers=None, data=None):
     if headers is None:
         headers = {'Content-Type': 'application/json'}
 
-    nonce = int(round(time.time() * 1000))
+    nonce = round(time.time() * 1000)
 
     headers.update({'API_Key': args.api_key,
                     'API_Sign': signature(data, nonce, args.api_secret),
@@ -1004,14 +1004,14 @@ def save_action():
         with open(args.distribution, 'r') as input_file:
             try:
                 distribution = simplejson.load(input_file)
-            except Exception as ex:
-                print('Distribution file %s is not a valid json file: %s' % (args.distribution, ex), file=sys.stderr)
+            except (ValueError, KeyError, TypeError, OSError) as ex:
+                print(f'Distribution file {args.distribution} is not a valid json file: {ex}', file=sys.stderr)
                 sys.exit(1)
 
         if valid_distribution(distribution):
             data['distribution'] = distribution
         else:
-            print('Distribution file does not contain a valid distribution: %s' % distribution, file=sys.stderr)
+            print(f'Distribution file does not contain a valid distribution: {distribution}', file=sys.stderr)
             print('Must be a dict where all keys are a valid address and the value is a integer greater than or equal to zero', file=sys.stderr)
             sys.exit(1)
 
@@ -1070,8 +1070,8 @@ def do_get_request(url, authenticate=False, data=None):
     try:
         r = requests.get(url, headers=headers, json=data)
         print(r.text)
-    except Exception as ex:
-        print('GET %s failed: %s' % (url, ex), file=sys.stderr)
+    except (ValueError, KeyError, TypeError, OSError) as ex:
+        print(f'GET {url} failed: {ex}', file=sys.stderr)
         sys.exit(1)
 
 
@@ -1083,8 +1083,8 @@ def do_post_request(url, authenticate=False, data=None):
     try:
         r = requests.post(url, headers=headers, json=data)
         print(r.text)
-    except Exception as ex:
-        print('POST %s failed: %s' % (url, ex), file=sys.stderr)
+    except (ValueError, KeyError, TypeError, OSError) as ex:
+        print(f'POST {url} failed: {ex}', file=sys.stderr)
         sys.exit(1)
 
 
@@ -1096,8 +1096,8 @@ def do_delete_request(url, authenticate=False, data=None):
     try:
         r = requests.delete(url, headers=headers, json=data)
         print(r.text)
-    except Exception as ex:
-        print('DELETE %s failed: %s' % (url, ex), file=sys.stderr)
+    except (ValueError, KeyError, TypeError, OSError) as ex:
+        print(f'DELETE {url} failed: {ex}', file=sys.stderr)
         sys.exit(1)
 
 

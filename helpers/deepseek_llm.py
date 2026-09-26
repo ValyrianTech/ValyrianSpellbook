@@ -130,7 +130,7 @@ class DeepSeekLLM(LLMInterface):
                     LOG.error(f'All {max_retries} attempts failed.')
                     return 'Error: Unable to connect to DeepSeek.\n'
 
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, OSError) as e:
                 LOG.error(f'Error connecting to DeepSeek: {e}')
                 return 'Error: Unable to connect to DeepSeek.\n'
 

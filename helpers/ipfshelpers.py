@@ -11,14 +11,16 @@ from helpers.configurationhelpers import (
 )
 from helpers.loghelpers import LOG
 
+IPFS_API = None
+
 
 def check_ipfs():
     """Check if the IPFS node is running and reachable."""
     try:
         connect(host=get_ipfs_api_host(), port=get_ipfs_api_port())
         return True
-    except Exception as ex:
-        LOG.error('IPFS node is not running: %s' % ex)
+    except (ValueError, KeyError, TypeError, OSError) as ex:
+        LOG.error(f'IPFS node is not running: {ex}')
         return False
 
 
@@ -43,13 +45,11 @@ def get_json(cid):
 # Todo fix this, only used in Notarize
 def add_file(filename):
     """Add a file to IPFS and return its hash, name, and size."""
-    global IPFS_API
-
     try:
         ipfs_info = IPFS_API.add(filename)
-    except Exception as e:
-        LOG.error('Unable to store file on IPFS: %s' % e)
-        raise Exception('IPFS failure')
+    except (ValueError, KeyError, TypeError, OSError) as e:
+        LOG.error(f'Unable to store file on IPFS: {e}')
+        raise ValueError('IPFS failure')
 
     return ipfs_info['Hash'], ipfs_info['Name'], ipfs_info['Size']
 

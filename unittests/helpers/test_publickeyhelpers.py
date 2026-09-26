@@ -73,7 +73,7 @@ class TestGetPubkeyFormat:
 
     def test_get_pubkey_format_invalid(self):
         pub = 'invalid'
-        with pytest.raises(Exception):
+        with pytest.raises(ValueError):
             get_pubkey_format(pub)
 
 
@@ -132,7 +132,7 @@ class TestEncodePubkey:
 
     def test_encode_pubkey_invalid_format(self):
         pub = (123, 456)
-        with pytest.raises(Exception):
+        with pytest.raises(ValueError):
             encode_pubkey(pub, 'invalid')
 
     def test_encode_pubkey_from_non_tuple(self):
@@ -199,7 +199,7 @@ class TestDecodePubkey:
         assert result == point
 
     def test_decode_pubkey_invalid_format(self):
-        with pytest.raises(Exception):
+        with pytest.raises(ValueError):
             decode_pubkey('test', 'invalid')
 
     def test_decode_pubkey_auto_detect(self):
@@ -321,7 +321,7 @@ class TestBinHash160:
 
         import pytest
         
-        with patch('helpers.publickeyhelpers.ripemd160', side_effect=Exception('RIPEMD160 error')):
+        with patch('helpers.publickeyhelpers.ripemd160', side_effect=ValueError('RIPEMD160 error')):
             with pytest.raises(Exception) as excinfo:
                 bin_hash160(b'test')
             assert 'Unable to get ripemd160 digest' in str(excinfo.value)

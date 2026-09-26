@@ -41,16 +41,16 @@ class Genome:
 
     def init_with_random_data(self):
         """Init with random data."""
-        for chromosome_id, chromosome in self.chromosomes.items():
+        for chromosome in self.chromosomes.values():
             for gene in chromosome.genes:
                 gene.set_random_data()
 
     def info(self):
         """Info."""
-        info = 'Genome id: %s' % self.id()
+        info = f'Genome id: {self.id()}'
 
         for chromosome_id, chromosome in self.chromosomes.items():
-            info += '\nCHROMOSOME %s:\n%s' % (chromosome_id, chromosome.info())
+            info += f'\nCHROMOSOME {chromosome_id}:\n{chromosome.info()}'
 
         return info
 
@@ -58,9 +58,9 @@ class Genome:
         """Id."""
         data_string = ''
         for i, (chromosome_id, chromosome) in enumerate(self.chromosomes.items()):
-            data_string += '|%s|' % i
+            data_string += f'|{i}|'
             for j, gene in enumerate(chromosome.genes):
-                data_string += '%s:%s ' % (j, gene.data)
+                data_string += f'{j}:{gene.data} '
 
         return binascii.hexlify(hashlib.sha256(simplejson.dumps(data_string, sort_keys=True).encode('utf-8')).digest()).decode()
 

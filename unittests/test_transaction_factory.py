@@ -99,7 +99,7 @@ class TestTransactionFactory:
     def test_num_to_op_push(self):
         for num in range(1, 1024):
             op_push = binascii.hexlify(num_to_op_push(num))
-            print('%s -> %s' % (num, op_push))
+            print(f'{num} -> {op_push}')
             # Todo add check length, there seems to be a bug with data longer than 255 chars, not really a problem because we don't allow more than the standard 80 chars (40 bytes)
 
     def test_op_return_script_with_strings_of_various_lengths(self):
@@ -439,7 +439,7 @@ class TestEcdsaSign:
     def test_ecdsa_raw_sign_compressed(self):
         priv = encode_privkey(self.PRIV, 'hex_compressed')
         msghash = hashlib.sha256(b'test message').digest()
-        v, r, s = ecdsa_raw_sign(msghash, priv)
+        v, _r, _s = ecdsa_raw_sign(msghash, priv)
         assert 31 <= v <= 35  # v + 4 for compressed
 
     def test_ecdsa_tx_sign(self):
@@ -605,9 +605,8 @@ class TestMakeCustomTx:
         assert len(txo['outs']) == 2
 
     def test_make_custom_tx_invalid_fee_type(self):
-        # Bug in production code: %d format with string raises TypeError
-        with pytest.raises(TypeError):
-            make_custom_tx(self.private_keys, self.tx_inputs, self.tx_outputs, tx_fee='10000')
+        result = make_custom_tx(self.private_keys, self.tx_inputs, self.tx_outputs, tx_fee='10000')
+        assert result is None
 
     def test_make_custom_tx_negative_fee(self):
         result = make_custom_tx(self.private_keys, self.tx_inputs, self.tx_outputs, tx_fee=-1)

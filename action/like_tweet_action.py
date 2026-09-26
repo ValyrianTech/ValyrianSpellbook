@@ -25,11 +25,11 @@ class LikeTweetAction(Action):
         if self.tweet_id is None:
             return False
 
-        LOG.info('Liking tweet: %s' % self.tweet_id)
+        LOG.info(f'Liking tweet: {self.tweet_id}')
 
         try:
             like_tweet(tweet_id=self.tweet_id)
-        except Exception as ex:
+        except (ValueError, KeyError, TypeError, OSError) as ex:
             LOG.error(f'Unable to like tweet {self.tweet_id}: {ex}')
             return False
 

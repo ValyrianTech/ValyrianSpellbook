@@ -73,7 +73,7 @@ class TestCreateTweetAction:
 
     @mock.patch('action.create_tweet_action.create_tweet')
     def test_createtweetaction_run_exception(self, mock_create_tweet):
-        mock_create_tweet.side_effect = Exception('Twitter API error')
+        mock_create_tweet.side_effect = ValueError('Twitter API error')
         action = CreateTweetAction('test_tweet_action')
         action.configure(text='Hello world')
         result = action.run()
@@ -115,7 +115,7 @@ class TestDeleteTweetAction:
 
     @mock.patch('action.delete_tweet_action.delete_tweet')
     def test_deletetweetaction_run_exception(self, mock_delete_tweet):
-        mock_delete_tweet.side_effect = Exception('API error')
+        mock_delete_tweet.side_effect = ValueError('API error')
         action = DeleteTweetAction('test_delete_tweet')
         action.configure(tweet_id='123456')
         result = action.run()
@@ -157,7 +157,7 @@ class TestLikeTweetAction:
 
     @mock.patch('action.like_tweet_action.like_tweet')
     def test_liketweetaction_run_exception(self, mock_like_tweet):
-        mock_like_tweet.side_effect = Exception('API error')
+        mock_like_tweet.side_effect = ValueError('API error')
         action = LikeTweetAction('test_like_tweet')
         action.configure(tweet_id='123456')
         result = action.run()
@@ -199,7 +199,7 @@ class TestUnlikeTweetAction:
 
     @mock.patch('action.unlike_tweet_action.unlike_tweet')
     def test_unliketweetaction_run_exception(self, mock_unlike_tweet):
-        mock_unlike_tweet.side_effect = Exception('API error')
+        mock_unlike_tweet.side_effect = ValueError('API error')
         action = UnlikeTweetAction('test_unlike_tweet')
         action.configure(tweet_id='123456')
         result = action.run()
@@ -241,7 +241,7 @@ class TestRetweetAction:
 
     @mock.patch('action.retweet_action.retweet')
     def test_retweetaction_run_exception(self, mock_retweet):
-        mock_retweet.side_effect = Exception('API error')
+        mock_retweet.side_effect = ValueError('API error')
         action = RetweetAction('test_retweet')
         action.configure(tweet_id='123456')
         result = action.run()
@@ -283,7 +283,7 @@ class TestUnretweetAction:
 
     @mock.patch('action.unretweet_action.retweet')
     def test_unretweetaction_run_exception(self, mock_retweet):
-        mock_retweet.side_effect = Exception('API error')
+        mock_retweet.side_effect = ValueError('API error')
         action = UnretweetAction('test_unretweet')
         action.configure(tweet_id='123456')
         result = action.run()
@@ -325,7 +325,7 @@ class TestFollowOnTwitterAction:
 
     @mock.patch('action.follow_on_twitter_action.follow_user')
     def test_followontwitteraction_run_exception(self, mock_follow):
-        mock_follow.side_effect = Exception('API error')
+        mock_follow.side_effect = ValueError('API error')
         action = FollowOnTwitterAction('test_follow')
         action.configure(user_id='user123')
         result = action.run()
@@ -367,7 +367,7 @@ class TestUnfollowOnTwitterAction:
 
     @mock.patch('action.unfollow_on_twitter_action.unfollow_user')
     def test_unfollowontwitteraction_run_exception(self, mock_unfollow):
-        mock_unfollow.side_effect = Exception('API error')
+        mock_unfollow.side_effect = ValueError('API error')
         action = UnfollowOnTwitterAction('test_unfollow')
         action.configure(user_id='user123')
         result = action.run()
@@ -419,7 +419,7 @@ class TestSendDMTwitterAction:
 
     @mock.patch('action.send_dm_twitter_action.create_direct_message')
     def test_senddmtwitteraction_run_exception(self, mock_create_dm):
-        mock_create_dm.side_effect = Exception('API error')
+        mock_create_dm.side_effect = ValueError('API error')
         action = SendDMTwitterAction('test_dm')
         action.configure(participant_id='user123', text='Hello!')
         result = action.run()

@@ -24,7 +24,7 @@ class BooleanGeneMutation(GeneMutation):
 
     def flip(self):
         """Flip."""
-        self.gene.data = False if self.gene.data is True else True
+        self.gene.data = not self.gene.data is True
 
 
 class IntegerGeneMutation(GeneMutation):

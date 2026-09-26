@@ -2,6 +2,7 @@
 """REST API server for the Valyrian Spellbook built on Bottle."""
 
 import argparse
+import io
 import logging
 import os
 import subprocess
@@ -10,7 +11,7 @@ import time
 import traceback
 import uuid
 from configparser import ConfigParser
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import wraps
 from logging.handlers import RotatingFileHandler
 
@@ -151,8 +152,8 @@ class SSLWebServer(ServerAdapter):
 
         try:
             server.start()
-        except Exception as ex:
-            LOG.error('Unable to start SSL server: %s' % ex)
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to start SSL server: {ex}')
             server.stop()
 
 
@@ -182,8 +183,8 @@ class SpellbookRESTAPI(Bottle):
         try:
             if get_enable_wallet() is True:
                 get_hot_wallet()
-        except Exception as ex:
-            LOG.error('Unable to decrypt hot wallet: %s' % ex)
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to decrypt hot wallet: {ex}')
             sys.exit(1)
 
         LOG.info('To make the server run in the background: use Control-Z, then use command: bg %1')
@@ -301,8 +302,8 @@ class SpellbookRESTAPI(Bottle):
             else:
                 self.run(host=self.host, port=self.port, debug=True, server='cheroot')
 
-        except Exception as ex:
-            LOG.error('An exception occurred in the main loop: %s' % ex)
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'An exception occurred in the main loop: {ex}')
             error_traceback = traceback.format_exc()
             for line in error_traceback.split('\n'):
                 LOG.error(line)
@@ -312,7 +313,7 @@ class SpellbookRESTAPI(Bottle):
                              'TRACEBACK': error_traceback}
                 body_template = os.path.join('server_exception')
                 sendmail(recipients=get_notification_email(),
-                         subject='Main loop Exception occurred @ %s' % get_host(),
+                         subject=f'Main loop Exception occurred @ {get_host()}',
                          body_template=body_template,
                          variables=variables)
 
@@ -344,29 +345,26 @@ class SpellbookRESTAPI(Bottle):
         @wraps(fn)
         def _log_to_logger(*args, **kwargs):
             """ log to logger endpoint."""
-            start_time = int(round(time.time() * 1000))
-            request_time = datetime.now()
+            start_time = round(time.time() * 1000)
+            request_time = datetime.now(tz=timezone.utc)
 
             # Log information about the request before it is processed for debugging purposes
-            REQUESTS_LOG.info('%s | %s | %s | %s' % (request_time,
-                                                     request.remote_addr,
-                                                     request.method,
-                                                     request.url))
+            REQUESTS_LOG.info(f'{request_time} | {request.remote_addr} | {request.method} | {request.url}')
 
             if request.headers is not None:
                 for key, value in request.headers.items():
-                    REQUESTS_LOG.info('  HEADERS | %s: %s' % (key, str(value).encode('utf-8')))
+                    REQUESTS_LOG.info('  HEADERS | {}: {}'.format(key, str(value).encode('utf-8')))
 
             if request.json is not None:
                 for key, value in request.json.items():
-                    REQUESTS_LOG.info('  BODY | %s: %s' % (key, str(value).encode('utf-8')))
+                    REQUESTS_LOG.info('  BODY | {}: {}'.format(key, str(value).encode('utf-8')))
 
             actual_response = response
             try:
                 actual_response = fn(*args, **kwargs)
-            except Exception as ex:
+            except (ValueError, KeyError, TypeError, OSError) as ex:
                 response_status = '500 ' + str(ex)
-                LOG.error('%s caused an exception: %s' % (request.url, ex))
+                LOG.error(f'{request.url} caused an exception: {ex}')
                 error_traceback = traceback.format_exc()
                 for line in error_traceback.split('\n'):
                     LOG.error(line)
@@ -376,20 +374,15 @@ class SpellbookRESTAPI(Bottle):
                                  'TRACEBACK': error_traceback}
                     body_template = os.path.join('server_exception')
                     sendmail(recipients=get_notification_email(),
-                             subject='Exception occurred @ %s' % get_host(),
+                             subject=f'Exception occurred @ {get_host()}',
                              body_template=body_template,
                              variables=variables)
 
             else:
                 response_status = response.status
 
-            end_time = int(round(time.time() * 1000))
-            REQUESTS_LOG.info('%s | %s | %s | %s | %s | %s ms' % (request_time,
-                                                                  request.remote_addr,
-                                                                  request.method,
-                                                                  request.url,
-                                                                  response_status,
-                                                                  end_time - start_time))
+            end_time = round(time.time() * 1000)
+            REQUESTS_LOG.info(f'{request_time} | {request.remote_addr} | {request.method} | {request.url} | {response_status} | {end_time - start_time} ms')
             return actual_response
 
         return _log_to_logger
@@ -428,7 +421,7 @@ class SpellbookRESTAPI(Bottle):
                 llm_config['api_key'] = '********'
             return llm_config
         else:
-            return {'error': 'No LLM configured with id: %s' % llm_id}
+            return {'error': f'No LLM configured with id: {llm_id}'}
 
     @staticmethod
     @enable_cors
@@ -472,7 +465,7 @@ class SpellbookRESTAPI(Bottle):
         if explorer_config is not None:
             return explorer_config
         else:
-            return {'error': 'No explorer configured with id: %s' % explorer_id}
+            return {'error': f'No explorer configured with id: {explorer_id}'}
 
     @staticmethod
     @authentication_required
@@ -675,7 +668,7 @@ class SpellbookRESTAPI(Bottle):
         if trigger_config is not None:
             return trigger_config
         else:
-            return {'error': 'No trigger configured with id: %s' % trigger_id}
+            return {'error': f'No trigger configured with id: {trigger_id}'}
 
     @staticmethod
     @output_json
@@ -843,7 +836,7 @@ class SpellbookRESTAPI(Bottle):
         if action_config is not None:
             return action_config
         else:
-            return {'error': 'No action with id %s found' % action_id}
+            return {'error': f'No action with id {action_id} found'}
 
     @staticmethod
     @output_json
@@ -953,7 +946,7 @@ class SpellbookRESTAPI(Bottle):
             uploaded_file.save(file_path)
             return {"file_id": f"{unique_id}{file_extension}", "file_name": uploaded_file.filename}
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, OSError) as e:
             response.status = 500
             return {"error": str(e)}
 
@@ -1008,7 +1001,8 @@ class SpellbookRESTAPI(Bottle):
 
             # replace uploaded file with the opus file
             uploaded_file.filename = 'opus_audio.opus'
-            uploaded_file.file = open('opus_audio.opus', 'rb')
+            with open('opus_audio.opus', 'rb') as opus_fp:
+                uploaded_file.file = io.BytesIO(opus_fp.read())
 
 
         max_file_size = get_max_file_size_transcribe()
@@ -1019,7 +1013,7 @@ class SpellbookRESTAPI(Bottle):
         uploaded_file.file.seek(0)
 
         LOG.info("Transcribing audio file")
-        segments, info = WHISPER_MODEL.transcribe(uploaded_file.file, beam_size=5, language="en", max_new_tokens=128, condition_on_previous_text=False)
+        segments, _info = WHISPER_MODEL.transcribe(uploaded_file.file, beam_size=5, language="en", max_new_tokens=128, condition_on_previous_text=False)
         uploaded_file.file.close()
 
         transcription = {'segments': []}
@@ -1038,7 +1032,7 @@ class SpellbookRESTAPI(Bottle):
 def convert_aac_to_opus(input_file, opus_file):
     """Convert an AAC audio file to Opus format using ffmpeg."""
     command = f"ffmpeg -i {input_file} -c:a libopus {opus_file}"
-    subprocess.run(command, shell=True)
+    subprocess.run(command, shell=True, check=False)
     # Ensure the file is closed after it's used
     with open(opus_file, 'rb'):
         pass

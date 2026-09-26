@@ -26,7 +26,7 @@ class TestCheckIpfs(unittest.TestCase):
         """Test check_ipfs when IPFS is not running"""
         from helpers.ipfshelpers import check_ipfs
         
-        mock_connect.side_effect = Exception('Connection refused')
+        mock_connect.side_effect = ValueError('Connection refused')
         
         result = check_ipfs()
         
@@ -143,7 +143,7 @@ class TestAddFile(unittest.TestCase):
         import helpers.ipfshelpers as ipfs_module
         
         mock_api = MagicMock()
-        mock_api.add.side_effect = Exception('IPFS connection failed')
+        mock_api.add.side_effect = ValueError('IPFS connection failed')
         ipfs_module.IPFS_API = mock_api
         
         from helpers.ipfshelpers import add_file

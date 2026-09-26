@@ -19,10 +19,10 @@ def generate_qr(message, border=4, box_size=64, error='M', version=None):
 
     :return: the QR code bytes
     """
-    LOG.info('Generating QR code image for: %s' % message)
+    LOG.info(f'Generating QR code image for: {message}')
 
     if error not in ['L', 'M', 'Q', 'H']:
-        LOG.error('Invalid error correction value: %s' % error)
+        LOG.error(f'Invalid error correction value: {error}')
         error_correction = 'M'
 
     else:
@@ -35,7 +35,7 @@ def generate_qr(message, border=4, box_size=64, error='M', version=None):
         elif error == 'H':
             error_correction = qrcode.constants.ERROR_CORRECT_H
         else:  # pragma: no cover
-            raise NotImplementedError('Unknown error correction type: %s' % error)
+            raise NotImplementedError(f'Unknown error correction type: {error}')
 
     qr = qrcode.QRCode(
         version=version,

@@ -14,7 +14,7 @@ action_name = 'test_action_Command'
 
 run_command = 'echo Hello world!'
 print('Creating test action: CommandAction')
-response = spellbook_call('save_action', '-t=Command', action_name, '-c=%s' % run_command)
+response = spellbook_call('save_action', '-t=Command', action_name, f'-c={run_command}')
 assert response is None
 
 # --------------------------------------------------------------------------------------------------------
@@ -44,7 +44,7 @@ mail_subject = 'example email subject'
 mail_body_template = 'template1'
 
 print('Creating test action: SendMailAction')
-response = spellbook_call('save_action', '-t=SendMail', action_name, '-mr=%s' % mail_recipients, '-ms=%s' % mail_subject, "-mb=%s" % mail_body_template)
+response = spellbook_call('save_action', '-t=SendMail', action_name, f'-mr={mail_recipients}', f'-ms={mail_subject}', f"-mb={mail_body_template}")
 assert response is None
 
 # --------------------------------------------------------------------------------------------------------
@@ -74,7 +74,7 @@ action_name = 'test_action_Webhook'
 webhook = 'http://www.google.com'
 
 print('Creating test action: Webhook')
-response = spellbook_call('save_action', '-t=Webhook', action_name, '-w=%s' % webhook)
+response = spellbook_call('save_action', '-t=Webhook', action_name, f'-w={webhook}')
 assert response is None
 
 # --------------------------------------------------------------------------------------------------------
@@ -103,7 +103,7 @@ reveal_text = 'A secret message'
 reveal_link = 'http://www.asecretlink.com'
 
 print('Creating test action: RevealSecret')
-response = spellbook_call('save_action', '-t=RevealSecret', action_name, '-rt=%s' % reveal_text, '-rl=%s' % reveal_link)
+response = spellbook_call('save_action', '-t=RevealSecret', action_name, f'-rt={reveal_text}', f'-rl={reveal_link}')
 assert response is None
 
 # --------------------------------------------------------------------------------------------------------

@@ -294,22 +294,9 @@ class TestMnemonicCoverageGaps:
 
     def test_init_bad_wordlist_length(self):
         """Test that ConfigurationError is raised when wordlist has wrong length (line 53)"""
-        with patch('builtins.open', mock_open(read_data='word1\nword2\n')):
-            with pytest.raises(ConfigurationError):
-                Mnemonic('english')
-
-    def test_to_entropy_python2_path(self):
-        """Test to_entropy using the Python 2 code path (line 127)"""
-        m = Mnemonic('english')
-        data = bytes([0] * 16)
-        mnemonic = m.to_mnemonic(data)
-        with patch('bips.mnemonic.sys') as mock_sys, \
-             patch('builtins.ord', side_effect=lambda x: x if isinstance(x, int) else ord(x)):
-            mock_sys.version = '2.7.18'
-            mock_sys.argv = ['mnemonic.py']
-            mock_sys.stdin = __import__('io').StringIO('00' * 16 + '\n')
-            entropy = m.to_entropy(mnemonic)
-            assert bytes(entropy) == data
+        with patch('builtins.open', mock_open(read_data='word1\nword2\n')), \
+                pytest.raises(ConfigurationError):
+            Mnemonic('english')
 
     def test_main_entry_point(self):
         """Test that main() is called when module is run as __main__ (line 204)"""

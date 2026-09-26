@@ -41,7 +41,7 @@ class SendDMTwitterAction(Action):
                                   text=self.text,
                                   user_auth=self.user_auth)
 
-        except Exception as ex:
+        except (ValueError, KeyError, TypeError, OSError) as ex:
             LOG.error(f'Unable to create direct message on twitter: {ex}')
             return False
 

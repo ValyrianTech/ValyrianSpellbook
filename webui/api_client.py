@@ -30,7 +30,7 @@ class SpellbookAPIClient:
         if not self.api_key or not self.api_secret:
             return {}
         
-        nonce = int(round(time.time() * 1000))
+        nonce = round(time.time() * 1000)
         return {
             'Content-Type': 'application/json',
             'API_Key': self.api_key,

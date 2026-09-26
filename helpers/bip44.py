@@ -1,0 +1,154 @@
+#!/usr/bin/env python
+"""BIP44 wallet helpers for deriving addresses and keys from mnemonic seeds."""
+import time
+from binascii import hexlify, unhexlify
+from pprint import pprint
+
+import requests
+
+from bips.bip32 import (
+    MAINNET_PRIVATE,
+    TESTNET_PRIVATE,
+    bip32_ckd,
+    bip32_extract_key,
+    bip32_master_key,
+    bip32_privtopub,
+)
+from bips.bip39 import get_seed
+from bips.bip44 import (
+    get_addresses_from_xpub,
+    get_change_addresses_from_xpub,
+    get_private_key,
+    get_xpriv_keys,
+    get_xpub_keys,
+)
+from helpers.privatekeyhelpers import encode_privkey, privkey_to_pubkey
+from helpers.publickeyhelpers import pubkey_to_address
+
+HARDENED = 2**31
+MAGICBYTE = 0
+VBYTES = MAINNET_PRIVATE
+COIN_TYPE = 0
+
+
+class BIP44Wallet:
+    """
+    BIP44 hierarchical deterministic wallet for scanning and sweeping addresses.
+
+    Initializes the wallet from mnemonic, passphrase, account index, and number of addresses.
+    """
+    def __init__(self, mnemonic, passphrase="", account=0, n=100):
+        self.mnemonic = mnemonic
+        self.passphrase = passphrase
+        self.account = account
+        self.xpub_keys = get_xpub_keys(self.mnemonic, self.passphrase, account+1)
+        self.xpriv_keys = get_xpriv_keys(self.mnemonic, self.passphrase, account+1)
+
+        self.n = n
+        self.addresses = get_addresses_from_xpub(self.xpub_keys[account], self.n)
+        self.change_addresses = get_change_addresses_from_xpub(self.xpub_keys[account], self.n)
+
+    def scan(self):
+        """Scan the blockchain for unspent outputs on all derived addresses."""
+        unspent_outputs = {}
+        chunk_size = 200
+        for k, addressList in enumerate([self.addresses, self.change_addresses]):
+            i = 0
+            while i < self.n:
+                chunk = addressList[i:i+chunk_size]
+
+                url = 'https://blockchain.info/multiaddr?active={}'.format('|'.join(chunk))
+                r = requests.get(url)
+                data = r.json()
+
+                for j in range(len(data['addresses'])):
+                    if data['addresses'][j]['final_balance'] > 0:
+                        key_index = addressList.index(data['addresses'][j]['address'])
+                        private_key = get_private_key(self.xpriv_keys[self.account], key_index, k)
+                        unspent_outputs[data['addresses'][j]['address']] = {'value': data['addresses'][j]['final_balance'],
+                                                                            'i': key_index,
+                                                                            'private_key': private_key[data['addresses'][j]['address']],
+                                                                            'change': k,
+                                                                            "account": self.account}
+
+                i += chunk_size
+                time.sleep(1)
+
+        pprint(unspent_outputs)
+
+        total_value = 0
+        for address in unspent_outputs:
+            total_value += unspent_outputs[address]['value']
+
+        print('Total value:', total_value/1e8, 'BTC')
+
+        return unspent_outputs
+
+    def sweep(self, to_address):
+        """Sweep all unspent outputs to the given address (not yet implemented)."""
+
+
+def set_testnet(testnet=False):
+    """
+    Set the global variable MAGICBYTE for encoding the address:
+    Bitcoin mainnet uses 0, Bitcoin testnet uses 111
+
+    Set the global variable VBYTES for deriving the master key from a seed:
+    MAINNET_PRIVATE = b'\x04\x88\xAD\xE4'
+    TESTNET_PRIVATE = b'\x04\x35\x83\x94'
+
+    Set the global variable COIN_TYPE for deriving the BIP32 path:
+    Bitcoin mainnet uses 0, Bitcoin testnet uses 1
+
+    :param testnet: Set to True for testnet (default=False -> mainnet)
+    """
+    global MAGICBYTE, VBYTES, COIN_TYPE
+    MAGICBYTE, VBYTES, COIN_TYPE = (111, TESTNET_PRIVATE, 1) if testnet is True else (0, MAINNET_PRIVATE, 0)
+
+
+def show_details(mnemonic, passphrase="", n_accounts=1):
+    """Print and return BIP44 wallet details (seed, xpriv, xpub, addresses) for inspection."""
+    seed = hexlify(get_seed(mnemonic=mnemonic, passphrase=passphrase))
+    print('Seed:\t\t\t\t', seed)
+
+    priv = bip32_master_key(unhexlify(seed), vbytes=VBYTES)
+    print('Xpriv:\t\t\t\t', priv)
+
+    key = encode_privkey(bip32_extract_key(priv), 'wif_compressed', vbyte=MAGICBYTE)
+    print('Key:\t\t\t\t', key)
+
+    pub = bip32_privtopub(priv)
+    print('Derived public key:\t', pub)
+    pub_hex = bip32_extract_key(pub)
+    print('public key (hex):\t', pub_hex)
+    print('Master Key address:\t', pubkey_to_address(pub_hex, magicbyte=MAGICBYTE))
+
+    print()
+    print("TREZOR Keys:")
+
+    account = 0
+    derived_private_key = bip32_ckd(bip32_ckd(bip32_ckd(priv, 44+HARDENED), HARDENED), HARDENED+account)
+    print('Derived private key:', derived_private_key)
+
+    private_key = encode_privkey(bip32_extract_key(derived_private_key), 'wif_compressed', vbyte=MAGICBYTE)
+    print('private key (wif):\t', private_key)
+
+    derived_public_key = bip32_privtopub(derived_private_key)
+    print('Derived public key:', derived_public_key)
+
+    public_key_hex = privkey_to_pubkey(private_key)
+    print('public key (hex):\t', public_key_hex)
+
+    address = pubkey_to_address(public_key_hex, magicbyte=MAGICBYTE)
+    print('address:\t\t\t', address)
+
+    print()
+    print("Account public keys (XPUB)")
+    xpubs = []
+    for i in range(n_accounts):
+        derived_private_key = bip32_ckd(bip32_ckd(bip32_ckd(priv, 44+HARDENED), HARDENED+COIN_TYPE), HARDENED+i)
+        xpub = bip32_privtopub(derived_private_key)
+        print('Account', i, 'xpub:', xpub)
+        xpubs.append(xpub)
+
+    return xpubs

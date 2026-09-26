@@ -60,8 +60,8 @@ def make_custom_tx(private_keys, tx_inputs, tx_outputs, tx_fee=0, op_return_data
     """
     # Check if the transaction fee is valid
     if not isinstance(tx_fee, int) or tx_fee < 0:
-        LOG.error('Invalid transaction fee: %d satoshis' % tx_fee)
-        LOG.error('type: %s' % type(tx_fee))
+        LOG.error(f'Invalid transaction fee: {tx_fee} satoshis')
+        LOG.error(f'type: {type(tx_fee)}')
         return
 
     # Check if the supplied fee is equal to the difference between the total input value and total output value
@@ -70,18 +70,18 @@ def make_custom_tx(private_keys, tx_inputs, tx_outputs, tx_fee=0, op_return_data
 
     if tx_fee != total_input_value - total_output_value:
         LOG.error('Transaction fee does not match the difference between the total input value and the total output value!')
-        LOG.error('Total input: %s, Total output: %s, Transaction fee: %s' % (total_input_value, total_output_value, tx_fee))
+        LOG.error(f'Total input: {total_input_value}, Total output: {total_output_value}, Transaction fee: {tx_fee}')
         return
 
     # Check if all required private keys have been supplied
-    all_keys_present = all([tx_input['address'] in private_keys for tx_input in tx_inputs])
+    all_keys_present = all(tx_input['address'] in private_keys for tx_input in tx_inputs)
     if not all_keys_present:
         LOG.error("At least 1 private key is missing.")
         return
 
     if allow_zero_conf is False:
         # Check if all inputs have at least 1 confirmation
-        all_inputs_confirmed = all([tx_input['confirmations'] > 0 for tx_input in tx_inputs])
+        all_inputs_confirmed = all(tx_input['confirmations'] > 0 for tx_input in tx_inputs)
         if not all_inputs_confirmed:
             LOG.error("At least 1 input is unconfirmed.")
             return
@@ -154,10 +154,10 @@ def op_return_script(hex_data):
     :return: The OP_RETURN script
     """
     if not isinstance(hex_data, str):
-        raise Exception('Data to add as OP_RETURN must be a string containing a hexadecimal number')
+        raise TypeError('Data to add as OP_RETURN must be a string containing a hexadecimal number')
 
     if re.match('^[0-9a-fA-F]*$', hex_data) is None or len(hex_data) % 2 != 0:
-        raise Exception('Data to add as OP_RETURN must be in hex format')
+        raise ValueError('Data to add as OP_RETURN must be in hex format')
 
     return '6a' + safe_hexlify(num_to_op_push(len(hex_data)/2)) + hex_data
 
@@ -179,7 +179,7 @@ def add_op_return(msg, tx_hex=None):
 
         txo = deserialize(tx_hex)
         assert (len(outs) > 0) and sum(multiaccess(outs, 'value')) > 0 \
-            and not any([o for o in outs if o.get("script")[:2] == '6a']), \
+            and not any(o for o in outs if o.get("script")[:2] == '6a'), \
             "Tx limited to *1* OP_RETURN, and only whilst the other outputs send funds"
         txo['outs'].append({'script': hex_data, 'value': 0})
         return serialize(txo)
@@ -326,7 +326,7 @@ def mktx(*args):
         elif "script" in o:
             outobj["script"] = o["script"]
         else:
-            raise Exception("Could not find 'address' or 'script' in output.")
+            raise ValueError("Could not find 'address' or 'script' in output.")
         outobj["value"] = o["value"]
         txobj["outs"].append(outobj)
 
@@ -391,7 +391,7 @@ def json_changebase(obj, changer):
     elif isinstance(obj, list):
         return [json_changebase(x, changer) for x in obj]
 
-    return dict((x, json_changebase(obj[x], changer)) for x in obj)
+    return {x: json_changebase(obj[x], changer) for x in obj}
 
 
 def num_to_var_int(x):
@@ -480,8 +480,8 @@ def p2wpkh_script(address):
     :param address: A Bitcoin address
     :return: a P2WPKH script
     """
-    hrp, data = bech32_decode(address)
-    version, decoded = decode_witness_program(hrp=hrp, addr=address)
+    hrp, _data = bech32_decode(address)
+    _version, decoded = decode_witness_program(hrp=hrp, addr=address)
     if is_python2:  # pragma: no cover
         pubkeyhash = ''.join([chr(a) for a in decoded])
     else:
@@ -505,8 +505,8 @@ def p2wsh_script(address):
     :param address: A Bitcoin address
     :return: a P2WPKH script
     """
-    hrp, data = bech32_decode(address)
-    version, decoded = decode_witness_program(hrp=hrp, addr=address)
+    hrp, _data = bech32_decode(address)
+    _version, decoded = decode_witness_program(hrp=hrp, addr=address)
     if is_python2:  # pragma: no cover
         scripthash = ''.join([chr(a) for a in decoded])
     else:
@@ -530,7 +530,7 @@ def address_to_script(address):
         elif len(address) == 62:
             return p2wsh_script(address=address)
         else:
-            raise Exception('Invalid version 0 bech32 address (length must be 42 or 62): %s' % address)
+            raise ValueError(f'Invalid version 0 bech32 address (length must be 42 or 62): {address}')
     else:
         return p2pkh_script(address=address)
 
@@ -632,7 +632,7 @@ def ecdsa_raw_sign(msghash, priv):
     r, y = fast_multiply(G, k)
     s = inv(k, N) * (z + r*decode_privkey(priv)) % N
 
-    v, r, s = 27+((y % 2) ^ (0 if s * 2 < N else 1)), r, s if s * 2 < N else N - s
+    v, s = 27+((y % 2) ^ (0 if s * 2 < N else 1)), s if s * 2 < N else N - s
     if 'compressed' in get_privkey_format(priv):
         v += 4
 

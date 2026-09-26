@@ -2,7 +2,7 @@
 """Trigger that activates on a recurring schedule."""
 
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 from helpers.loghelpers import LOG
 from validators.validators import valid_amount, valid_timestamp
@@ -30,7 +30,7 @@ class RecurringTrigger(Trigger):
             return self.next_activation <= int(time.time())
 
         elif self.end_time <= int(time.time()):
-            LOG.info('Recurring trigger %s has reached its end time' % self.id)
+            LOG.info(f'Recurring trigger {self.id} has reached its end time')
             self.status = 'Succeeded'
             self.save()
             return False
@@ -43,7 +43,7 @@ class RecurringTrigger(Trigger):
 
         if self.end_time is None or self.next_activation + self.interval <= self.end_time:
             self.next_activation += self.interval  # Todo what if trigger was activated after interval has passed??
-            LOG.info('Setting next activation of recurring trigger %s to %s' % (self.id, datetime.fromtimestamp(self.next_activation)))
+            LOG.info(f'Setting next activation of recurring trigger {self.id} to {datetime.fromtimestamp(self.next_activation, tz=timezone.utc)}')
             self.save()
 
     def configure(self, **config):
@@ -63,7 +63,7 @@ class RecurringTrigger(Trigger):
             self.next_activation = config['next_activation']
         elif self.begin_time is not None:
             self.next_activation = self.begin_time
-            LOG.info('Setting first activation of recurring trigger %s to %s' % (self.id, datetime.fromtimestamp(self.next_activation)))
+            LOG.info(f'Setting first activation of recurring trigger {self.id} to {datetime.fromtimestamp(self.next_activation, tz=timezone.utc)}')
 
         self.multi = True
 

@@ -139,5 +139,5 @@ class TestBitcoinwandPostException:
     def test_post_exception_exits(self):
         """When requests.post raises an exception, the except block is entered and sys.exit(1) is called."""
         with pytest.raises(SystemExit) as exc_info:
-            _import_bitcoinwand(message='hello', post_side_effect=Exception('Connection refused'))
+            _import_bitcoinwand(message='hello', post_side_effect=ValueError('Connection refused'))
         assert exc_info.value.code == 1

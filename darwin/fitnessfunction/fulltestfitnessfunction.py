@@ -14,7 +14,7 @@ class FullTestFitnessFunction(FitnessFunction):
         """Fitness."""
 
         if not isinstance(model, FullTest):
-            raise Exception('model for fitness function is not a FullTest!')
+            raise TypeError('model for fitness function is not a FullTest!')
 
         boolean_fitness = 0
 

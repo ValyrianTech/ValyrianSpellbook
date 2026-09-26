@@ -25,11 +25,11 @@ class BlockchainInfoAPI(ExplorerAPI):
         latest_block = {}
         url = f'{self.url}/latestblock'
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             data = r.json()
-        except Exception as ex:
-            LOG.error('Unable to get latest block from Blockchain.info: %s' % ex)
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get latest block from Blockchain.info: {ex}')
             return {'error': 'Unable to get latest block from Blockchain.info'}
 
         if all(key in data for key in ('height', 'hash', 'time')):
@@ -39,16 +39,16 @@ class BlockchainInfoAPI(ExplorerAPI):
 
             url = '{api_url}/rawblock/{hash}'.format(api_url=self.url, hash=latest_block['hash'])
             try:
-                LOG.info('GET %s' % url)
+                LOG.info(f'GET {url}')
                 r = requests.get(url)
                 data = r.json()
             except ValueError:
                 LOG.error('Blockchain.info returned invalid json data: %s', r.text)
-                return {'error': 'Unable to get block %s from Blockchain.info' % latest_block['height']}
+                return {'error': 'Unable to get block {} from Blockchain.info'.format(latest_block['height'])}
 
-            except Exception as ex:
-                LOG.error('Unable to get block %s from Blockchain.info: %s' % (latest_block['height'], ex))
-                return {'error': 'Unable to get block %s from Blockchain.info' % latest_block['height']}
+            except (KeyError, TypeError, OSError) as ex:
+                LOG.error('Unable to get block {} from Blockchain.info: {}'.format(latest_block['height'], ex))
+                return {'error': 'Unable to get block {} from Blockchain.info'.format(latest_block['height'])}
 
             if all(key in data for key in ('mrkl_root', 'size')):
                 latest_block['merkleroot'] = data['mrkl_root']
@@ -56,18 +56,18 @@ class BlockchainInfoAPI(ExplorerAPI):
 
             return {'block': latest_block}
         else:
-            return {'error': 'Received invalid data: %s' % data}
+            return {'error': f'Received invalid data: {data}'}
 
     def get_block_by_hash(self, block_hash):
         """Retrieve a block by its hash from the blockchain explorer."""
         url = f'{self.url}/rawblock/{block_hash}'
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             data = r.json()
-        except Exception as ex:
-            LOG.error('Unable to get block %s from Blockchain.info: %s' % (block_hash, ex))
-            return {'error': 'Unable to get block %s from Blockchain.info' % block_hash}
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get block {block_hash} from Blockchain.info: {ex}')
+            return {'error': f'Unable to get block {block_hash} from Blockchain.info'}
 
         if all(key in data for key in ('height', 'hash', 'time', 'mrkl_root', 'size')):
             block = {'height': data['height'],
@@ -77,18 +77,18 @@ class BlockchainInfoAPI(ExplorerAPI):
                      'size': data['size']}
             return {'block': block}
         else:
-            return {'error': 'Received invalid data: %s' % data}
+            return {'error': f'Received invalid data: {data}'}
 
     def get_block_by_height(self, height):
         """Retrieve a block by its height from the blockchain explorer."""
         url = f'{self.url}/block-height/{height}?format=json'
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             data = r.json()
-        except Exception as ex:
-            LOG.error('Unable to get block %s from Blockchain.info: %s' % (height, ex))
-            return {'error': 'Unable to get block %s from Blockchain.info' % height}
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get block {height} from Blockchain.info: {ex}')
+            return {'error': f'Unable to get block {height} from Blockchain.info'}
 
         if 'blocks' in data:
             blocks = data['blocks']
@@ -101,7 +101,7 @@ class BlockchainInfoAPI(ExplorerAPI):
                              'size': blocks[i]['size']}
                     return {'block': block}
 
-        return {'error': 'Received invalid data: %s' % data}
+        return {'error': f'Received invalid data: {data}'}
 
     def get_transactions(self, address):
         """Retrieve all transactions for a given address from the explorer."""
@@ -116,19 +116,19 @@ class BlockchainInfoAPI(ExplorerAPI):
         while n_tx is None or len(transactions) < n_tx:
             url = f'{self.url}/address/{address}?format=json&limit={limit}&offset={limit * i}'
             try:
-                LOG.info('GET %s' % url)
+                LOG.info(f'GET {url}')
                 r = requests.get(url)
                 data = r.json()
-            except Exception as ex:
-                LOG.error('Unable to get transactions of address %s from %s: %s' % (address, url, ex))
-                return {'error': 'Unable to get transactions of address %s from %s' % (address, url)}
+            except (ValueError, KeyError, TypeError, OSError) as ex:
+                LOG.error(f'Unable to get transactions of address {address} from {url}: {ex}')
+                return {'error': f'Unable to get transactions of address {address} from {url}'}
 
             if all(key in data for key in ('n_tx', 'txs')):
                 n_tx = data['n_tx']
                 transactions += data['txs']
                 i += 1
             else:
-                return {'error': 'Received Invalid data: %s' % data}
+                return {'error': f'Received Invalid data: {data}'}
 
             if len(transactions) < n_tx:
                 sleep(1)
@@ -138,7 +138,7 @@ class BlockchainInfoAPI(ExplorerAPI):
             tx = TX()
             tx.txid = transaction['hash']
             tx.lock_time = transaction['lock_time']
-            tx.block_height = transaction['block_height'] if 'block_height' in transaction else None
+            tx.block_height = transaction.get('block_height', None)
             tx.confirmations = (latest_block_height - tx.block_height) + 1 if 'block_height' in transaction else 0
 
             for item in transaction['inputs']:
@@ -154,7 +154,7 @@ class BlockchainInfoAPI(ExplorerAPI):
 
             for item in transaction['out']:
                 tx_output = TxOutput()
-                tx_output.address = item['addr'] if 'addr' in item else None
+                tx_output.address = item.get('addr', None)
                 tx_output.value = item['value']
                 tx_output.n = item['n']
                 tx_output.spent = item['spent']
@@ -180,30 +180,30 @@ class BlockchainInfoAPI(ExplorerAPI):
         """Retrieve the balance (final, received, sent) for a given address."""
         url = f'{self.url}/q/addressbalance/{address}?confirmations=1'
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             final_balance = int(r.text)
-        except Exception as ex:
-            LOG.error('Unable to get balance of address %s from Blockchain.info: %s' % (address, ex))
-            return {'error': 'Unable to get balance of address %s from Blockchain.info' % address}
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get balance of address {address} from Blockchain.info: {ex}')
+            return {'error': f'Unable to get balance of address {address} from Blockchain.info'}
 
         url = f'{self.url}/q/getreceivedbyaddress/{address}?confirmations=1'
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             received_balance = int(r.text)
-        except Exception as ex:
-            LOG.error('Unable to get balance of address %s from Blockchain.info: %s' % (address, ex))
-            return {'error': 'Unable to get balance of address %s from Blockchain.info' % address}
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get balance of address {address} from Blockchain.info: {ex}')
+            return {'error': f'Unable to get balance of address {address} from Blockchain.info'}
 
         url = f'{self.url}/q/getsentbyaddress/{address}?confirmations=1'
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             sent_balance = int(r.text)
-        except Exception as ex:
-            LOG.error('Unable to get balance of address %s from Blockchain.info: %s' % (address, ex))
-            return {'error': 'Unable to get balance of address %s from Blockchain.info' % address}
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get balance of address {address} from Blockchain.info: {ex}')
+            return {'error': f'Unable to get balance of address {address} from Blockchain.info'}
 
         balance = {'final': final_balance,
                    'received': received_balance,
@@ -214,17 +214,17 @@ class BlockchainInfoAPI(ExplorerAPI):
         """Retrieve a single transaction by its txid from the explorer."""
         url = f'{self.url}/rawtx/{txid}'
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             data = r.json()
-        except Exception as ex:
-            LOG.error('Unable to get tx %s from Blockchain.info: %s' % (txid, ex))
-            return {'error': 'Unable to get tx %s from Blockchain.info' % txid}
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get tx {txid} from Blockchain.info: {ex}')
+            return {'error': f'Unable to get tx {txid} from Blockchain.info'}
 
         tx = TX()
         tx.txid = txid
         tx.lock_time = data['lock_time']
-        tx.block_height = data['block_height'] if 'block_height' in data else None
+        tx.block_height = data.get('block_height', None)
         tx.confirmations = self.get_latest_block_height() - tx.block_height + 1 if tx.block_height is not None else 0
 
         for item in data['inputs']:
@@ -240,7 +240,7 @@ class BlockchainInfoAPI(ExplorerAPI):
 
         for item in data['out']:
             tx_output = TxOutput()
-            tx_output.address = item['addr'] if 'addr' in item else None
+            tx_output.address = item.get('addr', None)
             tx_output.value = item['value']
             tx_output.n = item['n']
             tx_output.spent = item['spent']
@@ -256,12 +256,12 @@ class BlockchainInfoAPI(ExplorerAPI):
         """Retrieve the prime input address of a transaction by txid."""
         url = f'{self.url}/rawtx/{txid}'
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             data = r.json()
-        except Exception as ex:
-            LOG.error('Unable to get prime input address of tx %s from Blockchain.info: %s' % (txid, ex))
-            return {'error': 'Unable to get prime input address of tx %s from Blockchain.info' % txid}
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get prime input address of tx {txid} from Blockchain.info: {ex}')
+            return {'error': f'Unable to get prime input address of tx {txid} from Blockchain.info'}
 
         if 'inputs' in data:
             tx_inputs = data['inputs']
@@ -272,33 +272,33 @@ class BlockchainInfoAPI(ExplorerAPI):
                     input_addresses.append(tx_inputs[i]['prev_out']['addr'])
 
             if len(input_addresses) > 0:
-                prime_input_address = sorted(input_addresses)[0]
+                prime_input_address = min(input_addresses)
                 return {'prime_input_address': prime_input_address}
             else:
                 # transaction was a coinbase transaction, so there are no input addresses
                 return {'prime_input_address': None}
 
-        return {'error': 'Received invalid data: %s' % data}
+        return {'error': f'Received invalid data: {data}'}
 
     def get_utxos(self, address, confirmations=3):
         """Retrieve unspent transaction outputs (UTXOs) for a given address."""
         limit = 1000  # max number of utxo given by blockchain.info is 1000, there is no 'offset' parameter available
         url = f'{self.url}/unspent?active={address}&limit={limit}&confirmations={confirmations}'
         try:
-            LOG.info('GET %s' % url)
+            LOG.info(f'GET {url}')
             r = requests.get(url)
             if r.text == 'No free outputs to spend':
                 return {'utxos': []}
 
             data = r.json()
-        except Exception as ex:
-            LOG.error('Unable to get utxos of address %s from %s: %s' % (address, url, ex))
-            return {'error': 'Unable to get utxos of address %s from %s' % (address, url)}
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to get utxos of address {address} from {url}: {ex}')
+            return {'error': f'Unable to get utxos of address {address} from {url}'}
 
         if 'unspent_outputs' in data:
             unspent_outputs = data['unspent_outputs']
         else:
-            return {'error': 'Received Invalid data: %s' % data}
+            return {'error': f'Received Invalid data: {data}'}
 
         utxos = []
         for output in unspent_outputs:
@@ -315,16 +315,16 @@ class BlockchainInfoAPI(ExplorerAPI):
     def push_tx(self, tx):
         """Broadcast a signed raw transaction to the blockchain network."""
         url = f'{self.url}/pushtx'
-        LOG.info('POST %s' % url)
+        LOG.info(f'POST {url}')
         try:
-            r = requests.post(url, data=dict(tx=tx))
-        except Exception as ex:
-            LOG.error('Unable to push tx via Blockchain.info: %s' % ex)
-            return {'error': 'Unable to push tx Blockchain.info: %s' % ex}
+            r = requests.post(url, data={'tx': tx})
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to push tx via Blockchain.info: {ex}')
+            return {'error': f'Unable to push tx Blockchain.info: {ex}'}
 
         data = r.text.strip()
         if r.status_code == 200 and data == 'Transaction Submitted':
             return {'success': True}
         else:
-            LOG.error('Unable to push tx via Blockchain.info: %s' % data)
-            return {'error': 'Unable to push tx Blockchain.info: %s' % data}
+            LOG.error(f'Unable to push tx via Blockchain.info: {data}')
+            return {'error': f'Unable to push tx Blockchain.info: {data}'}

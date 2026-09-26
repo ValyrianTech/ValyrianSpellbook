@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest import mock
 
 from action.action import Action
@@ -66,13 +66,13 @@ class TestAction:
         action = ConcreteAction('test_action_id')
         timestamp = 1609459200  # 2021-01-01 00:00:00 UTC
         action.configure(created=timestamp)
-        assert action.created == datetime.fromtimestamp(timestamp)
+        assert action.created == datetime.fromtimestamp(timestamp, tz=timezone.utc)
 
     def test_action_configure_without_created(self):
         action = ConcreteAction('test_action_id')
-        before = datetime.now()
+        before = datetime.now(tz=timezone.utc)
         action.configure()
-        after = datetime.now()
+        after = datetime.now(tz=timezone.utc)
         assert before <= action.created <= after
 
     def test_action_configure_with_valid_action_type(self):
@@ -96,9 +96,9 @@ class TestAction:
     def test_action_json_encodable_sets_created_if_none(self):
         action = ConcreteAction('test_action_id')
         action.created = None
-        before = int(time.mktime(datetime.now().timetuple()))
+        before = int(time.time())
         result = action.json_encodable()
-        after = int(time.mktime(datetime.now().timetuple()))
+        after = int(time.time())
         assert before <= result['created'] <= after
 
     @mock.patch('action.action.save_to_json_file')

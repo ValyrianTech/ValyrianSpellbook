@@ -106,7 +106,7 @@ class TestWebhookAction:
 
     @mock.patch('action.webhookaction.requests.get')
     def test_webhookaction_run_exception(self, mock_get):
-        mock_get.side_effect = Exception('Connection error')
+        mock_get.side_effect = ValueError('Connection error')
 
         action = WebhookAction('test_webhook_action')
         action.configure(webhook='http://example.com/webhook')

@@ -918,7 +918,7 @@ class TestGetLlmApiKeyException(unittest.TestCase):
         """Test get_llm_api_key handles exception when loading config"""
         from helpers.llmhelpers import get_llm_api_key
         
-        mock_load_llms.side_effect = Exception("Config load error")
+        mock_load_llms.side_effect = ValueError("Config load error")
         
         result = get_llm_api_key('OpenAI:gpt-4', 'OpenAI')
         
@@ -1017,7 +1017,7 @@ class TestLLMClass(unittest.TestCase):
         llm = LLM('self-hosted:model', 0.5)
         messages = [HumanMessage(content="Hello")]
         
-        text, output, info = llm.run(messages)
+        text, _output, _info = llm.run(messages)
         
         self.assertIn("Oobabooga is not enabled", text)
 
@@ -1040,7 +1040,7 @@ class TestLLMClass(unittest.TestCase):
         llm = LLM('OpenAI:gpt-4', 0.5)
         messages = [HumanMessage(content="Hello")]
         
-        text, output, info = llm.run(messages)
+        text, output, _info = llm.run(messages)
         
         self.assertEqual(text, 'Hello response')
         self.assertIn('generation_time', output)
@@ -1072,7 +1072,7 @@ class TestLLMClass(unittest.TestCase):
         
         messages = [HumanMessage(content="Hello")]
         
-        text, output, info = llm.run(messages, best_of=2)
+        text, _output, _info = llm.run(messages, best_of=2)
         
         self.assertEqual(text, 'Response 1')
         llm.choose_best_generation.assert_called_once()
@@ -1098,7 +1098,7 @@ class TestLLMClass(unittest.TestCase):
         
         messages = [{'role': 'user', 'content': 'Hello'}]
         
-        text, output, info = llm.run(messages)
+        _text, _output, _info = llm.run(messages)
         
         llm.choose_best_llm.assert_called_once()
 
@@ -1123,7 +1123,7 @@ class TestLLMClass(unittest.TestCase):
         
         messages = [{'role': 'user', 'content': [{'text': 'Hello'}]}]
         
-        text, output, info = llm.run(messages)
+        _text, _output, _info = llm.run(messages)
         
         llm.choose_best_llm.assert_called_once()
 
@@ -1260,7 +1260,7 @@ class TestLLMChooseBestGeneration(unittest.TestCase):
         mock_llm_instance.generate.return_value = mock_result
         mock_get_llm.return_value = mock_llm_instance
         
-        mock_parse.side_effect = Exception("Parse error")
+        mock_parse.side_effect = ValueError("Parse error")
         
         llm = LLM('OpenAI:gpt-4', 0.5)
         

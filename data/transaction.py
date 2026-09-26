@@ -40,7 +40,7 @@ class TX:
         for tx_input in self.inputs:
             addresses.append(tx_input.address)
 
-        return sorted(addresses)[0]
+        return min(addresses)
 
     def received_value(self, address):
         """
@@ -149,7 +149,7 @@ class TX:
 
             if len(unhex_data) != int(check_length, 16):
                 LOG.error(
-                    'OP_RETURN data is not the correct length! {0} -> should be {1}'.format(str(len(unhex_data)),
+                    'OP_RETURN data is not the correct length! {} -> should be {}'.format(str(len(unhex_data)),
                                                                                             str(int(check_length,
                                                                                                     16))))
                 unhex_data = b'Unable to decode hex data'
@@ -160,8 +160,8 @@ class TX:
         except UnicodeDecodeError:
             try:
                 unhex_data = unhex_data.decode('cp1252')
-            except Exception as ex:
-                LOG.error('Unable to decode OP_RETURN data %s in utf-8 or cp1252: %s' % (hex_data, ex))
+            except (ValueError, KeyError, TypeError, OSError) as ex:
+                LOG.error(f'Unable to decode OP_RETURN data {hex_data} in utf-8 or cp1252: {ex}')
                 unhex_data = 'Unable to decode hex data'
 
         return unhex_data

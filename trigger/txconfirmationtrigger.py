@@ -29,7 +29,7 @@ class TxConfirmationTrigger(Trigger):
             # Something went wrong during retrieval of transaction
             return False
 
-        return True if self.confirmations <= confirmations else False
+        return self.confirmations <= confirmations
 
     def configure(self, **config):
         """Configure."""

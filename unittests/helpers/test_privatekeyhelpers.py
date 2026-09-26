@@ -87,7 +87,7 @@ class TestGetPrivkeyFormat:
         assert result == 'wif_compressed'
 
     def test_get_privkey_format_invalid(self):
-        with pytest.raises(Exception):
+        with pytest.raises(AssertionError):
             get_privkey_format('invalid')
 
 
@@ -131,7 +131,7 @@ class TestEncodePrivkey:
         assert result[0] in ['K', 'L']
 
     def test_encode_privkey_invalid_format(self):
-        with pytest.raises(Exception):
+        with pytest.raises(ValueError):
             encode_privkey(12345, 'invalid')
 
     def test_encode_privkey_from_non_int(self):
@@ -188,7 +188,7 @@ class TestDecodePrivkey:
         assert result == 12345
 
     def test_decode_privkey_invalid_format(self):
-        with pytest.raises(Exception):
+        with pytest.raises(ValueError):
             decode_privkey('test', 'invalid')
 
 
@@ -239,7 +239,7 @@ class TestPrivkeyToPubkey:
 
     def test_privkey_to_pubkey_invalid(self):
         # Private key >= N is invalid
-        with pytest.raises(Exception):
+        with pytest.raises(ValueError):
             privkey_to_pubkey(N)
 
 
@@ -347,12 +347,12 @@ class TestGetPrivkeyFormatEdgeCases:
 
     def test_get_privkey_format_invalid_bin_length(self):
         """Test get_privkey_format with invalid binary length raises exception"""
-        with pytest.raises(Exception):
+        with pytest.raises(TypeError):
             get_privkey_format(b'\x00' * 31)  # Not 32 or 33 bytes
 
     def test_get_privkey_format_empty_string(self):
         """Test get_privkey_format with empty string raises exception"""
-        with pytest.raises(Exception):
+        with pytest.raises(AssertionError):
             get_privkey_format('')
 
     def test_get_privkey_format_invalid_wif_length(self):

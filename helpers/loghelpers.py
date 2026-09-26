@@ -29,7 +29,7 @@ try:
         stream = io.TextIOWrapper(stream.buffer, encoding="utf-8", errors="replace", line_buffering=True)
     # else: leave as-is; handler will use whatever stream is (rare)
     stream_handler = logging.StreamHandler(stream)
-except Exception:  # pragma: no cover
+except (ValueError, KeyError, TypeError, OSError):  # pragma: no cover
     # Fallback if anything goes wrong
     stream_handler = logging.StreamHandler(sys.stdout)
 

@@ -28,7 +28,7 @@ class TestDeepSeekLLM(unittest.TestCase):
         from helpers.deepseek_llm import DeepSeekLLM
         
         mock_client = MagicMock()
-        mock_client.chat.completions.create.side_effect = Exception("API Error")
+        mock_client.chat.completions.create.side_effect = ValueError("API Error")
         mock_openai.return_value = mock_client
         
         llm = DeepSeekLLM(model_name='deepseek-chat', api_key='test-key')
@@ -102,7 +102,7 @@ class TestDeepSeekLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         self.assertIn('<think>', result)
 
@@ -135,7 +135,7 @@ class TestDeepSeekLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         # Should have stopped early
         self.assertEqual(result, '')
@@ -210,7 +210,7 @@ class TestDeepSeekLLMAdvanced(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages, thinking_level='medium')
+        _result, _usage = llm.get_completion_text(messages, thinking_level='medium')
 
         call_kwargs = mock_client.chat.completions.create.call_args[1]
         self.assertIsNotNone(call_kwargs['extra_body'])
@@ -247,7 +247,7 @@ class TestDeepSeekLLMAdvanced(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages, thinking_level='off')
+        _result, _usage = llm.get_completion_text(messages, thinking_level='off')
 
         call_kwargs = mock_client.chat.completions.create.call_args[1]
         self.assertIsNotNone(call_kwargs['extra_body'])
@@ -291,7 +291,7 @@ class TestDeepSeekLLMAdvanced(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
 
         self.assertEqual(result, 'Hello!')
         self.assertEqual(mock_client.chat.completions.create.call_count, 3)
@@ -368,7 +368,7 @@ class TestDeepSeekLLMAdvanced(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
 
         self.assertEqual(result, 'Recovered!')
         self.assertEqual(mock_client.chat.completions.create.call_count, 2)
@@ -404,7 +404,7 @@ class TestDeepSeekLLMAdvanced(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
 
         self.assertEqual(result, '')
         self.assertEqual(mock_client.chat.completions.create.call_count, 3)

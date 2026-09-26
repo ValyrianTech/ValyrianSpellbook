@@ -35,8 +35,8 @@ def get_twitter_api():
     try:
         api.verify_credentials()
         print("Twitter Authentication OK")
-    except Exception as ex:
-        print("Error during Twitter authentication: %s" % ex)
+    except (tweepy.TweepyException, ValueError, KeyError, TypeError, OSError) as ex:
+        print(f"Error during Twitter authentication: {ex}")
         return
 
     return api
@@ -46,8 +46,8 @@ def update_status(text, url=None):
     """Deprecated: post a new tweet with optional attachment URL."""
     if api is not None:
         print('\nPosting new tweet:')
-        print('text: %s' % text)
-        print('url: %s' % url)
+        print(f'text: {text}')
+        print(f'url: {url}')
 
         api.update_status(status=text, attachment_url=url)
 
@@ -204,7 +204,7 @@ def get_recent_tweets(searchtext: str, sort_by: str, limit: int = 100) -> list:
     :return: List
     """
     if sort_by not in ['like_count', 'quote_count', 'reply_count', 'retweet_count']:
-        raise Exception(f'Invalid sort_by value: {sort_by}')
+        raise ValueError(f'Invalid sort_by value: {sort_by}')
 
     tweets = get_tweets(searchtext=searchtext, limit=limit)
     tweets.sort(key=lambda x: -x['public_metrics'][sort_by])
@@ -370,7 +370,7 @@ def get_user(user_id: int | str | None = None,
         - withheld
     """
     if user_id is None and user_name is None:
-        raise Exception('Must supply either user_id or user_name')
+        raise ValueError('Must supply either user_id or user_name')
 
     response = client.get_user(id=user_id,
                                username=user_name,

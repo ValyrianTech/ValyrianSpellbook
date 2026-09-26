@@ -515,7 +515,7 @@ class TestSignMessage:
     @mock.patch('helpers.triggerhelpers.valid_address', return_value=True)
     @mock.patch('helpers.triggerhelpers.find_address_in_wallet', return_value=(0, 0))
     @mock.patch('helpers.triggerhelpers.get_private_key_from_wallet', return_value={'addr': 'privkey'})
-    @mock.patch('helpers.triggerhelpers.sign_and_verify', side_effect=Exception('Sign error'))
+    @mock.patch('helpers.triggerhelpers.sign_and_verify', side_effect=ValueError('Sign error'))
     def test_sign_message_error(self, mock_sign, mock_get_key, mock_find, mock_valid):
         """Test sign_message when signing fails"""
         result = sign_message(address='addr', message='test')

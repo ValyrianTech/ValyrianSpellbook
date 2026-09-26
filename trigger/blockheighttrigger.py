@@ -29,7 +29,7 @@ class BlockHeightTrigger(Trigger):
             # Something went wrong during retrieval of latest block height
             return False
 
-        return True if self.block_height + self.confirmations <= latest_block_height else False
+        return self.block_height + self.confirmations <= latest_block_height
 
     def configure(self, **config):
         """Configure."""

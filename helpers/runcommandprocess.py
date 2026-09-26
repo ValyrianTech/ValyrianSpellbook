@@ -47,22 +47,22 @@ class RunCommandProcess(multiprocessing.Process):
         current_run_dir = os.getcwd()
         if self.working_dir is not None and current_run_dir != self.working_dir:
             os.chdir(self.working_dir)
-            PROCESS_LOG.info('Switched to working dir: %s' % os.getcwd())
+            PROCESS_LOG.info(f'Switched to working dir: {os.getcwd()}')
 
         process_id = multiprocessing.current_process().name
-        PROCESS_LOG.info('%s | Spawned new process to run command: %s' % (process_id, self.command))
-        PROCESS_LOG.info('%s | Process starting...' % process_id)
+        PROCESS_LOG.info(f'{process_id} | Spawned new process to run command: {self.command}')
+        PROCESS_LOG.info(f'{process_id} | Process starting...')
 
         command_process = Popen(format_args(self.command), stdout=PIPE, stderr=PIPE, shell=True, universal_newlines=True)
 
         for stdout_line in iter(command_process.stdout.readline, ""):
-            PROCESS_LOG.info('%s | %s' % (process_id, stdout_line.strip()))
+            PROCESS_LOG.info(f'{process_id} | {stdout_line.strip()}')
 
         for stdout_line in iter(command_process.stderr.readline, ""):
-            PROCESS_LOG.error('%s | %s' % (process_id, stdout_line.strip()))
+            PROCESS_LOG.error(f'{process_id} | {stdout_line.strip()}')
 
-        PROCESS_LOG.info('%s | Process finished' % process_id)
+        PROCESS_LOG.info(f'{process_id} | Process finished')
 
         if current_run_dir != os.getcwd():
             os.chdir(current_run_dir)
-            PROCESS_LOG.info('Switched back to: %s' % os.getcwd())
+            PROCESS_LOG.info(f'Switched back to: {os.getcwd()}')

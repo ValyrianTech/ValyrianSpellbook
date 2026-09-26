@@ -163,7 +163,7 @@ class TestInitializeApiKeysFile:
         authentication.initialize_api_keys_file()
         saved_data = mock_save.call_args[0][1]
         assert len(saved_data) == 1
-        api_key = list(saved_data.keys())[0]
+        api_key = next(iter(saved_data.keys()))
         assert len(api_key) == 16
         assert 'secret' in saved_data[api_key]
         assert len(saved_data[api_key]['secret']) == 16
