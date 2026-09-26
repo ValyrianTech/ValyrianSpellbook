@@ -4,7 +4,7 @@ import sys
 from pprint import pprint
 
 import simplejson
-from openai import OpenAI
+from openai import OpenAI, OpenAIError
 
 from helpers.configurationhelpers import get_openrouter_api_key
 from helpers.llm_interface import LLMInterface
@@ -142,7 +142,7 @@ class OpenRouterLLM(LLMInterface):
                 data = {'message': completion.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion.lstrip())}
                 broadcast_message(message=simplejson.dumps(data), channel=get_broadcast_channel())
 
-        except (ValueError, KeyError, TypeError, OSError) as e:
+        except (OpenAIError, ValueError, KeyError, TypeError, OSError) as e:
             LOG.error(f'Error connecting to OpenRouter LLM: {e}')
             return 'Error: Unable to connect to OpenRouter.\n'
 

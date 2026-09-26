@@ -3,7 +3,7 @@ import json
 import sys
 import time
 
-from openai import APIConnectionError, OpenAI
+from openai import APIConnectionError, OpenAI, OpenAIError
 
 from helpers.llm_interface import LLMInterface
 from helpers.loghelpers import LOG
@@ -130,7 +130,7 @@ class DeepSeekLLM(LLMInterface):
                     LOG.error(f'All {max_retries} attempts failed.')
                     return 'Error: Unable to connect to DeepSeek.\n'
 
-            except (ValueError, KeyError, TypeError, OSError) as e:
+            except (OpenAIError, ValueError, KeyError, TypeError, OSError) as e:
                 LOG.error(f'Error connecting to DeepSeek: {e}')
                 return 'Error: Unable to connect to DeepSeek.\n'
 

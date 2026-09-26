@@ -295,6 +295,34 @@ class TestOpenRouterLLM(unittest.TestCase):
 
     @patch('helpers.llm_interface.init_websocket_server')
     @patch('helpers.openrouter_llm.OpenAI')
+    @patch('helpers.openrouter_llm.get_openrouter_api_key', return_value='default-key')
+    @patch('helpers.openrouter_llm.LOG')
+    def test_get_completion_text_error_openai(self, mock_log, mock_get_key, mock_openai, mock_ws):
+        """Test get_completion_text when OpenAI SDK raises OpenAIError"""
+        from openai import OpenAIError
+
+        from helpers.openrouter_llm import OpenRouterLLM
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.side_effect = OpenAIError('Connection refused')
+        mock_openai.return_value = mock_client
+
+        llm = OpenRouterLLM(model_name='openai/gpt-4o', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result = llm.get_completion_text(messages)
+
+        # Error path returns just a string, not a tuple
+        if isinstance(result, tuple):
+            result = result[0]
+        self.assertIn('Error: Unable to connect to OpenRouter', result)
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.openrouter_llm.OpenAI')
     @patch('helpers.openrouter_llm.broadcast_message')
     @patch('helpers.openrouter_llm.get_broadcast_channel', return_value='test-channel')
     @patch('helpers.openrouter_llm.get_broadcast_sender', return_value='test-sender')
