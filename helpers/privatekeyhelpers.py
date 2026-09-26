@@ -10,7 +10,6 @@ from .py3specials import bin_dbl_sha256, bin_to_b58check, changebase, decode, en
 wif_compressed_regex = '^[LK][1-9A-Za-z][^OIl]{50}$'
 wif_uncompressed_regex = '^5[HJK][1-9A-Za-z][^OIl]{48}$'
 hexadecimal_regex = '^[0-9a-fA-F]{64}$'
-base64_regex = '^[-A-Za-z0-9+=]{1,50}|=[^=]|={3,}$'
 
 
 class PrivateKey:
@@ -24,7 +23,6 @@ class PrivateKey:
 
         self.decimal = encode_privkey(private_key=private_key, formt='decimal', vbyte=vbyte)
         self.bin = encode_privkey(private_key=private_key, formt='bin', vbyte=vbyte)
-        self.binc = encode_privkey(private_key=private_key, formt='bin_compressed', vbyte=vbyte)
         self.hex = encode_privkey(private_key=private_key, formt='hex', vbyte=vbyte).upper()
         self.hexc = encode_privkey(private_key=private_key, formt='hex_compressed', vbyte=vbyte).upper()
         self.wif = encode_privkey(private_key=private_key, formt='wif', vbyte=vbyte)

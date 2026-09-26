@@ -231,7 +231,7 @@ class TestWebSocketHandlerHandler(unittest.TestCase):
             # Simulate error during iteration
             async def mock_aiter():
                 raise ValueError("Connection error")
-                yield  # Never reached
+                yield  # Never reached  # noqa: V201
             
             mock_websocket.__aiter__ = mock_aiter
             
@@ -272,7 +272,7 @@ class TestWebSocketHandlerHandler(unittest.TestCase):
             
             async def mock_aiter():
                 return
-                yield  # Never reached
+                yield  # Never reached  # noqa: V201
             
             mock_websocket.__aiter__ = mock_aiter
             

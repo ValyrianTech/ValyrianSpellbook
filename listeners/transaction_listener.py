@@ -176,12 +176,10 @@ if __name__ == "__main__":
         EXIT_ON_TIMEOUT = int(time.time()) + args.timeout
 
     WATCHLIST = {}
-    DATABASE = None
     COMMAND = None
 
     if args.database is not None:
         LISTENER_LOG.info('Database mode selected')
-        DATABASE = args.database
 
         if args.user is None:
             LISTENER_LOG.error('Must specify a database user')
