@@ -2,7 +2,7 @@
 import json
 import sys
 
-from openai import OpenAI
+from openai import OpenAI, OpenAIError
 
 from helpers.llm_interface import LLMInterface
 from helpers.loghelpers import LOG
@@ -108,7 +108,7 @@ class GoogleLLM(LLMInterface):
                 data = {'message': completion.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion.lstrip())}
                 broadcast_message(message=json.dumps(data), channel=get_broadcast_channel())
 
-        except (ValueError, KeyError, TypeError, OSError) as e:
+        except (OpenAIError, ValueError, KeyError, TypeError, OSError) as e:
             LOG.error(f'Error connecting to Google: {e}')
             return 'Error: Unable to connect to Google.\n'
 

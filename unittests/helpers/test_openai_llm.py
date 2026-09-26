@@ -39,8 +39,11 @@ class TestOpenAILLM(unittest.TestCase):
     @patch('helpers.openai_llm.LOG')
     def test_get_completion_text_error(self, mock_log, mock_get_key, mock_sender, mock_channel, mock_broadcast, mock_ws, mock_openai):
         """Test get_completion_text handles errors"""
+        import openai
+
         from helpers.openai_llm import OpenAILLM
         
+        mock_openai.OpenAIError = openai.OpenAIError
         mock_openai.chat.completions.create.side_effect = ValueError("API Error")
         
         llm = OpenAILLM(model_name='gpt-4', api_key='test-key')
@@ -49,6 +52,29 @@ class TestOpenAILLM(unittest.TestCase):
         result = llm.get_completion_text(messages)
         
         self.assertIn('Error', result)
+
+    @patch('helpers.openai_llm.openai')
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.openai_llm.broadcast_message')
+    @patch('helpers.openai_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.openai_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.openai_llm.get_openai_api_key', return_value='test-key')
+    @patch('helpers.openai_llm.LOG')
+    def test_get_completion_text_openai_error(self, mock_log, mock_get_key, mock_sender, mock_channel, mock_broadcast, mock_ws, mock_openai):
+        """Test get_completion_text handles OpenAI SDK errors gracefully"""
+        import openai
+
+        from helpers.openai_llm import OpenAILLM
+
+        mock_openai.OpenAIError = openai.OpenAIError
+        mock_openai.chat.completions.create.side_effect = openai.APIError('boom', request=MagicMock(), body=None)
+
+        llm = OpenAILLM(model_name='gpt-4', api_key='test-key')
+        messages = [{'role': 'user', 'content': 'Hello'}]
+
+        result = llm.get_completion_text(messages)
+
+        self.assertIn('Error: Unable to connect to OpenAI', result)
 
     @patch('helpers.openai_llm.openai')
     @patch('helpers.llm_interface.init_websocket_server')
