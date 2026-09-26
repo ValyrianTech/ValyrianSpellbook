@@ -28,18 +28,51 @@ PROCESS_LOG.addHandler(file_handler)
 
 PROCESS_LOG.setLevel(logging.INFO)
 
+SHELL_METACHARACTERS = "|&;<>(){}$`*?[]~!\n"
+
 
 class RunCommandProcess(multiprocessing.Process):
     """
-    Multiprocessing process that runs a shell command and logs its output.
+    Multiprocessing process that runs a command and logs its output.
 
-    Initializes the process with a command and optional working directory.
+    Breaking change: RunCommandProcess does NOT run the command through a shell, so shell
+    features (pipes, redirection, &&/;, $VAR expansion, globs, command substitution) are NOT
+    supported. A string command is split into argv using shlex.split; a list command is used
+    as-is. To use shell features, pass an explicit shell argv list such as ['sh', '-c', '...']
+    or ['bash', '-lc', '...']. Set ``strict=True`` to raise a ValueError when a string command
+    contains shell metacharacters (otherwise a warning is logged).
     """
-    def __init__(self, command, working_dir=None):
+    @classmethod
+    def contains_shell_metacharacters(cls, command) -> bool:
+        """
+        Return True when command is a string containing shell metacharacters.
+
+        Non-string commands (e.g. argv lists) return False, as do strings without
+        any character from SHELL_METACHARACTERS.
+        """
+        if not isinstance(command, str):
+            return False
+        return any(char in SHELL_METACHARACTERS for char in command)
+
+    def __init__(self, command, working_dir=None, strict: bool = False):
         multiprocessing.Process.__init__(self)
 
         self.command = command
         self.working_dir = working_dir
+        self.strict = strict
+
+        if RunCommandProcess.contains_shell_metacharacters(command):
+            message = (
+                'Command contains shell metacharacters, but RunCommandProcess no longer runs '
+                'commands through a shell (breaking change). Shell features such as pipes (|), '
+                'redirection (>, >>, <), &&/; chaining, $VAR expansion, globs (*, ?, [...]), '
+                'command substitution (`...`) and subshells are NOT supported. Invoke a shell '
+                "explicitly (e.g. ['sh', '-c', command] or ['bash', '-lc', command]) or pass an "
+                'argv list for exact control.'
+            )
+            if strict:
+                raise ValueError(message)
+            PROCESS_LOG.warning(message)
 
     def run(self):
         """Execute the command, stream stdout/stderr to the process logger, then restore cwd."""
@@ -52,6 +85,7 @@ class RunCommandProcess(multiprocessing.Process):
         PROCESS_LOG.info(f'{process_id} | Spawned new process to run command: {self.command}')
         PROCESS_LOG.info(f'{process_id} | Process starting...')
 
+        # Intentional (breaking change): the shell is NOT used, so shell features are unavailable.
         argv = shlex.split(self.command) if isinstance(self.command, str) else self.command
         command_process = Popen(argv, stdout=PIPE, stderr=PIPE, universal_newlines=True)
 
