@@ -75,6 +75,16 @@ class TestGetLatestBlock:
         assert 'error' in result
 
     @mock.patch('data.blockexplorers.blockchain_info.requests.get')
+    def test_get_latest_block_key_error_on_block(self, mock_get):
+        mock_get.side_effect = [
+            make_mock_response(json_data={'height': 100, 'hash': 'abc', 'time': 12345}),
+            mock.MagicMock(status_code=500, json=mock.MagicMock(side_effect=KeyError('missing')))
+        ]
+        api = BlockchainInfoAPI()
+        result = api.get_latest_block()
+        assert 'error' in result
+
+    @mock.patch('data.blockexplorers.blockchain_info.requests.get')
     def test_get_latest_block_missing_keys_in_block(self, mock_get):
         mock_get.side_effect = [
             make_mock_response(json_data={'height': 100, 'hash': 'abc', 'time': 12345}),
