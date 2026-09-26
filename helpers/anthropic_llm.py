@@ -26,7 +26,7 @@ ANTHROPIC_THINKING_MODELS = [
 
 class AnthropicLLM(LLMInterface):
     """Anthropic Claude LLM client implementation."""
-    def __init__(self, model_name: str, api_key: str = ''):
+    def __init__(self, model_name: str, api_key: str | None = ''):
         super().__init__(model_name)
 
         self.client = anthropic.Anthropic(api_key=api_key)

@@ -21,7 +21,7 @@ class GroqLLM(LLMInterface):
 
     Initializes the Groq client with model name and optional API key.
     """
-    def __init__(self, model_name: str, api_key: str = ''):
+    def __init__(self, model_name: str, api_key: str | None = ''):
         super().__init__(model_name)
 
         self.client = Groq(api_key=api_key)

@@ -536,7 +536,7 @@ class CustomStreamingCallbackHandler(StreamingStdOutCallbackHandler):
         data = {'message': '<|end of message|>', 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': []}
         broadcast_message(message=simplejson.dumps(data), channel=get_broadcast_channel())
 
-    def on_llm_new_token(self, token: str, **kwargs: Any) -> None:
+    def on_llm_new_token(self, token: str, **kwargs: Any) -> None:  # type: ignore[override]
         """Run on new LLM token. Only available when streaming is enabled."""
         token = token.replace('\r', '')
         self.full_completion += token
