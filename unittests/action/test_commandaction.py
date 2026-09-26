@@ -58,6 +58,15 @@ class TestCommandAction:
         result = action.run()
         assert not result[0]
 
+    def test_commandaction_run_with_missing_executable(self):
+        action = CommandAction('test_command_action')
+        action.configure(run_command='this_command_does_not_exist_12345')
+        result = action.run()
+        assert len(result) == 3
+        assert result[0] is False
+        assert result[1] == b''
+        assert isinstance(result[2], bytes)
+
     def test_commandaction_run_with_placeholders(self):
         action = CommandAction('test_command_action')
         action.configure(run_command='echo {MESSAGE}')
