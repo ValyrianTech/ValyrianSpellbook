@@ -1,17 +1,17 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Action that sends an email via SMTP."""
 
+from helpers.mailhelpers import sendmail
+
 from .action import Action
 from .actiontype import ActionType
-from helpers.mailhelpers import sendmail
 
 
 class SendMailAction(Action):
     """Action that sends an email via SMTP."""
     def __init__(self, action_id):
-        super(SendMailAction, self).__init__(action_id=action_id)
+        super().__init__(action_id=action_id)
         self.action_type = ActionType.SENDMAIL
         self.mail_recipients = None
         self.mail_subject = None
@@ -42,7 +42,7 @@ class SendMailAction(Action):
                        - config['mail_subject']       : The subject for the email
                        - config['mail_body_template'] : The name of the template for the body of the email
         """
-        super(SendMailAction, self).configure(**config)
+        super().configure(**config)
         if 'mail_recipients' in config:
             self.mail_recipients = config['mail_recipients']
 
@@ -67,7 +67,7 @@ class SendMailAction(Action):
 
         :return: A dict containing the configuration settings
         """
-        ret = super(SendMailAction, self).json_encodable()
+        ret = super().json_encodable()
         ret.update({'mail_recipients': self.mail_recipients,
                     'mail_subject': self.mail_subject,
                     'mail_body_template': self.mail_body_template,

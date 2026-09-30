@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Trigger that activates on HTTP GET requests."""
 
@@ -10,7 +9,7 @@ from .triggertype import TriggerType
 class HTTPGetRequestTrigger(Trigger):
     """Trigger that activates on HTTP GET requests."""
     def __init__(self, trigger_id):
-        super(HTTPGetRequestTrigger, self).__init__(trigger_id=trigger_id)
+        super().__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.HTTPGETREQUEST
         self.json = None
 
@@ -21,16 +20,16 @@ class HTTPGetRequestTrigger(Trigger):
 
     def configure(self, **config):
         """Configure."""
-        super(HTTPGetRequestTrigger, self).configure(**config)
+        super().configure(**config)
 
     def json_encodable(self):
         """Json encodable."""
-        ret = super(HTTPGetRequestTrigger, self).json_encodable()
+        ret = super().json_encodable()
         return ret
 
     def get_script_variables(self):
         """Get script variables."""
-        ret = super(HTTPGetRequestTrigger, self).json_encodable()
+        ret = super().json_encodable()
         ret.update({'json': self.json})
         return ret
 

@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import os
 
-from action.commandaction import CommandAction
 from action.actiontype import ActionType
+from action.commandaction import CommandAction
 
 
-class TestCommandAction(object):
+class TestCommandAction:
     """Tests for CommandAction"""
 
     def test_commandaction_init(self):
@@ -59,6 +58,15 @@ class TestCommandAction(object):
         result = action.run()
         assert not result[0]
 
+    def test_commandaction_run_with_missing_executable(self):
+        action = CommandAction('test_command_action')
+        action.configure(run_command='this_command_does_not_exist_12345')
+        result = action.run()
+        assert len(result) == 3
+        assert result[0] is False
+        assert result[1] == b''
+        assert isinstance(result[2], bytes)
+
     def test_commandaction_run_with_placeholders(self):
         action = CommandAction('test_command_action')
         action.configure(run_command='echo {MESSAGE}')
@@ -82,3 +90,49 @@ class TestCommandAction(object):
         original_dir = os.getcwd()
         action.run()
         assert os.getcwd() == original_dir
+
+
+class TestCommandActionSecurity:
+    """Security-focused tests for CommandAction"""
+
+    def test_commandaction_placeholder_does_not_inject_shell_command(self):
+        action = CommandAction('test_command_action')
+        action.configure(run_command='echo {MESSAGE}')
+        result = action.run(placeholders={'{MESSAGE}': 'safe; echo INJECTED'})
+        assert result[0]
+        out = result[1]
+        assert b'INJECTED' in out
+        assert out.count(b'INJECTED') == 1
+
+    def test_commandaction_run_does_not_mutate_run_command(self):
+        action = CommandAction('test_command_action')
+        action.configure(run_command='echo {MESSAGE}')
+        action.run(placeholders={'{MESSAGE}': 'first'})
+        assert action.run_command == 'echo {MESSAGE}'
+        result = action.run(placeholders={'{MESSAGE}': 'second'})
+        assert result[0]
+        assert b'second' in result[1]
+        assert b'first' not in result[1]
+
+    def test_commandaction_run_with_special_characters_in_placeholder(self):
+        action = CommandAction('test_command_action')
+        action.configure(run_command='printf %s {MESSAGE}')
+        result = action.run(placeholders={'{MESSAGE}': 'a b|c&d;e'})
+        assert result[0]
+        assert result[1] == b'a b|c&d;e'
+
+    def test_commandaction_placeholder_intended_for_whole_token_usage(self):
+        action = CommandAction('test_command_action')
+        action.configure(run_command='echo {MESSAGE}')
+        result = action.run(placeholders={'{MESSAGE}': 'alpha beta'})
+        assert result[0]
+        assert result[1] == b'alpha beta'
+
+    def test_commandaction_placeholder_embedded_in_quoted_literal_is_preserved_literally(self):
+        action = CommandAction('test_command_action')
+        action.configure(run_command='printf %s "prefix {MESSAGE} suffix"')
+        result = action.run(placeholders={'{MESSAGE}': 'a b|c&d;e'})
+        assert result[0]
+        # shlex.quote() wraps the value in single quotes, which become literal characters
+        # inside the surrounding double quotes, so the special characters are preserved.
+        assert result[1] == b"prefix 'a b|c&d;e' suffix"

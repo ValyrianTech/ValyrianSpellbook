@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Utilities for selecting random Bitcoin addresses."""
 
-from validators.validators import valid_address, valid_xpub
 from data.data import block_by_height, latest_block
 from inputs.inputs import get_sil, get_sul
 from linker.linker import get_lbl, get_lrl, get_lsl
+from validators.validators import valid_address, valid_xpub
 
 
 def random_number_from_blockhash(block_height=0):
@@ -38,7 +37,7 @@ def random_number_from_blockhash(block_height=0):
 def random_address_from_sil(address, sil_block_height=0, rng_block_height=0):
     """Select a random address from the Simplified Inputs List of the given address."""
     if not valid_address(address):
-        return {'error': 'Invalid address: %s' % address}
+        return {'error': f'Invalid address: {address}'}
 
     return RandomAddress(address=address,
                          sil_block_height=sil_block_height).get(source='SIL',
@@ -48,7 +47,7 @@ def random_address_from_sil(address, sil_block_height=0, rng_block_height=0):
 def random_address_from_sul(address, rng_block_height=0):
     """Select a random address from the Simplified UTXO List of the given address."""
     if not valid_address(address):
-        return {'error': 'Invalid address: %s' % address}
+        return {'error': f'Invalid address: {address}'}
 
     return RandomAddress(address=address).get(source='SUL', rng_block_height=rng_block_height)
 
@@ -56,10 +55,10 @@ def random_address_from_sul(address, rng_block_height=0):
 def random_address_from_lbl(address, xpub, sil_block_height=0, rng_block_height=0):
     """Select a random address from the Linked Balance List of the given address and xpub."""
     if not valid_address(address):
-        return {'error': 'Invalid address: %s' % address}
+        return {'error': f'Invalid address: {address}'}
 
     if not valid_xpub(xpub):
-        return {'error': 'Invalid xpub: %s' % xpub}
+        return {'error': f'Invalid xpub: {xpub}'}
 
     return RandomAddress(address=address,
                          xpub=xpub,
@@ -70,10 +69,10 @@ def random_address_from_lbl(address, xpub, sil_block_height=0, rng_block_height=
 def random_address_from_lrl(address, xpub, sil_block_height=0, rng_block_height=0):
     """Select a random address from the Linked Received List of the given address and xpub."""
     if not valid_address(address):
-        return {'error': 'Invalid address: %s' % address}
+        return {'error': f'Invalid address: {address}'}
 
     if not valid_xpub(xpub):
-        return {'error': 'Invalid xpub: %s' % xpub}
+        return {'error': f'Invalid xpub: {xpub}'}
 
     return RandomAddress(address=address,
                          xpub=xpub,
@@ -84,10 +83,10 @@ def random_address_from_lrl(address, xpub, sil_block_height=0, rng_block_height=
 def random_address_from_lsl(address, xpub, sil_block_height=0, rng_block_height=0):
     """Select a random address from the Linked Sent List of the given address and xpub."""
     if not valid_address(address):
-        return {'error': 'Invalid address: %s' % address}
+        return {'error': f'Invalid address: {address}'}
 
     if not valid_xpub(xpub):
-        return {'error': 'Invalid xpub: %s' % xpub}
+        return {'error': f'Invalid xpub: {xpub}'}
 
     return RandomAddress(address=address,
                          xpub=xpub,
@@ -95,7 +94,7 @@ def random_address_from_lsl(address, xpub, sil_block_height=0, rng_block_height=
                                                                 rng_block_height=rng_block_height)
 
 
-class RandomAddress(object):
+class RandomAddress:
     """Utilities for selecting random Bitcoin addresses."""
     def __init__(self, address, sil_block_height=0, xpub=None):
         self.address = address
@@ -133,7 +132,7 @@ class RandomAddress(object):
         elif source == 'LSL':
             distribution_data = get_lsl(self.address, self.xpub, self.block_height)
         else:
-            raise NotImplementedError('Unknown distribution source: %s' % source)
+            raise NotImplementedError(f'Unknown distribution source: {source}')
 
         return [(item[0], item[1]) for item in distribution_data[source]]
 
@@ -174,7 +173,7 @@ class RandomAddress(object):
         if total > 0:
             target = random_number*total
             cumulative = 0.0
-            for i in range(0, len(values)):
+            for i in range(len(values)):
                 cumulative = cumulative + values[i]
                 if cumulative >= target:
                     return i

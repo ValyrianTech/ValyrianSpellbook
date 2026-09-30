@@ -1,27 +1,35 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Base Trigger class and registry for all Spellbook triggers."""
 
 import importlib
 import os
 import platform
-import time
-from abc import abstractmethod, ABCMeta
-from datetime import datetime
+from abc import ABCMeta, abstractmethod
+from datetime import datetime, timezone
 
-from helpers.actionhelpers import get_actions, get_action
+from helpers.actionhelpers import get_action, get_actions
 from helpers.jsonhelpers import save_to_json_file
 from helpers.loghelpers import LOG
 from spellbookscripts.spellbookscript import SpellbookScript
-from validators.validators import valid_actions, valid_trigger_type, valid_amount, valid_script
-from validators.validators import valid_description, valid_creator, valid_email, valid_youtube_id
-from validators.validators import valid_status, valid_visibility, valid_timestamp
+from validators.validators import (
+    valid_actions,
+    valid_amount,
+    valid_creator,
+    valid_description,
+    valid_email,
+    valid_script,
+    valid_status,
+    valid_timestamp,
+    valid_trigger_type,
+    valid_visibility,
+    valid_youtube_id,
+)
 
 TRIGGERS_DIR = 'json/public/triggers'
 
 
-class Trigger(object):
+class Trigger:
     """Base trigger class and registry for all Spellbook triggers."""
     __metaclass__ = ABCMeta
 
@@ -45,7 +53,7 @@ class Trigger(object):
 
     def configure(self, **config):
         """Configure."""
-        self.created = datetime.fromtimestamp(config['created']) if 'created' in config else datetime.now()
+        self.created = datetime.fromtimestamp(config['created'], tz=timezone.utc) if 'created' in config else datetime.now(tz=timezone.utc)
 
         if 'trigger_type' in config and valid_trigger_type(config['trigger_type']):
             self.trigger_type = config['trigger_type']
@@ -89,7 +97,7 @@ class Trigger(object):
             configured_actions = get_actions()
             for action_id in self.actions:
                 if action_id not in configured_actions:
-                    LOG.warning('Trigger %s contains unknown action: %s' % (self.id, action_id))
+                    LOG.warning(f'Trigger {self.id} contains unknown action: {action_id}')
 
         if 'self_destruct' in config and valid_timestamp(config['self_destruct']):
             self.self_destruct = config['self_destruct']
@@ -104,7 +112,6 @@ class Trigger(object):
 
         :return: True or False
         """
-        pass
 
     def activate(self):
         """
@@ -115,24 +122,24 @@ class Trigger(object):
 
         :return:
         """
-        LOG.info('Activating trigger %s' % self.id)
+        LOG.info(f'Activating trigger {self.id}')
         script = self.load_script()
 
         if script is not None:
             script.run()
             if len(script.new_actions) >= 1:
-                LOG.info('Adding actions %s to trigger %s' % (script.new_actions, self.id))
+                LOG.info(f'Adding actions {script.new_actions} to trigger {self.id}')
                 self.actions.extend(script.new_actions)
-                LOG.info('Trigger will run actions: %s' % self.actions)
+                LOG.info(f'Trigger will run actions: {self.actions}')
 
         configured_actions = get_actions()
         for action_id in self.actions:
             if action_id not in configured_actions:
-                LOG.error('Unknown action id: %s' % action_id)
+                LOG.error(f'Unknown action id: {action_id}')
                 return
 
         for i, action_id in enumerate(self.actions):
-            LOG.info('Running action %s: %s' % (i+1, action_id))
+            LOG.info(f'Running action {i+1}: {action_id}')
 
             action = get_action(action_id)
             success = action.run()
@@ -159,7 +166,7 @@ class Trigger(object):
 
     def save(self):
         """Save."""
-        save_to_json_file(os.path.join(TRIGGERS_DIR, '%s.json' % self.id), self.json_encodable())
+        save_to_json_file(os.path.join(TRIGGERS_DIR, f'{self.id}.json'), self.json_encodable())
 
     def json_encodable(self):
         """Json encodable."""
@@ -175,7 +182,7 @@ class Trigger(object):
                 'youtube': self.youtube,
                 'status': self.status,
                 'visibility': self.visibility,
-                'created': int(time.mktime(self.created.timetuple())),
+                'created': int(self.created.timestamp()),
                 'actions': self.actions,
                 'self_destruct': self.self_destruct,
                 'destruct_actions': self.destruct_actions}
@@ -195,22 +202,22 @@ class Trigger(object):
                 if os.path.isfile(os.path.join(root_dir, self.script)):
                     script_path = os.path.join(root_dir, self.script)
                     if platform.system() == 'Windows':
-                        script_module_name = '%s.%s' % (root_dir, script_name.replace('\\', '.'))
+                        script_module_name = '{}.{}'.format(root_dir, script_name.replace('\\', '.'))
                     elif platform.system() == 'Linux':
-                        script_module_name = '%s.%s' % (root_dir, script_name.replace('/', '.'))
+                        script_module_name = '{}.{}'.format(root_dir, script_name.replace('/', '.'))
                     else:
                         raise NotImplementedError('Unsupported platform: only windows and linux are supported')
 
             if script_path is None:
-                LOG.error('Can not find spellbook script %s' % self.script)
+                LOG.error(f'Can not find spellbook script {self.script}')
                 return
 
-            LOG.info('Loading Spellbook Script %s' % script_path)
-            LOG.info('Script module: %s (%s)' % (script_module_name, type(script_module_name)))
+            LOG.info(f'Loading Spellbook Script {script_path}')
+            LOG.info(f'Script module: {script_module_name} ({type(script_module_name)})')
             try:
                 script_module = importlib.import_module(script_module_name)
-            except Exception as ex:
-                LOG.error('Failed to load Spellbook Script %s: %s' % (script_path, ex))
+            except (ImportError, ValueError, KeyError, TypeError, OSError) as ex:
+                LOG.error(f'Failed to load Spellbook Script {script_path}: {ex}')
                 return
 
             script_class_name = os.path.basename(script_path)[:-3]
@@ -220,7 +227,7 @@ class Trigger(object):
 
             if not isinstance(script, SpellbookScript):
                 LOG.error(
-                    'Script %s is not a valid Spellbook Script, instead it is a %s' % (self.script, type(script)))
+                    f'Script {self.script} is not a valid Spellbook Script, instead it is a {type(script)}')
                 return
 
             return script

@@ -1,27 +1,54 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import pytest
 import binascii
 import hashlib
 from random import choice, randint
 
-from transactionfactory import (
-    p2pkh_script, p2sh_script, p2wpkh_script, p2wsh_script, address_to_script,
-    op_return_script, num_to_op_push, add_op_return, serialize, deserialize,
-    access, multiaccess, mktx, sign, is_inp, json_is_base, json_changebase,
-    num_to_var_int, signature_form, serialize_script, serialize_script_unit,
-    der_encode_sig, ecdsa_tx_sign, ecdsa_raw_sign, hash_to_int,
-    deterministic_generate_k, bin_txhash, txhash, double_sha256,
-    make_custom_tx, SIGHASH_ALL, SIGHASH_NONE, SIGHASH_SINGLE, SIGHASH_ANYONECANPAY,
-)
-from transactionfactory import is_python2
-from helpers.privatekeyhelpers import privkey_to_pubkey, encode_privkey
+import pytest
+
+from data.transaction import TX
+from helpers.privatekeyhelpers import encode_privkey, privkey_to_pubkey
 from helpers.publickeyhelpers import pubkey_to_address
 from helpers.py3specials import encode, safe_hexlify
-from data.transaction import TX
+from transactionfactory import (
+    SIGHASH_ALL,
+    SIGHASH_ANYONECANPAY,
+    SIGHASH_NONE,
+    SIGHASH_SINGLE,
+    access,
+    add_op_return,
+    address_to_script,
+    bin_txhash,
+    der_encode_sig,
+    deserialize,
+    deterministic_generate_k,
+    double_sha256,
+    ecdsa_raw_sign,
+    ecdsa_tx_sign,
+    hash_to_int,
+    is_inp,
+    is_python2,
+    json_changebase,
+    json_is_base,
+    make_custom_tx,
+    mktx,
+    multiaccess,
+    num_to_op_push,
+    num_to_var_int,
+    op_return_script,
+    p2pkh_script,
+    p2sh_script,
+    p2wpkh_script,
+    p2wsh_script,
+    serialize,
+    serialize_script,
+    serialize_script_unit,
+    sign,
+    signature_form,
+    txhash,
+)
 
 
-class TestTransactionFactory(object):
+class TestTransactionFactory:
     @pytest.mark.parametrize('address, expected', [
         ["n4KmgAd3J7ubthHpe9vyLy2xyiVZpF7dPa", "76a914fa2d740fa4d0e741827035d642979f8feca285c988ac"],
         ["n4mLqhrbyJBAwgzfNxF8VSPeHB9nZksEtN", "76a914ff0389655fbebc32d5900d68706196647d2fc49a88ac"],
@@ -72,7 +99,7 @@ class TestTransactionFactory(object):
     def test_num_to_op_push(self):
         for num in range(1, 1024):
             op_push = binascii.hexlify(num_to_op_push(num))
-            print('%s -> %s' % (num, op_push))
+            print(f'{num} -> {op_push}')
             # Todo add check length, there seems to be a bug with data longer than 255 chars, not really a problem because we don't allow more than the standard 80 chars (40 bytes)
 
     def test_op_return_script_with_strings_of_various_lengths(self):
@@ -89,7 +116,7 @@ class TestTransactionFactory(object):
     def test_op_return_script_with_random_string(self):
 
         for x in range(10000):
-            print('')
+            print()
             random_length = randint(1, 81)
             random_string = "".join(choice('abcdefghijklmnopqrstuvwxyz') for i in range(random_length))
 
@@ -412,7 +439,7 @@ class TestEcdsaSign:
     def test_ecdsa_raw_sign_compressed(self):
         priv = encode_privkey(self.PRIV, 'hex_compressed')
         msghash = hashlib.sha256(b'test message').digest()
-        v, r, s = ecdsa_raw_sign(msghash, priv)
+        v, _r, _s = ecdsa_raw_sign(msghash, priv)
         assert 31 <= v <= 35  # v + 4 for compressed
 
     def test_ecdsa_tx_sign(self):
@@ -578,9 +605,8 @@ class TestMakeCustomTx:
         assert len(txo['outs']) == 2
 
     def test_make_custom_tx_invalid_fee_type(self):
-        # Bug in production code: %d format with string raises TypeError
-        with pytest.raises(TypeError):
-            make_custom_tx(self.private_keys, self.tx_inputs, self.tx_outputs, tx_fee='10000')
+        result = make_custom_tx(self.private_keys, self.tx_inputs, self.tx_outputs, tx_fee='10000')
+        assert result is None
 
     def test_make_custom_tx_negative_fee(self):
         result = make_custom_tx(self.private_keys, self.tx_inputs, self.tx_outputs, tx_fee=-1)

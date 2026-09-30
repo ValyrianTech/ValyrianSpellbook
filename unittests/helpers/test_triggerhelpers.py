@@ -1,29 +1,29 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+from unittest import mock
+
 import pytest
-import mock
 
 from helpers.triggerhelpers import (
-    get_triggers,
-    get_trigger_config,
-    get_trigger,
-    save_trigger,
-    delete_trigger,
     activate_trigger,
     check_triggers,
-    verify_signed_message,
-    sign_message,
-    http_get_request,
-    http_post_request,
-    http_delete_request,
-    http_options_request,
-    signed_message_request,
+    delete_trigger,
     file_download,
+    get_trigger,
+    get_trigger_config,
+    get_triggers,
+    http_delete_request,
+    http_get_request,
+    http_options_request,
+    http_post_request,
+    save_trigger,
+    sign_message,
+    signed_message_request,
+    verify_signed_message,
 )
 from trigger.triggertype import TriggerType
 
 
-class TestTriggerHelpers(object):
+class TestTriggerHelpers:
     """Tests for trigger helper functions"""
 
     @mock.patch('helpers.triggerhelpers.glob.glob')
@@ -47,7 +47,7 @@ class TestTriggerHelpers(object):
     @mock.patch('helpers.triggerhelpers.load_from_json_file')
     def test_get_trigger_config_not_found(self, mock_load):
         """Test getting config for non-existent trigger"""
-        mock_load.side_effect = IOError('File not found')
+        mock_load.side_effect = OSError('File not found')
         result = get_trigger_config('nonexistent')
         assert result == {}
 
@@ -421,7 +421,7 @@ class TestTriggerHelpers(object):
         assert 'error' in result
 
 
-class TestVerifySignedMessage(object):
+class TestVerifySignedMessage:
     """Tests for verify_signed_message function"""
 
     def test_verify_signed_message_missing_keys(self):
@@ -461,7 +461,7 @@ class TestVerifySignedMessage(object):
         assert 'error' in result
 
 
-class TestSignMessage(object):
+class TestSignMessage:
     """Tests for sign_message function"""
 
     def test_sign_message_missing_keys(self):
@@ -515,7 +515,7 @@ class TestSignMessage(object):
     @mock.patch('helpers.triggerhelpers.valid_address', return_value=True)
     @mock.patch('helpers.triggerhelpers.find_address_in_wallet', return_value=(0, 0))
     @mock.patch('helpers.triggerhelpers.get_private_key_from_wallet', return_value={'addr': 'privkey'})
-    @mock.patch('helpers.triggerhelpers.sign_and_verify', side_effect=Exception('Sign error'))
+    @mock.patch('helpers.triggerhelpers.sign_and_verify', side_effect=ValueError('Sign error'))
     def test_sign_message_error(self, mock_sign, mock_get_key, mock_find, mock_valid):
         """Test sign_message when signing fails"""
         result = sign_message(address='addr', message='test')
@@ -523,7 +523,7 @@ class TestSignMessage(object):
         assert 'Unable to sign' in result['error']
 
 
-class TestCheckTriggersAdvanced(object):
+class TestCheckTriggersAdvanced:
     """Advanced tests for check_triggers function"""
 
     @mock.patch('helpers.triggerhelpers.delete_trigger')
@@ -562,7 +562,7 @@ class TestCheckTriggersAdvanced(object):
         mock_delete_trigger.assert_called_once()
 
 
-class TestVerifySignedMessageAdvanced(object):
+class TestVerifySignedMessageAdvanced:
     """Advanced tests for verify_signed_message function"""
 
     @mock.patch('helpers.triggerhelpers.verify_message', return_value=True)
@@ -614,7 +614,7 @@ class TestVerifySignedMessageAdvanced(object):
         assert 'invalid' in result['error'].lower()
 
 
-class TestHttpOptionsRequest(object):
+class TestHttpOptionsRequest:
     """Tests for http_options_request function"""
 
     @mock.patch('helpers.triggerhelpers.get_triggers', return_value=[])

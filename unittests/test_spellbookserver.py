@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Tests for spellbookserver.py — the Valyrian Spellbook REST API server (Bottle).
 
@@ -10,7 +9,7 @@ import importlib.util
 import logging
 import os
 import sys
-from unittest.mock import patch, MagicMock, mock_open
+from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 
@@ -26,11 +25,11 @@ _transcribe_patcher.start()
 _wallet_patcher = patch('spellbookserver.get_enable_wallet', return_value=False)
 _wallet_patcher.start()
 
-import spellbookserver as srv  # noqa: E402
-from spellbookserver import (  # noqa: E402
-    enable_cors,
+import spellbookserver as srv
+from spellbookserver import (
     SpellbookRESTAPI,
     convert_aac_to_opus,
+    enable_cors,
 )
 
 # Re-enable for individual tests if needed
@@ -1253,7 +1252,7 @@ class TestSSLWebServer:
              patch('spellbookserver.get_ssl_private_key', return_value='key.pem'), \
              patch('spellbookserver.get_ssl_certificate_chain', return_value=''):
             mock_server = MagicMock()
-            mock_server.start.side_effect = Exception('bind failed')
+            mock_server.start.side_effect = ValueError('bind failed')
             mock_server_cls.return_value = mock_server
             adapter.run('handler')
             mock_server.stop.assert_called_once()
@@ -1285,7 +1284,7 @@ class TestSpellbookInit:
     @patch('spellbookserver.os.path.isfile', return_value=True)
     @patch('bottle.Bottle.run')
     @patch('spellbookserver.LOG')
-    @patch('spellbookserver.get_hot_wallet', side_effect=Exception('decryption failed'))
+    @patch('spellbookserver.get_hot_wallet', side_effect=ValueError('decryption failed'))
     @patch('spellbookserver.get_enable_wallet', return_value=True)
     def test_init_wallet_decryption_failure(self, mock_wallet, mock_get_wallet, mock_log, mock_run, mock_isfile, mock_port, mock_host, mock_explorers, mock_ssl):
         """Test __init__ handles hot wallet decryption failure (lines 120-123)."""
@@ -1325,7 +1324,7 @@ class TestSpellbookInit:
     @patch('spellbookserver.get_host', return_value='localhost')
     @patch('spellbookserver.get_port', return_value=8080)
     @patch('spellbookserver.os.path.isfile', return_value=True)
-    @patch('bottle.Bottle.run', side_effect=Exception('server crashed'))
+    @patch('bottle.Bottle.run', side_effect=ValueError('server crashed'))
     @patch('spellbookserver.get_mail_on_exception', return_value=False)
     @patch('spellbookserver.LOG')
     def test_init_server_exception_no_mail(self, mock_log, mock_mail, mock_run, mock_isfile, mock_port, mock_host, mock_explorers, mock_wallet, mock_ssl):
@@ -1339,7 +1338,7 @@ class TestSpellbookInit:
     @patch('spellbookserver.get_host', return_value='localhost')
     @patch('spellbookserver.get_port', return_value=8080)
     @patch('spellbookserver.os.path.isfile', return_value=True)
-    @patch('bottle.Bottle.run', side_effect=Exception('server crashed'))
+    @patch('bottle.Bottle.run', side_effect=ValueError('server crashed'))
     @patch('spellbookserver.get_mail_on_exception', return_value=True)
     @patch('spellbookserver.get_notification_email', return_value='admin@test.com')
     @patch('spellbookserver.sendmail')

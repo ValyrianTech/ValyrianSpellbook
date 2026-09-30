@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Tests for AESCipher.py — AES encryption/decryption used by the hot wallet."""
 from AESCipher import AESCipher
 
 
-class TestAESCipher(object):
+class TestAESCipher:
 
     def test_init_derives_32_byte_key(self):
         cipher = AESCipher(key='test_password')

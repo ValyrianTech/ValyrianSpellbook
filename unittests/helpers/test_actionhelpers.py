@@ -1,21 +1,21 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+from unittest import mock
+
 import pytest
-import mock
 
-from helpers.actionhelpers import (
-    get_actions,
-    get_action_config,
-    get_action,
-    save_action,
-    delete_action,
-    run_action,
-    get_reveal,
-)
 from action.actiontype import ActionType
+from helpers.actionhelpers import (
+    delete_action,
+    get_action,
+    get_action_config,
+    get_actions,
+    get_reveal,
+    run_action,
+    save_action,
+)
 
 
-class TestActionHelpers(object):
+class TestActionHelpers:
     """Tests for action helper functions"""
 
     @mock.patch('helpers.actionhelpers.glob.glob')
@@ -39,7 +39,7 @@ class TestActionHelpers(object):
     @mock.patch('helpers.actionhelpers.load_from_json_file')
     def test_get_action_config_not_found(self, mock_load):
         """Test getting config for non-existent action"""
-        mock_load.side_effect = IOError('File not found')
+        mock_load.side_effect = OSError('File not found')
         result = get_action_config('nonexistent')
         assert result == {}
 

@@ -1,14 +1,14 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import pytest
-import mock
 import importlib
+from unittest import mock
 
-from action.launchevolveraction import LaunchEvolverAction, DARWIN_PROGRAM
+import pytest
+
 from action.actiontype import ActionType
+from action.launchevolveraction import DARWIN_PROGRAM, LaunchEvolverAction
 
 
-class TestLaunchEvolverAction(object):
+class TestLaunchEvolverAction:
     """Tests for LaunchEvolverAction"""
 
     def test_launchevolveraction_init(self):
@@ -48,7 +48,7 @@ class TestLaunchEvolverAction(object):
         assert 'config.json' in action.run_command
 
 
-class TestLaunchEvolverActionPlatformCheck(object):
+class TestLaunchEvolverActionPlatformCheck:
     """Tests for platform-specific module-level code in launchevolveraction.py"""
 
     def test_platform_windows(self):

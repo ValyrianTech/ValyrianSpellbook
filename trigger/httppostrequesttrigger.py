@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Trigger that activates on HTTP POST requests."""
 
@@ -10,7 +9,7 @@ from .triggertype import TriggerType
 class HTTPPostRequestTrigger(Trigger):
     """Trigger that activates on HTTP POST requests."""
     def __init__(self, trigger_id):
-        super(HTTPPostRequestTrigger, self).__init__(trigger_id=trigger_id)
+        super().__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.HTTPPOSTREQUEST
         self.json = None
 
@@ -21,16 +20,16 @@ class HTTPPostRequestTrigger(Trigger):
 
     def configure(self, **config):
         """Configure."""
-        super(HTTPPostRequestTrigger, self).configure(**config)
+        super().configure(**config)
 
     def json_encodable(self):
         """Json encodable."""
-        ret = super(HTTPPostRequestTrigger, self).json_encodable()
+        ret = super().json_encodable()
         return ret
 
     def get_script_variables(self):
         """Get script variables."""
-        ret = super(HTTPPostRequestTrigger, self).json_encodable()
+        ret = super().json_encodable()
         ret.update({'json': self.json})
         return ret
 

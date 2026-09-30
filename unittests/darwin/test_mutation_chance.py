@@ -1,10 +1,14 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import pytest
 
-from darwin.mutationchance import (MutationChance, BooleanMutationChance,
-                                   IntegerMutationChance, FloatMutationChance,
-                                   StringMutationChance, ChromosomeMutationChance)
+from darwin.mutationchance import (
+    BooleanMutationChance,
+    ChromosomeMutationChance,
+    FloatMutationChance,
+    IntegerMutationChance,
+    MutationChance,
+    StringMutationChance,
+)
 
 
 class TestMutationChance:

@@ -1,10 +1,13 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from helpers.lnbitshelpers import (
-    get_wallet_details, create_invoice, decode_invoice, check_invoice, LNBITS_URL
+    LNBITS_URL,
+    check_invoice,
+    create_invoice,
+    decode_invoice,
+    get_wallet_details,
 )
 
 

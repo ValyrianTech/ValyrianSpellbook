@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import unittest
 from unittest.mock import patch
 
@@ -21,7 +20,7 @@ class TestTwitterClass(unittest.TestCase):
 
     def test_twitter_init(self):
         """Test Twitter initialization"""
-        from helpers.socialmediahelpers import Twitter, SocialNetwork
+        from helpers.socialmediahelpers import SocialNetwork, Twitter
         
         twitter = Twitter()
         

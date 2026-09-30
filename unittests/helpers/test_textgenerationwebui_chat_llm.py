@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 
 class TestTextGenerationWebuiChatLLM(unittest.TestCase):
@@ -30,13 +29,13 @@ class TestTextGenerationWebuiChatLLM(unittest.TestCase):
         from helpers.textgenerationwebui_chat_llm import TextGenerationWebuiChatLLM
 
         mock_client = MagicMock()
-        mock_client.chat.completions.create.side_effect = Exception("Connection Error")
+        mock_client.chat.completions.create.side_effect = ValueError("Connection Error")
         mock_openai.return_value = mock_client
 
         llm = TextGenerationWebuiChatLLM(model_name='test-model', host='http://localhost', port=5000)
         messages = [{'role': 'user', 'content': 'Hello'}]
 
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
 
         self.assertIn('Error', result)
 
@@ -101,7 +100,7 @@ class TestTextGenerationWebuiChatLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
 
         self.assertEqual(result, '')
 
@@ -134,7 +133,7 @@ class TestTextGenerationWebuiChatLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages, thinking_level='high')
+        result, _usage = llm.get_completion_text(messages, thinking_level='high')
 
         self.assertEqual(result, 'Hello!')
         call_kwargs = mock_client.chat.completions.create.call_args[1]
@@ -356,7 +355,7 @@ class TestExtractThinkingContent(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages, thinking_level='off')
+        result, _usage = llm.get_completion_text(messages, thinking_level='off')
 
         self.assertEqual(result, 'Hello!')
         mock_log.info.assert_any_call('Thinking level: off -> Disabled (no reasoning_effort)')
@@ -394,7 +393,7 @@ class TestExtractThinkingContent(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
 
         self.assertIn('Just thinking', result)
         self.assertIn('The answer', result)
@@ -432,7 +431,7 @@ class TestExtractThinkingContent(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
 
         self.assertIn('Still thinking', result)
 
@@ -469,7 +468,7 @@ class TestExtractThinkingContent(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
 
         self.assertIn('Just the answer', result)
 

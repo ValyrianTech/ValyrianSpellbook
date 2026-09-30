@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Tests for quickstart.py — interactive configuration setup CLI.
 
@@ -10,9 +9,8 @@ importlib, following the pattern from test_spellbook.py.
 import importlib.util
 import os
 import sys
-
-import mock
 from configparser import ConfigParser
+from unittest import mock
 
 _QUICKSTART_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'quickstart.py')
 
@@ -30,9 +28,7 @@ def _isfile_side_effect(path):
     """Return False for spellbook.conf (use example config), True for api_keys.json."""
     if isinstance(path, str) and 'spellbook.conf' in path:
         return False
-    if isinstance(path, str) and 'api_keys.json' in path:
-        return True
-    return False
+    return bool(isinstance(path, str) and 'api_keys.json' in path)
 
 
 def _import_quickstart(input_values=None, isfile_side_effect=None, extra_patches=None):
@@ -207,9 +203,7 @@ class TestQuickstartSpellbookConfExists:
         def isfile_spellbook_conf_exists(path):
             if isinstance(path, str) and 'spellbook.conf' in path:
                 return True
-            if isinstance(path, str) and 'api_keys.json' in path:
-                return True
-            return False
+            return bool(isinstance(path, str) and 'api_keys.json' in path)
 
         # Patch ConfigParser.read to always read the example config
         # so we have valid sections/options

@@ -1,9 +1,8 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import unittest
 import os
 import tempfile
-from unittest.mock import patch, MagicMock
+import unittest
+from unittest.mock import MagicMock, patch
 
 
 class TestGetLlmApiKey(unittest.TestCase):
@@ -111,8 +110,9 @@ class TestGetRole(unittest.TestCase):
 
     def test_get_role_human(self):
         """Test get_role for HumanMessage"""
-        from helpers.llmhelpers import get_role
         from langchain_core.messages import HumanMessage
+
+        from helpers.llmhelpers import get_role
         
         msg = HumanMessage(content="test")
         result = get_role(msg)
@@ -121,8 +121,9 @@ class TestGetRole(unittest.TestCase):
 
     def test_get_role_ai(self):
         """Test get_role for AIMessage"""
-        from helpers.llmhelpers import get_role
         from langchain_core.messages import AIMessage
+
+        from helpers.llmhelpers import get_role
         
         msg = AIMessage(content="test")
         result = get_role(msg)
@@ -131,8 +132,9 @@ class TestGetRole(unittest.TestCase):
 
     def test_get_role_system(self):
         """Test get_role for SystemMessage"""
-        from helpers.llmhelpers import get_role
         from langchain_core.messages import SystemMessage
+
+        from helpers.llmhelpers import get_role
         
         msg = SystemMessage(content="test")
         result = get_role(msg)
@@ -357,8 +359,9 @@ class TestComparisonPrompt(unittest.TestCase):
 
     def test_comparison_prompt(self):
         """Test comparison_prompt generates correct format"""
-        from helpers.llmhelpers import comparison_prompt
         from langchain_core.messages import HumanMessage
+
+        from helpers.llmhelpers import comparison_prompt
         
         messages = [HumanMessage(content="Test prompt")]
         
@@ -378,8 +381,9 @@ class TestGetRoleUnknown(unittest.TestCase):
 
     def test_get_role_chat_message(self):
         """Test get_role for ChatMessage"""
-        from helpers.llmhelpers import get_role
         from langchain_core.messages import ChatMessage
+
+        from helpers.llmhelpers import get_role
         
         msg = ChatMessage(content="test", role="custom_role")
         result = get_role(msg)
@@ -457,7 +461,7 @@ class TestGetLlm(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_get_llm_default_model(self, mock_log, mock_openai_llm, mock_api_key, mock_default):
         """Test get_llm with default_model resolves to configured default"""
-        from helpers.llmhelpers import get_llm, CLIENTS
+        from helpers.llmhelpers import CLIENTS, get_llm
         CLIENTS.clear()
         
         mock_llm_instance = MagicMock()
@@ -472,7 +476,7 @@ class TestGetLlm(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_get_llm_auto_routing(self, mock_log, mock_interface):
         """Test get_llm with auto routing"""
-        from helpers.llmhelpers import get_llm, CLIENTS
+        from helpers.llmhelpers import CLIENTS, get_llm
         CLIENTS.clear()
         
         mock_llm_instance = MagicMock()
@@ -488,7 +492,7 @@ class TestGetLlm(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_get_llm_together_ai(self, mock_log, mock_together, mock_api_key):
         """Test get_llm with Together-ai provider"""
-        from helpers.llmhelpers import get_llm, CLIENTS
+        from helpers.llmhelpers import CLIENTS, get_llm
         CLIENTS.clear()
         
         mock_llm_instance = MagicMock()
@@ -504,7 +508,7 @@ class TestGetLlm(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_get_llm_openai(self, mock_log, mock_openai, mock_api_key):
         """Test get_llm with OpenAI provider"""
-        from helpers.llmhelpers import get_llm, CLIENTS
+        from helpers.llmhelpers import CLIENTS, get_llm
         CLIENTS.clear()
         
         mock_llm_instance = MagicMock()
@@ -520,7 +524,7 @@ class TestGetLlm(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_get_llm_anthropic(self, mock_log, mock_anthropic, mock_api_key):
         """Test get_llm with Anthropic provider"""
-        from helpers.llmhelpers import get_llm, CLIENTS
+        from helpers.llmhelpers import CLIENTS, get_llm
         CLIENTS.clear()
         
         mock_llm_instance = MagicMock()
@@ -536,7 +540,7 @@ class TestGetLlm(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_get_llm_groq(self, mock_log, mock_groq, mock_api_key):
         """Test get_llm with Groq provider"""
-        from helpers.llmhelpers import get_llm, CLIENTS
+        from helpers.llmhelpers import CLIENTS, get_llm
         CLIENTS.clear()
         
         mock_llm_instance = MagicMock()
@@ -552,7 +556,7 @@ class TestGetLlm(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_get_llm_deepseek(self, mock_log, mock_deepseek, mock_api_key):
         """Test get_llm with DeepSeek provider"""
-        from helpers.llmhelpers import get_llm, CLIENTS
+        from helpers.llmhelpers import CLIENTS, get_llm
         CLIENTS.clear()
         
         mock_llm_instance = MagicMock()
@@ -568,7 +572,7 @@ class TestGetLlm(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_get_llm_mistral(self, mock_log, mock_mistral, mock_api_key):
         """Test get_llm with Mistral provider"""
-        from helpers.llmhelpers import get_llm, CLIENTS
+        from helpers.llmhelpers import CLIENTS, get_llm
         CLIENTS.clear()
         
         mock_llm_instance = MagicMock()
@@ -584,7 +588,7 @@ class TestGetLlm(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_get_llm_google(self, mock_log, mock_google, mock_api_key):
         """Test get_llm with Google provider"""
-        from helpers.llmhelpers import get_llm, CLIENTS
+        from helpers.llmhelpers import CLIENTS, get_llm
         CLIENTS.clear()
         
         mock_llm_instance = MagicMock()
@@ -601,7 +605,7 @@ class TestGetLlm(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_get_llm_self_hosted_auto(self, mock_log, mock_self_hosted, mock_exists, mock_load_json):
         """Test get_llm with self-hosted:auto"""
-        from helpers.llmhelpers import get_llm, CLIENTS
+        from helpers.llmhelpers import CLIENTS, get_llm
         CLIENTS.clear()
         
         mock_load_json.return_value = {}
@@ -618,7 +622,7 @@ class TestGetLlm(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_get_llm_self_hosted_oobabooga(self, mock_log, mock_self_hosted, mock_exists, mock_load_json):
         """Test get_llm with self-hosted Oobabooga server"""
-        from helpers.llmhelpers import get_llm, CLIENTS
+        from helpers.llmhelpers import CLIENTS, get_llm
         CLIENTS.clear()
         
         mock_load_json.return_value = {
@@ -637,7 +641,7 @@ class TestGetLlm(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_get_llm_self_hosted_ollama(self, mock_log, mock_ollama, mock_exists, mock_load_json):
         """Test get_llm with self-hosted Ollama server"""
-        from helpers.llmhelpers import get_llm, CLIENTS
+        from helpers.llmhelpers import CLIENTS, get_llm
         CLIENTS.clear()
         
         mock_load_json.return_value = {
@@ -656,7 +660,7 @@ class TestGetLlm(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_get_llm_self_hosted_ollama_chat(self, mock_log, mock_ollama_chat, mock_exists, mock_load_json):
         """Test get_llm with self-hosted OllamaChat server"""
-        from helpers.llmhelpers import get_llm, CLIENTS
+        from helpers.llmhelpers import CLIENTS, get_llm
         CLIENTS.clear()
         
         mock_load_json.return_value = {
@@ -675,7 +679,7 @@ class TestGetLlm(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_get_llm_self_hosted_vllm(self, mock_log, mock_vllm, mock_exists, mock_load_json):
         """Test get_llm with self-hosted vLLM server"""
-        from helpers.llmhelpers import get_llm, CLIENTS
+        from helpers.llmhelpers import CLIENTS, get_llm
         CLIENTS.clear()
         
         mock_load_json.return_value = {
@@ -694,7 +698,7 @@ class TestGetLlm(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_get_llm_self_hosted_vllm_chat(self, mock_log, mock_vllm_chat, mock_exists, mock_load_json):
         """Test get_llm with self-hosted vLLMchat server"""
-        from helpers.llmhelpers import get_llm, CLIENTS
+        from helpers.llmhelpers import CLIENTS, get_llm
         CLIENTS.clear()
         
         mock_load_json.return_value = {
@@ -713,7 +717,7 @@ class TestGetLlm(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_get_llm_self_hosted_unknown_model(self, mock_log, mock_self_hosted, mock_exists, mock_load_json):
         """Test get_llm with self-hosted unknown model falls back to default"""
-        from helpers.llmhelpers import get_llm, CLIENTS
+        from helpers.llmhelpers import CLIENTS, get_llm
         CLIENTS.clear()
         
         mock_load_json.return_value = {}
@@ -726,7 +730,7 @@ class TestGetLlm(unittest.TestCase):
 
     def test_get_llm_cached(self):
         """Test get_llm returns cached client"""
-        from helpers.llmhelpers import get_llm, CLIENTS
+        from helpers.llmhelpers import CLIENTS, get_llm
         
         mock_llm = MagicMock()
         CLIENTS['cached-model'] = mock_llm
@@ -746,7 +750,7 @@ class TestGetLlm(unittest.TestCase):
     @patch('helpers.llmhelpers.OpenAI')
     def test_get_llm_text_davinci(self, mock_openai, mock_exists, mock_load_json, mock_api_key, mock_enable):
         """Test get_llm with text-davinci-003 model"""
-        from helpers.llmhelpers import get_llm, CLIENTS
+        from helpers.llmhelpers import CLIENTS, get_llm
         CLIENTS.clear()
         
         mock_llm_instance = MagicMock()
@@ -763,7 +767,7 @@ class TestGetLlm(unittest.TestCase):
     @patch('helpers.llmhelpers.ChatOpenAI')
     def test_get_llm_chat_model(self, mock_chat_openai, mock_exists, mock_load_json, mock_api_key, mock_enable):
         """Test get_llm with chat model falls back to ChatOpenAI"""
-        from helpers.llmhelpers import get_llm, CLIENTS
+        from helpers.llmhelpers import CLIENTS, get_llm
         CLIENTS.clear()
         
         mock_llm_instance = MagicMock()
@@ -778,7 +782,7 @@ class TestGetLlm(unittest.TestCase):
     @patch('helpers.llmhelpers.os.path.exists', return_value=False)
     def test_get_llm_openai_disabled(self, mock_exists, mock_load_json, mock_enable):
         """Test get_llm raises when OpenAI is disabled"""
-        from helpers.llmhelpers import get_llm, CLIENTS
+        from helpers.llmhelpers import CLIENTS, get_llm
         CLIENTS.clear()
         
         with self.assertRaises(Exception) as context:
@@ -791,7 +795,7 @@ class TestGetLlm(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_get_llm_auto_prefix_strips(self, mock_log, mock_openai, mock_api_key):
         """Test get_llm with auto: prefix strips it"""
-        from helpers.llmhelpers import get_llm, CLIENTS
+        from helpers.llmhelpers import CLIENTS, get_llm
         CLIENTS.clear()
         
         mock_llm_instance = MagicMock()
@@ -807,7 +811,7 @@ class TestGetLlm(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_get_llm_self_hosted_textgen_webui(self, mock_log, mock_textgen, mock_exists, mock_load_json):
         """Test get_llm with self-hosted TextGenerationWebui server"""
-        from helpers.llmhelpers import get_llm, CLIENTS
+        from helpers.llmhelpers import CLIENTS, get_llm
         CLIENTS.clear()
 
         mock_load_json.return_value = {
@@ -826,7 +830,7 @@ class TestGetLlm(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_get_llm_self_hosted_textgen_webui_chat(self, mock_log, mock_textgen_chat, mock_exists, mock_load_json):
         """Test get_llm with self-hosted TextGenerationWebuiChat server"""
-        from helpers.llmhelpers import get_llm, CLIENTS
+        from helpers.llmhelpers import CLIENTS, get_llm
         CLIENTS.clear()
 
         mock_load_json.return_value = {
@@ -846,7 +850,7 @@ class TestGetLlm(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_get_llm_self_hosted_openrouter(self, mock_log, mock_openrouter, mock_exists, mock_load_json, mock_api_key):
         """Test get_llm with self-hosted OpenRouter server"""
-        from helpers.llmhelpers import get_llm, CLIENTS
+        from helpers.llmhelpers import CLIENTS, get_llm
         CLIENTS.clear()
 
         mock_load_json.return_value = {
@@ -864,7 +868,7 @@ class TestGetLlm(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_get_llm_openrouter_prefix(self, mock_log, mock_openrouter, mock_api_key):
         """Test get_llm with OpenRouter: prefix"""
-        from helpers.llmhelpers import get_llm, CLIENTS
+        from helpers.llmhelpers import CLIENTS, get_llm
         CLIENTS.clear()
 
         mock_llm_instance = MagicMock()
@@ -914,7 +918,7 @@ class TestGetLlmApiKeyException(unittest.TestCase):
         """Test get_llm_api_key handles exception when loading config"""
         from helpers.llmhelpers import get_llm_api_key
         
-        mock_load_llms.side_effect = Exception("Config load error")
+        mock_load_llms.side_effect = ValueError("Config load error")
         
         result = get_llm_api_key('OpenAI:gpt-4', 'OpenAI')
         
@@ -958,8 +962,9 @@ class TestLLMClass(unittest.TestCase):
     @patch('helpers.llmhelpers.get_llm')
     def test_llm_generate_text_davinci(self, mock_get_llm, mock_get_config):
         """Test LLM generate with text-davinci-003"""
-        from helpers.llmhelpers import LLM
         from langchain_core.messages import HumanMessage
+
+        from helpers.llmhelpers import LLM
         
         mock_llm_instance = MagicMock()
         mock_result = MagicMock()
@@ -980,8 +985,9 @@ class TestLLMClass(unittest.TestCase):
     @patch('helpers.llmhelpers.get_llm')
     def test_llm_generate_chat_model(self, mock_get_llm, mock_get_config):
         """Test LLM generate with chat model"""
-        from helpers.llmhelpers import LLM
         from langchain_core.messages import HumanMessage
+
+        from helpers.llmhelpers import LLM
         
         mock_llm_instance = MagicMock()
         mock_result = MagicMock()
@@ -1001,8 +1007,9 @@ class TestLLMClass(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_llm_run_oobabooga_disabled(self, mock_log, mock_enable, mock_get_llm, mock_get_config):
         """Test LLM run returns error when Oobabooga is disabled"""
-        from helpers.llmhelpers import LLM
         from langchain_core.messages import HumanMessage
+
+        from helpers.llmhelpers import LLM
         
         mock_llm_instance = MagicMock()
         mock_get_llm.return_value = mock_llm_instance
@@ -1010,7 +1017,7 @@ class TestLLMClass(unittest.TestCase):
         llm = LLM('self-hosted:model', 0.5)
         messages = [HumanMessage(content="Hello")]
         
-        text, output, info = llm.run(messages)
+        text, _output, _info = llm.run(messages)
         
         self.assertIn("Oobabooga is not enabled", text)
 
@@ -1019,8 +1026,9 @@ class TestLLMClass(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_llm_run_single_generation(self, mock_log, mock_get_llm, mock_get_config):
         """Test LLM run with single generation"""
-        from helpers.llmhelpers import LLM
         from langchain_core.messages import HumanMessage
+
+        from helpers.llmhelpers import LLM
         
         mock_llm_instance = MagicMock()
         mock_result = MagicMock()
@@ -1032,7 +1040,7 @@ class TestLLMClass(unittest.TestCase):
         llm = LLM('OpenAI:gpt-4', 0.5)
         messages = [HumanMessage(content="Hello")]
         
-        text, output, info = llm.run(messages)
+        text, output, _info = llm.run(messages)
         
         self.assertEqual(text, 'Hello response')
         self.assertIn('generation_time', output)
@@ -1042,8 +1050,9 @@ class TestLLMClass(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_llm_run_best_of_multiple(self, mock_log, mock_get_llm, mock_get_config):
         """Test LLM run with best_of > 1"""
-        from helpers.llmhelpers import LLM
         from langchain_core.messages import HumanMessage
+
+        from helpers.llmhelpers import LLM
         
         mock_llm_instance = MagicMock()
         mock_result1 = MagicMock()
@@ -1063,7 +1072,7 @@ class TestLLMClass(unittest.TestCase):
         
         messages = [HumanMessage(content="Hello")]
         
-        text, output, info = llm.run(messages, best_of=2)
+        text, _output, _info = llm.run(messages, best_of=2)
         
         self.assertEqual(text, 'Response 1')
         llm.choose_best_generation.assert_called_once()
@@ -1089,7 +1098,7 @@ class TestLLMClass(unittest.TestCase):
         
         messages = [{'role': 'user', 'content': 'Hello'}]
         
-        text, output, info = llm.run(messages)
+        _text, _output, _info = llm.run(messages)
         
         llm.choose_best_llm.assert_called_once()
 
@@ -1114,7 +1123,7 @@ class TestLLMClass(unittest.TestCase):
         
         messages = [{'role': 'user', 'content': [{'text': 'Hello'}]}]
         
-        text, output, info = llm.run(messages)
+        _text, _output, _info = llm.run(messages)
         
         llm.choose_best_llm.assert_called_once()
 
@@ -1209,8 +1218,9 @@ class TestLLMChooseBestGeneration(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_choose_best_generation_valid(self, mock_log, mock_parse, mock_get_llm, mock_get_config):
         """Test choose_best_generation with valid JSON response"""
-        from helpers.llmhelpers import LLM, CodeGeneration
         from langchain_core.messages import HumanMessage
+
+        from helpers.llmhelpers import LLM, CodeGeneration
         
         mock_llm_instance = MagicMock()
         mock_result = MagicMock()
@@ -1240,8 +1250,9 @@ class TestLLMChooseBestGeneration(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_choose_best_generation_parse_error(self, mock_log, mock_parse, mock_get_llm, mock_get_config):
         """Test choose_best_generation with parse error returns 0"""
-        from helpers.llmhelpers import LLM
         from langchain_core.messages import HumanMessage
+
+        from helpers.llmhelpers import LLM
         
         mock_llm_instance = MagicMock()
         mock_result = MagicMock()
@@ -1249,7 +1260,7 @@ class TestLLMChooseBestGeneration(unittest.TestCase):
         mock_llm_instance.generate.return_value = mock_result
         mock_get_llm.return_value = mock_llm_instance
         
-        mock_parse.side_effect = Exception("Parse error")
+        mock_parse.side_effect = ValueError("Parse error")
         
         llm = LLM('OpenAI:gpt-4', 0.5)
         
@@ -1267,8 +1278,9 @@ class TestLLMChooseBestGeneration(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_choose_best_generation_best_n_out_of_range(self, mock_log, mock_parse, mock_get_llm, mock_get_config):
         """Test choose_best_generation with best_n out of range returns 0"""
-        from helpers.llmhelpers import LLM, CodeGeneration
         from langchain_core.messages import HumanMessage
+
+        from helpers.llmhelpers import LLM, CodeGeneration
         
         mock_llm_instance = MagicMock()
         mock_result = MagicMock()
@@ -1296,8 +1308,9 @@ class TestLLMChooseBestGeneration(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_choose_best_generation_text_davinci(self, mock_log, mock_parse, mock_get_llm, mock_get_config):
         """Test choose_best_generation with text-davinci-003"""
-        from helpers.llmhelpers import LLM, CodeGeneration
         from langchain_core.messages import HumanMessage
+
+        from helpers.llmhelpers import LLM, CodeGeneration
         
         mock_llm_instance = MagicMock()
         mock_result = MagicMock()
@@ -1325,8 +1338,9 @@ class TestLLMChooseBestGeneration(unittest.TestCase):
     @patch('helpers.llmhelpers.LOG')
     def test_choose_best_generation_invalid_json(self, mock_log, mock_parse, mock_get_llm, mock_get_config):
         """Test choose_best_generation with invalid JSON in code block"""
-        from helpers.llmhelpers import LLM, CodeGeneration
         from langchain_core.messages import HumanMessage
+
+        from helpers.llmhelpers import LLM, CodeGeneration
         
         mock_llm_instance = MagicMock()
         mock_result = MagicMock()

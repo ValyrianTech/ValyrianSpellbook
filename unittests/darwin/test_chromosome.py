@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import pytest
 from unittest.mock import patch
+
+import pytest
 
 from darwin.chromosome import Chromosome
 from darwin.encodingtype import EncodingType
-from darwin.gene import BooleanGene, IntegerGene, FloatGene, StringGene
+from darwin.gene import BooleanGene, FloatGene, IntegerGene, StringGene
 from darwin.mutationchance import ChromosomeMutationChance
 
 

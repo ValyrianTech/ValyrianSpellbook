@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Tests for webui.api_client SpellbookAPIClient."""
-import pytest
-from unittest.mock import patch, MagicMock
-import requests
+from unittest.mock import MagicMock, patch
 
+import pytest
+import requests
 from api_client import SpellbookAPIClient
 
 

@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import mock
+from unittest import mock
 
-from action.deletetriggeraction import DeleteTriggerAction
 from action.actiontype import ActionType
+from action.deletetriggeraction import DeleteTriggerAction
 
 
-class TestDeleteTriggerAction(object):
+class TestDeleteTriggerAction:
     """Tests for DeleteTriggerAction"""
 
     def test_deletetriggeraction_init(self):

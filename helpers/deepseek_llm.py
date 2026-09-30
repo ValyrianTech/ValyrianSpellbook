@@ -3,12 +3,17 @@ import json
 import sys
 import time
 
-from openai import APIConnectionError, OpenAI
+from openai import APIConnectionError, OpenAI, OpenAIError
 
 from helpers.llm_interface import LLMInterface
 from helpers.loghelpers import LOG
 from helpers.thinking_levels import THINKING_LEVEL_DEEPSEEK
-from helpers.websockethelpers import broadcast_message, get_broadcast_channel, get_broadcast_sender
+from helpers.websockethelpers import (
+    broadcast_message,
+    get_broadcast_channel,
+    get_broadcast_sender,
+)
+
 from .textgenerationhelpers import parse_generation
 
 
@@ -18,7 +23,7 @@ class DeepSeekLLM(LLMInterface):
 
     Initializes the DeepSeek client with model name and API key.
     """
-    def __init__(self, model_name: str, api_key: str):
+    def __init__(self, model_name: str, api_key: str | None):
         self.model_name = model_name
         self.api_key = api_key
         super().__init__(model_name)
@@ -125,11 +130,11 @@ class DeepSeekLLM(LLMInterface):
                     LOG.error(f'All {max_retries} attempts failed.')
                     return 'Error: Unable to connect to DeepSeek.\n'
 
-            except Exception as e:
+            except (OpenAIError, ValueError, KeyError, TypeError, OSError) as e:
                 LOG.error(f'Error connecting to DeepSeek: {e}')
                 return 'Error: Unable to connect to DeepSeek.\n'
 
-        print('')
+        print()
 
         # Broadcast end of message message to clear the streaming widget in the UI
         data = {'message': '<|end of message|>', 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation('')}

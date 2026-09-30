@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-from darwin.fitnessfunction.fitnessfunction import FitnessFunction, Fitness
+from darwin.fitnessfunction.fitnessfunction import Fitness, FitnessFunction
 
 
 class TestFitness:

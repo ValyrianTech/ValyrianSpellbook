@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Pytest configuration and fixtures for the Valyrian Spellbook test suite.
 """

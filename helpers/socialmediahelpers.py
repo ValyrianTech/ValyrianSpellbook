@@ -1,14 +1,15 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Abstract social media interface with Twitter and Mastodon implementations."""
-from abc import abstractmethod, ABCMeta
+from abc import ABCMeta, abstractmethod
 
 from helpers.loghelpers import LOG
-from helpers.twitterhelpers import get_trending_topics as get_trending_topics_twitter, get_popular_tweet_ids, get_tweets_by_id
-from helpers.mastodonhelpers import get_trending_topics as get_trending_topics_mastodon, get_popular_toot_ids, get_toots_by_id
+from helpers.mastodonhelpers import get_popular_toot_ids, get_toots_by_id
+from helpers.mastodonhelpers import get_trending_topics as get_trending_topics_mastodon
+from helpers.twitterhelpers import get_popular_tweet_ids, get_tweets_by_id
+from helpers.twitterhelpers import get_trending_topics as get_trending_topics_twitter
 
 
-class SocialNetwork(object):
+class SocialNetwork:
     """Constants for supported social network names."""
 
     TWITTER = 'Twitter'
@@ -16,7 +17,7 @@ class SocialNetwork(object):
     NOSTR = 'Nostr'
 
 
-class SocialMedia(object):
+class SocialMedia:
     """
     Abstract base class for social media platform interactions.
 
@@ -31,12 +32,10 @@ class SocialMedia(object):
     @abstractmethod
     def get_trending_topics(self, woeid: int = 1) -> list:
         """Retrieve trending topics for the given location (woeid)."""
-        pass
 
     @abstractmethod
     def get_popular_statuses(self, topic: str, limit: int) -> dict:
         """Retrieve popular statuses for the given topic."""
-        pass
 
 
 class Twitter(SocialMedia):

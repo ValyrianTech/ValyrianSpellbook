@@ -1,15 +1,14 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Chromosome-level mutation operations for Darwin."""
 
 import random
 from copy import deepcopy
 
-from darwin.gene import BooleanGene, IntegerGene, FloatGene, StringGene
 from darwin.encodingtype import EncodingType
+from darwin.gene import BooleanGene, FloatGene, IntegerGene, StringGene
 
 
-class ChromosomeMutation(object):
+class ChromosomeMutation:
     """Chromosome-level mutation operations for Darwin."""
     def __init__(self, chromosome):
         self.chromosome = chromosome
@@ -57,7 +56,7 @@ class ChromosomeMutation(object):
                     gene.charset = self.chromosome.charset
 
             else:
-                raise NotImplementedError('Unknown encoding type: %s' % self.chromosome.encoding_type)
+                raise NotImplementedError(f'Unknown encoding type: {self.chromosome.encoding_type}')
 
             gene.set_random_data()
             self.chromosome.genes.insert(random.randint(0, len(self.chromosome.genes)), gene)
@@ -74,7 +73,7 @@ class ChromosomeMutation(object):
     def split(self):
         """Split."""
         # Split a string gene in 2 genes
-        if not self.chromosome.encoding_type == EncodingType.STRING:
+        if self.chromosome.encoding_type != EncodingType.STRING:
             return
 
         if self.chromosome.n_genes is None and 0 < len(self.chromosome.genes) < 1000:
@@ -91,7 +90,7 @@ class ChromosomeMutation(object):
     def merge(self):
         """Merge."""
         # Merge 2 genes together
-        if not self.chromosome.encoding_type == EncodingType.STRING:
+        if self.chromosome.encoding_type != EncodingType.STRING:
             return
 
         n_genes = len(self.chromosome.genes)

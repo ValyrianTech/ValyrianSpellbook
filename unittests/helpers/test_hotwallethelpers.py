@@ -1,17 +1,15 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import unittest
-from unittest.mock import patch, MagicMock
-
+from unittest.mock import MagicMock, patch
 
 # Store original password at module load time
 import helpers.hotwallethelpers as _hw_module
+
 _ORIGINAL_HOT_WALLET_PASSWORD = _hw_module.HOT_WALLET_PASSWORD
 
 
 def setUpModule():
     """Called once before any tests in this module"""
-    pass
 
 
 def tearDownModule():
@@ -39,8 +37,8 @@ class TestGetHotWallet(unittest.TestCase):
     @patch('builtins.open', create=True)
     def test_get_hot_wallet_empty_password(self, mock_open, mock_cipher_class, mock_wallet, mock_dir):
         """Test get_hot_wallet with empty password"""
-        from helpers.hotwallethelpers import get_hot_wallet
         import helpers.hotwallethelpers as hw_module
+        from helpers.hotwallethelpers import get_hot_wallet
         
         hw_module.HOT_WALLET_PASSWORD = None
         
@@ -68,8 +66,8 @@ class TestGetHotWallet(unittest.TestCase):
     @patch('builtins.open', create=True)
     def test_get_hot_wallet_with_password(self, mock_open, mock_prompt, mock_cipher_class, mock_wallet, mock_dir):
         """Test get_hot_wallet with password"""
-        from helpers.hotwallethelpers import get_hot_wallet
         import helpers.hotwallethelpers as hw_module
+        from helpers.hotwallethelpers import get_hot_wallet
         
         hw_module.HOT_WALLET_PASSWORD = 'test_password'
         
@@ -97,8 +95,8 @@ class TestGetHotWallet(unittest.TestCase):
     @patch('builtins.open', create=True)
     def test_get_hot_wallet_empty_password_fails_then_prompts(self, mock_open, mock_prompt, mock_cipher_class, mock_wallet, mock_dir):
         """Test get_hot_wallet when empty password decryption fails, triggering prompt_decryption_password (lines 28-29)"""
-        from helpers.hotwallethelpers import get_hot_wallet
         import helpers.hotwallethelpers as hw_module
+        from helpers.hotwallethelpers import get_hot_wallet
 
         hw_module.HOT_WALLET_PASSWORD = None
 
@@ -107,7 +105,7 @@ class TestGetHotWallet(unittest.TestCase):
 
         mock_cipher = MagicMock()
         # First call (empty password) fails, second call (prompted password) succeeds
-        mock_cipher.decrypt.side_effect = [Exception('Decryption failed'), '{"mnemonic": ["word1"], "passphrase": ""}']
+        mock_cipher.decrypt.side_effect = [ValueError('Decryption failed'), '{"mnemonic": ["word1"], "passphrase": ""}']
         mock_cipher_class.return_value = mock_cipher
 
         mock_file = MagicMock()
@@ -132,8 +130,8 @@ class TestGetHotWallet(unittest.TestCase):
     @patch('builtins.open', create=True)
     def test_get_hot_wallet_invalid_password(self, mock_open, mock_cipher_class, mock_wallet, mock_dir):
         """Test get_hot_wallet with invalid password"""
-        from helpers.hotwallethelpers import get_hot_wallet
         import helpers.hotwallethelpers as hw_module
+        from helpers.hotwallethelpers import get_hot_wallet
         
         hw_module.HOT_WALLET_PASSWORD = 'wrong_password'
         
@@ -141,7 +139,7 @@ class TestGetHotWallet(unittest.TestCase):
         mock_wallet.return_value = 'test_wallet'
         
         mock_cipher = MagicMock()
-        mock_cipher.decrypt.side_effect = Exception('Decryption failed')
+        mock_cipher.decrypt.side_effect = ValueError('Decryption failed')
         mock_cipher_class.return_value = mock_cipher
         
         mock_file = MagicMock()
@@ -172,8 +170,8 @@ class TestPromptDecryptionPassword(unittest.TestCase):
     @patch('helpers.hotwallethelpers.getpass.getpass', return_value='user_password')
     def test_prompt_decryption_password(self, mock_getpass):
         """Test prompt_decryption_password sets global password"""
-        from helpers.hotwallethelpers import prompt_decryption_password
         import helpers.hotwallethelpers as hw_module
+        from helpers.hotwallethelpers import prompt_decryption_password
         
         prompt_decryption_password()
         

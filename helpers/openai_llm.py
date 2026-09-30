@@ -5,10 +5,15 @@ import sys
 
 import openai
 
+from helpers.configurationhelpers import get_openai_api_key
 from helpers.llm_interface import LLMInterface
 from helpers.loghelpers import LOG
-from helpers.websockethelpers import broadcast_message, get_broadcast_channel, get_broadcast_sender
-from helpers.configurationhelpers import get_openai_api_key
+from helpers.websockethelpers import (
+    broadcast_message,
+    get_broadcast_channel,
+    get_broadcast_sender,
+)
+
 from .textgenerationhelpers import parse_generation
 from .thinking_levels import THINKING_LEVEL_OPENAI
 
@@ -125,11 +130,11 @@ class OpenAILLM(LLMInterface):
                 data = {'message': completion.lstrip(), 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation(completion.lstrip())}
                 broadcast_message(message=json.dumps(data), channel=get_broadcast_channel())
 
-        except Exception as e:
+        except (openai.OpenAIError, ValueError, KeyError, TypeError, OSError) as e:
             LOG.error(f'Error connecting to OpenAI: {e}')
             return 'Error: Unable to connect to OpenAI.\n'
 
-        print('')
+        print()
 
         # Broadcast end of message message to clear the streaming widget in the UI
         data = {'message': '<|end of message|>', 'channel': get_broadcast_channel(), 'sender': get_broadcast_sender(), 'parts': parse_generation('')}

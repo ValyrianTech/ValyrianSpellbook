@@ -1,0 +1,59 @@
+#!/usr/bin/env python
+from helpers.hotwallethelpers import get_address_from_wallet
+from helpers.setupscripthelpers import clean_up_triggers, spellbook_call
+
+print('Starting Spellbook integration test: Balance trigger conditions')
+print('----------------------------------------------\n')
+
+# Clean up triggers if necessary
+clean_up_triggers(trigger_ids=['test_trigger_conditions_BalanceTrigger'])
+
+#########################################################################################################
+# Balance trigger
+#########################################################################################################
+trigger_name = 'test_trigger_conditions_BalanceTrigger'
+trigger_type = 'Balance'
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+account = 0
+index = 0
+
+address = get_address_from_wallet(account=account, index=index)
+balance_data = spellbook_call('get_balance', address)
+amount = balance_data['balance']['final']
+
+
+print('Creating Balance trigger')
+
+print('Setting trigger amount higher than current balance')
+response = spellbook_call('save_trigger', f'-t={trigger_type}', trigger_name, '-st=Active', f'-a={address}', '-am=%s' % (amount+1))
+assert response is None
+
+print('Checking if trigger has not been triggered yet')
+response = spellbook_call('get_trigger_config', trigger_name)
+assert response['triggered'] == 0
+assert response['address'] == address
+assert response['amount'] == amount + 1
+
+print('Check the conditions of the trigger')
+response = spellbook_call('check_triggers', trigger_name)
+assert response is None
+response = spellbook_call('get_trigger_config', trigger_name)
+assert response['triggered'] == 0
+
+print('Setting trigger amount equal to current balance')
+response = spellbook_call('save_trigger', trigger_name, '--reset', f'-am={amount}')
+assert response is None
+
+print('Checking if trigger has not been triggered yet')
+response = spellbook_call('get_trigger_config', trigger_name)
+assert response['triggered'] == 0
+assert response['address'] == address
+assert response['amount'] == amount
+
+print('Check the conditions of the trigger')
+response = spellbook_call('check_triggers', trigger_name)
+assert response is None
+response = spellbook_call('get_trigger_config', trigger_name)
+assert response['triggered'] == 1

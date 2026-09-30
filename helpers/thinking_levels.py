@@ -6,15 +6,6 @@ provider-specific parameters for OpenAI, Anthropic, Google, DeepSeek, Ollama, an
 # Thinking Levels - controls reasoning verbosity for models that support it
 # Maps abstract levels to provider-specific parameters
 
-THINKING_LEVELS = {
-    'off': 0,      # No reasoning/thinking output
-    'minimal': 1,  # Very brief reasoning
-    'low': 2,      # Light reasoning
-    'medium': 3,   # Balanced reasoning (default for reasoning models)
-    'high': 4,     # Detailed reasoning
-    'xhigh': 5     # Maximum reasoning depth
-}
-
 # Provider-specific mappings for thinking levels
 # Note: For GPT-OSS models, thinking cannot be fully disabled - only low/medium/high levels
 # For other Ollama models (Qwen3, DeepSeek), think=False works

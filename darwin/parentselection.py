@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Parent selection strategies for the Darwin evolutionary framework."""
 
 import numpy
@@ -21,8 +20,7 @@ def roulette_wheel_selection(genomes, n_parents=2):
         probabilities = None
 
     # Make sure we don't select more parents that there are genomes
-    if n_parents > len(genomes):
-        n_parents = len(genomes)
+    n_parents = min(n_parents, len(genomes))
 
     # Select a sample of size n_parents with probabilities based on the fitness, parents can only be selected once in the sample
     selection = numpy.random.choice(genomes, size=n_parents, p=probabilities, replace=False)
@@ -38,8 +36,7 @@ def rank_selection(genomes, n_parents=2):
     probabilities = [rank/total for rank in ranks]
 
     # Make sure we don't select more parents that there are genomes
-    if n_parents > len(genomes):
-        n_parents = len(genomes)
+    n_parents = min(n_parents, len(genomes))
 
     # Select a sample of size n_parents with probabilities based on the rank, parents can only be selected once in the sample
     selection = numpy.random.choice(genomes, size=n_parents, p=probabilities, replace=False)
@@ -76,8 +73,7 @@ def tournament_selection(genomes, n_parents=2, tournament_size=5):
     """Select n_parents genomes via tournament selection with a given tournament size."""
     selection = []
 
-    if tournament_size > len(genomes):
-        tournament_size = len(genomes)
+    tournament_size = min(tournament_size, len(genomes))
 
     for i in range(n_parents):
         # Note: it is possible that a parent is selected more than once
@@ -85,6 +81,6 @@ def tournament_selection(genomes, n_parents=2, tournament_size=5):
         tournament = numpy.random.choice(range(len(genomes)), size=tournament_size, replace=False)
 
         # The genomes are already sorted by highest fitness, so add the genome with the index of the winner of the tournament
-        selection.append(genomes[sorted(tournament)[0]])
+        selection.append(genomes[min(tournament)])
 
     return selection

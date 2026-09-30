@@ -1,13 +1,13 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import pytest
 import os
-from unittest.mock import patch, mock_open
+from unittest.mock import mock_open, patch
 
-from bips.mnemonic import Mnemonic, ConfigurationError, binary_search
+import pytest
+
+from bips.mnemonic import ConfigurationError, Mnemonic, binary_search
 
 
-class TestBinarySearch(object):
+class TestBinarySearch:
     """Tests for binary_search function"""
 
     def test_binary_search_found(self):
@@ -27,7 +27,7 @@ class TestBinarySearch(object):
         assert binary_search(a, 'date', lo=0, hi=2) == -1
 
 
-class TestMnemonic(object):
+class TestMnemonic:
     """Tests for Mnemonic class"""
 
     def test_mnemonic_init_english(self):
@@ -179,7 +179,7 @@ class TestMnemonic(object):
         assert seed_no_pass != seed_with_pass
 
 
-class TestConfigurationError(object):
+class TestConfigurationError:
     """Tests for ConfigurationError"""
 
     def test_configuration_error(self):
@@ -187,7 +187,7 @@ class TestConfigurationError(object):
             raise ConfigurationError("Test error")
 
 
-class TestMnemonicJapanese(object):
+class TestMnemonicJapanese:
     """Tests for Japanese mnemonic handling"""
 
     def test_mnemonic_to_mnemonic_japanese(self):
@@ -199,12 +199,13 @@ class TestMnemonicJapanese(object):
         assert '\u3000' in mnemonic
 
 
-class TestMnemonicMain(object):
+class TestMnemonicMain:
     """Tests for main() function"""
 
     def test_main_with_argv(self):
         """Test main function with command line argument"""
         import sys
+
         from bips.mnemonic import main
         
         # Save original argv
@@ -221,8 +222,9 @@ class TestMnemonicMain(object):
 
     def test_main_with_stdin(self):
         """Test main function with stdin input"""
-        import sys
         import io
+        import sys
+
         from bips.mnemonic import main
         
         # Save original stdin and argv
@@ -242,7 +244,7 @@ class TestMnemonicMain(object):
             sys.argv = original_argv
 
 
-class TestMnemonicEdgeCases(object):
+class TestMnemonicEdgeCases:
     """Edge case tests for Mnemonic class"""
 
     def test_to_entropy_non_english_language(self):
@@ -287,27 +289,14 @@ class TestMnemonicEdgeCases(object):
         assert mnemonic == mnemonic2
 
 
-class TestMnemonicCoverageGaps(object):
+class TestMnemonicCoverageGaps:
     """Tests to cover remaining gaps in mnemonic.py"""
 
     def test_init_bad_wordlist_length(self):
         """Test that ConfigurationError is raised when wordlist has wrong length (line 53)"""
-        with patch('builtins.open', mock_open(read_data='word1\nword2\n')):
-            with pytest.raises(ConfigurationError):
-                Mnemonic('english')
-
-    def test_to_entropy_python2_path(self):
-        """Test to_entropy using the Python 2 code path (line 127)"""
-        m = Mnemonic('english')
-        data = bytes([0] * 16)
-        mnemonic = m.to_mnemonic(data)
-        with patch('bips.mnemonic.sys') as mock_sys, \
-             patch('builtins.ord', side_effect=lambda x: x if isinstance(x, int) else ord(x)):
-            mock_sys.version = '2.7.18'
-            mock_sys.argv = ['mnemonic.py']
-            mock_sys.stdin = __import__('io').StringIO('00' * 16 + '\n')
-            entropy = m.to_entropy(mnemonic)
-            assert bytes(entropy) == data
+        with patch('builtins.open', mock_open(read_data='word1\nword2\n')), \
+                pytest.raises(ConfigurationError):
+            Mnemonic('english')
 
     def test_main_entry_point(self):
         """Test that main() is called when module is run as __main__ (line 204)"""

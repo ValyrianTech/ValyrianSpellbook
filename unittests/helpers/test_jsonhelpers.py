@@ -1,13 +1,12 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import os
 import tempfile
-import mock
+from unittest import mock
 
-from helpers.jsonhelpers import save_to_json_file, load_from_json_file
+from helpers.jsonhelpers import load_from_json_file, save_to_json_file
 
 
-class TestJsonHelpers(object):
+class TestJsonHelpers:
     """Tests for JSON helper functions"""
 
     def test_save_to_json_file(self):

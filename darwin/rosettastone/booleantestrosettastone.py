@@ -1,20 +1,18 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Boolean test Rosetta Stone for Darwin."""
 
-from rosettastone import RosettaStone
-
-from genome import Genome
 from chromosome import Chromosome
 from encodingtype import EncodingType
+from genome import Genome
+from rosettastone import RosettaStone
 
 
 class BooleanTestRosettaStone(RosettaStone):
     """Boolean test Rosetta Stone for Darwin."""
 
     def __init__(self, name=None):
-        super(BooleanTestRosettaStone, self).__init__(name)
+        super().__init__(name)
         
 
     def genome_template(self):
@@ -57,11 +55,10 @@ class BooleanTestRosettaStone(RosettaStone):
 
     def model_to_genome(self, model):
         """Model to genome."""
-        pass
 
     def genome_to_model(self, genome):
         """Genome to model."""
-        model = {'id': 'booleantest_%s' % genome.id(),
+        model = {'id': f'booleantest_{genome.id()}',
                  'name': 'booleantest',
                  'SingleTrue': genome.chromosomes[0].genes[0].data,
                  'SingleFalse': genome.chromosomes[1].genes[0].data,

@@ -1,9 +1,14 @@
 """Helper functions for interacting with the Mastodon social media API."""
-from typing import Union, List
-from helpers.configurationhelpers import get_enable_mastodon, get_mastodon_client_id, get_mastodon_client_secret, get_mastodon_access_token, get_mastodon_api_base_url
 
 import mastodon
 
+from helpers.configurationhelpers import (
+    get_enable_mastodon,
+    get_mastodon_access_token,
+    get_mastodon_api_base_url,
+    get_mastodon_client_id,
+    get_mastodon_client_secret,
+)
 from helpers.loghelpers import LOG
 
 
@@ -24,7 +29,7 @@ def get_mastodon_api():
         return None
 
 
-def get_trending_topics(woeid: Union[int, None] = None) -> List[tuple]:
+def get_trending_topics(woeid: int | None = None) -> list[tuple]:
     """
     Get trending topics of a location
 
@@ -39,7 +44,7 @@ def get_trending_topics(woeid: Union[int, None] = None) -> List[tuple]:
     return topics
 
 
-def get_popular_toot_ids(topic: str, limit: int = 1000) -> List:
+def get_popular_toot_ids(topic: str, limit: int = 1000) -> list:
     """
     Get a sorted list of toots on given topic in descending order of volume
 
@@ -70,7 +75,7 @@ def get_popular_toot_ids(topic: str, limit: int = 1000) -> List:
     return toot_ids
 
 
-def get_toots_by_id(toot_ids: List) -> dict:
+def get_toots_by_id(toot_ids: list) -> dict:
     """
     Get toots by their IDs
 
@@ -82,7 +87,7 @@ def get_toots_by_id(toot_ids: List) -> dict:
     return {'data': toots}
 
 
-def post_toot(text: str, media_ids: List | None = None, sensitive: bool = False, spoiler_text: str | None = None, visibility: str = 'public'):
+def post_toot(text: str, media_ids: list | None = None, sensitive: bool = False, spoiler_text: str | None = None, visibility: str = 'public'):
     """
     Post a toot
 

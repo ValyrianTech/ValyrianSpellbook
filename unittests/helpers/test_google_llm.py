@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 
 class TestGoogleLLM(unittest.TestCase):
@@ -29,7 +28,7 @@ class TestGoogleLLM(unittest.TestCase):
         from helpers.google_llm import GoogleLLM
         
         mock_client = MagicMock()
-        mock_client.chat.completions.create.side_effect = Exception("API Error")
+        mock_client.chat.completions.create.side_effect = ValueError("API Error")
         mock_openai.return_value = mock_client
         
         llm = GoogleLLM(model_name='gemini-pro', api_key='test-key')
@@ -38,6 +37,33 @@ class TestGoogleLLM(unittest.TestCase):
         result = llm.get_completion_text(messages)
         
         self.assertIn('Error', result)
+
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.google_llm.OpenAI')
+    @patch('helpers.google_llm.broadcast_message')
+    @patch('helpers.google_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.google_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.google_llm.LOG')
+    def test_get_completion_text_openai_error(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_openai, mock_ws):
+        """Test get_completion_text handles OpenAIError"""
+        from openai import OpenAIError
+
+        from helpers.google_llm import GoogleLLM
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.side_effect = OpenAIError('API Error')
+        mock_openai.return_value = mock_client
+
+        llm = GoogleLLM(model_name='gemini-pro', api_key='test-key')
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result = llm.get_completion_text(messages)
+
+        self.assertIn('Error: Unable to connect to Google', result)
 
     @patch('helpers.llm_interface.init_websocket_server')
     @patch('helpers.google_llm.OpenAI')
@@ -103,7 +129,7 @@ class TestGoogleLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         # Should have stopped early
         self.assertEqual(result, '')
@@ -221,7 +247,7 @@ class TestGoogleLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages, thinking_level='high')
+        result, _usage = llm.get_completion_text(messages, thinking_level='high')
         
         self.assertEqual(result, 'Hello!')
         # Verify reasoning_effort was added to request_kwargs

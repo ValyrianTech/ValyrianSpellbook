@@ -39,7 +39,7 @@ def print_prompt(prompt_or_messages):
     print('======================')
 
 
-class LLMResult(object):
+class LLMResult:
     """Container for LLM generation results and metadata."""
     generations: list[list[ChatGeneration]]
 

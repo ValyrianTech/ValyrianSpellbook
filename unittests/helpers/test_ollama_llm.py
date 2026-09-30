@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 
 class TestOllamaLLM(unittest.TestCase):
@@ -30,7 +29,7 @@ class TestOllamaLLM(unittest.TestCase):
         from helpers.ollama_llm import OllamaLLM
         
         mock_client = MagicMock()
-        mock_client.completions.create.side_effect = Exception("Connection Error")
+        mock_client.completions.create.side_effect = ValueError("Connection Error")
         mock_openai.return_value = mock_client
         
         llm = OllamaLLM(model_name='llama2', host='http://localhost', port=11434)
@@ -108,7 +107,7 @@ class TestOllamaLLM(unittest.TestCase):
         
         # Multimodal message format
         messages = [{'role': 'user', 'content': [{'text': 'Hello'}, {'image_url': 'data:image/png;base64,...'}]}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         self.assertIsInstance(result, str)
 
@@ -144,7 +143,7 @@ class TestOllamaLLM(unittest.TestCase):
             {'role': 'system', 'content': 'You are helpful'},
             {'role': 'user', 'content': 'Hello'}
         ]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         self.assertIsInstance(result, str)
 
@@ -174,7 +173,7 @@ class TestOllamaLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         # Should have stopped early
         self.assertEqual(result, '')
@@ -215,7 +214,7 @@ class TestOllamaLLMThinkingLevel(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages, thinking_level='high')
+        result, _usage = llm.get_completion_text(messages, thinking_level='high')
         
         self.assertEqual(result, 'Hello!')
         mock_log.info.assert_any_call('Thinking level high specified but completions API does not support reasoning. Use OllamaChatLLM for reasoning support.')

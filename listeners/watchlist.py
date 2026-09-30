@@ -1,15 +1,15 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Watchlist management for addresses being monitored by listeners."""
 
-import simplejson
 import argparse
+
+import simplejson
 
 WATCHLIST_FILE = 'watchlist.json'
 
 
-class Watchlist(object):
+class Watchlist:
     """
     Watchlist management for addresses being monitored by listeners.
 
@@ -22,9 +22,9 @@ class Watchlist(object):
             with open(WATCHLIST_FILE, 'r') as input_file:
                 try:
                     self.watchlist = simplejson.load(input_file)
-                except Exception as ex:
-                    raise Exception('%s does not contain a valid dictionary: %s' % (WATCHLIST_FILE, ex))
-        except IOError:
+                except (ValueError, KeyError, TypeError, OSError) as ex:
+                    raise ValueError(f'{WATCHLIST_FILE} does not contain a valid dictionary: {ex}')
+        except OSError:
             self.watchlist = {}
             self.save_file()
 
@@ -50,10 +50,9 @@ class Watchlist(object):
         :param address: The bitcoin address to watch
         :param event: The type of event (SEND or RECEIVE)
         """
-        if address in self.watchlist:
-            if event in self.watchlist[address]:
-                del self.watchlist[address][event]
-                self.save_file()
+        if address in self.watchlist and event in self.watchlist[address]:
+            del self.watchlist[address][event]
+            self.save_file()
 
     def save_file(self):
         """
@@ -62,8 +61,8 @@ class Watchlist(object):
         try:
             with open(WATCHLIST_FILE, 'w') as output_file:
                 simplejson.dump(self.watchlist, output_file, indent=4, sort_keys=True)
-        except Exception as ex:
-            raise Exception('Failed to write data to %s: %s' % (WATCHLIST_FILE, ex))
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            raise ValueError(f'Failed to write data to {WATCHLIST_FILE}: {ex}')
 
     def show(self, address=None):
         """
@@ -72,14 +71,14 @@ class Watchlist(object):
         :param address: The bitcoin address to watch (optional)
         """
         if address is None:
-            for address in self.watchlist:
-                print(address)
-                print(self.watchlist[address], '\n')
+            for addr in self.watchlist:
+                print(addr)
+                print(self.watchlist[addr], '\n')
         elif address in self.watchlist:
             print(address)
             print(self.watchlist[address])
         else:
-            print('No events found for address %s' % address)
+            print(f'No events found for address {address}')
 
 
 if __name__ == "__main__":

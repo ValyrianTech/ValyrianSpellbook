@@ -1,12 +1,17 @@
 """WebSocket server helpers for real-time message broadcasting."""
 import asyncio
-import websockets
-import threading
 import ssl
+import threading
 from contextvars import ContextVar
 
+import websockets
+
+from helpers.configurationhelpers import (
+    get_enable_ssl,
+    get_ssl_certificate,
+    get_ssl_private_key,
+)
 from helpers.loghelpers import LOG
-from helpers.configurationhelpers import get_enable_ssl, get_ssl_certificate, get_ssl_private_key
 
 # Use ContextVars instead of global variables to support concurrent conversations
 # Each execution context (thread/async task) maintains its own isolated values
@@ -59,7 +64,7 @@ class WebSocketHandler:
                         self.subscriptions[websocket].remove(message.split(':')[1])
                 else:
                     await self.broadcast(message, 'general')
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, OSError) as e:
             LOG.error(f'Error in handler: {e}')
         finally:
             # Unregister.
@@ -113,7 +118,7 @@ def start_websocket_server(host: str, port: int):
     asyncio.set_event_loop(LOOP)
     try:
         LOOP.run_until_complete(run_websocket_server(host, port))
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, OSError) as e:
         LOG.error(f'Websocket server error: {e}')
     finally:
         LOG.info('Websocket server stopped.')

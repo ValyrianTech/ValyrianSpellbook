@@ -3,9 +3,7 @@
 import os
 from unittest.mock import patch
 
-
 import import_llm_configs
-
 
 # ---------------------------------------------------------------------------
 # parse_price
@@ -204,7 +202,7 @@ def test_save_llm_config_direct_verbose(mock_save, capsys):
     assert 'Successfully saved' in captured.out
 
 
-@patch('import_llm_configs.save_llm_config_lightweight', side_effect=Exception('DB error'))
+@patch('import_llm_configs.save_llm_config_lightweight', side_effect=ValueError('DB error'))
 def test_save_llm_config_direct_exception(mock_save, capsys):
     config = import_llm_configs.create_llm_config(_sample_model_data())
     result = import_llm_configs.save_llm_config_direct(config, verbose=False)
@@ -339,7 +337,7 @@ def test_main_import_success(mock_save, tmp_path, capsys):
     assert '3/3' in captured.out
 
 
-@patch('import_llm_configs.save_llm_config_lightweight', side_effect=Exception('fail'))
+@patch('import_llm_configs.save_llm_config_lightweight', side_effect=ValueError('fail'))
 def test_main_import_all_fail(mock_save, tmp_path, capsys):
     csv_path = _write_test_csv(tmp_path)
     with patch('sys.argv', ['import_llm_configs.py', '--csv-file', csv_path]):
@@ -349,7 +347,7 @@ def test_main_import_all_fail(mock_save, tmp_path, capsys):
     assert 'Failed to import 3 models' in captured.out
 
 
-@patch('import_llm_configs.save_llm_config_lightweight', side_effect=[None, Exception('fail'), None])
+@patch('import_llm_configs.save_llm_config_lightweight', side_effect=[None, ValueError('fail'), None])
 def test_main_import_partial_fail(mock_save, tmp_path, capsys):
     csv_path = _write_test_csv(tmp_path)
     with patch('sys.argv', ['import_llm_configs.py', '--csv-file', csv_path]):
@@ -411,9 +409,9 @@ def test_main_create_config_error(tmp_path, capsys):
         'OpenAI,gpt-4o,$2.50,$10.00,128000,TRUE\n',
         encoding='utf-8',
     )
-    with patch('import_llm_configs.create_llm_config', side_effect=Exception('parse error')):
-        with patch('sys.argv', ['import_llm_configs.py', '--csv-file', str(csv_file), '--dry-run']):
-            ret = import_llm_configs.main()
+    with patch('import_llm_configs.create_llm_config', side_effect=ValueError('parse error')), \
+         patch('sys.argv', ['import_llm_configs.py', '--csv-file', str(csv_file), '--dry-run']):
+        ret = import_llm_configs.main()
     # dry run still counts as success for models that parse, but create_llm_config fails
     # so success_count stays 0, total_count is 1
     assert ret == 1

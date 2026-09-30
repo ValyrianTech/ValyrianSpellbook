@@ -1,21 +1,21 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+from unittest import mock
+
 import pytest
-import mock
 
-from decorators import (
-    authentication_required,
-    use_explorer,
-    output_json,
-    verify_config,
-    log_runtime,
-    retry,
-    CONFIGURATION_FILE
-)
 from authentication import AuthenticationStatus
+from decorators import (
+    CONFIGURATION_FILE,
+    authentication_required,
+    log_runtime,
+    output_json,
+    retry,
+    use_explorer,
+    verify_config,
+)
 
 
-class TestAuthenticationRequired(object):
+class TestAuthenticationRequired:
     """Tests for authentication_required decorator"""
 
     @mock.patch('decorators.request')
@@ -48,7 +48,7 @@ class TestAuthenticationRequired(object):
         assert result['error'] == AuthenticationStatus.INVALID_API_KEY
 
 
-class TestUseExplorer(object):
+class TestUseExplorer:
     """Tests for use_explorer decorator"""
 
     @mock.patch('decorators.clear_explorer')
@@ -100,7 +100,7 @@ class TestUseExplorer(object):
         mock_clear.assert_called_once()
 
 
-class TestOutputJson(object):
+class TestOutputJson:
     """Tests for output_json decorator"""
 
     def test_output_json_dict(self):
@@ -130,7 +130,7 @@ class TestOutputJson(object):
         assert result is None
 
 
-class TestVerifyConfig(object):
+class TestVerifyConfig:
     """Tests for verify_config decorator"""
 
     @mock.patch('decorators.ConfigParser')
@@ -177,7 +177,7 @@ class TestVerifyConfig(object):
         assert result == 'success'
 
 
-class TestLogRuntime(object):
+class TestLogRuntime:
     """Tests for log_runtime decorator"""
 
     @mock.patch('decorators.LOG')
@@ -193,7 +193,7 @@ class TestLogRuntime(object):
         assert 'Script runtime' in call_args
 
 
-class TestRetry(object):
+class TestRetry:
     """Tests for retry decorator"""
 
     def test_retry_success_first_try(self):
@@ -217,7 +217,7 @@ class TestRetry(object):
         def test_func():
             call_count[0] += 1
             if call_count[0] < 3:
-                raise Exception('Temporary error')
+                raise ValueError('Temporary error')
             return 'success'
 
         result = test_func()
@@ -232,7 +232,7 @@ class TestRetry(object):
         @retry(retries=3)
         def test_func():
             call_count[0] += 1
-            raise Exception('Permanent error')
+            raise ValueError('Permanent error')
 
         result = test_func()
         assert result is None
@@ -240,7 +240,7 @@ class TestRetry(object):
         assert mock_log.error.call_count == 3
 
 
-class TestConfigurationFile(object):
+class TestConfigurationFile:
     """Tests for CONFIGURATION_FILE constant"""
 
     def test_configuration_file_path(self):

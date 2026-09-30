@@ -1,22 +1,25 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Gene representation for the Darwin evolutionary framework."""
 
 import random
 import string
 
-from darwin.genemutation import BooleanGeneMutation, IntegerGeneMutation, FloatGeneMutation, StringGeneMutation
+from darwin.genemutation import (
+    BooleanGeneMutation,
+    FloatGeneMutation,
+    IntegerGeneMutation,
+    StringGeneMutation,
+)
 
 
-class Gene(object):
+class Gene:
     """Gene representation for the Darwin evolutionary framework."""
     def __init__(self):
         self.data = None
 
     def set_random_data(self):
         """Set random data."""
-        pass
 
     def info(self):
         """Info."""
@@ -24,17 +27,16 @@ class Gene(object):
 
     def apply_mutations(self, mutation_chance, multiplier=1.0):
         """Apply mutations."""
-        pass
 
 
 class BooleanGene(Gene):
     """Gene that holds a boolean value and supports flip mutations."""
     def __init__(self):
-        super(BooleanGene, self).__init__()
+        super().__init__()
 
     def set_random_data(self):
         """Set random data."""
-        self.data = True if random.randint(0, 1) else False
+        self.data = bool(random.randint(0, 1))
 
     def apply_mutations(self, mutation_chance, multiplier=1.0):
         """Apply mutations."""
@@ -48,7 +50,7 @@ class BooleanGene(Gene):
 class IntegerGene(Gene):
     """Gene that holds an integer value within a min/max range."""
     def __init__(self):
-        super(IntegerGene, self).__init__()
+        super().__init__()
         self.min = 0
         self.max = 100
 
@@ -71,7 +73,7 @@ class IntegerGene(Gene):
 class FloatGene(Gene):
     """Gene that holds a float value within a min/max range."""
     def __init__(self):
-        super(FloatGene, self).__init__()
+        super().__init__()
         self.min = 0.0
         self.max = 100.0
 
@@ -94,7 +96,7 @@ class FloatGene(Gene):
 class StringGene(Gene):
     """Gene that holds a string value and supports various string mutations."""
     def __init__(self):
-        super(StringGene, self).__init__()
+        super().__init__()
         self.charset = string.ascii_letters + string.digits
 
     def set_random_data(self):

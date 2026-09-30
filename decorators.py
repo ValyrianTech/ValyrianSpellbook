@@ -1,16 +1,16 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Decorators for authentication, explorer selection, JSON output, config verification, and logging."""
 import functools
 import os
-import simplejson
 import time
-from bottle import request
 from configparser import ConfigParser
 from functools import wraps
 
-from authentication import check_authentication, AuthenticationStatus
-from data.data import set_explorer, clear_explorer, get_last_explorer
+import simplejson
+from bottle import request
+
+from authentication import AuthenticationStatus, check_authentication
+from data.data import clear_explorer, get_last_explorer, set_explorer
 from helpers.loghelpers import LOG
 
 CONFIGURATION_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "configuration", "spellbook.conf"))
@@ -97,11 +97,11 @@ def verify_config(section, option):
 
             # Check if the spellbook configuration file contains the section
             if not config.has_section(section):
-                raise Exception('Configuration file %s does not have a [%s] section ' % (CONFIGURATION_FILE, section))
+                raise ValueError(f'Configuration file {CONFIGURATION_FILE} does not have a [{section}] section ')
 
             # Check if the section has the option in it
             if not config.has_option(section, option):
-                raise Exception("Configuration file %s does not have an option '%s' in the [%s] section" % (CONFIGURATION_FILE, option, section))
+                raise ValueError(f"Configuration file {CONFIGURATION_FILE} does not have an option '{option}' in the [{section}] section")
 
             return f(*args, **kwargs)
 
@@ -139,7 +139,7 @@ def retry(retries=3):
                 try:
                     result = func(*args, **kwargs)
                     return result
-                except Exception as e:
+                except (ValueError, KeyError, TypeError, OSError) as e:
                     LOG.error(f"Error: {e}. Retrying... ({attempt + 1}/{retries})")
                     time.sleep(1)  # Wait for 1 second before retrying
             return None  # If all retries fail, return None or handle accordingly

@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import json
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 
 class TestOllamaChatLLM(unittest.TestCase):
@@ -29,6 +28,7 @@ class TestOllamaChatLLM(unittest.TestCase):
     def test_get_completion_text_error(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_ws, mock_post):
         """Test get_completion_text handles errors"""
         import requests as req_module
+
         from helpers.ollama_chat_llm import OllamaChatLLM
         
         mock_post.side_effect = req_module.exceptions.RequestException("Connection Error")
@@ -105,7 +105,7 @@ class TestOllamaChatLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'What is the meaning of life?'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         # Result should contain both reasoning and answer
         self.assertIn('think', result)
@@ -140,7 +140,7 @@ class TestOllamaChatLLM(unittest.TestCase):
         
         # Test with multimodal content
         messages = [{'role': 'user', 'content': [{'text': 'Describe this'}, {'image_url': 'data:image/jpeg;base64,...'}]}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         self.assertEqual(result, 'I see an image')
 
@@ -172,7 +172,7 @@ class TestOllamaChatLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         # Should have stopped early
         self.assertEqual(result, '')
@@ -205,7 +205,7 @@ class TestOllamaChatLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         self.assertIn('think', result)
 
@@ -237,7 +237,7 @@ class TestOllamaChatLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         self.assertIn('think', result)
 
@@ -269,7 +269,7 @@ class TestOllamaChatLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         self.assertIn('think', result)
 
@@ -301,7 +301,7 @@ class TestOllamaChatLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         self.assertIn('think', result)
         self.assertIn('message.thinking', result)
@@ -334,7 +334,7 @@ class TestOllamaChatLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
         
         self.assertIn('think', result)
         self.assertIn('message.thinking', result)
@@ -371,7 +371,7 @@ class TestOllamaChatLLMAdvanced(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages, stop=['END'], temperature=0.5, max_tokens=100)
+        _result, _usage = llm.get_completion_text(messages, stop=['END'], temperature=0.5, max_tokens=100)
 
         call_kwargs = mock_post.call_args[1]
         self.assertEqual(call_kwargs['json']['options']['stop'], ['END'])
@@ -408,7 +408,7 @@ class TestOllamaChatLLMAdvanced(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
 
         self.assertEqual(result, 'Hello!')
 
@@ -441,7 +441,7 @@ class TestOllamaChatLLMAdvanced(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
 
         self.assertEqual(result, 'Hello!')
 
@@ -475,7 +475,7 @@ class TestOllamaChatLLMAdvanced(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
 
         self.assertIn('Final answer!', result)
 
@@ -507,7 +507,7 @@ class TestOllamaChatLLMAdvanced(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        _result, usage = llm.get_completion_text(messages)
 
         self.assertEqual(usage['prompt_tokens'], 0)
         self.assertEqual(usage['completion_tokens'], 0)
@@ -540,7 +540,7 @@ class TestOllamaChatLLMAdvanced(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
         
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages, thinking_level='high')
+        _result, _usage = llm.get_completion_text(messages, thinking_level='high')
         
         mock_log.info.assert_any_call('Thinking level: high -> Ollama think: high')
 

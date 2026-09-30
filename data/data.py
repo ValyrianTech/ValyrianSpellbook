@@ -1,19 +1,19 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Blockchain data access layer with multi-explorer fallback support."""
 
 import os
 
+from helpers.jsonhelpers import load_from_json_file, save_to_json_file
 from helpers.loghelpers import LOG
-from .blockexplorers.blockchain_info import BlockchainInfoAPI
-from .blockexplorers.blocktrail_com import BlocktrailComAPI
-from .blockexplorers.insight import InsightAPI
-from .blockexplorers.chain_so import ChainSoAPI
-from .blockexplorers.btc_com import BTCComAPI
-from .blockexplorers.blockstream import BlockstreamAPI
-from .explorer import Explorer, ExplorerType
-from helpers.jsonhelpers import save_to_json_file, load_from_json_file
 from validators.validators import valid_address
+
+from .blockexplorers.blockchain_info import BlockchainInfoAPI
+from .blockexplorers.blockstream import BlockstreamAPI
+from .blockexplorers.blocktrail_com import BlocktrailComAPI
+from .blockexplorers.btc_com import BTCComAPI
+from .blockexplorers.chain_so import ChainSoAPI
+from .blockexplorers.insight import InsightAPI
+from .explorer import Explorer, ExplorerType
 
 PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -136,7 +136,7 @@ def get_explorer_api(name):
         elif explorer['type'] == ExplorerType.BLOCKSTREAM:
             return BlockstreamAPI(url=explorer['url'], testnet=explorer['testnet'])
         else:
-            raise NotImplementedError('Unknown explorer API: %s' % name)
+            raise NotImplementedError(f'Unknown explorer API: {name}')
 
 
 def query(query_type, param=None):
@@ -158,7 +158,7 @@ def query(query_type, param=None):
     explorers = get_explorers() if EXPLORER is None else [EXPLORER]
 
     message = ''
-    for i in range(0, len(explorers)):
+    for i in range(len(explorers)):
         explorer_api = get_explorer_api(explorers[i])
         if explorer_api:
             if query_type == 'block':
@@ -182,13 +182,13 @@ def query(query_type, param=None):
             elif query_type == 'push_tx':
                 data = explorer_api.push_tx(param[0])
             else:
-                raise NotImplementedError('Unknown query type: %s' % query_type)
+                raise NotImplementedError(f'Unknown query type: {query_type}')
 
             if 'error' in data:
-                message = '{explorer} failed to provide data for query: {query_type}'.format(explorer=explorers[i], query_type=query_type)
+                message = f'{explorers[i]} failed to provide data for query: {query_type}'
                 if param != '':
                     message += ' param: ' + str(param)
-                message += ' error: %s' % data['error']
+                message += ' error: {}'.format(data['error'])
                 LOG.error(message)
             else:
                 response = data
@@ -336,6 +336,5 @@ def get_last_explorer():
 
     :return: The id of the last used explorer
     """
-    global EXPLORER
     return EXPLORER
 

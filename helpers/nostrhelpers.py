@@ -1,10 +1,12 @@
 """Helper functions for interacting with the Nostr protocol via pynostr."""
 import time
 import uuid
+
 from pynostr.event import Event
-from pynostr.relay_manager import RelayManager
-from pynostr.filters import FiltersList, Filters
+from pynostr.filters import Filters, FiltersList
 from pynostr.key import PrivateKey, PublicKey
+from pynostr.relay_manager import RelayManager
+
 from helpers.configurationhelpers import get_nostr_nsec
 
 

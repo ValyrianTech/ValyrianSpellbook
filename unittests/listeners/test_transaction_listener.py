@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import os
 import time
-import simplejson
-import pytest
-from unittest.mock import patch, MagicMock
 from argparse import Namespace
+from unittest.mock import MagicMock, patch
+
+import pytest
+import simplejson
 
 import listeners.transaction_listener as tx_listener
 

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Main Darwin evolutionary algorithm orchestrator."""
 
 import argparse
@@ -9,9 +8,8 @@ import sys
 PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, PROGRAM_DIR)
 
-from darwin.evolver import Evolver  # noqa: E402
-from helpers.jsonhelpers import load_from_json_file  # noqa: E402
-
+from darwin.evolver import Evolver
+from helpers.jsonhelpers import load_from_json_file
 
 if __name__ == "__main__":
     # Create main parser

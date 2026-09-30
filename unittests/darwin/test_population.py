@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import pytest
 from unittest.mock import patch
 
-from darwin.population import Population
-from darwin.genome import Genome
+import pytest
+
 from darwin.encodingtype import EncodingType
-from darwin.gene import BooleanGene, IntegerGene, FloatGene, StringGene
+from darwin.gene import BooleanGene, FloatGene, IntegerGene, StringGene
+from darwin.genome import Genome
+from darwin.population import Population
 
 
 class TestPopulationInit:

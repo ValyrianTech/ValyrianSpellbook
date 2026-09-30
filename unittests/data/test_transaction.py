@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+from unittest import mock
+
 import pytest
-import mock
 
 from data.transaction import TX, TxInput, TxOutput
 
 
-class TestTxInput(object):
+class TestTxInput:
     """Tests for TxInput class"""
 
     def test_txinput_init(self):
@@ -36,7 +36,7 @@ class TestTxInput(object):
         assert result['sequence'] == 4294967295
 
 
-class TestTxOutput(object):
+class TestTxOutput:
     """Tests for TxOutput class"""
 
     def test_txoutput_init(self):
@@ -66,7 +66,7 @@ class TestTxOutput(object):
         assert result['spent']
 
 
-class TestTX(object):
+class TestTX:
     """Tests for TX class"""
 
     def test_tx_init(self):
@@ -246,7 +246,7 @@ class TestTX(object):
         assert '100' in captured.out
 
 
-class TestDecodeOpReturn(object):
+class TestDecodeOpReturn:
     """Tests for TX.decode_op_return static method"""
 
     def test_decode_op_return_simple(self):

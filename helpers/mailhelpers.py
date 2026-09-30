@@ -1,21 +1,23 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Helper functions for sending templated emails via SMTP."""
 
 import os
 import smtplib
-
+from email import encoders
+from email.mime.base import MIMEBase
+from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.mime.image import MIMEImage
-from email.mime.base import MIMEBase
-from email import encoders
 
-
+from helpers.configurationhelpers import (
+    get_enable_smtp,
+    get_smtp_from_address,
+    get_smtp_host,
+    get_smtp_password,
+    get_smtp_port,
+    get_smtp_user,
+)
 from helpers.loghelpers import LOG
-from helpers.configurationhelpers import get_smtp_from_address, get_smtp_host, get_smtp_port, get_smtp_user, get_smtp_password
-from helpers.configurationhelpers import get_enable_smtp
-
 
 FROM_ADDRESS = ''
 HOST = ''
@@ -67,7 +69,7 @@ def sendmail(recipients, subject, body_template, variables=None, images=None, at
     if attachments is None:
         attachments = {}
 
-    LOG.info('Creating new email with template %s' % body_template)
+    LOG.info(f'Creating new email with template {body_template}')
 
     # Create message container - the correct MIME type is multipart/alternative.
     msg = MIMEMultipart('alternative')
@@ -78,18 +80,18 @@ def sendmail(recipients, subject, body_template, variables=None, images=None, at
     html_template_filename = None
     txt_template_filename = None
     # Search the 'email-templates' and 'apps' directory for the template
-    if os.path.isfile(os.path.join(TEMPLATE_DIR, '%s.html' % body_template)):  # First see if a html template is found in the main template directory
-        html_template_filename = os.path.join(TEMPLATE_DIR, '%s.html' % body_template)
-    elif os.path.isfile(os.path.join(APPS_DIR, '%s.html' % body_template)):  # Check the app directory for a html template
-        html_template_filename = os.path.join(APPS_DIR, '%s.html' % body_template)
+    if os.path.isfile(os.path.join(TEMPLATE_DIR, f'{body_template}.html')):  # First see if a html template is found in the main template directory
+        html_template_filename = os.path.join(TEMPLATE_DIR, f'{body_template}.html')
+    elif os.path.isfile(os.path.join(APPS_DIR, f'{body_template}.html')):  # Check the app directory for a html template
+        html_template_filename = os.path.join(APPS_DIR, f'{body_template}.html')
 
-    if os.path.isfile(os.path.join(TEMPLATE_DIR, '%s.txt' % body_template)):  # Then check if a txt template if found in the main template directory
-        txt_template_filename = os.path.join(TEMPLATE_DIR, '%s.txt' % body_template)
-    elif os.path.isfile(os.path.join(APPS_DIR, '%s.txt' % body_template)):  # Lastly, check the app directory for a txt template
-        txt_template_filename = os.path.join(APPS_DIR, '%s.txt' % body_template)
+    if os.path.isfile(os.path.join(TEMPLATE_DIR, f'{body_template}.txt')):  # Then check if a txt template if found in the main template directory
+        txt_template_filename = os.path.join(TEMPLATE_DIR, f'{body_template}.txt')
+    elif os.path.isfile(os.path.join(APPS_DIR, f'{body_template}.txt')):  # Lastly, check the app directory for a txt template
+        txt_template_filename = os.path.join(APPS_DIR, f'{body_template}.txt')
 
     if html_template_filename is None and txt_template_filename is None:
-        LOG.error('Template %s for email not found!' % body_template)
+        LOG.error(f'Template {body_template} for email not found!')
         return False
 
     html_body = ''
@@ -97,8 +99,8 @@ def sendmail(recipients, subject, body_template, variables=None, images=None, at
         try:
             with open(html_template_filename, 'r')as input_file:
                 html_body = input_file.read()
-        except Exception as ex:
-            LOG.error('Unable to read template %s: %s' % (html_template_filename, ex))
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to read template {html_template_filename}: {ex}')
             return False
 
     txt_body = ''
@@ -106,14 +108,14 @@ def sendmail(recipients, subject, body_template, variables=None, images=None, at
         try:
             with open(txt_template_filename, 'r')as input_file:
                 txt_body = input_file.read()
-        except Exception as ex:
-            LOG.error('Unable to read template %s: %s' % (txt_template_filename, ex))
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to read template {txt_template_filename}: {ex}')
             return False
 
     # Replace all placeholder values in the body like $myvariable$ with the correct value
     for variable, value in variables.items():
-        html_body = html_body.replace('$%s$' % str(variable), str(value))
-        txt_body = txt_body.replace('$%s$' % str(variable), str(value))
+        html_body = html_body.replace(f'${variable!s}$', str(value))
+        txt_body = txt_body.replace(f'${variable!s}$', str(value))
 
     # Record the MIME types of both parts - text/plain and text/html.
     part1 = MIMEText(txt_body, 'plain')
@@ -130,35 +132,32 @@ def sendmail(recipients, subject, body_template, variables=None, images=None, at
 
     # Attach all images that are referenced in the html email template
     for image_name, image_file in images.items():
-        LOG.info('adding image %s' % image_file)
+        LOG.info(f'adding image {image_file}')
         try:
-            fp = open(image_file, 'rb')
-            mime_image = MIMEImage(fp.read())
-            fp.close()
+            with open(image_file, 'rb') as fp:
+                mime_image = MIMEImage(fp.read())
 
             # Define the image's ID as referenced in the template
-            mime_image.add_header('Content-ID', '<%s>' % image_name)
+            mime_image.add_header('Content-ID', f'<{image_name}>')
             mime_image.add_header('content-disposition', 'attachment', filename=image_name)
             msg.attach(mime_image)
-        except Exception as ex:
-            LOG.error('Unable to add image %s to email: %s' % (image_name, ex))
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to add image {image_name} to email: {ex}')
 
     # Attach all attachments
     for attachment_name, attachment_file in attachments.items():
-        LOG.info('adding attachment %s' % attachment_file)
+        LOG.info(f'adding attachment {attachment_file}')
         try:
-            fp = open(attachment_file, 'rb')
-            mime_file = MIMEBase('application', "octet-stream")
-            mime_file.set_payload(fp.read())
-            encoders.encode_base64(mime_file)
-
-            fp.close()
+            with open(attachment_file, 'rb') as fp:
+                mime_file = MIMEBase('application', "octet-stream")
+                mime_file.set_payload(fp.read())
+                encoders.encode_base64(mime_file)
 
             # Define the image's ID as referenced in the template
             mime_file.add_header('content-disposition', 'attachment', filename=attachment_name)
             msg.attach(mime_file)
-        except Exception as ex:
-            LOG.error('Unable to add attachment %s to email: %s' % (attachment_name, ex))
+        except (ValueError, KeyError, TypeError, OSError) as ex:
+            LOG.error(f'Unable to add attachment {attachment_name} to email: {ex}')
 
     # Attempt to connect to the smtp server and send the message.
     try:
@@ -173,9 +172,9 @@ def sendmail(recipients, subject, body_template, variables=None, images=None, at
         session.sendmail(FROM_ADDRESS, recipients.split(','), msg.as_string())
         session.quit()
 
-        LOG.info('Email sent to %s : %s (template: %s)' % (recipients.split(','), subject, body_template))
+        LOG.info('Email sent to {} : {} (template: {})'.format(recipients.split(','), subject, body_template))
         return True
 
-    except Exception as ex:
-        LOG.error('Failed sending mail: %s' % ex)
+    except (ValueError, KeyError, TypeError, OSError) as ex:
+        LOG.error(f'Failed sending mail: {ex}')
         return False

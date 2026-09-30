@@ -1,10 +1,8 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import time
 
 from helpers.hotwallethelpers import get_address_from_wallet
-from helpers.setupscripthelpers import spellbook_call, clean_up_triggers
-
+from helpers.setupscripthelpers import clean_up_triggers, spellbook_call
 
 print('Starting Spellbook integration test: triggers')
 print('----------------------------------------------\n')
@@ -24,10 +22,10 @@ trigger_types = ['Manual', 'Balance', 'Received', 'Sent', 'Block_height', 'Times
 for trigger_type in trigger_types:
 
     print('--------------------------------------------------------------------------------------------------------')
-    print('Saving trigger of type: %s' % trigger_type)
-    trigger_name = 'test_trigger_%s' % trigger_type
+    print(f'Saving trigger of type: {trigger_type}')
+    trigger_name = f'test_trigger_{trigger_type}'
 
-    response = spellbook_call('save_trigger', trigger_name, '-t=%s' % trigger_type)
+    response = spellbook_call('save_trigger', trigger_name, f'-t={trigger_type}')
     assert response is None
 
     response = spellbook_call('get_trigger_config', trigger_name)
@@ -39,14 +37,14 @@ for trigger_type in trigger_types:
 for trigger_type in trigger_types:
 
     print('--------------------------------------------------------------------------------------------------------')
-    print('updating trigger of type: %s' % trigger_type)
-    trigger_name = 'test_trigger_%s' % trigger_type
+    print(f'updating trigger of type: {trigger_type}')
+    trigger_name = f'test_trigger_{trigger_type}'
     address = get_address_from_wallet(0, 3)
     amount = 1000000
     block_height = 480000
     timestamp = int(time.time()) + 10  # 10 seconds in the future
 
-    response = spellbook_call('save_trigger', trigger_name, '-t=%s' % trigger_type, '-a=%s' % address, '-b=%s' % block_height, '-am=%s' % amount, '-ts=%s' % timestamp)
+    response = spellbook_call('save_trigger', trigger_name, f'-t={trigger_type}', f'-a={address}', f'-b={block_height}', f'-am={amount}', f'-ts={timestamp}')
     assert response is None
 
     response = spellbook_call('get_trigger_config', trigger_name)
@@ -68,37 +66,37 @@ print('Updating trigger test_trigger_Manual')
 trigger_name = 'test_trigger_Manual'
 
 description = 'A test description'
-response = spellbook_call('save_trigger', trigger_name, '-d=%s' % description)
+response = spellbook_call('save_trigger', trigger_name, f'-d={description}')
 assert response is None
 response = spellbook_call('get_trigger_config', trigger_name)
 assert response['description'] == description
 
 creator_name = 'Wouter Glorieux'
-response = spellbook_call('save_trigger', trigger_name, '-cn=%s' % creator_name)
+response = spellbook_call('save_trigger', trigger_name, f'-cn={creator_name}')
 assert response is None
 response = spellbook_call('get_trigger_config', trigger_name)
 assert response['creator_name'] == creator_name
 
 creator_email = 'someone@example.com'
-response = spellbook_call('save_trigger', trigger_name, '-ce=%s' % creator_email)
+response = spellbook_call('save_trigger', trigger_name, f'-ce={creator_email}')
 assert response is None
 response = spellbook_call('get_trigger_config', trigger_name)
 assert response['creator_email'] == creator_email
 
 youtube = 'abcdefghijk'
-response = spellbook_call('save_trigger', trigger_name, '-y=%s' % youtube)
+response = spellbook_call('save_trigger', trigger_name, f'-y={youtube}')
 assert response is None
 response = spellbook_call('get_trigger_config', trigger_name)
 assert response['youtube'] == youtube
 
 for visibility in ['Private', 'Public']:
-    response = spellbook_call('save_trigger', trigger_name, '-v=%s' % visibility)
+    response = spellbook_call('save_trigger', trigger_name, f'-v={visibility}')
     assert response is None
     response = spellbook_call('get_trigger_config', trigger_name)
     assert response['visibility'] == visibility
 
 for status in ['Pending', 'Disabled', 'Active']:
-    response = spellbook_call('save_trigger', trigger_name, '-st=%s' % status)
+    response = spellbook_call('save_trigger', trigger_name, f'-st={status}')
     assert response is None
     response = spellbook_call('get_trigger_config', trigger_name)
     assert response['status'] == status
@@ -106,8 +104,8 @@ for status in ['Pending', 'Disabled', 'Active']:
 # Activating test triggers
 for trigger_type in trigger_types:
     print('--------------------------------------------------------------------------------------------------------')
-    print('activating trigger of type: %s' % trigger_type)
-    trigger_name = 'test_trigger_%s' % trigger_type
+    print(f'activating trigger of type: {trigger_type}')
+    trigger_name = f'test_trigger_{trigger_type}'
 
     response = spellbook_call('get_trigger_config', trigger_name)
     assert response['triggered'] == 0

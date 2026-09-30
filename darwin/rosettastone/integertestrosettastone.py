@@ -1,20 +1,18 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Integer test Rosetta Stone for Darwin."""
 
-from rosettastone import RosettaStone
-
-from genome import Genome
 from chromosome import Chromosome
 from encodingtype import EncodingType
+from genome import Genome
+from rosettastone import RosettaStone
 
 
 class IntegerTestRosettaStone(RosettaStone):
     """Integer test Rosetta Stone for Darwin."""
 
     def __init__(self, name=None):
-        super(IntegerTestRosettaStone, self).__init__(name)
+        super().__init__(name)
         
 
     def genome_template(self):
@@ -37,11 +35,10 @@ class IntegerTestRosettaStone(RosettaStone):
 
     def model_to_genome(self, model):
         """Model to genome."""
-        pass
 
     def genome_to_model(self, genome):
         """Genome to model."""
-        model = {'id': 'integertest_%s' % genome.id(),
+        model = {'id': f'integertest_{genome.id()}',
                  'name': 'integertest',
                  'Single42': genome.chromosomes[0].genes[0].data,
                  'ZeroToNine': [gene.data for gene in genome.chromosomes[1].genes]}

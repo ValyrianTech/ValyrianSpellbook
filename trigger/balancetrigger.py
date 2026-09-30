@@ -1,18 +1,18 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Trigger that activates when an address balance changes."""
 
-from .trigger import Trigger
-from .triggertype import TriggerType
 from data.data import balance
 from validators.validators import valid_address, valid_amount
+
+from .trigger import Trigger
+from .triggertype import TriggerType
 
 
 class BalanceTrigger(Trigger):
     """Trigger that activates when an address balance changes."""
     def __init__(self, trigger_id):
-        super(BalanceTrigger, self).__init__(trigger_id=trigger_id)
+        super().__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.BALANCE
         self.address = None
         self.amount = None
@@ -29,11 +29,11 @@ class BalanceTrigger(Trigger):
             # Something went wrong during retrieval of balance
             return False
 
-        return True if self.amount <= final_balance else False
+        return self.amount <= final_balance
 
     def configure(self, **config):
         """Configure."""
-        super(BalanceTrigger, self).configure(**config)
+        super().configure(**config)
         if 'address' in config and valid_address(config['address']):
             self.address = config['address']
 
@@ -42,7 +42,7 @@ class BalanceTrigger(Trigger):
 
     def json_encodable(self):
         """Json encodable."""
-        ret = super(BalanceTrigger, self).json_encodable()
+        ret = super().json_encodable()
 
         ret.update({
             'address': self.address,

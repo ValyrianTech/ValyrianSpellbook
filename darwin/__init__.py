@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Darwin evolutionary algorithm framework package init."""
 
 import os

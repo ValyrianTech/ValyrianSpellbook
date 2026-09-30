@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Helper functions for MySQL database operations."""
 import mysql.connector
 from mysql.connector import errorcode
@@ -14,12 +13,12 @@ def create_database(cursor, database):
     :param cursor: A MySQL cursor object
     :param database: The name of the database (string)
     """
-    LOG.info('Creating database %s' % database)
+    LOG.info(f'Creating database {database}')
 
     try:
-        cursor.execute("CREATE DATABASE {} DEFAULT CHARACTER SET 'utf8'".format(database))
+        cursor.execute(f"CREATE DATABASE {database} DEFAULT CHARACTER SET 'utf8'")
     except mysql.connector.Error as err:
-        LOG.error("Failed creating database: {}".format(err))
+        LOG.error(f"Failed creating database: {err}")
 
 
 def create_tables(cursor, tables):
@@ -33,7 +32,7 @@ def create_tables(cursor, tables):
     for table_name in tables:
         table_description = tables[table_name]
         try:
-            LOG.info("Creating table {}: ".format(table_name))
+            LOG.info(f"Creating table {table_name}: ")
             cursor.execute(table_description)
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
@@ -58,12 +57,12 @@ def initialize_database(database, tables, user, password):
     cursor = cnx.cursor()
 
     try:
-        cursor.execute("USE {}".format(database))
+        cursor.execute(f"USE {database}")
     except mysql.connector.Error as err:
-        LOG.info("Database {} does not exists.".format(database))
+        LOG.info(f"Database {database} does not exists.")
         if err.errno == errorcode.ER_BAD_DB_ERROR:
             create_database(cursor=cursor, database=database)
-            LOG.info("Database {} created successfully.".format(database))
+            LOG.info(f"Database {database} created successfully.")
             cnx.database = database
             create_tables(cursor=cursor, tables=tables)
         else:
@@ -81,12 +80,12 @@ def log_sql_query(sql_query):
     """
     LOG.info('=== Begin SQL query ===')
     for line in sql_query.split('\n'):
-        LOG.info(' SQL | %s' % line.strip())
+        LOG.info(f' SQL | {line.strip()}')
 
     LOG.info('=== End SQL query ===')
 
 
-class mysql_cursor(object):
+class mysql_cursor:
     """
     A MySQL cursor object that automatically handles creating and closing the cursor and connection when used in a 'with' statement
     """
@@ -103,7 +102,7 @@ class mysql_cursor(object):
 
     def __enter__(self):
         """Create and return a MySQL cursor when entering a 'with' block."""
-        LOG.info('Creating mysql cursor to database %s @ %s:%s' % (self.database, self.host, self.port))
+        LOG.info(f'Creating mysql cursor to database {self.database} @ {self.host}:{self.port}')
         self.cnx = mysql.connector.connect(user=self.user,
                                            password=self.password,
                                            database=self.database,

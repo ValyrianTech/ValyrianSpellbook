@@ -1,14 +1,20 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 from helpers.bech32 import (
-    bech32_polymod, bech32_hrp_expand, bech32_verify_checksum,
-    bech32_create_checksum, bech32_encode, bech32_decode,
-    convertbits, decode, encode, CHARSET
+    CHARSET,
+    bech32_create_checksum,
+    bech32_decode,
+    bech32_encode,
+    bech32_hrp_expand,
+    bech32_polymod,
+    bech32_verify_checksum,
+    convertbits,
+    decode,
+    encode,
 )
 
 
-class TestBech32Polymod(object):
+class TestBech32Polymod:
     """Tests for bech32_polymod function"""
 
     def test_bech32_polymod_empty(self):
@@ -24,7 +30,7 @@ class TestBech32Polymod(object):
         assert isinstance(result, int)
 
 
-class TestBech32HrpExpand(object):
+class TestBech32HrpExpand:
     """Tests for bech32_hrp_expand function"""
 
     def test_bech32_hrp_expand_bc(self):
@@ -37,7 +43,7 @@ class TestBech32HrpExpand(object):
         assert isinstance(result, list)
 
 
-class TestBech32VerifyChecksum(object):
+class TestBech32VerifyChecksum:
     """Tests for bech32_verify_checksum function"""
 
     def test_bech32_verify_checksum_valid(self):
@@ -49,7 +55,7 @@ class TestBech32VerifyChecksum(object):
         assert isinstance(result, bool)
 
 
-class TestBech32CreateChecksum(object):
+class TestBech32CreateChecksum:
     """Tests for bech32_create_checksum function"""
 
     def test_bech32_create_checksum(self):
@@ -60,7 +66,7 @@ class TestBech32CreateChecksum(object):
         assert len(result) == 6
 
 
-class TestBech32Encode(object):
+class TestBech32Encode:
     """Tests for bech32_encode function"""
 
     def test_bech32_encode(self):
@@ -71,7 +77,7 @@ class TestBech32Encode(object):
         assert '1' in result
 
 
-class TestBech32Decode(object):
+class TestBech32Decode:
     """Tests for bech32_decode function"""
 
     def test_bech32_decode_valid(self):
@@ -138,7 +144,7 @@ class TestBech32Decode(object):
         assert data is None
 
 
-class TestConvertbits(object):
+class TestConvertbits:
     """Tests for convertbits function"""
 
     def test_convertbits_8_to_5(self):
@@ -174,7 +180,7 @@ class TestConvertbits(object):
         assert result is not None
 
 
-class TestDecode(object):
+class TestDecode:
     """Tests for decode function (segwit address decoding)"""
 
     def test_decode_valid_p2wpkh(self):
@@ -224,7 +230,7 @@ class TestDecode(object):
         assert result is None
 
 
-class TestEncode(object):
+class TestEncode:
     """Tests for encode function (segwit address encoding)"""
 
     def test_encode_p2wpkh(self):
@@ -263,7 +269,7 @@ class TestEncode(object):
         assert result.startswith('bc1p')
 
 
-class TestCharset(object):
+class TestCharset:
     """Tests for CHARSET constant"""
 
     def test_charset_length(self):

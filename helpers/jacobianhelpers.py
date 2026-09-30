@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Elliptic curve cryptography helpers using Jacobian coordinates for secp256k1."""
 
 # Elliptic curve parameters (secp256k1)

@@ -1,9 +1,8 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Standalone script that sends a transaction notification via curl to a webhook URL."""
 
 import argparse
-from subprocess import Popen, PIPE
+from subprocess import PIPE, Popen
 
 if __name__ == "__main__":
     # Create main parser
@@ -14,7 +13,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    command = r'curl %s -H "Content-Type: application/json" -d "{\"payment_request_id\":\"%s\",\"txid\":\"%s\"}"' % (args.url, args.pr, args.txid)
+    command = rf'curl {args.url} -H "Content-Type: application/json" -d "{{\"payment_request_id\":\"{args.pr}\",\"txid\":\"{args.txid}\"}}"'
 
     command_process = Popen(command, stdout=PIPE, stderr=PIPE, shell=True)
     output, error = command_process.communicate()

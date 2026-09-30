@@ -1,11 +1,10 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Base Rosetta Stone class for Darwin."""
 
-from abc import abstractmethod, ABCMeta
+from abc import ABCMeta, abstractmethod
 
 
-class RosettaStone(object):
+class RosettaStone:
     """Base Rosetta Stone class for Darwin."""
     __metaclass__ = ABCMeta
 
@@ -15,25 +14,22 @@ class RosettaStone(object):
     def configure(self, config):
         """Configure."""
         if not isinstance(config, dict):
-            raise Exception('config is not a dict!')
+            raise TypeError('config is not a dict!')
 
-        for key in self.__dict__.keys():
+        for key in self.__dict__:
             if key in config:
                 self.__setattr__(key, config[key])
 
     @abstractmethod
     def genome_template(self):
         """Genome template."""
-        pass
 
     @abstractmethod
     def model_to_genome(self, model):
         """Model to genome."""
-        pass
 
     @abstractmethod
     def genome_to_model(self, genome):
         """Genome to model."""
-        pass
 
 

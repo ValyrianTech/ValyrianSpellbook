@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Pytest fixtures for webui tests.
 """
@@ -29,7 +28,7 @@ def app(mock_settings):
     """Import and return the FastAPI app after settings are patched."""
     # Force reimport of main and routers so they pick up patched settings
     for mod in list(sys.modules.keys()):
-        if mod.startswith("main") or mod.startswith("routers."):
+        if mod.startswith(("main", "routers.")):
             del sys.modules[mod]
     import main as main_module
     return main_module.app

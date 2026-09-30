@@ -1,14 +1,25 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 from helpers.jacobianhelpers import (
-    fast_add, fast_multiply, from_jacobian, to_jacobian,
-    jacobian_add, jacobian_multiply, jacobian_double, inv,
-    P, N, G, A, B, Gx, Gy
+    A,
+    B,
+    G,
+    Gx,
+    Gy,
+    N,
+    P,
+    fast_add,
+    fast_multiply,
+    from_jacobian,
+    inv,
+    jacobian_add,
+    jacobian_double,
+    jacobian_multiply,
+    to_jacobian,
 )
 
 
-class TestConstants(object):
+class TestConstants:
     """Tests for elliptic curve constants"""
 
     def test_secp256k1_constants(self):
@@ -22,7 +33,7 @@ class TestConstants(object):
         assert Gy == 32670510020758816978083085130507043184471273380659243275938904335757337482424
 
 
-class TestToJacobian(object):
+class TestToJacobian:
     """Tests for to_jacobian function"""
 
     def test_to_jacobian(self):
@@ -35,7 +46,7 @@ class TestToJacobian(object):
         assert result == (Gx, Gy, 1)
 
 
-class TestFromJacobian(object):
+class TestFromJacobian:
     """Tests for from_jacobian function"""
 
     def test_from_jacobian_z_is_1(self):
@@ -50,7 +61,7 @@ class TestFromJacobian(object):
         assert result == p
 
 
-class TestInv(object):
+class TestInv:
     """Tests for modular inverse function"""
 
     def test_inv_zero(self):
@@ -73,7 +84,7 @@ class TestInv(object):
         assert (a * result) % P == 1
 
 
-class TestJacobianDouble(object):
+class TestJacobianDouble:
     """Tests for jacobian_double function"""
 
     def test_jacobian_double_zero_y(self):
@@ -89,7 +100,7 @@ class TestJacobianDouble(object):
         assert len(result) == 3
 
 
-class TestJacobianAdd(object):
+class TestJacobianAdd:
     """Tests for jacobian_add function"""
 
     def test_jacobian_add_p_zero_y(self):
@@ -124,7 +135,7 @@ class TestJacobianAdd(object):
         assert result == (0, 0, 1)
 
 
-class TestJacobianMultiply(object):
+class TestJacobianMultiply:
     """Tests for jacobian_multiply function"""
 
     def test_jacobian_multiply_by_zero(self):
@@ -171,7 +182,7 @@ class TestJacobianMultiply(object):
         assert isinstance(result, tuple)
 
 
-class TestFastAdd(object):
+class TestFastAdd:
     """Tests for fast_add function"""
 
     def test_fast_add_generator_to_itself(self):
@@ -188,7 +199,7 @@ class TestFastAdd(object):
         assert result == three_g
 
 
-class TestFastMultiply(object):
+class TestFastMultiply:
     """Tests for fast_multiply function"""
 
     def test_fast_multiply_by_one(self):

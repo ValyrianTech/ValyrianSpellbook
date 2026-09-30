@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-from darwin.genome import Genome
 from darwin.encodingtype import EncodingType
-from darwin.gene import BooleanGene, IntegerGene, FloatGene, StringGene
+from darwin.gene import BooleanGene, FloatGene, IntegerGene, StringGene
+from darwin.genome import Genome
 
 
 class TestGenomeInit:

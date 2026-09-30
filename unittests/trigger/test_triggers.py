@@ -1,26 +1,25 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import mock
 import time
+from unittest import mock
 
-from trigger.manualtrigger import ManualTrigger
 from trigger.balancetrigger import BalanceTrigger
 from trigger.blockheighttrigger import BlockHeightTrigger
-from trigger.timestamptrigger import TimestampTrigger
-from trigger.receivedtrigger import ReceivedTrigger
-from trigger.senttrigger import SentTrigger
-from trigger.recurringtrigger import RecurringTrigger
-from trigger.triggerstatustrigger import TriggerStatusTrigger
-from trigger.txconfirmationtrigger import TxConfirmationTrigger
 from trigger.deadmansswitchtrigger import DeadMansSwitchTrigger, SwitchPhase
-from trigger.signedmessagetrigger import SignedMessageTrigger
+from trigger.httpdeleterequesttrigger import HTTPDeleteRequestTrigger
 from trigger.httpgetrequesttrigger import HTTPGetRequestTrigger
 from trigger.httppostrequesttrigger import HTTPPostRequestTrigger
-from trigger.httpdeleterequesttrigger import HTTPDeleteRequestTrigger
+from trigger.manualtrigger import ManualTrigger
+from trigger.receivedtrigger import ReceivedTrigger
+from trigger.recurringtrigger import RecurringTrigger
+from trigger.senttrigger import SentTrigger
+from trigger.signedmessagetrigger import SignedMessageTrigger
+from trigger.timestamptrigger import TimestampTrigger
+from trigger.triggerstatustrigger import TriggerStatusTrigger
 from trigger.triggertype import TriggerType
+from trigger.txconfirmationtrigger import TxConfirmationTrigger
 
 
-class TestManualTrigger(object):
+class TestManualTrigger:
     """Tests for ManualTrigger"""
 
     def test_manualtrigger_init(self):
@@ -33,7 +32,7 @@ class TestManualTrigger(object):
         assert not trigger.conditions_fulfilled()
 
 
-class TestBalanceTrigger(object):
+class TestBalanceTrigger:
     """Tests for BalanceTrigger"""
 
     def test_balancetrigger_init(self):
@@ -95,7 +94,7 @@ class TestBalanceTrigger(object):
         assert not trigger.conditions_fulfilled()
 
 
-class TestBlockHeightTrigger(object):
+class TestBlockHeightTrigger:
     """Tests for BlockHeightTrigger"""
 
     def test_blockheighttrigger_init(self):
@@ -150,7 +149,7 @@ class TestBlockHeightTrigger(object):
         assert not trigger.conditions_fulfilled()
 
 
-class TestTimestampTrigger(object):
+class TestTimestampTrigger:
     """Tests for TimestampTrigger"""
 
     def test_timestamptrigger_init(self):
@@ -187,7 +186,7 @@ class TestTimestampTrigger(object):
         assert not trigger.conditions_fulfilled()
 
 
-class TestRecurringTrigger(object):
+class TestRecurringTrigger:
     """Tests for RecurringTrigger"""
 
     def test_recurringtrigger_init(self):
@@ -272,7 +271,7 @@ class TestRecurringTrigger(object):
         assert trigger.next_activation == begin + 1800
 
 
-class TestTriggerStatusTrigger(object):
+class TestTriggerStatusTrigger:
     """Tests for TriggerStatusTrigger"""
 
     def test_triggerstatustrigger_init(self):
@@ -331,7 +330,7 @@ class TestTriggerStatusTrigger(object):
         assert not trigger.conditions_fulfilled()
 
 
-class TestReceivedTrigger(object):
+class TestReceivedTrigger:
     """Tests for ReceivedTrigger"""
 
     def test_receivedtrigger_init(self):
@@ -387,7 +386,7 @@ class TestReceivedTrigger(object):
         assert not trigger.conditions_fulfilled()
 
 
-class TestSentTrigger(object):
+class TestSentTrigger:
     """Tests for SentTrigger"""
 
     def test_senttrigger_init(self):
@@ -443,7 +442,7 @@ class TestSentTrigger(object):
         assert not trigger.conditions_fulfilled()
 
 
-class TestTxConfirmationTrigger(object):
+class TestTxConfirmationTrigger:
     """Tests for TxConfirmationTrigger"""
 
     def test_txconfirmationtrigger_init(self):
@@ -498,7 +497,7 @@ class TestTxConfirmationTrigger(object):
         assert not trigger.conditions_fulfilled()
 
 
-class TestDeadMansSwitchTrigger(object):
+class TestDeadMansSwitchTrigger:
     """Tests for DeadMansSwitchTrigger"""
 
     def test_deadmansswitchtrigger_init(self):
@@ -616,7 +615,7 @@ class TestDeadMansSwitchTrigger(object):
         assert SwitchPhase.PHASE_5 == 5
 
 
-class TestSignedMessageTrigger(object):
+class TestSignedMessageTrigger:
     """Tests for SignedMessageTrigger"""
 
     def test_signedmessagetrigger_init(self):
@@ -691,7 +690,7 @@ class TestSignedMessageTrigger(object):
         assert trigger.message_data == {'test': 'data'}
 
 
-class TestHTTPGetRequestTrigger(object):
+class TestHTTPGetRequestTrigger:
     """Tests for HTTPGetRequestTrigger"""
 
     def test_httpgetrequesttrigger_init(self):
@@ -728,7 +727,7 @@ class TestHTTPGetRequestTrigger(object):
         assert trigger.json == {'test': 'data'}
 
 
-class TestHTTPPostRequestTrigger(object):
+class TestHTTPPostRequestTrigger:
     """Tests for HTTPPostRequestTrigger"""
 
     def test_httppostrequesttrigger_init(self):
@@ -765,7 +764,7 @@ class TestHTTPPostRequestTrigger(object):
         assert trigger.json == {'test': 'data'}
 
 
-class TestHTTPDeleteRequestTrigger(object):
+class TestHTTPDeleteRequestTrigger:
     """Tests for HTTPDeleteRequestTrigger"""
 
     def test_httpdeleterequesttrigger_init(self):

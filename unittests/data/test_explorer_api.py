@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import mock
+from unittest import mock
 
 from data.explorer_api import ExplorerAPI
 
@@ -33,7 +32,7 @@ class ConcreteExplorerAPI(ExplorerAPI):
         return ''
 
 
-class TestExplorerAPI(object):
+class TestExplorerAPI:
     """Tests for ExplorerAPI abstract class"""
 
     def test_explorer_api_init(self):

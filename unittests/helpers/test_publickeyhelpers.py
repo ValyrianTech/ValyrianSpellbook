@@ -1,14 +1,18 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import pytest
 
 from helpers.publickeyhelpers import (
-    get_pubkey_format, encode_pubkey, decode_pubkey,
-    add_pubkeys, compress, pubkey_to_address, bin_hash160
+    add_pubkeys,
+    bin_hash160,
+    compress,
+    decode_pubkey,
+    encode_pubkey,
+    get_pubkey_format,
+    pubkey_to_address,
 )
 
 
-class TestGetPubkeyFormat(object):
+class TestGetPubkeyFormat:
     """Tests for get_pubkey_format function"""
 
     def test_get_pubkey_format_decimal(self):
@@ -69,11 +73,11 @@ class TestGetPubkeyFormat(object):
 
     def test_get_pubkey_format_invalid(self):
         pub = 'invalid'
-        with pytest.raises(Exception):
+        with pytest.raises(ValueError):
             get_pubkey_format(pub)
 
 
-class TestEncodePubkey(object):
+class TestEncodePubkey:
     """Tests for encode_pubkey function"""
 
     def test_encode_pubkey_decimal(self):
@@ -128,7 +132,7 @@ class TestEncodePubkey(object):
 
     def test_encode_pubkey_invalid_format(self):
         pub = (123, 456)
-        with pytest.raises(Exception):
+        with pytest.raises(ValueError):
             encode_pubkey(pub, 'invalid')
 
     def test_encode_pubkey_from_non_tuple(self):
@@ -138,7 +142,7 @@ class TestEncodePubkey(object):
         assert isinstance(result, tuple)
 
 
-class TestDecodePubkey(object):
+class TestDecodePubkey:
     """Tests for decode_pubkey function"""
 
     def test_decode_pubkey_decimal(self):
@@ -195,7 +199,7 @@ class TestDecodePubkey(object):
         assert result == point
 
     def test_decode_pubkey_invalid_format(self):
-        with pytest.raises(Exception):
+        with pytest.raises(ValueError):
             decode_pubkey('test', 'invalid')
 
     def test_decode_pubkey_auto_detect(self):
@@ -206,11 +210,11 @@ class TestDecodePubkey(object):
         assert result == point
 
 
-class TestAddPubkeys(object):
+class TestAddPubkeys:
     """Tests for add_pubkeys function"""
 
     def test_add_pubkeys(self):
-        from helpers.jacobianhelpers import G, fast_multiply, fast_add
+        from helpers.jacobianhelpers import G, fast_add, fast_multiply
         p1 = fast_multiply(G, 12345)
         p2 = fast_multiply(G, 67890)
         
@@ -223,7 +227,7 @@ class TestAddPubkeys(object):
         assert decode_pubkey(result) == expected
 
 
-class TestCompress(object):
+class TestCompress:
     """Tests for compress function"""
 
     def test_compress_already_compressed(self):
@@ -255,7 +259,7 @@ class TestCompress(object):
         assert len(result) == 66
 
 
-class TestPubkeyToAddress(object):
+class TestPubkeyToAddress:
     """Tests for pubkey_to_address function"""
 
     def test_pubkey_to_address_tuple(self):
@@ -298,7 +302,7 @@ class TestPubkeyToAddress(object):
         assert result[0] in ['m', 'n']
 
 
-class TestBinHash160(object):
+class TestBinHash160:
     """Tests for bin_hash160 function"""
 
     def test_bin_hash160(self):
@@ -313,10 +317,11 @@ class TestBinHash160(object):
 
     def test_bin_hash160_exception(self):
         """Test bin_hash160 raises exception when ripemd160 fails"""
-        import pytest
         from unittest.mock import patch
+
+        import pytest
         
-        with patch('helpers.publickeyhelpers.ripemd160', side_effect=Exception('RIPEMD160 error')):
+        with patch('helpers.publickeyhelpers.ripemd160', side_effect=ValueError('RIPEMD160 error')):
             with pytest.raises(Exception) as excinfo:
                 bin_hash160(b'test')
             assert 'Unable to get ripemd160 digest' in str(excinfo.value)

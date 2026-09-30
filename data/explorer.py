@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 
 """Base blockchain explorer abstraction with priority fallback."""
 
-class ExplorerType(object):
+class ExplorerType:
     """Base blockchain explorer abstraction with priority fallback."""
     BLOCKCHAIN_INFO = 'Blockchain.info'
     BLOCKTRAIL_COM = 'Blocktrail.com'
@@ -14,7 +13,7 @@ class ExplorerType(object):
     BLOCKSTREAM = 'Blockstream.info'
 
 
-class Explorer(object):
+class Explorer:
     """
     Represents a blockchain explorer configuration with API key, URL, priority, and testnet flag.
     """

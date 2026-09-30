@@ -1,18 +1,18 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Trigger that activates at a specific block height."""
 
+from data.data import latest_block
+from validators.validators import valid_amount, valid_block_height
+
 from .trigger import Trigger
 from .triggertype import TriggerType
-from data.data import latest_block
-from validators.validators import valid_block_height, valid_amount
 
 
 class BlockHeightTrigger(Trigger):
     """Trigger that activates at a specific block height."""
     def __init__(self, trigger_id):
-        super(BlockHeightTrigger, self).__init__(trigger_id=trigger_id)
+        super().__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.BLOCK_HEIGHT
         self.block_height = None
         self.confirmations = 0
@@ -29,11 +29,11 @@ class BlockHeightTrigger(Trigger):
             # Something went wrong during retrieval of latest block height
             return False
 
-        return True if self.block_height + self.confirmations <= latest_block_height else False
+        return self.block_height + self.confirmations <= latest_block_height
 
     def configure(self, **config):
         """Configure."""
-        super(BlockHeightTrigger, self).configure(**config)
+        super().configure(**config)
         if 'block_height' in config and valid_block_height(config['block_height']):
             self.block_height = config['block_height']
 
@@ -42,7 +42,7 @@ class BlockHeightTrigger(Trigger):
 
     def json_encodable(self):
         """Json encodable."""
-        ret = super(BlockHeightTrigger, self).json_encodable()
+        ret = super().json_encodable()
 
         ret.update({
             'block_height': self.block_height,

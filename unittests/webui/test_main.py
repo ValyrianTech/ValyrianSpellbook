@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Tests for webui.main FastAPI app."""
-from unittest.mock import patch, MagicMock
+import runpy
+from unittest.mock import MagicMock, patch
 
 
 class TestAppConfiguration:
@@ -34,20 +34,20 @@ class TestExceptionHandlers:
 
     def test_500_handler(self, app):
         # Trigger a 500 by mocking a route to raise
-        with patch("routers.dashboard.is_authenticated", return_value=True):
-            with patch("routers.dashboard.get_api_client") as mock_get_client:
-                mock_client = MagicMock()
-                mock_client.get_triggers.side_effect = Exception("test error")
-                mock_client.get_actions.return_value = []
-                mock_client.get_llms.return_value = []
-                mock_client.get_explorers.return_value = []
-                mock_client.ping.return_value = {"success": True}
-                mock_client.get_latest_block.return_value = {}
-                mock_get_client.return_value = mock_client
-                from starlette.testclient import TestClient
-                with TestClient(app, raise_server_exceptions=False) as c:
-                    response = c.get("/", follow_redirects=False)
-                    assert response.status_code == 500
+        with patch("routers.dashboard.is_authenticated", return_value=True), \
+             patch("routers.dashboard.get_api_client") as mock_get_client:
+            mock_client = MagicMock()
+            mock_client.get_triggers.side_effect = ValueError("test error")
+            mock_client.get_actions.return_value = []
+            mock_client.get_llms.return_value = []
+            mock_client.get_explorers.return_value = []
+            mock_client.ping.return_value = {"success": True}
+            mock_client.get_latest_block.return_value = {}
+            mock_get_client.return_value = mock_client
+            from starlette.testclient import TestClient
+            with TestClient(app, raise_server_exceptions=False) as c:
+                response = c.get("/", follow_redirects=False)
+                assert response.status_code == 500
 
 
 class TestMainModule:
@@ -67,9 +67,7 @@ class TestMainModule:
         """Cover the if __name__ == '__main__' block."""
         with patch("uvicorn.run") as mock_run:
             import main as main_module
-            with open(main_module.__file__) as f:
-                code = f.read()
-            exec(compile(code, main_module.__file__, "exec"), {"__name__": "__main__", "__file__": main_module.__file__})
+            runpy.run_path(main_module.__file__, run_name='__main__')
             mock_run.assert_called_once()
             call_kwargs = mock_run.call_args[1]
             assert call_kwargs["host"] == "127.0.0.1"

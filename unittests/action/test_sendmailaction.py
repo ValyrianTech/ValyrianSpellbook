@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import mock
+from unittest import mock
 
-from action.sendmailaction import SendMailAction
 from action.actiontype import ActionType
+from action.sendmailaction import SendMailAction
 
 
-class TestSendMailAction(object):
+class TestSendMailAction:
     """Tests for SendMailAction"""
 
     def test_sendmailaction_init(self):

@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import mock
+from unittest import mock
 
-from action.webhookaction import WebhookAction
 from action.actiontype import ActionType
+from action.webhookaction import WebhookAction
 
 
-class TestWebhookAction(object):
+class TestWebhookAction:
     """Tests for WebhookAction"""
 
     def test_webhookaction_init(self):
@@ -107,7 +106,7 @@ class TestWebhookAction(object):
 
     @mock.patch('action.webhookaction.requests.get')
     def test_webhookaction_run_exception(self, mock_get):
-        mock_get.side_effect = Exception('Connection error')
+        mock_get.side_effect = ValueError('Connection error')
 
         action = WebhookAction('test_webhook_action')
         action.configure(webhook='http://example.com/webhook')

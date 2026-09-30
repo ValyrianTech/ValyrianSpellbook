@@ -1,17 +1,16 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """BitcoinWand script for signing and verifying messages on behalf of an address."""
 
 import argparse
 import os
 import sys
+
 import requests
 
+from helpers.hotwallethelpers import find_address_in_wallet, get_private_key_from_wallet
 from helpers.ipfshelpers import add_json
-from helpers.hotwallethelpers import get_private_key_from_wallet, find_address_in_wallet
 from helpers.messagehelpers import sign_message
 from validators.validators import valid_address
-
 
 # Create main parser
 parser = argparse.ArgumentParser(description='Bitcoin Wand command line interface', formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -24,7 +23,7 @@ args = parser.parse_args()
 
 # Check if address is valid
 if not valid_address(args.address):
-    print('Invalid address: %s' % args.address)
+    print(f'Invalid address: {args.address}')
     sys.exit(1)
 
 data = {'address': args.address}
@@ -55,7 +54,7 @@ if len(data['message']) >= 256:
     #     sys.exit(1)
 
     message_hash = add_json(data['message'])
-    data['message'] = '/ipfs/%s' % message_hash
+    data['message'] = f'/ipfs/{message_hash}'
 
 
 
@@ -65,8 +64,8 @@ data['signature'] = sign_message(message=data['message'], private_key=private_ke
 
 # Send the signed message as a POST request to the url
 try:
-    r = requests.post('{url}'.format(url=args.url), json=data)
+    r = requests.post(f'{args.url}', json=data)
     print(r.text)
-except Exception as ex:
-    print('Unable to send signed message to trigger: %s' % ex)
+except (ValueError, KeyError, TypeError, OSError) as ex:
+    print(f'Unable to send signed message to trigger: {ex}')
     sys.exit(1)

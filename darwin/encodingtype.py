@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 
 """Constants for gene encoding types in Darwin."""
 
-class EncodingType(object):
+class EncodingType:
     """Enumeration of supported gene encoding types in Darwin."""
     BOOLEAN = 'Boolean'
     INTEGER = 'Integer'

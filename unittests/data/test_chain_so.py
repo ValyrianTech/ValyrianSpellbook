@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import mock
+from unittest import mock
 
 from data.blockexplorers.chain_so import ChainSoAPI
 
@@ -15,7 +14,7 @@ def make_mock_response(json_data=None, text_data=None, status_code=200):
     return resp
 
 
-class TestChainSoAPIInit(object):
+class TestChainSoAPIInit:
     def test_init_mainnet(self):
         api = ChainSoAPI()
         assert api.network == 'BTC'
@@ -26,7 +25,7 @@ class TestChainSoAPIInit(object):
         assert api.network == 'BTCTEST'
 
 
-class TestGetLatestBlock(object):
+class TestGetLatestBlock:
     @mock.patch('data.blockexplorers.chain_so.requests.get')
     def test_success(self, mock_get):
         mock_get.side_effect = [
@@ -41,7 +40,7 @@ class TestGetLatestBlock(object):
 
     @mock.patch('data.blockexplorers.chain_so.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = ChainSoAPI()
         result = api.get_latest_block()
         assert 'error' in result
@@ -62,7 +61,7 @@ class TestGetLatestBlock(object):
         assert 'error' in result
 
 
-class TestGetBlockByHeight(object):
+class TestGetBlockByHeight:
     @mock.patch('data.blockexplorers.chain_so.requests.get')
     def test_success(self, mock_get):
         mock_get.return_value = make_mock_response(json_data={
@@ -74,7 +73,7 @@ class TestGetBlockByHeight(object):
 
     @mock.patch('data.blockexplorers.chain_so.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = ChainSoAPI()
         result = api.get_block_by_height(100)
         assert 'error' in result
@@ -94,7 +93,7 @@ class TestGetBlockByHeight(object):
         assert 'error' in result
 
 
-class TestGetBlockByHash(object):
+class TestGetBlockByHash:
     @mock.patch('data.blockexplorers.chain_so.requests.get')
     def test_success(self, mock_get):
         mock_get.return_value = make_mock_response(json_data={
@@ -106,7 +105,7 @@ class TestGetBlockByHash(object):
 
     @mock.patch('data.blockexplorers.chain_so.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = ChainSoAPI()
         result = api.get_block_by_hash('abc')
         assert 'error' in result
@@ -126,7 +125,7 @@ class TestGetBlockByHash(object):
         assert 'error' in result
 
 
-class TestGetTransactions(object):
+class TestGetTransactions:
     @mock.patch('data.blockexplorers.chain_so.sleep')
     @mock.patch('data.blockexplorers.chain_so.ChainSoAPI.get_transaction')
     @mock.patch('data.blockexplorers.chain_so.requests.get')
@@ -142,7 +141,7 @@ class TestGetTransactions(object):
 
     @mock.patch('data.blockexplorers.chain_so.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = ChainSoAPI()
         result = api.get_transactions('addr1')
         assert 'error' in result
@@ -168,7 +167,7 @@ class TestGetTransactions(object):
         assert len(result['transactions']) == 0
 
 
-class TestGetBalance(object):
+class TestGetBalance:
     @mock.patch('data.blockexplorers.chain_so.requests.get')
     def test_success(self, mock_get):
         mock_get.return_value = make_mock_response(json_data={
@@ -180,7 +179,7 @@ class TestGetBalance(object):
 
     @mock.patch('data.blockexplorers.chain_so.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = ChainSoAPI()
         result = api.get_balance('addr')
         assert 'error' in result
@@ -193,7 +192,7 @@ class TestGetBalance(object):
         assert 'error' in result
 
 
-class TestGetUtxos(object):
+class TestGetUtxos:
     @mock.patch('data.blockexplorers.chain_so.requests.get')
     def test_success(self, mock_get):
         mock_get.return_value = make_mock_response(json_data={
@@ -205,7 +204,7 @@ class TestGetUtxos(object):
 
     @mock.patch('data.blockexplorers.chain_so.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = ChainSoAPI()
         result = api.get_utxos('addr')
         assert 'error' in result
@@ -227,7 +226,7 @@ class TestGetUtxos(object):
         assert len(result['utxos']) == 0
 
 
-class TestGetTransaction(object):
+class TestGetTransaction:
     @mock.patch('data.blockexplorers.chain_so.ChainSoAPI.get_block_by_hash')
     @mock.patch('data.blockexplorers.chain_so.requests.get')
     def test_success(self, mock_get, mock_get_block):
@@ -245,7 +244,7 @@ class TestGetTransaction(object):
 
     @mock.patch('data.blockexplorers.chain_so.requests.get')
     def test_request_error(self, mock_get):
-        mock_get.side_effect = Exception('fail')
+        mock_get.side_effect = ValueError('fail')
         api = ChainSoAPI()
         result = api.get_transaction('txid')
         assert 'error' in result
@@ -329,7 +328,7 @@ class TestGetTransaction(object):
         assert 'transaction' in result
 
 
-class TestGetPrimeInputAddress(object):
+class TestGetPrimeInputAddress:
     @mock.patch('data.blockexplorers.chain_so.ChainSoAPI.get_transaction')
     def test_success(self, mock_get_tx):
         mock_get_tx.return_value = {'transaction': {'inputs': [{'address': 'b_addr'}, {'address': 'a_addr'}]}}

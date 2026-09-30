@@ -1,18 +1,18 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+from unittest import mock
+
 import pytest
-import mock
 
 from helpers.feehelpers import (
-    get_medium_priority_fee,
-    get_low_priority_fee,
     get_high_priority_fee,
+    get_low_priority_fee,
+    get_medium_priority_fee,
     get_recommended_fee,
     get_recommended_fee_blockcypher,
 )
 
 
-class TestFeeHelpers(object):
+class TestFeeHelpers:
     """Tests for fee helper functions"""
 
     @mock.patch('helpers.feehelpers.get_recommended_fee_blockcypher')
@@ -55,7 +55,7 @@ class TestFeeHelpers(object):
     @mock.patch('helpers.feehelpers.requests.get')
     def test_get_recommended_fee_error(self, mock_get):
         """Test error handling when API fails"""
-        mock_get.side_effect = Exception('Network error')
+        mock_get.side_effect = ValueError('Network error')
         
         with pytest.raises(Exception) as excinfo:
             get_recommended_fee()
@@ -98,7 +98,7 @@ class TestFeeHelpers(object):
     @mock.patch('helpers.feehelpers.requests.get')
     def test_get_recommended_fee_blockcypher_error(self, mock_get, mock_testnet):
         """Test error handling when blockcypher API fails"""
-        mock_get.side_effect = Exception('Network error')
+        mock_get.side_effect = ValueError('Network error')
         
         with pytest.raises(Exception) as excinfo:
             get_recommended_fee_blockcypher()

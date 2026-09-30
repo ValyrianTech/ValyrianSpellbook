@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import pytest
 
 from darwin.rosettastone.rosettastone import RosettaStone

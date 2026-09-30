@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import sys
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 # Create mock for mysql.connector before importing the module
 mock_mysql_connector = MagicMock()
@@ -122,7 +121,7 @@ class TestMysqlHelpers(unittest.TestCase):
     def test_initialize_database_not_exists(self, mock_log, mock_create_db, mock_create_tables):
         """Test initialize_database when database does not exist (ER_BAD_DB_ERROR)"""
         import helpers.mysqlhelpers as mysql_module
-        from helpers.mysqlhelpers import initialize_database, errorcode
+        from helpers.mysqlhelpers import errorcode, initialize_database
 
         # Create a real exception class that mysql.connector.Error can match
         class MockMySQLError(Exception):
@@ -151,7 +150,7 @@ class TestMysqlHelpers(unittest.TestCase):
     def test_initialize_database_other_error(self, mock_log):
         """Test initialize_database with non-ER_BAD_DB_ERROR error"""
         import helpers.mysqlhelpers as mysql_module
-        from helpers.mysqlhelpers import initialize_database, errorcode
+        from helpers.mysqlhelpers import errorcode, initialize_database
 
         class MockMySQLError(Exception):
             pass

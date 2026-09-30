@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Full test fitness function for Darwin."""
 
 from fitnessfunction import FitnessFunction
@@ -9,13 +8,13 @@ from model.fulltest import FullTest
 class FullTestFitnessFunction(FitnessFunction):
     """Full test fitness function for Darwin."""
     def __init__(self):
-        super(FullTestFitnessFunction, self).__init__()
+        super().__init__()
 
     def fitness(self, model):
         """Fitness."""
 
         if not isinstance(model, FullTest):
-            raise Exception('model for fitness function is not a FullTest!')
+            raise TypeError('model for fitness function is not a FullTest!')
 
         boolean_fitness = 0
 

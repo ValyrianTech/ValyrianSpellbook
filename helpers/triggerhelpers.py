@@ -1,32 +1,34 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Helper functions for creating, configuring, checking, and activating triggers."""
 
 import glob
 import os
 import time
 
+from helpers.actionhelpers import delete_action
+from helpers.hotwallethelpers import (
+    find_address_in_wallet,
+    find_single_address_in_wallet,
+    get_private_key_from_wallet,
+)
+from helpers.jsonhelpers import load_from_json_file
 from helpers.loghelpers import LOG
+from helpers.messagehelpers import sign_and_verify, verify_message
 from trigger.balancetrigger import BalanceTrigger
 from trigger.blockheighttrigger import BlockHeightTrigger
-from trigger.txconfirmationtrigger import TxConfirmationTrigger
 from trigger.deadmansswitchtrigger import DeadMansSwitchTrigger
-from helpers.jsonhelpers import load_from_json_file
+from trigger.httpdeleterequesttrigger import HTTPDeleteRequestTrigger
+from trigger.httpgetrequesttrigger import HTTPGetRequestTrigger
+from trigger.httppostrequesttrigger import HTTPPostRequestTrigger
 from trigger.manualtrigger import ManualTrigger
 from trigger.receivedtrigger import ReceivedTrigger
 from trigger.recurringtrigger import RecurringTrigger
 from trigger.senttrigger import SentTrigger
-from helpers.messagehelpers import verify_message, sign_and_verify
 from trigger.signedmessagetrigger import SignedMessageTrigger
 from trigger.timestamptrigger import TimestampTrigger
 from trigger.triggerstatustrigger import TriggerStatusTrigger
-from trigger.httpgetrequesttrigger import HTTPGetRequestTrigger
-from trigger.httppostrequesttrigger import HTTPPostRequestTrigger
-from trigger.httpdeleterequesttrigger import HTTPDeleteRequestTrigger
 from trigger.triggertype import TriggerType
-from helpers.actionhelpers import delete_action
-from helpers.hotwallethelpers import get_private_key_from_wallet, find_address_in_wallet, find_single_address_in_wallet
-
+from trigger.txconfirmationtrigger import TxConfirmationTrigger
 from validators.validators import valid_address
 
 TRIGGERS_DIR = 'json/public/triggers'
@@ -51,8 +53,8 @@ def get_trigger_config(trigger_id):
     :return: a dict containing the configuration of the trigger
     """
     try:
-        trigger_config = load_from_json_file(os.path.join(TRIGGERS_DIR, '%s.json' % trigger_id))
-    except IOError:
+        trigger_config = load_from_json_file(os.path.join(TRIGGERS_DIR, f'{trigger_id}.json'))
+    except OSError:
         # Trigger does not exist yet, return empty dict
         trigger_config = {}
 
@@ -113,7 +115,7 @@ def get_trigger(trigger_id, trigger_type=None):
     elif trigger_config['trigger_type'] == TriggerType.HTTPDELETEREQUEST:
         trigger = HTTPDeleteRequestTrigger(trigger_id)
     else:
-        raise NotImplementedError('Unknown trigger type: %s' % trigger_config['trigger_type'])
+        raise NotImplementedError('Unknown trigger type: {}'.format(trigger_config['trigger_type']))
 
     trigger.configure(**trigger_config)
 
@@ -142,11 +144,11 @@ def delete_trigger(trigger_id):
 
     :param trigger_id: The id of the trigger to delete
     """
-    filename = os.path.join(TRIGGERS_DIR, '%s.json' % trigger_id)
+    filename = os.path.join(TRIGGERS_DIR, f'{trigger_id}.json')
     if os.path.isfile(filename):
         os.remove(filename)
     else:
-        return {'error': 'Unknown trigger id: %s' % trigger_id}
+        return {'error': f'Unknown trigger id: {trigger_id}'}
 
 
 def activate_trigger(trigger_id):
@@ -155,8 +157,8 @@ def activate_trigger(trigger_id):
 
     :param trigger_id: The id of the trigger
     """
-    if not os.path.isfile(os.path.join(TRIGGERS_DIR, '%s.json' % trigger_id)):
-        return {'error': 'Unknown trigger id: %s' % trigger_id}
+    if not os.path.isfile(os.path.join(TRIGGERS_DIR, f'{trigger_id}.json')):
+        return {'error': f'Unknown trigger id: {trigger_id}'}
 
     trigger = get_trigger(trigger_id)
     if trigger.trigger_type == TriggerType.MANUAL:
@@ -181,28 +183,27 @@ def check_triggers(trigger_id=None):
     if trigger_id is not None and trigger_id in triggers:
         triggers = [trigger_id]
     elif trigger_id is not None and trigger_id not in triggers:
-        return {'error': 'Unknown trigger id: %s' % trigger_id}
+        return {'error': f'Unknown trigger id: {trigger_id}'}
 
-    for trigger_id in triggers:
-        trigger = get_trigger(trigger_id=trigger_id)
+    for tid in triggers:
+        trigger = get_trigger(trigger_id=tid)
         if trigger.status == 'Active':
-            LOG.info('Checking conditions of trigger %s' % trigger_id)
+            LOG.info(f'Checking conditions of trigger {tid}')
             if trigger.conditions_fulfilled() is True:
                 trigger.activate()
 
-        if trigger.self_destruct is not None:
-            if trigger.self_destruct <= int(time.time()):
-                LOG.info('Trigger %s has reached its self-destruct time' % trigger_id)
+        if trigger.self_destruct is not None and trigger.self_destruct <= int(time.time()):
+            LOG.info(f'Trigger {tid} has reached its self-destruct time')
 
-                # Also destruct any attached actions if needed
-                if trigger.destruct_actions is True:
-                    for action_id in trigger.actions:
-                        LOG.info('Deleting action %s' % action_id)
-                        delete_action(action_id=action_id)
+            # Also destruct any attached actions if needed
+            if trigger.destruct_actions is True:
+                for action_id in trigger.actions:
+                    LOG.info(f'Deleting action {action_id}')
+                    delete_action(action_id=action_id)
 
-                LOG.info('Deleting trigger %s' % trigger_id)
-                delete_trigger(trigger_id=trigger_id)
-                continue
+            LOG.info(f'Deleting trigger {tid}')
+            delete_trigger(trigger_id=tid)
+            continue
 
 
 def verify_signed_message(trigger_id, **data):
@@ -217,29 +218,29 @@ def verify_signed_message(trigger_id, **data):
 
     triggers = get_triggers()
     if trigger_id not in triggers:
-        return {'error': 'Unknown trigger id: %s' % trigger_id}
+        return {'error': f'Unknown trigger id: {trigger_id}'}
 
     trigger = get_trigger(trigger_id)
     if trigger.trigger_type != TriggerType.SIGNEDMESSAGE:
-        return {'error': 'Trigger %s is not a Signedmessage trigger' % trigger.trigger_type}
+        return {'error': f'Trigger {trigger.trigger_type} is not a Signedmessage trigger'}
 
     if trigger.address is not None and trigger.address != data['address']:
-        return {'error': 'Trigger %s only listens to signed messages from address %s' % (trigger.id, trigger.address)}
+        return {'error': f'Trigger {trigger.id} only listens to signed messages from address {trigger.address}'}
 
     if verify_message(address=data['address'], message=data['message'], signature=data['signature']) is True:
         if trigger.status == 'Active':
-            LOG.info('Trigger %s received a verified signed message' % trigger_id)
+            LOG.info(f'Trigger {trigger_id} received a verified signed message')
             trigger.process_message(address=data['address'],
                                     message=data['message'],
                                     signature=data['signature'],
-                                    data=data['data'] if 'data' in data else None,
-                                    ipfs_object=data['ipfs_object'] if 'ipfs_object' in data else None)
+                                    data=data.get('data', None),
+                                    ipfs_object=data.get('ipfs_object', None))
             return trigger.activate()
     else:
-        LOG.warning('Trigger %s received a bad signed message' % trigger_id)
-        LOG.warning('message: %s' % data['message'])
-        LOG.warning('address: %s' % data['address'])
-        LOG.warning('signature: %s' % data['signature'])
+        LOG.warning(f'Trigger {trigger_id} received a bad signed message')
+        LOG.warning('message: {}'.format(data['message']))
+        LOG.warning('address: {}'.format(data['address']))
+        LOG.warning('signature: {}'.format(data['signature']))
         return {'error': 'Signature is invalid!'}
 
 
@@ -256,7 +257,7 @@ def sign_message(**data):
     message = data['message']
 
     if not valid_address(address=address):
-        return {'success': False, 'error': 'Invalid address: %s' % address}
+        return {'success': False, 'error': f'Invalid address: {address}'}
 
     if len(message) > 255:
         return {'success': False, 'error': 'Message is too long, can not be longer than 255 characters.'}
@@ -266,14 +267,14 @@ def sign_message(**data):
         private_key = find_single_address_in_wallet(address=address)
 
         if private_key is None:
-            return {'success': False, 'error': 'Address %s not found in hot wallet' % address}
+            return {'success': False, 'error': f'Address {address} not found in hot wallet'}
     else:
         private_key = get_private_key_from_wallet(account=account, index=index)[address]
 
     try:
         signature = sign_and_verify(private_key=private_key, address=address, message=message)
-    except Exception as ex:
-        return {'success': False, 'error': 'Unable to sign message: %s' % ex}
+    except (ValueError, KeyError, TypeError, OSError) as ex:
+        return {'success': False, 'error': f'Unable to sign message: {ex}'}
 
     return {'success': True,
             'signature': signature,
@@ -290,14 +291,14 @@ def http_options_request(trigger_id, **data):
     """
     triggers = get_triggers()
     if trigger_id not in triggers:
-        return {'error': 'Unknown trigger id: %s' % trigger_id}
+        return {'error': f'Unknown trigger id: {trigger_id}'}
 
     trigger = get_trigger(trigger_id)
     if trigger.trigger_type != TriggerType.HTTPOPTIONSREQUEST:
-        return {'error': 'Trigger %s is not a HTTP OPTIONS request trigger but a %s trigger' % (trigger_id, trigger.trigger_type)}
+        return {'error': f'Trigger {trigger_id} is not a HTTP OPTIONS request trigger but a {trigger.trigger_type} trigger'}
 
     if trigger.status == 'Active':
-        LOG.info('Trigger %s received a HTTP OPTIONS request' % trigger_id)
+        LOG.info(f'Trigger {trigger_id} received a HTTP OPTIONS request')
         if len(data) > 0:
             trigger.set_json_data(data=data)
         return trigger.activate()
@@ -312,14 +313,14 @@ def http_get_request(trigger_id, **data):
     """
     triggers = get_triggers()
     if trigger_id not in triggers:
-        return {'error': 'Unknown trigger id: %s' % trigger_id}
+        return {'error': f'Unknown trigger id: {trigger_id}'}
 
     trigger = get_trigger(trigger_id)
     if trigger.trigger_type != TriggerType.HTTPGETREQUEST:
-        return {'error': 'Trigger %s is not a HTTP GET request trigger but a %s trigger' % (trigger_id, trigger.trigger_type)}
+        return {'error': f'Trigger {trigger_id} is not a HTTP GET request trigger but a {trigger.trigger_type} trigger'}
 
     if trigger.status == 'Active':
-        LOG.info('Trigger %s received a HTTP GET request' % trigger_id)
+        LOG.info(f'Trigger {trigger_id} received a HTTP GET request')
         if len(data) > 0:
             trigger.set_json_data(data=data)
         return trigger.activate()
@@ -334,14 +335,14 @@ def http_post_request(trigger_id, **data):
     """
     triggers = get_triggers()
     if trigger_id not in triggers:
-        return {'error': 'Unknown trigger id: %s' % trigger_id}
+        return {'error': f'Unknown trigger id: {trigger_id}'}
 
     trigger = get_trigger(trigger_id)
     if trigger.trigger_type != TriggerType.HTTPPOSTREQUEST:
-        return {'error': 'Trigger %s is not a HTTP POST request trigger but a %s trigger' % (trigger_id, trigger.trigger_type)}
+        return {'error': f'Trigger {trigger_id} is not a HTTP POST request trigger but a {trigger.trigger_type} trigger'}
 
     if trigger.status == 'Active':
-        LOG.info('Trigger %s received a HTTP POST request' % trigger_id)
+        LOG.info(f'Trigger {trigger_id} received a HTTP POST request')
         if len(data) > 0:
             trigger.set_json_data(data=data)
         return trigger.activate()
@@ -356,14 +357,14 @@ def http_delete_request(trigger_id, **data):
     """
     triggers = get_triggers()
     if trigger_id not in triggers:
-        return {'error': 'Unknown trigger id: %s' % trigger_id}
+        return {'error': f'Unknown trigger id: {trigger_id}'}
 
     trigger = get_trigger(trigger_id)
     if trigger.trigger_type != TriggerType.HTTPDELETEREQUEST:
-        return {'error': 'Trigger %s is not a HTTP DELETE request trigger but a %s trigger' % (trigger_id, trigger.trigger_type)}
+        return {'error': f'Trigger {trigger_id} is not a HTTP DELETE request trigger but a {trigger.trigger_type} trigger'}
 
     if trigger.status == 'Active':
-        LOG.info('Trigger %s received a HTTP DELETE request' % trigger_id)
+        LOG.info(f'Trigger {trigger_id} received a HTTP DELETE request')
         if len(data) > 0:
             trigger.set_json_data(data=data)
         return trigger.activate()
@@ -378,14 +379,14 @@ def signed_message_request(trigger_id, **data):
     """
     triggers = get_triggers()
     if trigger_id not in triggers:
-        return {'error': 'Unknown trigger id: %s' % trigger_id}
+        return {'error': f'Unknown trigger id: {trigger_id}'}
 
     trigger = get_trigger(trigger_id)
     if trigger.trigger_type != TriggerType.SIGNEDMESSAGE:
-        return {'error': 'Trigger %s is not a SignedMessage request trigger but a %s trigger' % (trigger_id, trigger.trigger_type)}
+        return {'error': f'Trigger {trigger_id} is not a SignedMessage request trigger but a {trigger.trigger_type} trigger'}
 
     if trigger.status == 'Active':
-        LOG.info('Trigger %s received a SignedMessage request' % trigger_id)
+        LOG.info(f'Trigger {trigger_id} received a SignedMessage request')
 
         if 'message' in data:
             trigger.message = data['message']
@@ -408,14 +409,14 @@ def file_download(trigger_id, **data):
     """
     triggers = get_triggers()
     if trigger_id not in triggers:
-        return {'error': 'Unknown trigger id: %s' % trigger_id}
+        return {'error': f'Unknown trigger id: {trigger_id}'}
 
     trigger = get_trigger(trigger_id)
     if trigger.trigger_type != TriggerType.HTTPGETREQUEST:
-        return {'error': 'Trigger %s is not a HTTP GET request trigger but a %s trigger' % (trigger_id, trigger.trigger_type)}
+        return {'error': f'Trigger {trigger_id} is not a HTTP GET request trigger but a {trigger.trigger_type} trigger'}
 
     if trigger.status == 'Active':
-        LOG.info('Trigger %s received a HTTP GET request' % trigger_id)
+        LOG.info(f'Trigger {trigger_id} received a HTTP GET request')
         if len(data) > 0:
             trigger.set_json_data(data=data)
         return trigger.activate()

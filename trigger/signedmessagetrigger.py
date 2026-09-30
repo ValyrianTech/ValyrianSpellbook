@@ -1,16 +1,16 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Trigger that activates on a signed message verification."""
+
+from validators.validators import valid_address
 
 from .trigger import Trigger
 from .triggertype import TriggerType
-from validators.validators import valid_address
 
 
 class SignedMessageTrigger(Trigger):
     """Trigger that activates on a signed message verification."""
     def __init__(self, trigger_id):
-        super(SignedMessageTrigger, self).__init__(trigger_id=trigger_id)
+        super().__init__(trigger_id=trigger_id)
         self.trigger_type = TriggerType.SIGNEDMESSAGE
         self.address = None
         self.message = None
@@ -27,7 +27,7 @@ class SignedMessageTrigger(Trigger):
 
     def configure(self, **config):
         """Configure."""
-        super(SignedMessageTrigger, self).configure(**config)
+        super().configure(**config)
         if 'address' in config and valid_address(config['address']):
             self.address = config['address']
         elif 'address' in config and config['address'] == '':
@@ -35,13 +35,13 @@ class SignedMessageTrigger(Trigger):
 
     def json_encodable(self):
         """Json encodable."""
-        ret = super(SignedMessageTrigger, self).json_encodable()
+        ret = super().json_encodable()
         ret.update({'address': self.address})
         return ret
 
     def get_script_variables(self):
         """Get script variables."""
-        ret = super(SignedMessageTrigger, self).json_encodable()
+        ret = super().json_encodable()
         ret.update({'message': self.message,
                     'address': self.message_address,
                     'signature': self.message_signature,

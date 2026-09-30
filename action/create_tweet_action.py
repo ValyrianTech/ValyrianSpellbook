@@ -1,33 +1,32 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Action that creates a tweet on Twitter."""
 
-from typing import Union, List
 
 from helpers.loghelpers import LOG
+from helpers.twitterhelpers import create_tweet
+
 from .action import Action
 from .actiontype import ActionType
-from helpers.twitterhelpers import create_tweet
 
 
 class CreateTweetAction(Action):
     """Action that creates a tweet on Twitter."""
     def __init__(self, action_id: str) -> None:
-        super(CreateTweetAction, self).__init__(action_id=action_id)
+        super().__init__(action_id=action_id)
         self.action_type = ActionType.CREATE_TWEET
 
-        self.text: Union[str, None] = None
-        self.in_reply_to_tweet_id: Union[int, str, None] = None
-        self.reply_settings: Union[str, None] = None
-        self.exclude_reply_user_ids: Union[List[Union[int, str]], None] = None
-        self.quote_tweet_id: Union[int, str, None] = None
-        self.poll_options: Union[List[str], None] = None
-        self.poll_duration_minutes: Union[int, None] = None
-        self.media_tagged_user_ids: Union[List[Union[int, str]], None] = None
-        self.media_ids: Union[List[Union[int, str]], None] = None
-        self.place_id: Union[str, None] = None
-        self.for_super_followers_only: Union[bool, None] = None
-        self.direct_message_deep_link: Union[str, None] = None
+        self.text: str | None = None
+        self.in_reply_to_tweet_id: int | str | None = None
+        self.reply_settings: str | None = None
+        self.exclude_reply_user_ids: list[int | str] | None = None
+        self.quote_tweet_id: int | str | None = None
+        self.poll_options: list[str] | None = None
+        self.poll_duration_minutes: int | None = None
+        self.media_tagged_user_ids: list[int | str] | None = None
+        self.media_ids: list[int | str] | None = None
+        self.place_id: str | None = None
+        self.for_super_followers_only: bool | None = None
+        self.direct_message_deep_link: str | None = None
         self.user_auth: bool = True
 
     def run(self):
@@ -66,7 +65,7 @@ class CreateTweetAction(Action):
                          direct_message_deep_link=self.direct_message_deep_link,
                          user_auth=self.user_auth)
 
-        except Exception as ex:
+        except (ValueError, KeyError, TypeError, OSError) as ex:
             LOG.error(f'Unable to create tweet: {ex}')
             return False
 
@@ -91,7 +90,7 @@ class CreateTweetAction(Action):
                         - config['direct_message_deep_link']: Tweets a link directly to a Direct Message conversation with an account.
                         - config['user_auth']: Whether or not to use OAuth 1.0a User Context to authenticate
         """
-        super(CreateTweetAction, self).configure(**config)
+        super().configure(**config)
         if 'text' in config:
             self.text = config['text']
 
@@ -137,7 +136,7 @@ class CreateTweetAction(Action):
 
         :return: A dict containing the configuration settings
         """
-        ret = super(CreateTweetAction, self).json_encodable()
+        ret = super().json_encodable()
         ret.update({'text': self.text,
                     'in_reply_to_tweet_id': self.in_reply_to_tweet_id,
                     'reply_settings': self.reply_settings,

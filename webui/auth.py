@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Authentication helpers for the Valyrian Spellbook Web UI
 """
@@ -14,8 +13,9 @@ from fastapi.responses import RedirectResponse
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from helpers.configurationhelpers import get_key, get_secret
 from api_client import SpellbookAPIClient
+
+from helpers.configurationhelpers import get_key, get_secret
 
 
 def get_api_client(request: Request) -> SpellbookAPIClient:

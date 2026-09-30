@@ -3,11 +3,12 @@
 
 import base64
 import hashlib
+
 from Crypto import Random
 from Crypto.Cipher import AES
 
 
-class AESCipher(object):
+class AESCipher:
     """AES encryption/decryption cipher for the Valyrian Spellbook."""
     def __init__(self, key):
         self.bs = 32
