@@ -8,11 +8,13 @@ import hmac
 import os
 import random
 import string
+import tempfile
 import threading
 
 import simplejson
 
 from helpers.jsonhelpers import load_from_json_file, save_to_json_file
+from helpers.loghelpers import LOG
 
 API_KEYS_FILE = 'json/private/api_keys.json'
 LAST_NONCES_FILE = 'json/private/last_nonces.json'
@@ -73,8 +75,23 @@ def load_last_nonces():
 
 
 def save_last_nonces():
-    """Persist the in-memory LAST_NONCES dict to the json file."""
-    save_to_json_file(LAST_NONCES_FILE, LAST_NONCES)
+    """Persist the in-memory LAST_NONCES dict to the json file atomically."""
+    last_nonces_dir = os.path.dirname(LAST_NONCES_FILE)
+    if not os.path.isdir(last_nonces_dir):
+        os.makedirs(last_nonces_dir)
+
+    tmp_path = None
+    try:
+        with tempfile.NamedTemporaryFile(mode='w', dir=last_nonces_dir, delete=False) as tmp_file:
+            tmp_path = tmp_file.name
+            simplejson.dump(LAST_NONCES, tmp_file, indent=4, sort_keys=True)
+            tmp_file.flush()
+            os.fsync(tmp_file.fileno())
+        os.replace(tmp_path, LAST_NONCES_FILE)
+    except (ValueError, KeyError, TypeError, OSError) as ex:
+        LOG.error(f'Failed to save data to json file {LAST_NONCES_FILE}: {ex}')
+        if tmp_path is not None and os.path.exists(tmp_path):
+            os.remove(tmp_path)
 
 
 def hash_message(data, nonce):
