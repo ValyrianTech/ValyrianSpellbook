@@ -3,3 +3,6 @@ exclude = ["unittests", "integrationtests", "apps"]
 fail-under = 80
 ignore-init-method = true
 ignore-init-module = false
+
+[tool.ruff]
+extend-exclude = ["vulture_whitelist.py"]
