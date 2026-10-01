@@ -1,6 +1,6 @@
 [project]
 name = "valyrian-spellbook"
-license = {text = "MIT"}
+license = "MIT"
 classifiers = ["License :: OSI Approved :: MIT License"]
 
 [tool.interrogate]
