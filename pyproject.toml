@@ -1,8 +1,3 @@
-[project]
-name = "ValyrianSpellbook"
-license = {text = "MIT"}
-classifiers = ["License :: OSI Approved :: MIT License"]
-
 [tool.interrogate]
 exclude = ["unittests", "integrationtests", "apps"]
 fail-under = 80
