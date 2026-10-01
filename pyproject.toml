@@ -6,3 +6,6 @@ ignore-init-module = false
 
 [tool.ruff.lint]
 ignore = ["EXE001"]
+
+[tool.ruff.lint.per-file-ignores]
+"vulture_whitelist.py" = ["B018", "F821"]

@@ -250,7 +250,7 @@ class TestAPIMethods:
     @patch.object(SpellbookAPIClient, "_request")
     def test_get_reveal(self, mock_req):
         self.client.get_reveal("test-action")
-        mock_req.assert_called_once_with("GET", "/spellbook/actions/test-action/reveal")
+        mock_req.assert_called_once_with("GET", "/spellbook/actions/test-action/reveal", authenticate=True)
 
     @patch.object(SpellbookAPIClient, "_request")
     def test_get_latest_block(self, mock_req):
