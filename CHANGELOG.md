@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed a command-injection vulnerability in `action/commandaction.py` (`CommandAction.run`) and `helpers/runcommandprocess.py` (`RunCommandProcess.run`) by removing `shell=True` from command execution.
 - Commands are now executed via `shlex.split` + `subprocess.run(..., shell=False)` / `Popen(argv, ...)`, so shell metacharacters in commands and substituted placeholders are no longer interpreted by a shell.
 - `CommandAction` now `shlex.quote`s placeholder values before substitution, so untrusted placeholder values cannot inject shell syntax.
+- Hardened API key/secret generation in `authentication.py` (`initialize_api_keys_file`): credentials are now generated with the `secrets` module (`secrets.token_hex(16)` for the API key, `base64.b64encode(secrets.token_bytes(32))` for the API secret) instead of the non-cryptographic `random` module, and the unused, non-enforced `permissions` field was removed from the generated `api_keys.json`.
 
 ### Internal
 
