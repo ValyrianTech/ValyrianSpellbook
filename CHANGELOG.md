@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Relicensed the project from the GNU General Public License v3 (GPL-3.0) to the MIT License. The top-level `LICENSE` file now contains the standard MIT License text (Copyright (c) 2026 ValyrianTech), `pyproject.toml` now declares `license = {text = "MIT"}` with the `License :: OSI Approved :: MIT License` classifier, and the README has a new `License` section.
 - Renamed 37 files to follow PEP 8 snake_case naming conventions. Notable source module renames:
   - `bips/BIP32.py` -> `bips/bip32.py`
   - `bips/BIP39.py` -> `bips/bip39.py`
