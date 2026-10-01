@@ -22,7 +22,13 @@ cannot swap them without invalidating the tag.
 For backward compatibility, the class can still *read* legacy (v1) ciphertexts
 produced by the old implementation (AES-CBC with PKCS7 padding and a single
 SHA-256 key round). The legacy format carries no version byte, so any payload
-whose first byte is not the v2 marker is treated as legacy.
+whose first byte is not the v2 marker is treated as legacy. Because a legacy
+IV may randomly begin with the v2 marker, a payload that starts with the v2
+marker is tried as v2 first and, if authentication fails, retried as legacy —
+this keeps the ~1/256 of legacy wallets whose IV starts with 0x02 decryptable.
+The legacy retry is only attempted when the payload is structurally legacy-shaped
+(its length is ``16 + 16*k`` bytes, i.e. an IV plus a positive multiple of
+``AES.block_size`` ciphertext).
 """
 
 import base64
@@ -92,8 +98,12 @@ class AESCipher:
         """Decrypt a base64 payload and return the plaintext as a ``str``.
 
         Accepts the payload either as ``bytes`` or as a ``str`` (UTF-8). Payloads
-        whose first decoded byte is the v2 version marker are decrypted with
-        AES-GCM; all others are treated as legacy AES-CBC ciphertexts.
+        whose first decoded byte is the v2 version marker are tried as AES-GCM
+        first; if GCM authentication fails they are retried as legacy AES-CBC
+        ciphertexts, but only when the payload is structurally legacy-shaped
+        (length ``16 + 16*k`` bytes) because a legacy IV may coincidentally begin
+        with the marker. All other payloads are treated as legacy AES-CBC
+        ciphertexts.
 
         :param enc: The base64-encoded ciphertext (``bytes`` or ``str``).
         :returns: The decrypted plaintext as a ``str``.
@@ -106,9 +116,24 @@ class AESCipher:
         data = base64.b64decode(enc)
 
         if data[:1] == VERSION:
-            return self._decrypt_v2(data)
+            try:
+                return self._decrypt_v2(data)
+            except ValueError as v2_error:
+                if not self._looks_like_legacy(data):
+                    raise
+                try:
+                    return self._decrypt_legacy(data)
+                except Exception:
+                    raise v2_error
 
         return self._decrypt_legacy(data)
+
+    @staticmethod
+    def _looks_like_legacy(data):
+        """Return True if ``data`` is structurally a legacy CBC payload."""
+        if not isinstance(data, bytes) or len(data) < 2 * AES.block_size:
+            return False
+        return (len(data) - AES.block_size) % AES.block_size == 0
 
     def _decrypt_v2(self, data):
         """Decrypt an authenticated (v2) payload and return the UTF-8 string."""

@@ -16,13 +16,13 @@ _LEGACY_IV = b'0123456789abcdef'
 _LEGACY_BLOCK_SIZE = 32
 
 
-def _legacy_encrypt(password, plaintext):
+def _legacy_encrypt(password, plaintext, iv=_LEGACY_IV):
     """Produce a legacy (v1) CBC ciphertext using the original algorithm."""
     key = hashlib.sha256(password.encode()).digest()
     pad_len = _LEGACY_BLOCK_SIZE - (len(plaintext) % _LEGACY_BLOCK_SIZE)
     padded = plaintext + bytes([pad_len]) * pad_len
-    cipher = AES.new(key, AES.MODE_CBC, _LEGACY_IV)
-    return base64.b64encode(_LEGACY_IV + cipher.encrypt(padded))
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+    return base64.b64encode(iv + cipher.encrypt(padded))
 
 
 class TestAESCipher:
@@ -69,6 +69,34 @@ class TestAESCipher:
         legacy = _legacy_encrypt('old_password', b'')
         cipher = AESCipher(key='old_password')
         assert cipher.decrypt(legacy) == ''
+
+    def test_legacy_cbc_decryption_with_v2_marker_iv(self):
+        iv = b'\x02' + b'\x00' * 15
+        legacy = _legacy_encrypt('old_password', b'legacy secret', iv=iv)
+        cipher = AESCipher(key='old_password')
+        assert cipher.decrypt(legacy) == 'legacy secret'
+
+    def test_looks_like_legacy_true_for_real_legacy_payload(self):
+        legacy = _legacy_encrypt('old_password', b'legacy secret')
+        data = base64.b64decode(legacy)
+        assert AESCipher._looks_like_legacy(data)
+
+    def test_looks_like_legacy_false_for_too_short(self):
+        assert not AESCipher._looks_like_legacy(b'\x02' * 8)
+
+    def test_looks_like_legacy_false_for_non_legacy_shaped_length(self):
+        assert not AESCipher._looks_like_legacy(b'\x00' * 20)
+        assert not AESCipher._looks_like_legacy(b'\x00' * 60)
+
+    def test_looks_like_legacy_false_for_non_bytes(self):
+        assert not AESCipher._looks_like_legacy('abc')
+        assert not AESCipher._looks_like_legacy(None)
+
+    def test_v2_marker_legacy_shaped_but_legacy_fails_raises(self):
+        payload = b'\x02' + b'\x00' * 47
+        b64 = base64.b64encode(payload)
+        with pytest.raises(ValueError):
+            AESCipher(key='pw').decrypt(b64)
 
     def test_encrypt_deterministic_with_injected_salt_and_nonce(self):
         salt = b's' * 16
