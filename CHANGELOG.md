@@ -43,7 +43,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `AESCipher` (`AESCipher.py`) now uses authenticated AES-GCM encryption with a salted, slow `scrypt` key-derivation function instead of the previous unauthenticated AES-CBC with PKCS7 padding and a single-round SHA-256 key derivation.
   - Fixes the lack of integrity/authentication: the version byte and salt are authenticated via the GCM tag, so tampering with the ciphertext, tag, salt or version byte is now detected and decryption fails with a `ValueError`.
   - Removes the padding-oracle exposure of the old PKCS7 padding, and the slow `scrypt` KDF makes brute-forcing the wallet password expensive.
-  - New ciphertexts use a versioned v2 format (version byte, salt, nonce, tag, ciphertext). Legacy v1 (AES-CBC) ciphertexts can still be read for backward compatibility, but legacy encryption is no longer produced.
+  - New ciphertexts use a versioned v2 format (version byte, salt, nonce, tag, ciphertext), and legacy encryption is no longer produced. For backward compatibility, `decrypt()` still reads legacy v1 (AES-CBC) ciphertexts: a payload is tried as v2 first, and one that is not authenticated as v2 is retried as legacy v1 when it is structurally a legacy payload (16-byte IV plus a positive multiple of the 16-byte AES block).
+    - The legacy read path returns a decoded UTF-8 string, so a legacy payload whose plaintext is not valid UTF-8 cannot be returned by `decrypt()`.
 
 ### Internal
 
