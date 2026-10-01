@@ -155,7 +155,7 @@ class SpellbookAPIClient:
     
     def get_reveal(self, action_id: str) -> dict:
         """Get revealed secret from a RevealSecret action"""
-        return self._request('GET', f'/spellbook/actions/{action_id}/reveal')
+        return self._request('GET', f'/spellbook/actions/{action_id}/reveal', authenticate=True)
     
     # ==================== Blockchain ====================
     
