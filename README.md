@@ -18,6 +18,7 @@ The Valyrian Spellbook, formerly known as the Bitcoin Spellbook, is an open plat
 - [Example Apps](#example-apps)
 - [Additional Tools](#additional-tools)
 - [Development](#development)
+- [License](#license)
 - [Donations and Social Media](#donations-and-social-media)
 
 ---
@@ -176,6 +177,10 @@ The project maintains a high quality bar for its source code:
 Source modules follow PEP 8 snake_case naming conventions.
 
 ---
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ## Donations and Social Media
 If you find this project useful, consider making a donation to support development:
