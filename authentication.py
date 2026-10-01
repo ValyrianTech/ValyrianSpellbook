@@ -8,13 +8,16 @@ import hmac
 import os
 import random
 import string
+import threading
 
 import simplejson
 
 from helpers.jsonhelpers import load_from_json_file, save_to_json_file
 
 API_KEYS_FILE = 'json/private/api_keys.json'
+LAST_NONCES_FILE = 'json/private/last_nonces.json'
 LAST_NONCES: dict[str, int] = {}
+_NONCE_LOCK = threading.Lock()
 
 
 class AuthenticationStatus:
@@ -57,6 +60,21 @@ def initialize_api_keys_file():
     # Write the updated configuration back to the file
     with open('/spellbook/configuration/spellbook.conf', 'w') as configfile:
         config.write(configfile)
+
+
+def load_last_nonces():
+    """
+    Load the last seen nonces from the json file into the in-memory LAST_NONCES dict.
+    If the file does not exist or is invalid, LAST_NONCES is left empty.
+    """
+    data = load_from_json_file(LAST_NONCES_FILE)
+    if isinstance(data, dict):
+        LAST_NONCES.update(data)
+
+
+def save_last_nonces():
+    """Persist the in-memory LAST_NONCES dict to the json file."""
+    save_to_json_file(LAST_NONCES_FILE, LAST_NONCES)
 
 
 def hash_message(data, nonce):
@@ -120,12 +138,22 @@ def check_authentication(headers, data):
     except (ValueError, KeyError, TypeError, OSError):
         return AuthenticationStatus.INVALID_NONCE
 
-    if api_key in LAST_NONCES and LAST_NONCES[api_key] >= nonce:
-        return AuthenticationStatus.INVALID_NONCE
-
-    LAST_NONCES[api_key] = nonce
-
-    if headers['API_Sign'] == signature(data, nonce, api_keys[api_key]['secret']):
-        return AuthenticationStatus.OK
-    else:
+    # Verify the signature first so an invalid signature can never poison the nonce store
+    if not hmac.compare_digest(headers['API_Sign'], signature(data, nonce, api_keys[api_key]['secret'])):
         return AuthenticationStatus.INVALID_SIGNATURE
+
+    # The nonce read-modify-write must be atomic to be safe under a threaded server
+    with _NONCE_LOCK:
+        if api_key in LAST_NONCES and LAST_NONCES[api_key] >= nonce:
+            return AuthenticationStatus.INVALID_NONCE
+
+        LAST_NONCES[api_key] = nonce
+        save_last_nonces()
+
+    return AuthenticationStatus.OK
+
+
+try:
+    load_last_nonces()
+except (OSError, ValueError, KeyError, TypeError):
+    pass
