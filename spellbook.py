@@ -514,6 +514,8 @@ get_reveal_parser = subparsers.add_parser(name='get_reveal',
                                           epilog=texts.GET_REVEAL_EPILOG)
 
 get_reveal_parser.add_argument('action_id', help='The id of the action')
+get_reveal_parser.add_argument('-k', '--api_key', help='API key for the spellbook REST API', default=key)
+get_reveal_parser.add_argument('-s', '--api_secret', help='API secret for the spellbook REST API', default=secret)
 
 # Create parser for the get_logs subcommand
 get_logs_parser = subparsers.add_parser(name='get_logs',
@@ -1034,7 +1036,7 @@ def run_action():
 def get_reveal():
     """Retrieve and display the reveal text or link from a RevealSecret action."""
     url = f'{get_spellbook_uri()}/spellbook/actions/{args.action_id}/reveal'
-    do_get_request(url=url)
+    do_get_request(url=url, authenticate=True)
 
 
 def get_logs():
