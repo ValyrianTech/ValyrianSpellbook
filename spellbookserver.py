@@ -864,6 +864,7 @@ class SpellbookRESTAPI(Bottle):
 
     @staticmethod
     @output_json
+    @authentication_required
     def get_reveal(action_id):
         """Return the reveal secret for a RevealSecretAction."""
         response.content_type = 'application/json'

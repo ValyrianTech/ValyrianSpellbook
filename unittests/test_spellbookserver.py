@@ -835,9 +835,20 @@ class TestActionEndpoints:
     @patch('spellbookserver.response')
     @patch('spellbookserver.get_reveal')
     def test_get_reveal(self, mock_reveal, mock_resp):
-        mock_reveal.return_value = {'secret': 's3cr3t'}
-        result = SpellbookRESTAPI.get_reveal('act1')
-        assert result['secret'] == 's3cr3t'
+        with patch('decorators.check_authentication') as mock_dec:
+            mock_dec.return_value = 'OK'
+            mock_reveal.return_value = {'secret': 's3cr3t'}
+            result = SpellbookRESTAPI.get_reveal('act1')
+            assert result['secret'] == 's3cr3t'
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.get_reveal')
+    def test_get_reveal_requires_authentication(self, mock_reveal, mock_resp):
+        with patch('decorators.check_authentication') as mock_dec:
+            mock_dec.return_value = 'No api key supplied'
+            result = SpellbookRESTAPI.get_reveal('act1')
+            assert 'error' in result
+            mock_reveal.assert_not_called()
 
 
 class TestLogsEndpoint:
