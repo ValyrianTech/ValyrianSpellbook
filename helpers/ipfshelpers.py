@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """Helper functions for interacting with IPFS for data storage and retrieval."""
-from ipfs_dict_chain.IPFS import connect
+from ipfs_dict_chain.IPFS import IPFSError, connect
 from ipfs_dict_chain.IPFSDict import IPFSDict
 from ipfs_dict_chain.IPFSDictChain import IPFSDictChain
 
@@ -19,7 +19,7 @@ def check_ipfs():
     try:
         connect(host=get_ipfs_api_host(), port=get_ipfs_api_port())
         return True
-    except (ValueError, KeyError, TypeError, OSError) as ex:
+    except (ValueError, KeyError, TypeError, OSError, IPFSError) as ex:
         LOG.error(f'IPFS node is not running: {ex}')
         return False
 
