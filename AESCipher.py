@@ -123,7 +123,7 @@ class AESCipher:
                     raise
                 try:
                     return self._decrypt_legacy(data)
-                except Exception:
+                except Exception:  # noqa: BLE001
                     raise v2_error
 
         return self._decrypt_legacy(data)
