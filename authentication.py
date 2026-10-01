@@ -67,9 +67,13 @@ def initialize_api_keys_file():
 def load_last_nonces():
     """
     Load the last seen nonces from the json file into the in-memory LAST_NONCES dict.
-    If the file does not exist or is invalid, LAST_NONCES is left empty.
+    If the file does not exist or is invalid, LAST_NONCES is left unchanged.
     """
-    data = load_from_json_file(LAST_NONCES_FILE)
+    try:
+        data = load_from_json_file(LAST_NONCES_FILE)
+    except OSError as ex:
+        LOG.error(f'Failed to load last nonces from {LAST_NONCES_FILE}: {ex}')
+        return
     if isinstance(data, dict):
         LAST_NONCES.update(data)
 
@@ -170,7 +174,4 @@ def check_authentication(headers, data):
     return AuthenticationStatus.OK
 
 
-try:
-    load_last_nonces()
-except (OSError, ValueError, KeyError, TypeError):
-    pass
+load_last_nonces()
