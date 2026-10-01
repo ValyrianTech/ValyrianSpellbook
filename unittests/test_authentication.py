@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import threading
 from unittest import mock
 
 import pytest
@@ -6,6 +7,7 @@ import pytest
 import authentication
 
 NONCE = 1
+_REAL_SAVE_LAST_NONCES = authentication.save_last_nonces
 
 
 class TestAuthentication:
@@ -16,6 +18,7 @@ class TestAuthentication:
         global NONCE
 
         authentication.load_from_json_file = mock.MagicMock(return_value={'foo': {'secret': 'bar1'}})
+        authentication.save_last_nonces = mock.MagicMock()
         self.data = {'test': 'test'}
         NONCE = NONCE + 1
 
@@ -168,3 +171,51 @@ class TestInitializeApiKeysFile:
         assert 'secret' in saved_data[api_key]
         assert len(saved_data[api_key]['secret']) == 16
         assert saved_data[api_key]['permissions'] == 'all'
+
+
+class TestLastNonces:
+    """Tests for load_last_nonces and save_last_nonces helpers."""
+
+    def test_load_last_nonces_updates_last_nonces(self):
+        authentication.LAST_NONCES.clear()
+        authentication.load_from_json_file = mock.MagicMock(return_value={'foo': 42})
+        authentication.load_last_nonces()
+        assert authentication.LAST_NONCES == {'foo': 42}
+
+    def test_load_last_nonces_none_leaves_last_nonces_unchanged(self):
+        authentication.LAST_NONCES.clear()
+        authentication.load_from_json_file = mock.MagicMock(return_value=None)
+        authentication.load_last_nonces()
+        assert authentication.LAST_NONCES == {}
+
+    def test_save_last_nonces_persists(self):
+        authentication.LAST_NONCES.clear()
+        authentication.LAST_NONCES['foo'] = 7
+        authentication.save_to_json_file = mock.MagicMock()
+        _REAL_SAVE_LAST_NONCES()
+        authentication.save_to_json_file.assert_called_once_with(authentication.LAST_NONCES_FILE, authentication.LAST_NONCES)
+
+    def test_invalid_signature_does_not_record_nonce(self):
+        authentication.LAST_NONCES.clear()
+        authentication.save_last_nonces = mock.MagicMock()
+        authentication.load_from_json_file = mock.MagicMock(return_value={'foo': {'secret': 'bar1'}})
+        headers = {'API_Key': 'foo',
+                   'API_Sign': 'invalid_signature',
+                   'API_Nonce': 999999999}
+        assert authentication.check_authentication(headers, {'test': 'test'}) == authentication.AuthenticationStatus.INVALID_SIGNATURE
+        assert 'foo' not in authentication.LAST_NONCES
+
+    def test_valid_request_calls_save_last_nonces(self):
+        authentication.LAST_NONCES.clear()
+        authentication.save_last_nonces = mock.MagicMock()
+        authentication.load_from_json_file = mock.MagicMock(return_value={'foo': {'secret': 'bar1'}})
+        data = {'test': 'test'}
+        nonce = 12345
+        headers = {'API_Key': 'foo',
+                   'API_Sign': authentication.signature(data, nonce, 'bar1'),
+                   'API_Nonce': nonce}
+        assert authentication.check_authentication(headers, data) == authentication.AuthenticationStatus.OK
+        authentication.save_last_nonces.assert_called_once_with()
+
+    def test_nonce_lock_is_a_threading_lock(self):
+        assert isinstance(authentication._NONCE_LOCK, type(threading.Lock()))
