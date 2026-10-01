@@ -190,6 +190,22 @@ class TestLastNonces:
         authentication.load_last_nonces()
         assert authentication.LAST_NONCES == {}
 
+    def test_load_last_nonces_oserror_leaves_last_nonces_unchanged(self):
+        authentication.LAST_NONCES.clear()
+        authentication.LAST_NONCES['existing'] = 5
+        authentication.load_from_json_file = mock.MagicMock(side_effect=OSError('boom'))
+        with mock.patch.object(authentication, 'LOG') as mock_log:
+            authentication.load_last_nonces()
+        assert authentication.LAST_NONCES == {'existing': 5}
+        mock_log.error.assert_called_once()
+
+    def test_load_last_nonces_file_not_found_does_not_raise(self):
+        authentication.LAST_NONCES.clear()
+        authentication.LAST_NONCES['existing'] = 5
+        authentication.load_from_json_file = mock.MagicMock(side_effect=FileNotFoundError('boom'))
+        authentication.load_last_nonces()
+        assert authentication.LAST_NONCES == {'existing': 5}
+
     def test_save_last_nonces_persists(self, tmp_path):
         nonce_file = str(tmp_path / 'last_nonces.json')
         authentication.LAST_NONCES.clear()
