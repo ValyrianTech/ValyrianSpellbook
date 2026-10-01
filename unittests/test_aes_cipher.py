@@ -5,7 +5,6 @@ import base64
 import hashlib
 
 import pytest
-
 from Crypto.Cipher import AES
 
 from AESCipher import AESCipher
