@@ -48,7 +48,7 @@ class CommandAction(Action):
 
         argv = shlex.split(command)
         try:
-            result = subprocess.run(argv, shell=False, capture_output=True, cwd=self.working_dir)
+            result = subprocess.run(argv, shell=False, capture_output=True, cwd=self.working_dir, check=False)
         except OSError as e:
             LOG.error(f'Command failed to run: {e}')
             return False, b'', str(e).encode()
