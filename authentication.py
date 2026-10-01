@@ -6,8 +6,7 @@ import configparser
 import hashlib
 import hmac
 import os
-import random
-import string
+import secrets
 
 import simplejson
 
@@ -37,12 +36,11 @@ def initialize_api_keys_file():
     if not os.path.isdir('json/private/'):
         os.makedirs('json/private')
 
-    # Create a random string of characters (uppercase letters and digits) for a api_key and api_secret pair
-    api_key = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(16))
-    api_secret = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(16))
+    # Create a cryptographically secure api_key and api_secret pair
+    api_key = secrets.token_hex(16)
+    api_secret = base64.b64encode(secrets.token_bytes(32)).decode()
 
-    data = {api_key: {'secret': api_secret,
-                      'permissions': 'all'}}
+    data = {api_key: {'secret': api_secret}}
 
     save_to_json_file(API_KEYS_FILE, data)
 
