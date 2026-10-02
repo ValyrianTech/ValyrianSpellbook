@@ -1,7 +1,12 @@
 #!/usr/bin/env python
+import os
+import subprocess
+import sys
+
 import pytest
 
 from helpers.py3specials import (
+    b58check_to_bin,
     bin_dbl_sha256,
     bin_to_b58check,
     bytes_to_hex_string,
@@ -321,3 +326,45 @@ class TestPrintToStderr:
         print_to_stderr('test message')
         captured = capsys.readouterr()
         assert 'test message' in captured.err
+
+
+class TestB58checkToBin:
+    """Tests for b58check_to_bin function"""
+
+    def test_b58check_to_bin_valid_address(self):
+        result = b58check_to_bin('1PYmZMCgKFKVth5W9kaRpdYq9Lf8eLQ95E')
+        assert isinstance(result, bytes)
+        assert len(result) == 20
+
+    def test_b58check_to_bin_round_trip(self):
+        encoded = bin_to_b58check(b'\x00' * 20, magicbyte=0)
+        assert b58check_to_bin(encoded) == b'\x00' * 20
+
+    def test_b58check_to_bin_non_str_raises_type_error(self):
+        with pytest.raises(TypeError):
+            b58check_to_bin(b'\x00' * 25)
+
+    def test_b58check_to_bin_too_short_raises_value_error(self):
+        with pytest.raises(ValueError):
+            b58check_to_bin('1111')
+
+    def test_b58check_to_bin_invalid_checksum_raises_value_error(self):
+        bad = '1PYmZMCgKFKVth5W9kaRpdYq9Lf8eLQ95F'
+        with pytest.raises(ValueError):
+            b58check_to_bin(bad)
+
+    def test_b58check_to_bin_validation_survives_optimized_mode(self):
+        code = (
+            "from helpers.py3specials import b58check_to_bin\n"
+            "try:\n"
+            "    b58check_to_bin('1PYmZMCgKFKVth5W9kaRpdYq9Lf8eLQ95F')\n"
+            "except ValueError:\n"
+            "    raise SystemExit(0)\n"
+            "raise SystemExit(1)\n"
+        )
+        result = subprocess.run(
+            [sys.executable, '-O', '-c', code],
+            cwd=os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            check=False,
+        )
+        assert result.returncode == 0

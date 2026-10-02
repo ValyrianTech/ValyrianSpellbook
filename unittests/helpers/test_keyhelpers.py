@@ -42,7 +42,7 @@ class TestPrivateKey:
         assert isinstance(private_key, PrivateKey)
 
     def test_given_invalid_private_key_in_wif_compressed_format_when_initializing_private_key_then_exception_is_raised(self):
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             PrivateKey(private_key='foobar')
 
     def test_given_private_key_in_decimal_format_when_initializing_private_key_then_other_formats_are_calculated_correctly(self):
