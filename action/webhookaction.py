@@ -5,7 +5,7 @@
 import requests
 
 from helpers.loghelpers import LOG
-from validators.validators import valid_url
+from validators.validators import valid_webhook_url
 
 from .action import Action
 from .actiontype import ActionType
@@ -32,14 +32,14 @@ class WebhookAction(Action):
         LOG.info(f'executing webhook: {self.webhook}')
         try:
             if self.request_type == 'GET':
-                r = requests.get(self.webhook)
+                r = requests.get(self.webhook, timeout=10)
             elif self.request_type == 'POST':
-                r = requests.post(self.webhook, data=self.body)
+                r = requests.post(self.webhook, data=self.body, timeout=10)
             else:
                 LOG.error(f'Webhook failed: unsupported request type: {self.request_type}')
                 return False
 
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Webhook failed: {ex}')
             return False
         else:
@@ -58,7 +58,7 @@ class WebhookAction(Action):
                        - config['webhook']    : An url of the webhook
         """
         super().configure(**config)
-        if 'webhook' in config and valid_url(config['webhook']):
+        if 'webhook' in config and valid_webhook_url(config['webhook']):
             self.webhook = config['webhook']
 
         self.body = config.get('body', None)

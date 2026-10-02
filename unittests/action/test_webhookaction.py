@@ -1,8 +1,17 @@
 #!/usr/bin/env python
 from unittest import mock
 
+import pytest
+import requests
+
 from action.actiontype import ActionType
 from action.webhookaction import WebhookAction
+
+
+@pytest.fixture(autouse=True)
+def _mock_valid_webhook_url():
+    with mock.patch('action.webhookaction.valid_webhook_url', side_effect=lambda url: isinstance(url, str) and url.startswith('http')):
+        yield
 
 
 class TestWebhookAction:
@@ -66,7 +75,7 @@ class TestWebhookAction:
         action.configure(webhook='http://example.com/webhook')
         result = action.run()
         assert result == (True, 'success')
-        mock_get.assert_called_once_with('http://example.com/webhook')
+        mock_get.assert_called_once_with('http://example.com/webhook', timeout=10)
 
     @mock.patch('action.webhookaction.requests.get')
     def test_webhookaction_run_get_failure_status(self, mock_get):
@@ -95,7 +104,7 @@ class TestWebhookAction:
         )
         result = action.run()
         assert result == (True, 'posted')
-        mock_post.assert_called_once_with('http://example.com/webhook', data='test data')
+        mock_post.assert_called_once_with('http://example.com/webhook', data='test data', timeout=10)
 
     def test_webhookaction_run_unsupported_request_type(self):
         action = WebhookAction('test_webhook_action')
@@ -107,6 +116,15 @@ class TestWebhookAction:
     @mock.patch('action.webhookaction.requests.get')
     def test_webhookaction_run_exception(self, mock_get):
         mock_get.side_effect = ValueError('Connection error')
+
+        action = WebhookAction('test_webhook_action')
+        action.configure(webhook='http://example.com/webhook')
+        result = action.run()
+        assert not result
+
+    @mock.patch('action.webhookaction.requests.get')
+    def test_webhookaction_run_requests_exception(self, mock_get):
+        mock_get.side_effect = requests.RequestException('Connection error')
 
         action = WebhookAction('test_webhook_action')
         action.configure(webhook='http://example.com/webhook')

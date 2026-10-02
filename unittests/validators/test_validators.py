@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import socket
 from unittest import mock
 
 import pytest
@@ -505,3 +506,74 @@ class TestValidators:
         assert not validators.valid_bech32_address(12345)
         assert not validators.valid_bech32_address(None)
         assert not validators.valid_bech32_address(['bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4'])
+
+
+class TestValidWebhookUrl:
+    """Tests for valid_webhook_url (SSRF-safe webhook URL validation)."""
+
+    @staticmethod
+    def _getaddrinfo_result(*ips):
+        return [(mock.ANY, mock.ANY, mock.ANY, '', (ip, 0)) for ip in ips]
+
+    @pytest.mark.parametrize('url', [
+        123456,
+        None,
+        ['http://example.com'],
+    ])
+    def test_valid_webhook_url_non_string(self, url):
+        assert not validators.valid_webhook_url(url)
+
+    def test_valid_webhook_url_invalid_url(self):
+        assert not validators.valid_webhook_url('not_a_valid_url')
+
+    def test_valid_webhook_url_non_http_scheme(self):
+        assert not validators.valid_webhook_url('ftp://example.com')
+
+    def test_valid_webhook_url_empty_hostname(self):
+        assert not validators.valid_webhook_url('www.example.com')
+
+    @mock.patch('validators.validators.urlparse', side_effect=ValueError('bad url'))
+    def test_valid_webhook_url_parse_error(self, mock_urlparse):
+        assert not validators.valid_webhook_url('http://example.com')
+
+    @mock.patch('validators.validators.socket.getaddrinfo')
+    def test_valid_webhook_url_public_host(self, mock_getaddrinfo):
+        mock_getaddrinfo.return_value = self._getaddrinfo_result('8.8.8.8')
+        assert validators.valid_webhook_url('http://example.com')
+
+    @pytest.mark.parametrize('ip', [
+        '10.0.0.1',
+        '172.16.0.1',
+        '172.31.255.255',
+        '192.168.0.1',
+        '127.0.0.1',
+        '169.254.169.254',
+        '0.0.0.0',
+        '255.255.255.255',
+        '224.0.0.1',
+        '::1',
+    ])
+    @mock.patch('validators.validators.socket.getaddrinfo')
+    def test_valid_webhook_url_non_public(self, mock_getaddrinfo, ip):
+        mock_getaddrinfo.return_value = self._getaddrinfo_result(ip)
+        assert not validators.valid_webhook_url('http://example.com')
+
+    @mock.patch('validators.validators.socket.getaddrinfo')
+    def test_valid_webhook_url_multi_address_rejects(self, mock_getaddrinfo):
+        mock_getaddrinfo.return_value = self._getaddrinfo_result('8.8.8.8', '10.0.0.1')
+        assert not validators.valid_webhook_url('http://example.com')
+
+    @mock.patch('validators.validators.socket.getaddrinfo')
+    def test_valid_webhook_url_bracketed_ipv6(self, mock_getaddrinfo):
+        mock_getaddrinfo.return_value = self._getaddrinfo_result('2001:4860:4860::8888')
+        with mock.patch('validators.validators.valid_url', return_value=True):
+            assert validators.valid_webhook_url('http://[2001:4860:4860::8888]/')
+
+    @mock.patch('validators.validators.socket.getaddrinfo')
+    def test_valid_webhook_url_zone_id(self, mock_getaddrinfo):
+        mock_getaddrinfo.return_value = [(mock.ANY, mock.ANY, mock.ANY, '', ('fe80::1%eth0', 0))]
+        assert not validators.valid_webhook_url('http://example.com')
+
+    @mock.patch('validators.validators.socket.getaddrinfo', side_effect=socket.gaierror('no such host'))
+    def test_valid_webhook_url_gai_error(self, mock_getaddrinfo):
+        assert not validators.valid_webhook_url('http://example.com')
