@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Resolved all remaining mypy type-check errors; the repository is now type-check clean.
 - Nonces are no longer lost on server restart, and concurrent requests can no longer bypass replay protection.
 - Fixed `SendTransactionAction.configure()` (`action/sendtransactionaction.py`) so the configured `change_address` is written to `self.change_address` instead of overwriting `self.receiving_address`. Previously a supplied change address was silently ignored (change always returned to the sending address) and, when both a receiving address and a change address were configured, the change address would overwrite the intended receiving target, potentially sending the primary payment to the wrong address.
+- Base58Check checksum validation for address/private-key decoding is now performed explicitly (raising `TypeError` for non-`str` input and `ValueError` for too-short or invalid-checksum data) instead of using a bare `assert`, so the validation is no longer stripped away under Python's optimized mode (`-O` / `PYTHONOPTIMIZE=1`). The duplicated `b58check_to_bin` implementations in `helpers/privatekeyhelpers.py` and `transactionfactory.py` were consolidated into `helpers/py3specials.py`; invalid Base58Check input now raises `ValueError`/`TypeError` rather than `AssertionError` in callers such as `PrivateKey` and `get_privkey_format`.
 
 ### Security
 
