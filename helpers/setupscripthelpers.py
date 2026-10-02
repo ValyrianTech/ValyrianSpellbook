@@ -7,7 +7,6 @@ from subprocess import PIPE, Popen
 import simplejson
 
 from helpers.configurationhelpers import get_python_exe
-from helpers.platformhelpers import format_args
 
 PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -19,7 +18,7 @@ def spellbook_call(*args):
     spellbook_args.extend(args)
 
     print('\nCALL: {}'.format(' '.join(spellbook_args)))
-    spellbook = Popen(format_args(spellbook_args), stdout=PIPE, stderr=PIPE, shell=True)
+    spellbook = Popen(spellbook_args, stdout=PIPE, stderr=PIPE)
     output, error = spellbook.communicate()
     stripped_output = output.strip().decode()
     print(f'RESPONSE: {stripped_output}\n')
@@ -41,7 +40,7 @@ def bitcoinwand_call(address, message, url):
     bitcoinwand_args = [get_python_exe(), os.path.join(PROGRAM_DIR, 'bitcoinwand.py'), address, message, url]
 
     print('\nCALL: {}'.format(' '.join(bitcoinwand_args)))
-    bitcoinwand = Popen(format_args(bitcoinwand_args), stdout=PIPE, stderr=PIPE, shell=True)
+    bitcoinwand = Popen(bitcoinwand_args, stdout=PIPE, stderr=PIPE)
     output, error = bitcoinwand.communicate()
     stripped_output = output.strip()
     print(f'RESPONSE: {stripped_output}\n')
