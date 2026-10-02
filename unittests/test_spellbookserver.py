@@ -1213,12 +1213,21 @@ class TestConvertAacToOpus:
     @patch('spellbookserver.subprocess.run')
     @patch('builtins.open', mock_open(read_data=b'data'))
     def test_convert_aac_to_opus(self, mock_subprocess):
+        mock_subprocess.return_value = MagicMock(returncode=0, stderr=b'')
         convert_aac_to_opus('input.mp3', 'output.opus')
         mock_subprocess.assert_called_once()
         args = mock_subprocess.call_args[0][0]
+        assert isinstance(args, list)
         assert 'ffmpeg' in args
         assert 'input.mp3' in args
         assert 'output.opus' in args
+        assert mock_subprocess.call_args.kwargs['shell'] is False
+
+    @patch('spellbookserver.subprocess.run')
+    def test_convert_aac_to_opus_failure(self, mock_subprocess):
+        mock_subprocess.return_value = MagicMock(returncode=1, stderr=b'ffmpeg error')
+        with pytest.raises(ValueError):
+            convert_aac_to_opus('input.mp3', 'output.opus')
 
 
 class TestInitializeRequestsLog:
