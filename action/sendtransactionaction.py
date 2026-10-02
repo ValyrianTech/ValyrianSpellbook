@@ -132,7 +132,7 @@ class SendTransactionAction(Action):
             self.op_return_data = config['op_return_data']
 
         if 'change_address' in config and valid_address(config['change_address']):
-            self.receiving_address = config['change_address']
+            self.change_address = config['change_address']
 
         if 'transaction_type' in config and valid_transaction_type(config['transaction_type']):
             self.transaction_type = config['transaction_type']
