@@ -97,7 +97,7 @@ Actions perform tasks when triggered. Here are a few example actions:
 - **Send Email**: Configures and sends emails automatically.
 - **Command and SpawnProcess**: Executes system commands or spawns new processes.
 - **Reveal Secret**: Reveals a pre-configured secret upon trigger activation.
-- **Webhook**: Sends data to specified webhooks.
+- **Webhook**: Sends data to specified webhooks. Webhook URLs are validated to be publicly reachable (SSRF-safe).
 
 ---
 
