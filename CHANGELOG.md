@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Resolved all remaining ruff lint errors; the repository is now lint-clean.
 - Resolved all remaining mypy type-check errors; the repository is now type-check clean.
+- Nonces are no longer lost on server restart, and concurrent requests can no longer bypass replay protection.
 
 ### Security
 
@@ -46,6 +47,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Removes the padding-oracle exposure of the old PKCS7 padding, and the slow `scrypt` KDF makes brute-forcing the wallet password expensive.
   - New ciphertexts use a versioned v2 format (version byte, salt, nonce, tag, ciphertext), and legacy encryption is no longer produced. For backward compatibility, `decrypt()` still reads legacy v1 (AES-CBC) ciphertexts: a payload is tried as v2 first, and one that is not authenticated as v2 is retried as legacy v1 when it is structurally a legacy payload (16-byte IV plus a positive multiple of the 16-byte AES block).
     - The legacy read path returns a decoded UTF-8 string, so a legacy payload whose plaintext is not valid UTF-8 cannot be returned by `decrypt()`.
+- Fixed the API nonce replay protection in `authentication.py` to be concurrency-safe and persistent:
+  - A module-level `threading.Lock` (`_NONCE_LOCK`) guards the nonce read-modify-write, so the check-and-update of `LAST_NONCES` is atomic and safe under the threaded Bottle server (previously the in-memory nonce map was not protected against concurrent requests).
+  - Nonces are now persisted to `json/private/last_nonces.json` via `load_last_nonces()` and `save_last_nonces()`; the file is loaded at import time, so replay protection survives server restarts.
+  - The signature is verified before the nonce is recorded (using `hmac.compare_digest`), so an invalid signature can no longer poison the nonce store.
 
 ### Internal
 

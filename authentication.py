@@ -8,13 +8,18 @@ import hmac
 import os
 import random
 import string
+import tempfile
+import threading
 
 import simplejson
 
 from helpers.jsonhelpers import load_from_json_file, save_to_json_file
+from helpers.loghelpers import LOG
 
 API_KEYS_FILE = 'json/private/api_keys.json'
+LAST_NONCES_FILE = 'json/private/last_nonces.json'
 LAST_NONCES: dict[str, int] = {}
+_NONCE_LOCK = threading.Lock()
 
 
 class AuthenticationStatus:
@@ -57,6 +62,40 @@ def initialize_api_keys_file():
     # Write the updated configuration back to the file
     with open('/spellbook/configuration/spellbook.conf', 'w') as configfile:
         config.write(configfile)
+
+
+def load_last_nonces():
+    """
+    Load the last seen nonces from the json file into the in-memory LAST_NONCES dict.
+    If the file does not exist or is invalid, LAST_NONCES is left unchanged.
+    """
+    try:
+        data = load_from_json_file(LAST_NONCES_FILE)
+    except OSError as ex:
+        LOG.error(f'Failed to load last nonces from {LAST_NONCES_FILE}: {ex}')
+        return
+    if isinstance(data, dict):
+        LAST_NONCES.update(data)
+
+
+def save_last_nonces():
+    """Persist the in-memory LAST_NONCES dict to the json file atomically."""
+    last_nonces_dir = os.path.dirname(LAST_NONCES_FILE)
+    if not os.path.isdir(last_nonces_dir):
+        os.makedirs(last_nonces_dir)
+
+    tmp_path = None
+    try:
+        with tempfile.NamedTemporaryFile(mode='w', dir=last_nonces_dir, delete=False) as tmp_file:
+            tmp_path = tmp_file.name
+            simplejson.dump(LAST_NONCES, tmp_file, indent=4, sort_keys=True)
+            tmp_file.flush()
+            os.fsync(tmp_file.fileno())
+        os.replace(tmp_path, LAST_NONCES_FILE)
+    except (ValueError, KeyError, TypeError, OSError) as ex:
+        LOG.error(f'Failed to save data to json file {LAST_NONCES_FILE}: {ex}')
+        if tmp_path is not None and os.path.exists(tmp_path):
+            os.remove(tmp_path)
 
 
 def hash_message(data, nonce):
@@ -120,12 +159,19 @@ def check_authentication(headers, data):
     except (ValueError, KeyError, TypeError, OSError):
         return AuthenticationStatus.INVALID_NONCE
 
-    if api_key in LAST_NONCES and LAST_NONCES[api_key] >= nonce:
-        return AuthenticationStatus.INVALID_NONCE
-
-    LAST_NONCES[api_key] = nonce
-
-    if headers['API_Sign'] == signature(data, nonce, api_keys[api_key]['secret']):
-        return AuthenticationStatus.OK
-    else:
+    # Verify the signature first so an invalid signature can never poison the nonce store
+    if not hmac.compare_digest(headers['API_Sign'], signature(data, nonce, api_keys[api_key]['secret'])):
         return AuthenticationStatus.INVALID_SIGNATURE
+
+    # The nonce read-modify-write must be atomic to be safe under a threaded server
+    with _NONCE_LOCK:
+        if api_key in LAST_NONCES and LAST_NONCES[api_key] >= nonce:
+            return AuthenticationStatus.INVALID_NONCE
+
+        LAST_NONCES[api_key] = nonce
+        save_last_nonces()
+
+    return AuthenticationStatus.OK
+
+
+load_last_nonces()

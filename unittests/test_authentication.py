@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+import json
+import os
+import threading
 from unittest import mock
 
 import pytest
@@ -6,6 +9,7 @@ import pytest
 import authentication
 
 NONCE = 1
+_REAL_SAVE_LAST_NONCES = authentication.save_last_nonces
 
 
 class TestAuthentication:
@@ -16,6 +20,7 @@ class TestAuthentication:
         global NONCE
 
         authentication.load_from_json_file = mock.MagicMock(return_value={'foo': {'secret': 'bar1'}})
+        authentication.save_last_nonces = mock.MagicMock()
         self.data = {'test': 'test'}
         NONCE = NONCE + 1
 
@@ -168,3 +173,103 @@ class TestInitializeApiKeysFile:
         assert 'secret' in saved_data[api_key]
         assert len(saved_data[api_key]['secret']) == 16
         assert saved_data[api_key]['permissions'] == 'all'
+
+
+class TestLastNonces:
+    """Tests for load_last_nonces and save_last_nonces helpers."""
+
+    def test_load_last_nonces_updates_last_nonces(self):
+        authentication.LAST_NONCES.clear()
+        authentication.load_from_json_file = mock.MagicMock(return_value={'foo': 42})
+        authentication.load_last_nonces()
+        assert authentication.LAST_NONCES == {'foo': 42}
+
+    def test_load_last_nonces_none_leaves_last_nonces_unchanged(self):
+        authentication.LAST_NONCES.clear()
+        authentication.load_from_json_file = mock.MagicMock(return_value=None)
+        authentication.load_last_nonces()
+        assert authentication.LAST_NONCES == {}
+
+    def test_load_last_nonces_oserror_leaves_last_nonces_unchanged(self):
+        authentication.LAST_NONCES.clear()
+        authentication.LAST_NONCES['existing'] = 5
+        authentication.load_from_json_file = mock.MagicMock(side_effect=OSError('boom'))
+        with mock.patch.object(authentication, 'LOG') as mock_log:
+            authentication.load_last_nonces()
+        assert authentication.LAST_NONCES == {'existing': 5}
+        mock_log.error.assert_called_once()
+
+    def test_load_last_nonces_file_not_found_does_not_raise(self):
+        authentication.LAST_NONCES.clear()
+        authentication.LAST_NONCES['existing'] = 5
+        authentication.load_from_json_file = mock.MagicMock(side_effect=FileNotFoundError('boom'))
+        authentication.load_last_nonces()
+        assert authentication.LAST_NONCES == {'existing': 5}
+
+    def test_save_last_nonces_persists(self, tmp_path):
+        nonce_file = str(tmp_path / 'last_nonces.json')
+        authentication.LAST_NONCES.clear()
+        authentication.LAST_NONCES['foo'] = 7
+        with mock.patch.object(authentication, 'LAST_NONCES_FILE', nonce_file):
+            _REAL_SAVE_LAST_NONCES()
+        assert os.path.isfile(nonce_file)
+        with open(nonce_file, 'r') as f:
+            assert json.load(f) == {'foo': 7}
+
+    def test_save_last_nonces_creates_missing_directory(self, tmp_path):
+        nonce_file = str(tmp_path / 'nested' / 'private' / 'last_nonces.json')
+        authentication.LAST_NONCES.clear()
+        authentication.LAST_NONCES['bar'] = 3
+        with mock.patch.object(authentication, 'LAST_NONCES_FILE', nonce_file):
+            _REAL_SAVE_LAST_NONCES()
+        assert os.path.isfile(nonce_file)
+        with open(nonce_file, 'r') as f:
+            assert json.load(f) == {'bar': 3}
+
+    def test_save_last_nonces_logs_error_and_cleans_up_on_replace_failure(self, tmp_path):
+        nonce_file = str(tmp_path / 'last_nonces.json')
+        authentication.LAST_NONCES.clear()
+        authentication.LAST_NONCES['foo'] = 1
+        with mock.patch.object(authentication, 'LAST_NONCES_FILE', nonce_file), \
+             mock.patch.object(authentication, 'LOG') as mock_log, \
+             mock.patch('os.replace', side_effect=OSError('boom')):
+            _REAL_SAVE_LAST_NONCES()
+        mock_log.error.assert_called_once()
+        assert not os.path.isfile(nonce_file)
+        assert os.listdir(str(tmp_path)) == []
+
+    def test_save_last_nonces_logs_error_when_temp_file_creation_fails(self, tmp_path):
+        nonce_file = str(tmp_path / 'last_nonces.json')
+        authentication.LAST_NONCES.clear()
+        authentication.LAST_NONCES['foo'] = 1
+        with mock.patch.object(authentication, 'LAST_NONCES_FILE', nonce_file), \
+             mock.patch.object(authentication, 'LOG') as mock_log, \
+             mock.patch('tempfile.NamedTemporaryFile', side_effect=OSError('boom')):
+            _REAL_SAVE_LAST_NONCES()
+        mock_log.error.assert_called_once()
+        assert not os.path.isfile(nonce_file)
+
+    def test_invalid_signature_does_not_record_nonce(self):
+        authentication.LAST_NONCES.clear()
+        authentication.save_last_nonces = mock.MagicMock()
+        authentication.load_from_json_file = mock.MagicMock(return_value={'foo': {'secret': 'bar1'}})
+        headers = {'API_Key': 'foo',
+                   'API_Sign': 'invalid_signature',
+                   'API_Nonce': 999999999}
+        assert authentication.check_authentication(headers, {'test': 'test'}) == authentication.AuthenticationStatus.INVALID_SIGNATURE
+        assert 'foo' not in authentication.LAST_NONCES
+
+    def test_valid_request_calls_save_last_nonces(self):
+        authentication.LAST_NONCES.clear()
+        authentication.save_last_nonces = mock.MagicMock()
+        authentication.load_from_json_file = mock.MagicMock(return_value={'foo': {'secret': 'bar1'}})
+        data = {'test': 'test'}
+        nonce = 12345
+        headers = {'API_Key': 'foo',
+                   'API_Sign': authentication.signature(data, nonce, 'bar1'),
+                   'API_Nonce': nonce}
+        assert authentication.check_authentication(headers, data) == authentication.AuthenticationStatus.OK
+        authentication.save_last_nonces.assert_called_once_with()
+
+    def test_nonce_lock_is_a_threading_lock(self):
+        assert isinstance(authentication._NONCE_LOCK, type(threading.Lock()))
