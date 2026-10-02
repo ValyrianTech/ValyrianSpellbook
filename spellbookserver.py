@@ -1032,8 +1032,10 @@ class SpellbookRESTAPI(Bottle):
 
 def convert_aac_to_opus(input_file, opus_file):
     """Convert an AAC audio file to Opus format using ffmpeg."""
-    command = f"ffmpeg -i {input_file} -c:a libopus {opus_file}"
-    subprocess.run(command, shell=True, check=False)
+    argv = ['ffmpeg', '-i', input_file, '-c:a', 'libopus', opus_file]
+    result = subprocess.run(argv, shell=False, capture_output=True, check=False)
+    if result.returncode != 0:
+        raise ValueError(f'ffmpeg conversion failed: {result.stderr.decode(errors="replace")}')
     # Ensure the file is closed after it's used
     with open(opus_file, 'rb'):
         pass
