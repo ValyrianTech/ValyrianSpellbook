@@ -533,7 +533,7 @@ class TestValidWebhookUrl:
         assert not validators.valid_webhook_url('www.example.com')
 
     @mock.patch('validators.validators.urlparse', side_effect=ValueError('bad url'))
-    def test_valid_webhook_url_parse_error(self, mock_urlparse):
+    def test_valid_webhook_url_parse_error(self, _mock_urlparse):
         assert not validators.valid_webhook_url('http://example.com')
 
     @mock.patch('validators.validators.socket.getaddrinfo')
