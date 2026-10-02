@@ -551,6 +551,7 @@ class TestValidWebhookUrl:
         '0.0.0.0',
         '255.255.255.255',
         '224.0.0.1',
+        '100.64.0.1',
         '::1',
     ])
     @mock.patch('validators.validators.socket.getaddrinfo')

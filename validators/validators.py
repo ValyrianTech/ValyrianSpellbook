@@ -117,7 +117,7 @@ def valid_webhook_url(url):
     for address in addresses:
         ip_string = address[4][0].split('%')[0]
         ip = ipaddress.ip_address(ip_string)
-        if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved or ip.is_multicast or ip.is_unspecified:
+        if (not ip.is_global or ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved or ip.is_multicast or ip.is_unspecified):
             LOG.error(f'Webhook URL {url} is invalid: hostname {hostname} resolves to non-public address {ip_string}')
             return False
 
