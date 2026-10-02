@@ -4,6 +4,7 @@
 import binascii
 import hashlib
 import os
+import re
 import sys
 from functools import reduce  # noqa: F401 - re-exported for backward compatibility
 
@@ -150,3 +151,22 @@ def random_string(x):
 def print_to_stderr(message):
     """Print a message to stderr."""
     print(message, file=sys.stderr)
+
+
+def b58check_to_bin(s):
+    """Convert a Base58Check-encoded string to raw bytes, validating the checksum.
+
+    Strips the version byte prefix (first byte) and the 4-byte checksum.
+    Raises TypeError if `s` is not a str, ValueError if it is too short or has an
+    invalid checksum. This validation is done explicitly (not via assert) so that
+    it is NOT removed when Python runs with -O / PYTHONOPTIMIZE=1.
+    """
+    if not isinstance(s, str):
+        raise TypeError(f'Base58Check string must be a str, got {type(s).__name__}')
+    leadingzbytes = len(re.match('^1*', s).group(0))
+    data = b'\x00' * leadingzbytes + changebase(s, 58, 256)
+    if len(data) < 5:
+        raise ValueError(f'Address too short to contain a checksum: {s!r}')
+    if bin_dbl_sha256(data[:-4])[:4] != data[-4:]:
+        raise ValueError(f'Invalid Base58Check checksum for address {s!r}')
+    return data[1:-4]
