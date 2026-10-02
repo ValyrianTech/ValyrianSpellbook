@@ -37,6 +37,8 @@ response = spellbook_call('run_action', action_name)
 assert response is True
 
 # --------------------------------------------------------------------------------------------------------
+# WebhookAction.configure() validates the URL with valid_webhook_url (SSRF-safe, DNS-resolving),
+# so non-resolving URLs are silently dropped and webhook becomes None.
 webhook = 'http://www.erzraezrozoerijfosqjdfiosqijioefoe.com'
 response = spellbook_call('save_action', '-t=Webhook', action_name, f'-w={webhook}')
 assert response is None
@@ -44,7 +46,7 @@ assert response is None
 response = spellbook_call('get_action_config', action_name)
 assert response['id'] == action_name
 assert response['action_type'] == 'Webhook'
-assert response['webhook'] == webhook
+assert response['webhook'] is None
 
 print('Running the action with a bad url')
 response = spellbook_call('run_action', action_name)

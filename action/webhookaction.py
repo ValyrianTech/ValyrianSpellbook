@@ -56,6 +56,10 @@ class WebhookAction(Action):
 
         :param config: A dict containing the configuration settings
                        - config['webhook']    : An url of the webhook
+
+        Note: the webhook URL must pass valid_webhook_url (which resolves DNS and rejects
+        non-public/unresolvable hosts); invalid URLs are silently ignored and self.webhook
+        remains None.
         """
         super().configure(**config)
         if 'webhook' in config and valid_webhook_url(config['webhook']):
