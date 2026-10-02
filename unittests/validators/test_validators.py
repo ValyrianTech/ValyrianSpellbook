@@ -563,11 +563,10 @@ class TestValidWebhookUrl:
         mock_getaddrinfo.return_value = self._getaddrinfo_result('8.8.8.8', '10.0.0.1')
         assert not validators.valid_webhook_url('http://example.com')
 
-    @mock.patch('validators.validators.socket.getaddrinfo')
-    def test_valid_webhook_url_bracketed_ipv6(self, mock_getaddrinfo):
-        mock_getaddrinfo.return_value = self._getaddrinfo_result('2001:4860:4860::8888')
-        with mock.patch('validators.validators.valid_url', return_value=True):
-            assert validators.valid_webhook_url('http://[2001:4860:4860::8888]/')
+    def test_valid_webhook_url_bracketed_ipv6_rejected(self):
+        # URL_REGEX does not match bracketed IPv6 hosts, so valid_url rejects
+        # this URL and valid_webhook_url must reflect that real behavior.
+        assert not validators.valid_webhook_url('http://[2001:4860:4860::8888]/')
 
     @mock.patch('validators.validators.socket.getaddrinfo')
     def test_valid_webhook_url_zone_id(self, mock_getaddrinfo):
