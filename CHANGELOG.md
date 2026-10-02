@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 - Fixed an authentication bypass on the REST API `get_reveal` endpoint (`spellbookserver.py`). The endpoint that returns the reveal-secret value for a `RevealSecretAction` is now protected by `@authentication_required`, so it can no longer be called without a valid API key/signature.
+- Fixed a command-injection vulnerability in `spellbookserver.py` (`convert_aac_to_opus`) by removing `shell=True` and passing an argv list to `subprocess.run` (`shell=False`). ffmpeg failures are now surfaced as a `ValueError` (with the decoded stderr) instead of being silently swallowed.
 - Fixed a command-injection vulnerability in `action/commandaction.py` (`CommandAction.run`) and `helpers/runcommandprocess.py` (`RunCommandProcess.run`) by removing `shell=True` from command execution.
 - Commands are now executed via `shlex.split` + `subprocess.run(..., shell=False)` / `Popen(argv, ...)`, so shell metacharacters in commands and substituted placeholders are no longer interpreted by a shell.
 - `CommandAction` now `shlex.quote`s placeholder values before substitution, so untrusted placeholder values cannot inject shell syntax.
