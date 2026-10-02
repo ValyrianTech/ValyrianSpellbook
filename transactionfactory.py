@@ -21,6 +21,7 @@ from helpers.privatekeyhelpers import (
 )
 from helpers.publickeyhelpers import pubkey_to_address
 from helpers.py3specials import (
+    b58check_to_bin,
     bin_dbl_sha256,
     changebase,
     decode,
@@ -415,20 +416,6 @@ def b58check_to_hex(address):
     :return: A base58check string in hexadecimal format
     """
     return safe_hexlify(b58check_to_bin(address))
-
-
-def b58check_to_bin(address):
-    """
-    Do a base58 check on the address and return the address minus first byte and the checksum (last 4 bytes) in binary format
-
-    :param address: A Bitcoin address
-    :return: A base58check string in binary format
-    """
-    leadingzbytes = len(re.match('^1*', address).group(0))  # number of leading zero bytes (1 == 0 in base58)
-    data = b'\x00' * leadingzbytes + changebase(address, 58, 256)
-    assert bin_dbl_sha256(data[:-4])[:4] == data[-4:]
-
-    return data[1:-4]
 
 
 def p2sh_script(address):

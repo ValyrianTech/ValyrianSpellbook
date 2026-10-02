@@ -4,7 +4,7 @@ import re
 
 from .jacobianhelpers import G, N, fast_multiply
 from .publickeyhelpers import encode_pubkey, pubkey_to_address
-from .py3specials import bin_dbl_sha256, bin_to_b58check, changebase, decode, encode
+from .py3specials import b58check_to_bin, bin_to_b58check, decode, encode
 
 # Regular expressions for private key formats
 wif_compressed_regex = '^[LK][1-9A-Za-z][^OIl]{50}$'
@@ -106,14 +106,6 @@ def get_privkey_format(private_key):
             return 'wif_compressed'
         else:
             raise ValueError("WIF does not represent privkey")
-
-
-def b58check_to_bin(private_key):
-    """Convert a Base58Check-encoded private key to raw bytes (stripping prefix and checksum)."""
-    leadingzbytes = len(re.match('^1*', private_key).group(0))
-    data = b'\x00' * leadingzbytes + changebase(private_key, 58, 256)
-    assert bin_dbl_sha256(data[:-4])[:4] == data[-4:]
-    return data[1:-4]
 
 
 def privkey_to_pubkey(privkey):

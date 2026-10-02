@@ -87,7 +87,7 @@ class TestGetPrivkeyFormat:
         assert result == 'wif_compressed'
 
     def test_get_privkey_format_invalid(self):
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             get_privkey_format('invalid')
 
 
@@ -352,7 +352,7 @@ class TestGetPrivkeyFormatEdgeCases:
 
     def test_get_privkey_format_empty_string(self):
         """Test get_privkey_format with empty string raises exception"""
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             get_privkey_format('')
 
     def test_get_privkey_format_invalid_wif_length(self):
