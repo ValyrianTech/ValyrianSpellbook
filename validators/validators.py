@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 """Validation functions for Bitcoin addresses, transactions, and various input types."""
 
+import ipaddress
 import os
 import re
+import socket
+from urllib.parse import urlparse
 
 from helpers.bech32 import bech32_decode
 from helpers.loghelpers import LOG
@@ -82,6 +85,43 @@ def valid_text(text):
 def valid_url(url):
     """Check if the given string is a valid URL."""
     return isinstance(url, str) and re.match(URL_REGEX, url) is not None
+
+
+def valid_webhook_url(url):
+    """Check if the given URL is a valid, publicly-resolvable webhook URL (SSRF-safe)."""
+    if not valid_url(url):
+        return False
+
+    try:
+        parsed = urlparse(url)
+    except (ValueError, TypeError):
+        LOG.error(f'Webhook URL {url} is invalid: could not be parsed')
+        return False
+
+    hostname = parsed.hostname
+    if not hostname:
+        LOG.error(f'Webhook URL {url} is invalid: no hostname')
+        return False
+
+    scheme = parsed.scheme.lower()
+    if scheme not in ('http', 'https'):
+        LOG.error(f'Webhook URL {url} is invalid: unsupported scheme {scheme}')
+        return False
+
+    try:
+        addresses = socket.getaddrinfo(hostname, None)
+    except (socket.gaierror, OSError, UnicodeError) as ex:
+        LOG.error(f'Webhook URL {url} is invalid: could not resolve hostname {hostname}: {ex}')
+        return False
+
+    for address in addresses:
+        ip_string = address[4][0].split('%')[0]
+        ip = ipaddress.ip_address(ip_string)
+        if (not ip.is_global or ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved or ip.is_multicast or ip.is_unspecified):
+            LOG.error(f'Webhook URL {url} is invalid: hostname {hostname} resolves to non-public address {ip_string}')
+            return False
+
+    return True
 
 
 def valid_creator(creator):

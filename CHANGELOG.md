@@ -37,6 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Nonces are no longer lost on server restart, and concurrent requests can no longer bypass replay protection.
 - Fixed `SendTransactionAction.configure()` (`action/sendtransactionaction.py`) so the configured `change_address` is written to `self.change_address` instead of overwriting `self.receiving_address`. Previously a supplied change address was silently ignored (change always returned to the sending address) and, when both a receiving address and a change address were configured, the change address would overwrite the intended receiving target, potentially sending the primary payment to the wrong address.
 - Base58Check checksum validation for address/private-key decoding is now performed explicitly (raising `TypeError` for non-`str` input and `ValueError` for too-short or invalid-checksum data) instead of using a bare `assert`, so the validation is no longer stripped away under Python's optimized mode (`-O` / `PYTHONOPTIMIZE=1`). The duplicated `b58check_to_bin` implementations in `helpers/privatekeyhelpers.py` and `transactionfactory.py` were consolidated into `helpers/py3specials.py`; invalid Base58Check input now raises `ValueError`/`TypeError` rather than `AssertionError` in callers such as `PrivateKey` and `get_privkey_format`.
+- `WebhookAction.run()` (`action/webhookaction.py`) now passes an explicit 10-second `timeout` to `requests.get`/`requests.post` and handles `requests.RequestException` (network errors) by logging the error and returning a failure result instead of raising.
+- `WebhookAction.configure()` now rejects non-public webhook URLs via the SSRF-safe `valid_webhook_url` validator, so SSRF-unsafe URLs are rejected at configuration time.
 
 ### Security
 
@@ -54,6 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - A module-level `threading.Lock` (`_NONCE_LOCK`) guards the nonce read-modify-write, so the check-and-update of `LAST_NONCES` is atomic and safe under the threaded Bottle server (previously the in-memory nonce map was not protected against concurrent requests).
   - Nonces are now persisted to `json/private/last_nonces.json` via `load_last_nonces()` and `save_last_nonces()`; the file is loaded at import time, so replay protection survives server restarts.
   - The signature is verified before the nonce is recorded (using `hmac.compare_digest`), so an invalid signature can no longer poison the nonce store.
+- Webhook URLs configured on `WebhookAction` are now validated with an SSRF-safe `valid_webhook_url` validator (`validators/validators.py`) that rejects URLs resolving to private, loopback, link-local, reserved, multicast, or unspecified addresses (e.g. `10.0.0.0/8`, `127.0.0.0/8`, `169.254.0.0/16`, `0.0.0.0`, `::1`), preventing server-side request forgery against internal services.
 
 ### Internal
 
