@@ -2,6 +2,7 @@
 """Standalone script that sends a transaction notification to a webhook URL via an HTTP POST."""
 
 import argparse
+
 import requests
 
 if __name__ == "__main__":
