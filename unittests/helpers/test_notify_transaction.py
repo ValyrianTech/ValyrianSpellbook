@@ -1,47 +1,23 @@
 #!/usr/bin/env python
+import runpy
+import sys
 import unittest
 from unittest.mock import MagicMock, patch
+
+import helpers.notify_transaction as nt_module
 
 
 class TestNotifyTransaction(unittest.TestCase):
     """Test cases for helpers/notify_transaction.py
-    
-    Note: This module is a script that runs via __main__, so we test
-    the command construction logic indirectly.
+
+    The script posts a JSON notification to a webhook URL via requests.
     """
 
-    @patch('subprocess.Popen')
-    def test_curl_command_format(self, mock_popen):
-        """Test that the curl command is properly formatted"""
-        mock_process = MagicMock()
-        mock_process.communicate.return_value = (b'', b'')
-        mock_popen.return_value = mock_process
-        
-        # The script constructs a curl command like:
-        # curl <url> -H "Content-Type: application/json" -d '{"payment_request_id":"<pr>","txid":"<txid>"}'
-        url = 'http://example.com/notify'
-        pr = 'payment123'
-        txid = 'tx456'
-        
-        expected_command = rf'curl {url} -H "Content-Type: application/json" -d "{{\"payment_request_id\":\"{pr}\",\"txid\":\"{txid}\"}}"'
-        
-        # Verify the command format is correct
-        self.assertIn(url, expected_command)
-        self.assertIn(pr, expected_command)
-        self.assertIn(txid, expected_command)
-        self.assertIn('Content-Type: application/json', expected_command)
-
-    @patch('subprocess.Popen')
-    def test_notify_transaction_script(self, mock_popen):
-        """Test executing notify_transaction.py as a module to cover __main__ block"""
-        mock_process = MagicMock()
-        mock_process.communicate.return_value = (b'OK', b'')
-        mock_popen.return_value = mock_process
-
-        import runpy
-        import sys
-
-        import helpers.notify_transaction as nt_module
+    @patch('requests.post')
+    def test_notify_transaction_script(self, mock_post):
+        """Test executing notify_transaction.py as a module to cover the __main__ block"""
+        mock_response = MagicMock()
+        mock_post.return_value = mock_response
 
         original_argv = sys.argv
         sys.argv = ['notify_transaction', 'http://example.com/notify', 'pr123', 'tx456']
@@ -53,11 +29,12 @@ class TestNotifyTransaction(unittest.TestCase):
         finally:
             sys.argv = original_argv
 
-        mock_popen.assert_called_once()
-        call_args = mock_popen.call_args[0][0]
-        self.assertIn('http://example.com/notify', call_args)
-        self.assertIn('pr123', call_args)
-        self.assertIn('tx456', call_args)
+        mock_post.assert_called_once_with(
+            'http://example.com/notify',
+            json={'payment_request_id': 'pr123', 'txid': 'tx456'},
+            timeout=10,
+        )
+        mock_response.raise_for_status.assert_called_once_with()
 
 
 if __name__ == '__main__':
