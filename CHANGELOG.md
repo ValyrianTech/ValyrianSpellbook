@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Resolved all remaining ruff lint errors; the repository is now lint-clean.
 - Resolved all remaining mypy type-check errors; the repository is now type-check clean.
 - Nonces are no longer lost on server restart, and concurrent requests can no longer bypass replay protection.
+- Fixed `SendTransactionAction.configure()` (`action/sendtransactionaction.py`) so the configured `change_address` is written to `self.change_address` instead of overwriting `self.receiving_address`. Previously a supplied change address was silently ignored (change always returned to the sending address) and, when both a receiving address and a change address were configured, the change address would overwrite the intended receiving target, potentially sending the primary payment to the wrong address.
 
 ### Security
 

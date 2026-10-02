@@ -1198,7 +1198,16 @@ class TestConfigureChangeAddress:
         mock_valid_address.return_value = True
         action = SendTransactionAction('test_send_tx')
         action.configure(change_address='1ChangeAddress')
-        assert action.receiving_address == '1ChangeAddress'
+        assert action.change_address == '1ChangeAddress'
+        assert action.receiving_address is None
+
+    @mock.patch('action.sendtransactionaction.valid_address')
+    def test_configure_change_address_and_receiving_address(self, mock_valid_address):
+        mock_valid_address.return_value = True
+        action = SendTransactionAction('test_send_tx')
+        action.configure(change_address='1ChangeAddress', receiving_address='1ReceivingAddress')
+        assert action.change_address == '1ChangeAddress'
+        assert action.receiving_address == '1ReceivingAddress'
 
 
 class TestFixedFeeInvalid:
