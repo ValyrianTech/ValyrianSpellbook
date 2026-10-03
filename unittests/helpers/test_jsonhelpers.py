@@ -57,24 +57,24 @@ class TestJsonHelpers:
             assert loaded == data
 
     @mock.patch('helpers.jsonhelpers.LOG')
-    def test_save_to_json_file_error(self, mock_log):
-        """Test error handling when saving fails"""
-        # Try to save to an invalid path (read-only or non-existent drive)
+    @mock.patch('helpers.jsonhelpers.os.replace', side_effect=OSError('replace failed'))
+    def test_save_to_json_file_error(self, mock_replace, mock_log):
+        """Test error handling when the atomic save fails: an error is logged and no temp file is left behind."""
         with tempfile.TemporaryDirectory() as tmpdir:
             filepath = os.path.join(tmpdir, 'test.json')
-            # Create the file first
             save_to_json_file(filepath, {'key': 'value'})
-            
-            # Make the file read-only
-            os.chmod(filepath, 0o444)
-            
-            try:
-                # This should fail and log an error
-                save_to_json_file(filepath, {'new': 'data'})
-                mock_log.error.assert_called()
-            finally:
-                # Restore permissions for cleanup
-                os.chmod(filepath, 0o644)
+            mock_log.error.assert_called()
+            assert os.listdir(tmpdir) == []
+
+    @mock.patch('helpers.jsonhelpers.LOG')
+    @mock.patch('helpers.jsonhelpers.tempfile.NamedTemporaryFile', side_effect=OSError('temp file failed'))
+    def test_save_to_json_file_temp_file_error(self, mock_tempfile, mock_log):
+        """Test error handling when the temp file cannot be created: an error is logged."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            filepath = os.path.join(tmpdir, 'test.json')
+            save_to_json_file(filepath, {'key': 'value'})
+            mock_log.error.assert_called()
+            assert os.listdir(tmpdir) == []
 
     @mock.patch('helpers.jsonhelpers.LOG')
     @mock.patch('helpers.jsonhelpers.time.sleep')
@@ -91,3 +91,30 @@ class TestJsonHelpers:
             assert result is None
             mock_log.error.assert_called()
             mock_sleep.assert_called_once_with(1)
+
+    @mock.patch('helpers.jsonhelpers.LOG')
+    @mock.patch('helpers.jsonhelpers.time.sleep')
+    def test_load_from_json_file_retry_succeeds(self, mock_sleep, mock_log):
+        """Test that the retry re-reads the file and can succeed"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            filepath = os.path.join(tmpdir, 'test.json')
+            with open(filepath, 'w') as f:
+                f.write('invalid json {')
+
+            with mock.patch('helpers.jsonhelpers.simplejson.load', side_effect=[ValueError('bad'), {'recovered': True}]) as mock_load:
+                result = load_from_json_file(filepath)
+                assert result == {'recovered': True}
+                assert mock_load.call_count == 2
+            mock_sleep.assert_called_once_with(1)
+            mock_log.error.assert_called()
+
+    @mock.patch('helpers.jsonhelpers.LOG')
+    @mock.patch('helpers.jsonhelpers.time.sleep')
+    @mock.patch('helpers.jsonhelpers.open')
+    def test_load_from_json_file_open_error(self, mock_open, mock_sleep, mock_log):
+        """Test that an OSError when opening the file returns None"""
+        mock_open.side_effect = OSError('open failed')
+        result = load_from_json_file('nonexistent.json')
+        assert result is None
+        mock_sleep.assert_called_once_with(1)
+        mock_log.error.assert_called()
