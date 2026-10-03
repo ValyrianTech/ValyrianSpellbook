@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """Decorators for authentication, explorer selection, JSON output, config verification, and logging."""
 import functools
+import hmac
 import os
 import time
 from configparser import ConfigParser
@@ -31,6 +32,49 @@ def authentication_required(f):
             return f(*args, **kwargs)
         else:
             return {'error': authentication_status}
+
+    return decorated_function
+
+
+def trigger_authentication_required(f):
+    """
+    Decorator that requires either valid API-key authentication or a valid per-trigger secret
+    before allowing access to HTTP-trigger endpoints.
+
+    :param f: The function that requires authentication
+    :return: The result of the function OR a json dict containing the reason of the authentication failure
+    """
+
+    @functools.wraps(f)
+    def decorated_function(*args, **kwargs):
+        """Execute the decorated function if API-key or per-trigger secret authentication succeeds."""
+        trigger_id = kwargs.get('trigger_id') if 'trigger_id' in kwargs else (args[0] if args else None)
+
+        if check_authentication(request.headers, request.json) == AuthenticationStatus.OK:
+            return f(*args, **kwargs)
+
+        from helpers.triggerhelpers import get_trigger_config
+
+        try:
+            trigger_config = get_trigger_config(trigger_id)
+        except (ValueError, KeyError, TypeError, OSError):
+            return {'error': AuthenticationStatus.NO_API_KEY}
+
+        if trigger_config.get('public') is True and trigger_config.get('secret'):
+            supplied = None
+            if request.json is not None and 'secret' in request.json:
+                supplied = request.json['secret']
+            elif request.query.secret:
+                supplied = request.query.secret
+            elif request.headers.get('API_Secret'):
+                supplied = request.headers.get('API_Secret')
+
+            if supplied is not None and hmac.compare_digest(str(supplied), str(trigger_config['secret'])):
+                if request.json is not None and 'secret' in request.json:
+                    request.json.pop('secret')
+                return f(*args, **kwargs)
+
+        return {'error': AuthenticationStatus.NO_API_KEY}
 
     return decorated_function
 

@@ -58,6 +58,11 @@ def valid_description(description):
     return isinstance(description, str) and len(description) <= 250
 
 
+def valid_secret(secret):
+    """Check if the given secret is a non-empty string of at most 250 characters."""
+    return isinstance(secret, str) and 0 < len(secret) <= 250
+
+
 def valid_op_return(message):
     """Check if the given message is a valid OP_RETURN (non-empty, max 80 chars)."""
     return isinstance(message, str) and 0 < len(message) <= 80

@@ -96,6 +96,18 @@ class TestValidators:
         print(description)
         assert validators.valid_description(text) == expected
 
+    @pytest.mark.parametrize('secret, expected, description', [
+        ['s3cret', True, 'valid secret'],
+        ['a' * 250, True, 'secret of exactly 250 chars'],
+        ['', False, 'empty string'],
+        ['a' * 251, False, 'secret longer than 250 chars'],
+        [None, False, 'None value'],
+        [123, False, 'non-string value'],
+    ])
+    def test_valid_secret(self, secret, expected, description):
+        print(description)
+        assert validators.valid_secret(secret) == expected
+
     @pytest.mark.parametrize('message, expected, description', [
         ['test', True, 'valid op_return'],
         ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', False, 'invalid op_return: 81 characters'],
