@@ -6,7 +6,7 @@ import configparser
 import hashlib
 import hmac
 import os
-import random
+import secrets
 import string
 import tempfile
 import threading
@@ -18,6 +18,9 @@ from helpers.loghelpers import LOG
 
 API_KEYS_FILE = 'json/private/api_keys.json'
 LAST_NONCES_FILE = 'json/private/last_nonces.json'
+PROGRAM_DIR = os.path.abspath(os.path.dirname(__file__))
+CONFIGURATION_FILE = os.path.join(PROGRAM_DIR, 'configuration', 'spellbook.conf')
+_API_KEY_ALPHABET = string.ascii_letters + string.digits
 LAST_NONCES: dict[str, int] = {}
 _NONCE_LOCK = threading.Lock()
 
@@ -42,9 +45,9 @@ def initialize_api_keys_file():
     if not os.path.isdir('json/private/'):
         os.makedirs('json/private')
 
-    # Create a random string of characters (uppercase letters and digits) for a api_key and api_secret pair
-    api_key = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(16))
-    api_secret = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(16))
+    # Create a cryptographically secure random 32-character string of letters and digits for the api_key and api_secret pair
+    api_key = ''.join(secrets.choice(_API_KEY_ALPHABET) for _ in range(32))
+    api_secret = ''.join(secrets.choice(_API_KEY_ALPHABET) for _ in range(32))
 
     data = {api_key: {'secret': api_secret,
                       'permissions': 'all'}}
@@ -53,14 +56,14 @@ def initialize_api_keys_file():
 
     # Load the configuration file
     config = configparser.ConfigParser()
-    config.read('/spellbook/configuration/spellbook.conf')
+    config.read(CONFIGURATION_FILE)
 
     # Set the api key and secret in the configuration file
     config.set('Authentication', 'key', api_key)
     config.set('Authentication', 'secret', api_secret)
 
     # Write the updated configuration back to the file
-    with open('/spellbook/configuration/spellbook.conf', 'w') as configfile:
+    with open(CONFIGURATION_FILE, 'w') as configfile:
         config.write(configfile)
 
 
