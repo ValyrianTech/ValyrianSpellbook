@@ -86,6 +86,7 @@ Triggers invoke actions based on specific conditions:
 - **HTTP Requests**: Activates upon HTTP GET, POST, or DELETE requests.
 - **Manual Activation**: Trigger manually via a specific API endpoint.
 - **Dead Man's Switch**: A time-based trigger that sends notifications if not reset periodically.
+- **Authentication**: HTTP-based triggers (and the HTML/file-download trigger endpoints) require authentication: either a valid API key, or, for triggers configured with `public: true` and a `secret`, a matching per-trigger secret (supplied via a JSON body `secret`, the `secret` query parameter, or the `API_Secret` header).
 
 ---
 
