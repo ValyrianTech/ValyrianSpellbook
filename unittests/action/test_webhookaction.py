@@ -74,7 +74,7 @@ class TestWebhookAction:
         action = WebhookAction('test_webhook_action')
         action.configure(webhook='http://example.com/webhook')
         result = action.run()
-        assert result == (True, 'success')
+        assert result is True
         mock_get.assert_called_once_with('http://example.com/webhook', timeout=10)
 
     @mock.patch('action.webhookaction.requests.get')
@@ -87,7 +87,7 @@ class TestWebhookAction:
         action = WebhookAction('test_webhook_action')
         action.configure(webhook='http://example.com/webhook')
         result = action.run()
-        assert result == (False, 'error')
+        assert result is False
 
     @mock.patch('action.webhookaction.requests.post')
     def test_webhookaction_run_post_success(self, mock_post):
@@ -103,7 +103,7 @@ class TestWebhookAction:
             request_type='POST'
         )
         result = action.run()
-        assert result == (True, 'posted')
+        assert result is True
         mock_post.assert_called_once_with('http://example.com/webhook', data='test data', timeout=10)
 
     def test_webhookaction_run_unsupported_request_type(self):

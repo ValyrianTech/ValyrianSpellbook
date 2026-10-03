@@ -1,8 +1,24 @@
 #!/usr/bin/env python
+import ast
 import os
+from unittest import mock
 
 from action.actiontype import ActionType
 from action.commandaction import CommandAction
+
+
+def _logged_command_output(mock_log):
+    """Collect all stdout bytes the action logged via 'Command output: ...'."""
+    out = b''
+    for call in mock_log.info.call_args_list:
+        msg = call.args[0]
+        if isinstance(msg, str) and msg.startswith('Command output: '):
+            raw = msg[len('Command output: '):]
+            try:
+                out += ast.literal_eval(raw)
+            except (ValueError, SyntaxError):
+                out += raw.encode()
+    return out
 
 
 class TestCommandAction:
@@ -48,41 +64,41 @@ class TestCommandAction:
     def test_commandaction_run_success(self):
         action = CommandAction('test_command_action')
         action.configure(run_command='echo hello')
-        result = action.run()
-        assert result[0]
-        assert b'hello' in result[1]
+        with mock.patch('action.commandaction.LOG') as mock_log:
+            result = action.run()
+        assert result is True
+        assert b'hello' in _logged_command_output(mock_log)
 
     def test_commandaction_run_with_error(self):
         action = CommandAction('test_command_action')
         action.configure(run_command='ls /nonexistent_directory_12345')
         result = action.run()
-        assert not result[0]
+        assert result is False
 
     def test_commandaction_run_with_missing_executable(self):
         action = CommandAction('test_command_action')
         action.configure(run_command='this_command_does_not_exist_12345')
         result = action.run()
-        assert len(result) == 3
-        assert result[0] is False
-        assert result[1] == b''
-        assert isinstance(result[2], bytes)
+        assert result is False
 
     def test_commandaction_run_with_placeholders(self):
         action = CommandAction('test_command_action')
         action.configure(run_command='echo {MESSAGE}')
-        result = action.run(placeholders={'{MESSAGE}': 'test_placeholder'})
-        assert result[0]
-        assert b'test_placeholder' in result[1]
+        with mock.patch('action.commandaction.LOG') as mock_log:
+            result = action.run(placeholders={'{MESSAGE}': 'test_placeholder'})
+        assert result is True
+        assert b'test_placeholder' in _logged_command_output(mock_log)
 
     def test_commandaction_run_with_working_dir(self):
         action = CommandAction('test_command_action')
         action.configure(run_command='pwd', working_dir='/tmp')
         original_dir = os.getcwd()
-        result = action.run()
-        assert result[0]
-        assert b'/tmp' in result[1]
+        with mock.patch('action.commandaction.LOG') as mock_log:
+            result = action.run()
+        assert result is True
         # Verify we're back to original directory
         assert os.getcwd() == original_dir
+        assert b'/tmp' in _logged_command_output(mock_log)
 
     def test_commandaction_run_switches_back_to_original_dir(self):
         action = CommandAction('test_command_action')
@@ -98,41 +114,44 @@ class TestCommandActionSecurity:
     def test_commandaction_placeholder_does_not_inject_shell_command(self):
         action = CommandAction('test_command_action')
         action.configure(run_command='echo {MESSAGE}')
-        result = action.run(placeholders={'{MESSAGE}': 'safe; echo INJECTED'})
-        assert result[0]
-        out = result[1]
-        assert b'INJECTED' in out
-        assert out.count(b'INJECTED') == 1
+        with mock.patch('action.commandaction.LOG') as mock_log:
+            result = action.run(placeholders={'{MESSAGE}': 'safe; echo INJECTED'})
+        assert result is True
+        assert _logged_command_output(mock_log).count(b'INJECTED') == 1
 
     def test_commandaction_run_does_not_mutate_run_command(self):
         action = CommandAction('test_command_action')
         action.configure(run_command='echo {MESSAGE}')
-        action.run(placeholders={'{MESSAGE}': 'first'})
-        assert action.run_command == 'echo {MESSAGE}'
-        result = action.run(placeholders={'{MESSAGE}': 'second'})
-        assert result[0]
-        assert b'second' in result[1]
-        assert b'first' not in result[1]
+        with mock.patch('action.commandaction.LOG') as mock_log:
+            action.run(placeholders={'{MESSAGE}': 'first'})
+            assert action.run_command == 'echo {MESSAGE}'
+            mock_log.reset_mock()
+            result = action.run(placeholders={'{MESSAGE}': 'second'})
+        assert result is True
+        logged = _logged_command_output(mock_log)
+        assert b'second' in logged
+        assert b'first' not in logged
 
     def test_commandaction_run_with_special_characters_in_placeholder(self):
         action = CommandAction('test_command_action')
         action.configure(run_command='printf %s {MESSAGE}')
-        result = action.run(placeholders={'{MESSAGE}': 'a b|c&d;e'})
-        assert result[0]
-        assert result[1] == b'a b|c&d;e'
+        with mock.patch('action.commandaction.LOG') as mock_log:
+            result = action.run(placeholders={'{MESSAGE}': 'a b|c&d;e'})
+        assert result is True
+        assert _logged_command_output(mock_log) == b'a b|c&d;e'
 
     def test_commandaction_placeholder_intended_for_whole_token_usage(self):
         action = CommandAction('test_command_action')
         action.configure(run_command='echo {MESSAGE}')
-        result = action.run(placeholders={'{MESSAGE}': 'alpha beta'})
-        assert result[0]
-        assert result[1] == b'alpha beta'
+        with mock.patch('action.commandaction.LOG') as mock_log:
+            result = action.run(placeholders={'{MESSAGE}': 'alpha beta'})
+        assert result is True
+        assert _logged_command_output(mock_log) == b'alpha beta'
 
     def test_commandaction_placeholder_embedded_in_quoted_literal_is_preserved_literally(self):
         action = CommandAction('test_command_action')
         action.configure(run_command='printf %s "prefix {MESSAGE} suffix"')
-        result = action.run(placeholders={'{MESSAGE}': 'a b|c&d;e'})
-        assert result[0]
-        # shlex.quote() wraps the value in single quotes, which become literal characters
-        # inside the surrounding double quotes, so the special characters are preserved.
-        assert result[1] == b"prefix 'a b|c&d;e' suffix"
+        with mock.patch('action.commandaction.LOG') as mock_log:
+            result = action.run(placeholders={'{MESSAGE}': 'a b|c&d;e'})
+        assert result is True
+        assert _logged_command_output(mock_log) == b"prefix 'a b|c&d;e' suffix"

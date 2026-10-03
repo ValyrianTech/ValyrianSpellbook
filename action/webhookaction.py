@@ -44,11 +44,11 @@ class WebhookAction(Action):
             return False
         else:
             if r.status_code == 200:
-                LOG.info(f'status code webhook: {r.status_code}')
-                return True, r.text
+                LOG.info(f'Webhook response: {r.text}')
+                return True
             else:
                 LOG.error(f'Webhook failed: status code webhook: {r.status_code}')
-                return False, r.text
+                return False
 
     def configure(self, **config):
         """

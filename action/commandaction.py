@@ -51,7 +51,7 @@ class CommandAction(Action):
             result = subprocess.run(argv, shell=False, capture_output=True, cwd=self.working_dir, check=False)
         except OSError as e:
             LOG.error(f'Command failed to run: {e}')
-            return False, b'', str(e).encode()
+            return False
         stripped_output = result.stdout.strip()
         LOG.info(f'Command output: {stripped_output}')
 
@@ -60,9 +60,9 @@ class CommandAction(Action):
             LOG.error(f'Command error: {stripped_error}')
 
         if result.returncode == 0:
-            return True, stripped_output, stripped_error
+            return True
         else:
-            return False, stripped_output, stripped_error
+            return False
 
     def configure(self, **config):
         """
