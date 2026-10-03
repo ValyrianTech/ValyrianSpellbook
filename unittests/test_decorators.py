@@ -6,6 +6,7 @@ import pytest
 from authentication import AuthenticationStatus
 from decorators import (
     CONFIGURATION_FILE,
+    _scrub_trigger_secret,
     authentication_required,
     log_runtime,
     output_json,
@@ -341,8 +342,7 @@ class TestTriggerAuthenticationRequired:
     def test_public_secret_query_string(self, mock_request, mock_check, mock_get_config):
         mock_request.headers = {}
         mock_request.json = None
-        mock_request.query = mock.MagicMock()
-        mock_request.query.secret = 's3cret'
+        mock_request.query = {'secret': 's3cret', 'foo': 'bar'}
 
         calls = []
 
@@ -354,6 +354,8 @@ class TestTriggerAuthenticationRequired:
         result = test_func('trig1')
         assert result == {'success': True}
         assert calls == ['trig1']
+        assert 'secret' not in mock_request.query
+        assert mock_request.query['foo'] == 'bar'
 
     @mock.patch('helpers.triggerhelpers.get_trigger_config', return_value={'public': True, 'secret': 's3cret'})
     @mock.patch('decorators.check_authentication', return_value=AuthenticationStatus.NO_API_KEY)
@@ -361,8 +363,7 @@ class TestTriggerAuthenticationRequired:
     def test_public_secret_header(self, mock_request, mock_check, mock_get_config):
         mock_request.headers = {'API_Secret': 's3cret'}
         mock_request.json = None
-        mock_request.query = mock.MagicMock()
-        mock_request.query.secret = ''
+        mock_request.query = {}
 
         calls = []
 
@@ -374,6 +375,7 @@ class TestTriggerAuthenticationRequired:
         result = test_func('trig1')
         assert result == {'success': True}
         assert calls == ['trig1']
+        assert 'API_Secret' not in mock_request.headers
 
     @mock.patch('helpers.triggerhelpers.get_trigger_config', return_value={'public': True, 'secret': 's3cret'})
     @mock.patch('decorators.check_authentication', return_value=AuthenticationStatus.NO_API_KEY)
@@ -442,8 +444,7 @@ class TestTriggerAuthenticationRequired:
     def test_trigger_id_kwarg(self, mock_request, mock_check, mock_get_config):
         mock_request.headers = {'API_Secret': 's3cret'}
         mock_request.json = None
-        mock_request.query = mock.MagicMock()
-        mock_request.query.secret = ''
+        mock_request.query = {}
 
         calls = []
 
@@ -478,3 +479,29 @@ class TestTriggerAuthenticationRequired:
         assert result['error'] == AuthenticationStatus.NO_API_KEY
         assert calls == []
         mock_get_config.assert_called_once_with(None)
+
+    @mock.patch('decorators.request')
+    def test_scrub_trigger_secret_direct(self, mock_request):
+        mock_request.json = None
+        mock_request.query = {'foo': 'bar'}
+        mock_request.headers = {'API_Key': 'x'}
+
+        _scrub_trigger_secret()
+
+        assert mock_request.query == {'foo': 'bar'}
+        assert mock_request.headers == {'API_Key': 'x'}
+
+    @mock.patch('decorators.request')
+    def test_scrub_trigger_secret_removes_all_paths(self, mock_request):
+        mock_request.json = {'secret': 's3cret', 'data': 'x'}
+        mock_request.query = {'secret': 's3cret', 'foo': 'bar'}
+        mock_request.headers = {'API_Secret': 's3cret', 'API_Key': 'x'}
+
+        _scrub_trigger_secret()
+
+        assert 'secret' not in mock_request.json
+        assert 'secret' not in mock_request.query
+        assert 'API_Secret' not in mock_request.headers
+        assert mock_request.json['data'] == 'x'
+        assert mock_request.query['foo'] == 'bar'
+        assert mock_request.headers['API_Key'] == 'x'
