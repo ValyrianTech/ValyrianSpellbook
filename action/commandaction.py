@@ -59,10 +59,7 @@ class CommandAction(Action):
         if len(stripped_error):
             LOG.error(f'Command error: {stripped_error}')
 
-        if result.returncode == 0:
-            return True
-        else:
-            return False
+        return result.returncode == 0
 
     def configure(self, **config):
         """
