@@ -26,7 +26,7 @@ class TestMysqlHelpers(unittest.TestCase):
         create_database(mock_cursor, 'test_db')
         
         mock_cursor.execute.assert_called_once()
-        self.assertIn('test_db', mock_cursor.execute.call_args[0][0])
+        self.assertIn('`test_db`', mock_cursor.execute.call_args[0][0])
 
     @patch('helpers.mysqlhelpers.LOG')
     def test_log_sql_query(self, mock_log):
@@ -111,7 +111,7 @@ class TestMysqlHelpers(unittest.TestCase):
         with patch.object(mysql_module.mysql.connector, 'connect', return_value=mock_cnx):
             initialize_database('test_db', {}, 'user', 'pass')
         
-        mock_cursor.execute.assert_called_with("USE {}".format('test_db'))
+        mock_cursor.execute.assert_called_with('USE `test_db`')
         mock_cursor.close.assert_called_once()
         mock_cnx.close.assert_called_once()
 
@@ -238,6 +238,58 @@ class TestMysqlHelpers(unittest.TestCase):
             create_tables(mock_cursor, {'users': 'CREATE TABLE users (id INT)'})
 
         mock_log.error.assert_called_with("Some other error message")
+
+
+class TestQuoteIdentifier(unittest.TestCase):
+    """Test cases for the _quote_identifier helper."""
+
+    def test_valid_identifier(self):
+        """Test that a valid identifier is quoted with backticks."""
+        from helpers.mysqlhelpers import _quote_identifier
+
+        self.assertEqual(_quote_identifier('test_db'), '`test_db`')
+
+    def test_invalid_identifier_injection(self):
+        """Test that an identifier with an injection attempt raises ValueError."""
+        from helpers.mysqlhelpers import _quote_identifier
+
+        with self.assertRaises(ValueError):
+            _quote_identifier('mydb; DROP DATABASE important')
+
+    def test_invalid_identifier_hyphen(self):
+        """Test that an identifier with a hyphen raises ValueError."""
+        from helpers.mysqlhelpers import _quote_identifier
+
+        with self.assertRaises(ValueError):
+            _quote_identifier('bad-name')
+
+    def test_invalid_identifier_numeric(self):
+        """Test that a purely numeric identifier raises ValueError."""
+        from helpers.mysqlhelpers import _quote_identifier
+
+        with self.assertRaises(ValueError):
+            _quote_identifier('123')
+
+    def test_invalid_identifier_empty(self):
+        """Test that an empty identifier raises ValueError."""
+        from helpers.mysqlhelpers import _quote_identifier
+
+        with self.assertRaises(ValueError):
+            _quote_identifier('')
+
+    def test_invalid_identifier_none(self):
+        """Test that a None identifier raises ValueError."""
+        from helpers.mysqlhelpers import _quote_identifier
+
+        with self.assertRaises(ValueError):
+            _quote_identifier(None)
+
+    def test_invalid_identifier_int(self):
+        """Test that a non-string identifier raises ValueError."""
+        from helpers.mysqlhelpers import _quote_identifier
+
+        with self.assertRaises(ValueError):
+            _quote_identifier(123)
 
 
 if __name__ == '__main__':
