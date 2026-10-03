@@ -89,7 +89,7 @@ def trigger_authentication_required(f):
             elif request.headers.get('API_Secret'):
                 supplied = request.headers.get('API_Secret')
 
-            if supplied is not None and hmac.compare_digest(str(supplied), str(trigger_config['secret'])):
+            if supplied is not None and hmac.compare_digest(str(supplied).encode('utf-8'), str(trigger_config['secret']).encode('utf-8')):
                 _scrub_trigger_secret()
                 return f(*args, **kwargs)
 

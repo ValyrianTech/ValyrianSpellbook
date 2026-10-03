@@ -315,6 +315,26 @@ class TestTriggerAuthenticationRequired:
         assert result['error'] == AuthenticationStatus.NO_API_KEY
         assert calls == []
 
+    @mock.patch('helpers.triggerhelpers.get_trigger_config', return_value={'public': True, 'secret': 'sécret-ünïcode-日本'})
+    @mock.patch('decorators.check_authentication', return_value=AuthenticationStatus.NO_API_KEY)
+    @mock.patch('decorators.request')
+    def test_public_non_ascii_secret(self, mock_request, mock_check, mock_get_config):
+        mock_request.headers = {}
+        mock_request.json = {'secret': 'sécret-ünïcode-日本'}
+        mock_request.query = mock.MagicMock()
+        mock_request.query.secret = ''
+
+        calls = []
+
+        @trigger_authentication_required
+        def test_func(trigger_id):
+            calls.append(trigger_id)
+            return {'success': True}
+
+        result = test_func('trig1')
+        assert result == {'success': True}
+        assert calls == ['trig1']
+
     @mock.patch('helpers.triggerhelpers.get_trigger_config', return_value={'public': True, 'secret': 's3cret'})
     @mock.patch('decorators.check_authentication', return_value=AuthenticationStatus.NO_API_KEY)
     @mock.patch('decorators.request')
