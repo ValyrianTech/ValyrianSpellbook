@@ -1,9 +1,20 @@
 #!/usr/bin/env python
 """Helper functions for MySQL database operations."""
+import re
+
 import mysql.connector
 from mysql.connector import errorcode
 
 from helpers.loghelpers import LOG
+
+IDENTIFIER_RE = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')
+
+
+def _quote_identifier(identifier):
+    """Validate a SQL identifier against an allow-list pattern and quote it with backticks."""
+    if not isinstance(identifier, str) or not IDENTIFIER_RE.match(identifier):
+        raise ValueError(f'Invalid SQL identifier: {identifier!r}')
+    return f'`{identifier}`'
 
 
 def create_database(cursor, database):
@@ -16,7 +27,7 @@ def create_database(cursor, database):
     LOG.info(f'Creating database {database}')
 
     try:
-        cursor.execute(f"CREATE DATABASE {database} DEFAULT CHARACTER SET 'utf8'")
+        cursor.execute(f"CREATE DATABASE {_quote_identifier(database)} DEFAULT CHARACTER SET 'utf8'")
     except mysql.connector.Error as err:
         LOG.error(f"Failed creating database: {err}")
 
@@ -57,7 +68,7 @@ def initialize_database(database, tables, user, password):
     cursor = cnx.cursor()
 
     try:
-        cursor.execute(f"USE {database}")
+        cursor.execute(f"USE {_quote_identifier(database)}")
     except mysql.connector.Error as err:
         LOG.info(f"Database {database} does not exists.")
         if err.errno == errorcode.ER_BAD_DB_ERROR:
