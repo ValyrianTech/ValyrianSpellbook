@@ -41,19 +41,18 @@ def _scrub_trigger_secret():
     Remove any per-trigger secret material from the current request so it cannot
     leak into trigger data.
 
-    The secret may be supplied via the JSON body, the query string, or the
-    API_Secret request header. Every removal is guarded so the function never
-    raises when a key is absent, when the JSON body is None, or when the
-    underlying object does not support ``pop``.
+    The secret may be supplied via the JSON body or the query string. Headers
+    are not touched because they are read-only and are never merged into trigger
+    data. Every removal is guarded defensively so the function never raises,
+    regardless of the type of the underlying objects.
     """
-    if request.json is not None and hasattr(request.json, 'pop'):
-        request.json.pop('secret', None)
-
-    if request.query is not None and hasattr(request.query, 'pop'):
-        request.query.pop('secret', None)
-
-    if request.headers is not None and hasattr(request.headers, 'pop'):
-        request.headers.pop('API_Secret', None)
+    for container in (request.json, request.query):
+        if container is None:
+            continue
+        try:
+            container.pop('secret', None)
+        except (TypeError, AttributeError, KeyError):
+            pass
 
 
 def trigger_authentication_required(f):

@@ -395,7 +395,7 @@ class TestTriggerAuthenticationRequired:
         result = test_func('trig1')
         assert result == {'success': True}
         assert calls == ['trig1']
-        assert 'API_Secret' not in mock_request.headers
+        assert mock_request.headers['API_Secret'] == 's3cret'
 
     @mock.patch('helpers.triggerhelpers.load_trigger_config', return_value={'public': True, 'secret': 's3cret'})
     @mock.patch('decorators.check_authentication', return_value=AuthenticationStatus.NO_API_KEY)
@@ -521,7 +521,46 @@ class TestTriggerAuthenticationRequired:
 
         assert 'secret' not in mock_request.json
         assert 'secret' not in mock_request.query
-        assert 'API_Secret' not in mock_request.headers
+        assert mock_request.headers['API_Secret'] == 's3cret'
         assert mock_request.json['data'] == 'x'
         assert mock_request.query['foo'] == 'bar'
         assert mock_request.headers['API_Key'] == 'x'
+
+    @mock.patch('helpers.triggerhelpers.load_trigger_config', return_value={'public': True, 'secret': 's3cret'})
+    @mock.patch('decorators.check_authentication', return_value=AuthenticationStatus.NO_API_KEY)
+    @mock.patch('decorators.request')
+    def test_public_secret_header_readonly_mapping(self, mock_request, mock_check, mock_get_config):
+        """Regression: bottle's read-only WSGIHeaderDict reports hasattr(..., 'pop')==True but pop() raises TypeError."""
+        class ReadOnlyHeaderDict(dict):
+            def pop(self, *args, **kwargs):
+                raise TypeError("read-only")
+
+        headers = ReadOnlyHeaderDict({'API_Secret': 's3cret'})
+        mock_request.headers = headers
+        mock_request.json = None
+        mock_request.query = {}
+
+        calls = []
+
+        @trigger_authentication_required
+        def test_func(trigger_id):
+            calls.append(trigger_id)
+            return {'success': True}
+
+        result = test_func('trig1')
+
+        assert result == {'success': True}
+        assert calls == ['trig1']
+        # The header must not have been mutated/removed
+        assert headers['API_Secret'] == 's3cret'
+
+    @mock.patch('decorators.request')
+    def test_scrub_trigger_secret_readonly_header_and_query(self, mock_request):
+        class ReadOnlyMapping(dict):
+            def pop(self, *args, **kwargs):
+                raise TypeError("read-only")
+
+        mock_request.json = None
+        mock_request.query = ReadOnlyMapping({'secret': 'x'})
+        mock_request.headers = ReadOnlyMapping({'API_Secret': 'x'})
+        _scrub_trigger_secret()  # must not raise
