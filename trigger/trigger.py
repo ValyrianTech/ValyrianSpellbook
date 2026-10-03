@@ -19,6 +19,7 @@ from validators.validators import (
     valid_description,
     valid_email,
     valid_script,
+    valid_secret,
     valid_status,
     valid_timestamp,
     valid_trigger_type,
@@ -46,6 +47,8 @@ class Trigger:
         self.youtube = None
         self.status = None
         self.visibility = None
+        self.public = False
+        self.secret = None
         self.created = None
         self.actions = []
         self.self_destruct = None
@@ -91,6 +94,12 @@ class Trigger:
 
         if 'visibility' in config and valid_visibility(config['visibility']):
             self.visibility = config['visibility']
+
+        if 'public' in config and config['public'] in [True, False]:
+            self.public = config['public']
+
+        if 'secret' in config and valid_secret(config['secret']):
+            self.secret = config['secret']
 
         if 'actions' in config and valid_actions(config['actions']):
             self.actions = config['actions']
@@ -182,6 +191,8 @@ class Trigger:
                 'youtube': self.youtube,
                 'status': self.status,
                 'visibility': self.visibility,
+                'public': self.public,
+                'secret': self.secret,
                 'created': int(self.created.timestamp()),
                 'actions': self.actions,
                 'self_destruct': self.self_destruct,

@@ -680,7 +680,9 @@ class TestHttpRequestEndpoints:
         mock_req.json = {'key': 'val'}
         mock_req.query = {}
         mock_get.return_value = {'data': 'ok'}
-        SpellbookRESTAPI.http_get_request('trig1')
+        with patch('decorators.check_authentication') as mock_dec:
+            mock_dec.return_value = 'OK'
+            SpellbookRESTAPI.http_get_request('trig1')
         mock_get.assert_called_once_with('trig1', key='val')
 
     @patch('spellbookserver.response')
@@ -690,7 +692,9 @@ class TestHttpRequestEndpoints:
         mock_req.json = {'key': 'val'}
         mock_req.query = {}
         mock_post.return_value = {'data': 'ok'}
-        SpellbookRESTAPI.http_post_request('trig1')
+        with patch('decorators.check_authentication') as mock_dec:
+            mock_dec.return_value = 'OK'
+            SpellbookRESTAPI.http_post_request('trig1')
         mock_post.assert_called_once_with('trig1', key='val')
 
     @patch('spellbookserver.response')
@@ -700,7 +704,9 @@ class TestHttpRequestEndpoints:
         mock_req.json = {'key': 'val'}
         mock_req.query = {}
         mock_del.return_value = {'data': 'ok'}
-        SpellbookRESTAPI.http_delete_request('trig1')
+        with patch('decorators.check_authentication') as mock_dec:
+            mock_dec.return_value = 'OK'
+            SpellbookRESTAPI.http_delete_request('trig1')
         mock_del.assert_called_once_with('trig1', key='val')
 
     @patch('spellbookserver.response')
@@ -710,7 +716,9 @@ class TestHttpRequestEndpoints:
         mock_req.json = {'key': 'val'}
         mock_req.query = {}
         mock_opt.return_value = {'data': 'ok'}
-        SpellbookRESTAPI.http_options_request('trig1')
+        with patch('decorators.check_authentication') as mock_dec:
+            mock_dec.return_value = 'OK'
+            SpellbookRESTAPI.http_options_request('trig1')
         mock_opt.assert_called_once_with('trig1', key='val')
 
     @patch('spellbookserver.response')
@@ -720,7 +728,9 @@ class TestHttpRequestEndpoints:
         mock_req.json = None
         mock_req.query = {}
         mock_get.return_value = '<html>ok</html>'
-        result = SpellbookRESTAPI.html_request('trig1')
+        with patch('decorators.check_authentication') as mock_dec:
+            mock_dec.return_value = 'OK'
+            result = SpellbookRESTAPI.html_request('trig1')
         assert result == '<html>ok</html>'
         assert mock_resp.content_type == 'text/html'
 
@@ -732,7 +742,9 @@ class TestHttpRequestEndpoints:
         mock_req.json = None
         mock_req.query = {'param1': 'val1'}
         mock_get.return_value = {'ok': True}
-        SpellbookRESTAPI.http_get_request('trig1')
+        with patch('decorators.check_authentication') as mock_dec:
+            mock_dec.return_value = 'OK'
+            SpellbookRESTAPI.http_get_request('trig1')
         mock_get.assert_called_once_with('trig1', param1='val1')
 
     @patch('spellbookserver.response')
@@ -743,8 +755,54 @@ class TestHttpRequestEndpoints:
         mock_req.json = {'param1': 'from_json'}
         mock_req.query = {'param1': 'from_query'}
         mock_get.return_value = {'ok': True}
-        SpellbookRESTAPI.http_get_request('trig1')
+        with patch('decorators.check_authentication') as mock_dec:
+            mock_dec.return_value = 'OK'
+            SpellbookRESTAPI.http_get_request('trig1')
         mock_get.assert_called_once_with('trig1', param1='from_query')
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.http_get_request')
+    def test_http_get_request_no_auth(self, mock_get, mock_resp):
+        with patch('decorators.check_authentication', return_value='No API key supplied'):
+            with patch('helpers.triggerhelpers.get_trigger_config', return_value={}):
+                result = SpellbookRESTAPI.http_get_request('trig1')
+                assert 'error' in result
+                mock_get.assert_not_called()
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.http_post_request')
+    def test_http_post_request_no_auth(self, mock_post, mock_resp):
+        with patch('decorators.check_authentication', return_value='No API key supplied'):
+            with patch('helpers.triggerhelpers.get_trigger_config', return_value={}):
+                result = SpellbookRESTAPI.http_post_request('trig1')
+                assert 'error' in result
+                mock_post.assert_not_called()
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.http_delete_request')
+    def test_http_delete_request_no_auth(self, mock_del, mock_resp):
+        with patch('decorators.check_authentication', return_value='No API key supplied'):
+            with patch('helpers.triggerhelpers.get_trigger_config', return_value={}):
+                result = SpellbookRESTAPI.http_delete_request('trig1')
+                assert 'error' in result
+                mock_del.assert_not_called()
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.http_options_request')
+    def test_http_options_request_no_auth(self, mock_opt, mock_resp):
+        with patch('decorators.check_authentication', return_value='No API key supplied'):
+            with patch('helpers.triggerhelpers.get_trigger_config', return_value={}):
+                result = SpellbookRESTAPI.http_options_request('trig1')
+                assert 'error' in result
+                mock_opt.assert_not_called()
+
+    @patch('spellbookserver.http_get_request')
+    def test_html_request_no_auth(self, mock_get):
+        with patch('decorators.check_authentication', return_value='No API key supplied'):
+            with patch('helpers.triggerhelpers.get_trigger_config', return_value={}):
+                result = SpellbookRESTAPI.html_request('trig1')
+                assert 'error' in result
+                mock_get.assert_not_called()
 
 
 class TestQrEndpoint:
@@ -870,9 +928,20 @@ class TestFileDownload:
         mock_req.json = {'key': 'val'}
         mock_req.query = {}
         mock_dl.return_value = b'file_data'
-        result = SpellbookRESTAPI.file_download('trig1')
+        with patch('decorators.check_authentication') as mock_dec:
+            mock_dec.return_value = 'OK'
+            result = SpellbookRESTAPI.file_download('trig1')
         assert result == b'file_data'
         assert mock_resp.content_type == 'image/png'
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.file_download')
+    def test_file_download_no_auth(self, mock_dl, mock_resp):
+        with patch('decorators.check_authentication', return_value='No API key supplied'):
+            with patch('helpers.triggerhelpers.get_trigger_config', return_value={}):
+                result = SpellbookRESTAPI.file_download('trig1')
+                assert 'error' in result
+                mock_dl.assert_not_called()
 
 
 class TestCheckTriggers:

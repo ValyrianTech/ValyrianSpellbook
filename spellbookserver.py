@@ -42,7 +42,7 @@ from data.data import (
     transactions,
     utxos,
 )
-from decorators import authentication_required, output_json, use_explorer
+from decorators import authentication_required, output_json, trigger_authentication_required, use_explorer
 from helpers.actionhelpers import (
     delete_action,
     get_action_config,
@@ -721,6 +721,7 @@ class SpellbookRESTAPI(Bottle):
     @staticmethod
     @enable_cors
     @output_json
+    @trigger_authentication_required
     def http_options_request(trigger_id):
         """http options request endpoint."""
         response.content_type = 'application/json'
@@ -735,6 +736,7 @@ class SpellbookRESTAPI(Bottle):
     @staticmethod
     @enable_cors
     @output_json
+    @trigger_authentication_required
     def http_get_request(trigger_id):
         """http get request endpoint."""
         response.content_type = 'application/json'
@@ -749,6 +751,7 @@ class SpellbookRESTAPI(Bottle):
     @staticmethod
     @enable_cors
     @output_json
+    @trigger_authentication_required
     def http_post_request(trigger_id):
         """http post request endpoint."""
         response.content_type = 'application/json'
@@ -762,6 +765,7 @@ class SpellbookRESTAPI(Bottle):
 
     @staticmethod
     @output_json
+    @trigger_authentication_required
     def http_delete_request(trigger_id):
         """http delete request endpoint."""
         response.content_type = 'application/json'
@@ -774,6 +778,7 @@ class SpellbookRESTAPI(Bottle):
         return http_delete_request(trigger_id, **data)
 
     @staticmethod
+    @trigger_authentication_required
     def html_request(trigger_id):
         """html request endpoint."""
         response.content_type = 'text/html'
@@ -880,6 +885,7 @@ class SpellbookRESTAPI(Bottle):
 
     @staticmethod
     @enable_cors
+    @trigger_authentication_required
     def file_download(trigger_id):
         """file download endpoint."""
         response.content_type = 'image/png'

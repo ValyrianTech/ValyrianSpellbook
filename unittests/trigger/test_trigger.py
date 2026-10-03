@@ -150,6 +150,38 @@ class TestTrigger:
         trigger.configure(destruct_actions=True)
         assert trigger.destruct_actions
 
+    def test_trigger_init_public_secret_defaults(self):
+        trigger = ConcreteTrigger('test_trigger_id')
+        assert trigger.public is False
+        assert trigger.secret is None
+
+    def test_trigger_configure_public_true(self):
+        trigger = ConcreteTrigger('test_trigger_id')
+        trigger.configure(public=True)
+        assert trigger.public is True
+
+    def test_trigger_configure_public_invalid(self):
+        trigger = ConcreteTrigger('test_trigger_id')
+        trigger.configure(public='yes')
+        assert trigger.public is False
+
+    def test_trigger_configure_secret(self):
+        trigger = ConcreteTrigger('test_trigger_id')
+        trigger.configure(secret='s3cret')
+        assert trigger.secret == 's3cret'
+
+    def test_trigger_configure_secret_invalid(self):
+        trigger = ConcreteTrigger('test_trigger_id')
+        trigger.configure(secret='')
+        assert trigger.secret is None
+
+    def test_trigger_json_encodable_public_secret(self):
+        trigger = ConcreteTrigger('test_trigger_id')
+        trigger.configure(created=1609459200, public=True, secret='s3cret')
+        result = trigger.json_encodable()
+        assert result['public'] is True
+        assert result['secret'] == 's3cret'
+
     def test_trigger_json_encodable(self):
         trigger = ConcreteTrigger('test_trigger_id')
         trigger.configure(created=1609459200)
