@@ -73,10 +73,10 @@ def trigger_authentication_required(f):
         if check_authentication(request.headers, request.json) == AuthenticationStatus.OK:
             return f(*args, **kwargs)
 
-        from helpers.triggerhelpers import get_trigger_config
+        from helpers.triggerhelpers import load_trigger_config
 
         try:
-            trigger_config = get_trigger_config(trigger_id)
+            trigger_config = load_trigger_config(trigger_id)
         except (ValueError, KeyError, TypeError, OSError):
             return {'error': AuthenticationStatus.NO_API_KEY}
 

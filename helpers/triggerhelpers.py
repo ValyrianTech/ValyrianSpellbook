@@ -45,12 +45,33 @@ def get_triggers():
     return [os.path.splitext(os.path.basename(trigger))[0] for trigger in triggers]
 
 
-def get_trigger_config(trigger_id):
+SECRET_MASK = '********'
+
+
+def mask_trigger_secret(trigger_config):
     """
-    Get the configuration of a trigger
+    Return a copy of a trigger config with a truthy secret replaced by SECRET_MASK.
+
+    :param trigger_config: a dict containing a trigger configuration (or any value)
+    :return: a shallow copy with the secret masked when it is truthy, otherwise the input unchanged
+    """
+    if not isinstance(trigger_config, dict):
+        return trigger_config
+
+    if trigger_config.get('secret'):
+        masked_config = dict(trigger_config)
+        masked_config['secret'] = SECRET_MASK
+        return masked_config
+
+    return trigger_config
+
+
+def load_trigger_config(trigger_id):
+    """
+    Load the raw (unmasked) configuration of a trigger from disk.
 
     :param trigger_id: id of the trigger
-    :return: a dict containing the configuration of the trigger
+    :return: a dict containing the raw configuration of the trigger, or {} if not found
     """
     try:
         trigger_config = load_from_json_file(os.path.join(TRIGGERS_DIR, f'{trigger_id}.json'))
@@ -59,6 +80,16 @@ def get_trigger_config(trigger_id):
         trigger_config = {}
 
     return trigger_config
+
+
+def get_trigger_config(trigger_id):
+    """
+    Get the configuration of a trigger, with any secret masked for external/serialized use.
+
+    :param trigger_id: id of the trigger
+    :return: a dict containing the configuration of the trigger with the secret masked
+    """
+    return mask_trigger_secret(load_trigger_config(trigger_id))
 
 
 def get_trigger(trigger_id, trigger_type=None):
@@ -81,7 +112,7 @@ def get_trigger(trigger_id, trigger_type=None):
     :param trigger_type: The type of the trigger (optional)
     :return: A child class of Trigger
     """
-    trigger_config = get_trigger_config(trigger_id)
+    trigger_config = load_trigger_config(trigger_id)
 
     if trigger_type is not None:
         trigger_config['trigger_type'] = trigger_type

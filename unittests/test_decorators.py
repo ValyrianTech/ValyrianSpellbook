@@ -253,7 +253,7 @@ class TestConfigurationFile:
 class TestTriggerAuthenticationRequired:
     """Tests for trigger_authentication_required decorator"""
 
-    @mock.patch('helpers.triggerhelpers.get_trigger_config')
+    @mock.patch('helpers.triggerhelpers.load_trigger_config')
     @mock.patch('decorators.check_authentication')
     @mock.patch('decorators.request')
     def test_api_key_auth_ok(self, mock_request, mock_check, mock_get_config):
@@ -273,7 +273,7 @@ class TestTriggerAuthenticationRequired:
         assert calls == ['trig1']
         mock_get_config.assert_not_called()
 
-    @mock.patch('helpers.triggerhelpers.get_trigger_config', return_value={})
+    @mock.patch('helpers.triggerhelpers.load_trigger_config', return_value={})
     @mock.patch('decorators.check_authentication', return_value=AuthenticationStatus.NO_API_KEY)
     @mock.patch('decorators.request')
     def test_not_public_no_api_auth(self, mock_request, mock_check, mock_get_config):
@@ -294,7 +294,7 @@ class TestTriggerAuthenticationRequired:
         assert result['error'] == AuthenticationStatus.NO_API_KEY
         assert calls == []
 
-    @mock.patch('helpers.triggerhelpers.get_trigger_config', return_value={'public': False, 'secret': 's3cret'})
+    @mock.patch('helpers.triggerhelpers.load_trigger_config', return_value={'public': False, 'secret': 's3cret'})
     @mock.patch('decorators.check_authentication', return_value=AuthenticationStatus.NO_API_KEY)
     @mock.patch('decorators.request')
     def test_public_false_no_api_auth(self, mock_request, mock_check, mock_get_config):
@@ -315,7 +315,7 @@ class TestTriggerAuthenticationRequired:
         assert result['error'] == AuthenticationStatus.NO_API_KEY
         assert calls == []
 
-    @mock.patch('helpers.triggerhelpers.get_trigger_config', return_value={'public': True, 'secret': 'sécret-ünïcode-日本'})
+    @mock.patch('helpers.triggerhelpers.load_trigger_config', return_value={'public': True, 'secret': 'sécret-ünïcode-日本'})
     @mock.patch('decorators.check_authentication', return_value=AuthenticationStatus.NO_API_KEY)
     @mock.patch('decorators.request')
     def test_public_non_ascii_secret(self, mock_request, mock_check, mock_get_config):
@@ -335,7 +335,7 @@ class TestTriggerAuthenticationRequired:
         assert result == {'success': True}
         assert calls == ['trig1']
 
-    @mock.patch('helpers.triggerhelpers.get_trigger_config', return_value={'public': True, 'secret': 's3cret'})
+    @mock.patch('helpers.triggerhelpers.load_trigger_config', return_value={'public': True, 'secret': 's3cret'})
     @mock.patch('decorators.check_authentication', return_value=AuthenticationStatus.NO_API_KEY)
     @mock.patch('decorators.request')
     def test_public_secret_json_body(self, mock_request, mock_check, mock_get_config):
@@ -356,7 +356,7 @@ class TestTriggerAuthenticationRequired:
         assert calls == ['trig1']
         assert 'secret' not in mock_request.json
 
-    @mock.patch('helpers.triggerhelpers.get_trigger_config', return_value={'public': True, 'secret': 's3cret'})
+    @mock.patch('helpers.triggerhelpers.load_trigger_config', return_value={'public': True, 'secret': 's3cret'})
     @mock.patch('decorators.check_authentication', return_value=AuthenticationStatus.NO_API_KEY)
     @mock.patch('decorators.request')
     def test_public_secret_query_string(self, mock_request, mock_check, mock_get_config):
@@ -377,7 +377,7 @@ class TestTriggerAuthenticationRequired:
         assert 'secret' not in mock_request.query
         assert mock_request.query['foo'] == 'bar'
 
-    @mock.patch('helpers.triggerhelpers.get_trigger_config', return_value={'public': True, 'secret': 's3cret'})
+    @mock.patch('helpers.triggerhelpers.load_trigger_config', return_value={'public': True, 'secret': 's3cret'})
     @mock.patch('decorators.check_authentication', return_value=AuthenticationStatus.NO_API_KEY)
     @mock.patch('decorators.request')
     def test_public_secret_header(self, mock_request, mock_check, mock_get_config):
@@ -397,7 +397,7 @@ class TestTriggerAuthenticationRequired:
         assert calls == ['trig1']
         assert 'API_Secret' not in mock_request.headers
 
-    @mock.patch('helpers.triggerhelpers.get_trigger_config', return_value={'public': True, 'secret': 's3cret'})
+    @mock.patch('helpers.triggerhelpers.load_trigger_config', return_value={'public': True, 'secret': 's3cret'})
     @mock.patch('decorators.check_authentication', return_value=AuthenticationStatus.NO_API_KEY)
     @mock.patch('decorators.request')
     def test_public_wrong_secret(self, mock_request, mock_check, mock_get_config):
@@ -418,7 +418,7 @@ class TestTriggerAuthenticationRequired:
         assert result['error'] == AuthenticationStatus.NO_API_KEY
         assert calls == []
 
-    @mock.patch('helpers.triggerhelpers.get_trigger_config', return_value={'public': True, 'secret': 's3cret'})
+    @mock.patch('helpers.triggerhelpers.load_trigger_config', return_value={'public': True, 'secret': 's3cret'})
     @mock.patch('decorators.check_authentication', return_value=AuthenticationStatus.NO_API_KEY)
     @mock.patch('decorators.request')
     def test_public_no_secret(self, mock_request, mock_check, mock_get_config):
@@ -439,7 +439,7 @@ class TestTriggerAuthenticationRequired:
         assert result['error'] == AuthenticationStatus.NO_API_KEY
         assert calls == []
 
-    @mock.patch('helpers.triggerhelpers.get_trigger_config', side_effect=OSError('boom'))
+    @mock.patch('helpers.triggerhelpers.load_trigger_config', side_effect=OSError('boom'))
     @mock.patch('decorators.check_authentication', return_value=AuthenticationStatus.NO_API_KEY)
     @mock.patch('decorators.request')
     def test_get_trigger_config_oserror(self, mock_request, mock_check, mock_get_config):
@@ -458,7 +458,7 @@ class TestTriggerAuthenticationRequired:
         assert result['error'] == AuthenticationStatus.NO_API_KEY
         assert calls == []
 
-    @mock.patch('helpers.triggerhelpers.get_trigger_config', return_value={'public': True, 'secret': 's3cret'})
+    @mock.patch('helpers.triggerhelpers.load_trigger_config', return_value={'public': True, 'secret': 's3cret'})
     @mock.patch('decorators.check_authentication', return_value=AuthenticationStatus.NO_API_KEY)
     @mock.patch('decorators.request')
     def test_trigger_id_kwarg(self, mock_request, mock_check, mock_get_config):
@@ -478,7 +478,7 @@ class TestTriggerAuthenticationRequired:
         assert calls == ['trig1']
         mock_get_config.assert_called_once_with('trig1')
 
-    @mock.patch('helpers.triggerhelpers.get_trigger_config', return_value={})
+    @mock.patch('helpers.triggerhelpers.load_trigger_config', return_value={})
     @mock.patch('decorators.check_authentication', return_value=AuthenticationStatus.NO_API_KEY)
     @mock.patch('decorators.request')
     def test_no_args_no_kwargs(self, mock_request, mock_check, mock_get_config):

@@ -4,6 +4,7 @@ from unittest import mock
 import pytest
 
 from helpers.triggerhelpers import (
+    SECRET_MASK,
     activate_trigger,
     check_triggers,
     delete_trigger,
@@ -15,6 +16,8 @@ from helpers.triggerhelpers import (
     http_get_request,
     http_options_request,
     http_post_request,
+    load_trigger_config,
+    mask_trigger_secret,
     save_trigger,
     sign_message,
     signed_message_request,
@@ -40,15 +43,83 @@ class TestTriggerHelpers:
     @mock.patch('helpers.triggerhelpers.load_from_json_file')
     def test_get_trigger_config(self, mock_load):
         """Test getting trigger configuration"""
-        mock_load.return_value = {'trigger_type': 'Manual'}
+        mock_load.return_value = {'trigger_type': 'Manual', 'secret': 's3cret'}
         result = get_trigger_config('test_trigger')
         assert result['trigger_type'] == 'Manual'
+        assert result['secret'] == SECRET_MASK
 
     @mock.patch('helpers.triggerhelpers.load_from_json_file')
     def test_get_trigger_config_not_found(self, mock_load):
         """Test getting config for non-existent trigger"""
         mock_load.side_effect = OSError('File not found')
         result = get_trigger_config('nonexistent')
+        assert result == {}
+
+    @mock.patch('helpers.triggerhelpers.load_from_json_file')
+    def test_get_trigger_config_no_secret(self, mock_load):
+        """Test get_trigger_config does not mask when secret is absent or empty"""
+        mock_load.return_value = {'trigger_type': 'Manual'}
+        result = get_trigger_config('test_trigger')
+        assert result == {'trigger_type': 'Manual'}
+        assert 'secret' not in result
+
+        mock_load.return_value = {'trigger_type': 'Manual', 'secret': ''}
+        result = get_trigger_config('test_trigger')
+        assert result['secret'] == ''
+
+
+class TestMaskTriggerSecret:
+    """Tests for mask_trigger_secret function"""
+
+    def test_mask_trigger_secret_truthy_secret(self):
+        """Test masking a truthy secret"""
+        result = mask_trigger_secret({'type': 'Manual', 'secret': 's3cret'})
+        assert result['secret'] == SECRET_MASK
+        assert result['type'] == 'Manual'
+
+    def test_mask_trigger_secret_empty_secret(self):
+        """Test empty secret is left unchanged"""
+        result = mask_trigger_secret({'type': 'Manual', 'secret': ''})
+        assert result == {'type': 'Manual', 'secret': ''}
+
+    def test_mask_trigger_secret_none_secret(self):
+        """Test None secret is left unchanged"""
+        result = mask_trigger_secret({'type': 'Manual', 'secret': None})
+        assert result == {'type': 'Manual', 'secret': None}
+
+    def test_mask_trigger_secret_absent_secret(self):
+        """Test absent secret is left unchanged"""
+        result = mask_trigger_secret({'type': 'Manual'})
+        assert result == {'type': 'Manual'}
+
+    def test_mask_trigger_secret_does_not_mutate_input(self):
+        """Test that the input dict is not mutated"""
+        config = {'type': 'Manual', 'secret': 's3cret'}
+        result = mask_trigger_secret(config)
+        assert config['secret'] == 's3cret'
+        assert result['secret'] == SECRET_MASK
+
+    def test_mask_trigger_secret_non_dict(self):
+        """Test non-dict input is returned unchanged"""
+        value = 'not-a-dict'
+        assert mask_trigger_secret(value) == value
+
+
+class TestLoadTriggerConfig:
+    """Tests for load_trigger_config function"""
+
+    @mock.patch('helpers.triggerhelpers.load_from_json_file')
+    def test_load_trigger_config_returns_raw(self, mock_load):
+        """Test load_trigger_config returns the raw config including the real secret"""
+        mock_load.return_value = {'trigger_type': 'Manual', 'secret': 's3cret'}
+        result = load_trigger_config('test_trigger')
+        assert result['secret'] == 's3cret'
+
+    @mock.patch('helpers.triggerhelpers.load_from_json_file')
+    def test_load_trigger_config_oserror(self, mock_load):
+        """Test load_trigger_config returns {} on OSError"""
+        mock_load.side_effect = OSError('File not found')
+        result = load_trigger_config('nonexistent')
         assert result == {}
 
     @mock.patch('helpers.triggerhelpers.load_from_json_file')
