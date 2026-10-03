@@ -65,7 +65,9 @@
                 <div class="{% if key == 'description' or key == 'script' %}md:col-span-2{% endif %}">
                     <dt class="text-sm font-medium text-gray-400">{{ key }}</dt>
                     <dd class="mt-1 text-gray-100 {% if key == 'script' %}font-mono text-sm bg-gray-900 p-2 rounded{% endif %}">
-                        {% if value is mapping %}
+                        {% if key == 'secret' %}
+                            {{ '********' if value else '-' }}
+                        {% elif value is mapping %}
                             <pre class="text-sm">{{ value | tojson(indent=2) }}</pre>
                         {% elif value is iterable and value is not string %}
                             {{ value | join(', ') }}

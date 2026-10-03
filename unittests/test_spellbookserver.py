@@ -612,6 +612,25 @@ class TestTriggerEndpoints:
             assert 'error' in result
 
     @patch('spellbookserver.response')
+    @patch('helpers.triggerhelpers.load_from_json_file')
+    def test_get_trigger_masks_secret(self, mock_load, mock_resp):
+        mock_load.return_value = {'type': 'Manual', 'secret': 's3cret'}
+        with patch('decorators.check_authentication') as mock_dec:
+            mock_dec.return_value = 'OK'
+            result = SpellbookRESTAPI.get_trigger('trig1')
+            assert result['secret'] == '********'
+            assert result['type'] == 'Manual'
+
+    @patch('spellbookserver.response')
+    @patch('helpers.triggerhelpers.load_from_json_file')
+    def test_get_trigger_no_secret_unchanged(self, mock_load, mock_resp):
+        mock_load.return_value = {'type': 'Manual'}
+        with patch('decorators.check_authentication') as mock_dec:
+            mock_dec.return_value = 'OK'
+            result = SpellbookRESTAPI.get_trigger('trig1')
+            assert result == {'type': 'Manual'}
+
+    @patch('spellbookserver.response')
     @patch('spellbookserver.save_trigger')
     @patch('spellbookserver.request')
     def test_save_trigger(self, mock_req, mock_save, mock_resp):

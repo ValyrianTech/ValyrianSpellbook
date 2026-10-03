@@ -19,6 +19,15 @@ WEBUI_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 templates = Jinja2Templates(directory=os.path.join(WEBUI_DIR, "templates"))
 
 
+def _mask_secret(config):
+    """Mask the secret in a trigger config before handing it to a template."""
+    if isinstance(config, dict) and config.get('secret'):
+        masked = dict(config)
+        masked['secret'] = '********'
+        return masked
+    return config
+
+
 @router.get("/")
 async def list_triggers(request: Request):
     """List all triggers"""
@@ -36,7 +45,7 @@ async def list_triggers(request: Request):
             if not isinstance(config, dict) or 'error' not in config:
                 trigger_details.append({
                     'id': trigger_id,
-                    'config': config
+                    'config': _mask_secret(config)
                 })
     
     return templates.TemplateResponse(
@@ -78,7 +87,7 @@ async def view_trigger(request: Request, trigger_id: str):
         request,
         "triggers/view.html",
         {
-            "trigger": trigger,
+            "trigger": _mask_secret(trigger),
             "trigger_id": trigger_id,
         }
     )
@@ -97,7 +106,7 @@ async def edit_trigger(request: Request, trigger_id: str):
         request,
         "triggers/form.html",
         {
-            "trigger": trigger,
+            "trigger": _mask_secret(trigger),
             "trigger_id": trigger_id,
             "is_new": False,
         }
