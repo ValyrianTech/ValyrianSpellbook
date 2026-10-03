@@ -131,6 +131,7 @@ mock_port
 mock_print
 mock_python
 mock_ram
+mock_replace
 mock_router
 mock_sender
 mock_ssl
@@ -138,6 +139,7 @@ mock_ssl_enabled
 mock_stdout
 mock_stop
 mock_system
+mock_tempfile
 mock_testnet
 mock_time
 mock_token
