@@ -59,6 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Nonces are now persisted to `json/private/last_nonces.json` via `load_last_nonces()` and `save_last_nonces()`; the file is loaded at import time, so replay protection survives server restarts.
   - The signature is verified before the nonce is recorded (using `hmac.compare_digest`), so an invalid signature can no longer poison the nonce store.
 - Webhook URLs configured on `WebhookAction` are now validated with an SSRF-safe `valid_webhook_url` validator (`validators/validators.py`) that rejects URLs resolving to private, loopback, link-local, reserved, multicast, or unspecified addresses (e.g. `10.0.0.0/8`, `127.0.0.0/8`, `169.254.0.0/16`, `0.0.0.0`, `::1`), preventing server-side request forgery against internal services.
+- Fixed a SQL identifier injection risk in `helpers/mysqlhelpers.py`: database names interpolated into `CREATE DATABASE` and `USE` statements are now validated against an allow-list pattern and quoted with backticks via a new `_quote_identifier` helper, so unsanitized identifiers can no longer inject SQL.
 
 ### Internal
 
