@@ -190,16 +190,14 @@ class TestLogToLogger:
             mock_req.remote_addr = '127.0.0.1'
             mock_req.method = 'GET'
             mock_req.url = 'http://localhost/ping'
-            # These are the names Bottle produces via WSGIHeaderDict normalization
-            # (underscores become hyphens, names title-cased).
-            mock_req.headers = {
-                'Api-Key': 'super-secret',
-                'Api-Sign': 'sig',
-                'Api-Nonce': '123',
-                'Authorization': 'Bearer x',
-                'Cookie': 'session=abc',
-                'X-Test': 'safe',
-            }
+            mock_req.headers = WSGIHeaderDict({
+                'HTTP_API_KEY': 'super-secret',
+                'HTTP_API_SIGN': 'sig',
+                'HTTP_API_NONCE': '123',
+                'HTTP_AUTHORIZATION': 'Bearer x',
+                'HTTP_COOKIE': 'session=abc',
+                'HTTP_X_TEST': 'safe',
+            })
             mock_req.json = None
             mock_resp.status = '200 OK'
 
