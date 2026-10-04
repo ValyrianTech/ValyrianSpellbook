@@ -106,6 +106,12 @@ def get_use_testnet():
     return spellbook_config().get('Wallet', 'use_testnet') in ['True', 'true']
 
 
+@verify_config('Wallet', 'allow_empty_password')
+def get_allow_empty_password():
+    """Get whether empty-password hot wallet decryption is allowed from the configuration."""
+    return spellbook_config().getboolean('Wallet', 'allow_empty_password')
+
+
 @verify_config('Transactions', 'max_tx_fee_percentage')
 def get_max_tx_fee_percentage():
     """Get the maximum transaction fee percentage from the configuration."""
