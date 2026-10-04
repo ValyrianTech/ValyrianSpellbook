@@ -201,12 +201,36 @@ class TestLastNonces:
         assert authentication.LAST_NONCES == {'existing': 5}
         mock_log.error.assert_called_once()
 
-    def test_load_last_nonces_file_not_found_does_not_raise(self):
+    def test_load_last_nonces_file_not_found_creates_empty_file_and_logs_debug(self, tmp_path):
+        nonce_file = str(tmp_path / 'last_nonces.json')
         authentication.LAST_NONCES.clear()
-        authentication.LAST_NONCES['existing'] = 5
         authentication.load_from_json_file = mock.MagicMock(side_effect=FileNotFoundError('boom'))
-        authentication.load_last_nonces()
-        assert authentication.LAST_NONCES == {'existing': 5}
+        authentication.save_last_nonces = _REAL_SAVE_LAST_NONCES
+        with mock.patch.object(authentication, 'LAST_NONCES_FILE', nonce_file), \
+             mock.patch.object(authentication, 'LOG') as mock_log:
+            authentication.load_last_nonces()
+        mock_log.error.assert_not_called()
+        mock_log.debug.assert_called()
+        assert os.path.isfile(nonce_file)
+        with open(nonce_file, 'r') as f:
+            assert json.load(f) == {}
+
+    def test_load_last_nonces_file_not_found_subsequent_load_finds_file(self, tmp_path):
+        nonce_file = str(tmp_path / 'last_nonces.json')
+        authentication.LAST_NONCES.clear()
+        authentication.load_from_json_file = mock.MagicMock(side_effect=FileNotFoundError('boom'))
+        authentication.save_last_nonces = _REAL_SAVE_LAST_NONCES
+        with mock.patch.object(authentication, 'LAST_NONCES_FILE', nonce_file):
+            authentication.load_last_nonces()
+        assert os.path.isfile(nonce_file)
+        with open(nonce_file, 'r') as f:
+            assert json.load(f) == {}
+
+        authentication.load_from_json_file = mock.MagicMock(return_value={})
+        with mock.patch.object(authentication, 'LOG') as mock_log:
+            authentication.load_last_nonces()
+        mock_log.debug.assert_not_called()
+        mock_log.error.assert_not_called()
 
     def test_save_last_nonces_persists(self, tmp_path):
         nonce_file = str(tmp_path / 'last_nonces.json')
