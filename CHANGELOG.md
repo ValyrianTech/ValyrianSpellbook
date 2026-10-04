@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `save_to_json_file` (`helpers/jsonhelpers.py`) now writes atomically: it writes to a temporary file in the same directory (via `tempfile.NamedTemporaryFile` with `delete=False`), flushes and `fsync`s it, then atomically renames it over the destination with `os.replace()` (removing the temp file on error). This prevents readers from seeing a partially-written or corrupt JSON file and prevents data loss if the process dies mid-write.
 - `load_from_json_file` (`helpers/jsonhelpers.py`) now reopens the file on each retry attempt instead of reusing the original file handle, so a retry after a failed read can actually succeed (previously the exhausted/closed handle made retries fail unconditionally).
 - `load_last_nonces()` (`authentication.py`) now treats a missing nonce file as a normal first-run condition: it logs at DEBUG level and creates an empty `json/private/last_nonces.json` via `save_last_nonces()`, instead of logging a spurious ERROR on every process start.
+- Fixed `get_medium_priority_fee`, `get_low_priority_fee`, and `get_high_priority_fee` (`helpers/feehelpers.py`) so that sub-1024 sat/kB fee estimates no longer truncate to a 0 sat/byte rate: per-byte rates are now computed with `math.ceil` and clamped to a new `MIN_SAT_PER_BYTE = 1` minimum via a shared `_per_byte` helper.
 
 ### Security
 
