@@ -131,7 +131,8 @@ Comprehensive scenarios showcasing what the Valyrian Spellbook can achieve:
 
 - **bitcoinwand.py**: Sign messages or verify signatures using Bitcoin keys.
 - **transaction_listener.py**: Listens to transaction broadcasts relevant to watched addresses.
-- **hot_wallet.py**: Manages and secures private keys using authenticated AES-GCM encryption with scrypt-derived keys.
+- **hot_wallet.py**: Manages and secures private keys using authenticated AES-GCM encryption with scrypt-derived keys. The decryption password is taken from the cached password, the `SPELLBOOK_WALLET_PASSWORD` environment variable, or an interactive prompt; in non-interactive contexts the tool fails closed rather than decrypting without a password.
+- **Legacy empty-password wallets**: Wallets encrypted with an empty password are only decrypted if you explicitly opt in with `[Wallet] allow_empty_password = true` in the configuration (default `false`); this is intended for legacy/test wallets only and logs a warning.
 - **notify_transaction.py**: Standalone utility that posts a transaction-notification webhook (payment_request_id + txid) via an HTTP POST.
 
 ---
