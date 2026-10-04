@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Metacharacters are now passed as literal arguments (previously they silently misbehaved).
   - `RunCommandProcess` logs a `WARNING` by default when a string command contains shell metacharacters, and raises a `ValueError` when constructed with `strict=True`.
   - To keep shell features, invoke a shell explicitly by passing an argv list such as `['sh', '-c', '...']` or `['bash', '-lc', '...']`, or refactor the command to avoid shell features.
+- `WebhookAction` (`action/webhookaction.py`) no longer follows HTTP redirects: `requests.get` and `requests.post` are now called with `allow_redirects=False` for both GET and POST webhook requests (previously `requests` followed redirects by default). This is SSRF hardening to prevent a webhook endpoint from redirecting the outbound request to an internal/private address that would bypass the SSRF-safe URL validation. As a user-visible result, a webhook endpoint that responds with a 3xx redirect is no longer followed to its final destination; the redirect response (a non-200 status) is instead treated as a webhook failure and the action returns a failure result. Users who rely on webhook endpoints that redirect must update their webhook configuration to point directly at the final destination URL.
 
 ### Changed
 
