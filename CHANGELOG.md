@@ -46,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- The REST API request logger (`spellbookserver.py`) no longer writes secrets to the request log. Sensitive header values (`API_Key`, `API_Sign`, `API_Nonce`, `Authorization`, `Cookie`) and sensitive JSON body fields (such as `api_key`, `api_secret`, `secret`, `private_key`, `mnemonic`, `xpriv`, `password`, `passphrase`, `seed`) are now redacted to `********` before being logged, so API credentials and other secrets are no longer captured in request logs.
 - Fixed an authentication bypass on the REST API `get_reveal` endpoint (`spellbookserver.py`). The endpoint that returns the reveal-secret value for a `RevealSecretAction` is now protected by `@authentication_required`, so it can no longer be called without a valid API key/signature.
 - Fixed a command-injection vulnerability in `spellbookserver.py` (`convert_aac_to_opus`) by removing `shell=True` and passing an argv list to `subprocess.run` (`shell=False`). ffmpeg failures are now surfaced as a `ValueError` (with the decoded stderr) instead of being silently swallowed.
 - Fixed a command-injection vulnerability in `action/commandaction.py` (`CommandAction.run`) and `helpers/runcommandprocess.py` (`RunCommandProcess.run`) by removing `shell=True` from command execution.
