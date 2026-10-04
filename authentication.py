@@ -74,6 +74,12 @@ def load_last_nonces():
     """
     try:
         data = load_from_json_file(LAST_NONCES_FILE)
+    except FileNotFoundError:
+        # First run: no nonce file yet. Create an empty default so we don't
+        # log this every time a process starts.
+        LOG.debug(f'No last nonces file at {LAST_NONCES_FILE}; starting with empty nonce store.')
+        save_last_nonces()
+        return
     except OSError as ex:
         LOG.error(f'Failed to load last nonces from {LAST_NONCES_FILE}: {ex}')
         return
