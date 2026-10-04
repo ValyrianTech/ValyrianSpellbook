@@ -127,6 +127,31 @@ class TestWebhookAction:
         result = action.run()
         assert not result
 
+    def test_webhookaction_run_mounts_pinned_ip_adapter_on_both_schemes(self):
+        with mock.patch('action.webhookaction.resolve_and_validate_webhook_url', return_value='8.8.8.8'):
+            with mock.patch.object(requests.Session, 'mount') as mock_mount, \
+                    mock.patch.object(requests.Session, 'get') as mock_get:
+                mock_response = mock.MagicMock()
+                mock_response.status_code = 200
+                mock_response.text = 'ok'
+                mock_get.return_value = mock_response
+
+                action = WebhookAction('test_webhook_action')
+                action.configure(webhook='http://example.com/webhook')
+                result = action.run()
+
+                assert result == (True, 'ok')
+
+                adapter_mounts = [
+                    call for call in mock_mount.call_args_list
+                    if call.args and isinstance(call.args[1], PinnedIPAdapter)
+                ]
+                assert len(adapter_mounts) == 2
+                assert {call.args[0] for call in adapter_mounts} == {'http://', 'https://'}
+                adapters = [call.args[1] for call in adapter_mounts]
+                assert adapters[0] is adapters[1]
+                assert adapters[0].resolved_ip == '8.8.8.8'
+
     @mock.patch('action.webhookaction.resolve_and_validate_webhook_url', return_value='8.8.8.8')
     @mock.patch('action.webhookaction.requests.Session')
     def test_webhookaction_run_exception(self, mock_session_cls, _mock_resolve):
