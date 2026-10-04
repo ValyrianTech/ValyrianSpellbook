@@ -4,6 +4,8 @@ from unittest import mock
 import pytest
 
 from helpers.feehelpers import (
+    MIN_SAT_PER_BYTE,
+    _per_byte,
     get_high_priority_fee,
     get_low_priority_fee,
     get_medium_priority_fee,
@@ -35,6 +37,76 @@ class TestFeeHelpers:
         mock_get_fee.return_value = {'medium_priority': 10240, 'low_priority': 5120, 'high_priority': 20480}
         result = get_high_priority_fee()
         assert result == 20  # 20480 / 1024
+
+    @mock.patch('helpers.feehelpers.get_recommended_fee_blockcypher')
+    def test_get_medium_priority_fee_sub_1024(self, mock_get_fee):
+        """Test medium priority fee below 1024 sat/kB is clamped to MIN_SAT_PER_BYTE"""
+        mock_get_fee.return_value = {'medium_priority': 500, 'low_priority': 5120, 'high_priority': 20480}
+        result = get_medium_priority_fee()
+        assert result == 1  # ceil(500/1024) = 1, clamped to MIN_SAT_PER_BYTE
+
+    @mock.patch('helpers.feehelpers.get_recommended_fee_blockcypher')
+    def test_get_low_priority_fee_sub_1024(self, mock_get_fee):
+        """Test low priority fee below 1024 sat/kB is clamped to MIN_SAT_PER_BYTE"""
+        mock_get_fee.return_value = {'medium_priority': 10240, 'low_priority': 500, 'high_priority': 20480}
+        result = get_low_priority_fee()
+        assert result == 1
+
+    @mock.patch('helpers.feehelpers.get_recommended_fee_blockcypher')
+    def test_get_high_priority_fee_sub_1024(self, mock_get_fee):
+        """Test high priority fee below 1024 sat/kB is clamped to MIN_SAT_PER_BYTE"""
+        mock_get_fee.return_value = {'medium_priority': 10240, 'low_priority': 5120, 'high_priority': 500}
+        result = get_high_priority_fee()
+        assert result == 1
+
+    @mock.patch('helpers.feehelpers.get_recommended_fee_blockcypher')
+    def test_get_medium_priority_fee_not_exact_multiple(self, mock_get_fee):
+        """Test medium priority fee not an exact multiple of 1024 is ceiled"""
+        mock_get_fee.return_value = {'medium_priority': 1025, 'low_priority': 5120, 'high_priority': 20480}
+        result = get_medium_priority_fee()
+        assert result == 2  # ceil(1025/1024) = 2
+
+    @mock.patch('helpers.feehelpers.get_recommended_fee_blockcypher')
+    def test_get_medium_priority_fee_zero(self, mock_get_fee):
+        """Test medium priority fee of zero still returns MIN_SAT_PER_BYTE"""
+        mock_get_fee.return_value = {'medium_priority': 0, 'low_priority': 5120, 'high_priority': 20480}
+        result = get_medium_priority_fee()
+        assert result == MIN_SAT_PER_BYTE
+
+    @mock.patch('helpers.feehelpers.get_recommended_fee_blockcypher')
+    def test_get_medium_priority_fee_exactly_1024(self, mock_get_fee):
+        """Test medium priority fee exactly 1024 returns 1"""
+        mock_get_fee.return_value = {'medium_priority': 1024, 'low_priority': 5120, 'high_priority': 20480}
+        result = get_medium_priority_fee()
+        assert result == 1
+
+    def test_per_byte_exact_multiple(self):
+        """Test _per_byte with an exact multiple of 1024"""
+        assert _per_byte(10240) == 10
+
+    def test_per_byte_not_exact_multiple(self):
+        """Test _per_byte with a value that is not an exact multiple of 1024"""
+        assert _per_byte(1025) == 2
+
+    def test_per_byte_sub_1024(self):
+        """Test _per_byte with a sub-1024 value clamps to MIN_SAT_PER_BYTE"""
+        assert _per_byte(500) == 1
+
+    def test_per_byte_zero(self):
+        """Test _per_byte with zero clamps to MIN_SAT_PER_BYTE"""
+        assert _per_byte(0) == MIN_SAT_PER_BYTE
+
+    def test_per_byte_exactly_1024(self):
+        """Test _per_byte with exactly 1024"""
+        assert _per_byte(1024) == 1
+
+    def test_per_byte_string(self):
+        """Test _per_byte with a string input to cover the int() conversion path"""
+        assert _per_byte('500') == 1
+
+    def test_per_byte_string_exact_multiple(self):
+        """Test _per_byte with a string input that is an exact multiple"""
+        assert _per_byte('10240') == 10
 
     @mock.patch('helpers.feehelpers.requests.get')
     def test_get_recommended_fee(self, mock_get):
