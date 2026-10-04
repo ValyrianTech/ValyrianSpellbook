@@ -115,6 +115,28 @@ if get_enable_transcribe() is True:
     LOG.info(f'Loading WhisperModel with model_size_or_path: {model_size_or_path}')
     WHISPER_MODEL = WhisperModel(model_size_or_path=model_size_or_path, device="cpu", compute_type="int8")
 
+SENSITIVE_KEYS = {'api_key', 'api_secret', 'secret', 'private_key', 'privkey', 'mnemonic', 'xpriv', 'password', 'passphrase', 'seed', 'API_Sign', 'API_Key'}
+REDACTED_HEADERS = {'api-key', 'api-sign', 'api-nonce', 'authorization', 'cookie'}
+REDACTED_VALUE = '********'
+
+
+def _is_redacted_header(name):
+    """Return True if a request header name is a sensitive header to redact.
+
+    Bottle/WSGI normalize header names via WSGIHeaderDict (underscores become
+    hyphens and names are title-cased), so matching must normalize both sides.
+    """
+    return name.lower().replace('_', '-') in REDACTED_HEADERS
+
+
+def _redact(mapping):
+    """Return a copy of mapping with sensitive values redacted."""
+    return {
+        key: REDACTED_VALUE if key.lower() in SENSITIVE_KEYS or key in SENSITIVE_KEYS else value
+        for key, value in mapping.items()
+    }
+
+
 def enable_cors(fn):
     """Decorator that adds CORS headers to a route's response."""
     def _enable_cors(*args, **kwargs):
@@ -353,10 +375,12 @@ class SpellbookRESTAPI(Bottle):
 
             if request.headers is not None:
                 for key, value in request.headers.items():
+                    if _is_redacted_header(key):
+                        value = REDACTED_VALUE
                     REQUESTS_LOG.info('  HEADERS | {}: {}'.format(key, str(value).encode('utf-8')))
 
             if request.json is not None:
-                for key, value in request.json.items():
+                for key, value in _redact(request.json).items():
                     REQUESTS_LOG.info('  BODY | {}: {}'.format(key, str(value).encode('utf-8')))
 
             actual_response = response

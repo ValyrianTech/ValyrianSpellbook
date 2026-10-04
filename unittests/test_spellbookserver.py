@@ -12,6 +12,7 @@ import sys
 from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
+from bottle import WSGIHeaderDict
 
 # --- Module loading -----------------------------------------------------------
 # spellbookserver.py imports heavy dependencies at module level (faster_whisper,
@@ -27,7 +28,10 @@ _wallet_patcher.start()
 
 import spellbookserver as srv
 from spellbookserver import (
+    REDACTED_VALUE,
     SpellbookRESTAPI,
+    _redact,
+    _is_redacted_header,
     convert_aac_to_opus,
     enable_cors,
 )
@@ -176,6 +180,147 @@ class TestLogToLogger:
             wrapper = SpellbookRESTAPI.log_to_logger(api, lambda: (_ for _ in ()).throw(ValueError('boom')))
             wrapper()
             mock_send.assert_called_once()
+
+    def test_log_to_logger_redacts_sensitive_headers(self):
+        """Test log_to_logger redacts sensitive header values."""
+        with patch('spellbookserver.request') as mock_req, \
+             patch('spellbookserver.response') as mock_resp, \
+             patch('spellbookserver.REQUESTS_LOG') as mock_req_log, \
+             patch('spellbookserver.LOG'):
+            mock_req.remote_addr = '127.0.0.1'
+            mock_req.method = 'GET'
+            mock_req.url = 'http://localhost/ping'
+            mock_req.headers = WSGIHeaderDict({
+                'HTTP_API_KEY': 'super-secret',
+                'HTTP_API_SIGN': 'sig',
+                'HTTP_API_NONCE': '123',
+                'HTTP_AUTHORIZATION': 'Bearer x',
+                'HTTP_COOKIE': 'session=abc',
+                'HTTP_X_TEST': 'safe',
+            })
+            mock_req.json = None
+            mock_resp.status = '200 OK'
+
+            api = MagicMock(spec=SpellbookRESTAPI)
+            wrapper = SpellbookRESTAPI.log_to_logger(api, lambda: 'done')
+            wrapper()
+
+            logged = [str(c) for c in mock_req_log.info.call_args_list]
+
+            api_key_calls = [s for s in logged if 'Api-Key' in s]
+            assert api_key_calls
+            assert any(REDACTED_VALUE in s for s in api_key_calls)
+            assert all('super-secret' not in s for s in api_key_calls)
+
+            assert any('X-Test' in s and 'safe' in s for s in logged)
+
+            all_logged = ''.join(logged)
+            for secret in ('super-secret', 'sig', '123', 'Bearer x', 'session=abc'):
+                assert secret not in all_logged
+
+    def test_log_to_logger_redacts_real_wsgi_header_dict(self):
+        """Guard the production path with a real Bottle WSGIHeaderDict.
+
+        WSGIHeaderDict turns 'HTTP_API_KEY' into 'Api-Key', which is the exact
+        spelling that previously leaked in cleartext.
+        """
+        with patch('spellbookserver.request') as mock_req, \
+             patch('spellbookserver.response') as mock_resp, \
+             patch('spellbookserver.REQUESTS_LOG') as mock_req_log, \
+             patch('spellbookserver.LOG'):
+            mock_req.remote_addr = '127.0.0.1'
+            mock_req.method = 'POST'
+            mock_req.url = 'http://localhost/api/trigger1'
+            mock_req.headers = WSGIHeaderDict({
+                'HTTP_API_KEY': 'super-secret',
+                'HTTP_API_SIGN': 'supersig',
+                'HTTP_API_NONCE': 'supernonce',
+                'HTTP_AUTHORIZATION': 'Bearer supersecret',
+                'HTTP_COOKIE': 'session=supersecret',
+                'HTTP_X_TEST': 'safe',
+            })
+            mock_req.json = None
+            mock_resp.status = '200 OK'
+
+            api = MagicMock(spec=SpellbookRESTAPI)
+            wrapper = SpellbookRESTAPI.log_to_logger(api, lambda: 'done')
+            wrapper()
+
+            logged = [str(c) for c in mock_req_log.info.call_args_list]
+            all_logged = ''.join(logged)
+
+            for secret in ('super-secret', 'supersig', 'supernonce', 'Bearer supersecret', 'session=supersecret'):
+                assert secret not in all_logged
+
+            assert all(REDACTED_VALUE in s for s in logged if 'Api-Key' in s)
+            assert all(REDACTED_VALUE in s for s in logged if 'Api-Sign' in s)
+            assert all(REDACTED_VALUE in s for s in logged if 'Api-Nonce' in s)
+            assert any('X-Test' in s and 'safe' in s for s in logged)
+
+    def test_is_redacted_header(self):
+        """Test _is_redacted_header normalizes case and underscores."""
+        for name in ('Api-Key', 'api-key', 'API_Key', 'api_key', 'Api-Sign',
+                     'API_Sign', 'Api-Nonce', 'API_Nonce', 'Authorization',
+                     'authorization', 'Cookie', 'cookie'):
+            assert _is_redacted_header(name) is True
+        for name in ('X-Test', 'Content-Type', 'User-Agent', 'Accept'):
+            assert _is_redacted_header(name) is False
+
+    def test_log_to_logger_redacts_sensitive_body_keys(self):
+        """Test log_to_logger redacts sensitive JSON body values."""
+        with patch('spellbookserver.request') as mock_req, \
+             patch('spellbookserver.response') as mock_resp, \
+             patch('spellbookserver.REQUESTS_LOG') as mock_req_log, \
+             patch('spellbookserver.LOG'):
+            mock_req.remote_addr = '127.0.0.1'
+            mock_req.method = 'POST'
+            mock_req.url = 'http://localhost/save'
+            mock_req.headers = {}
+            mock_req.json = {
+                'api_key': 'secret-api-key',
+                'private_key': 'xprv123',
+                'mnemonic': 'word word',
+                'password': 'hunter2',
+                'nonce': 'keepme',
+            }
+            mock_resp.status = '200 OK'
+
+            api = MagicMock(spec=SpellbookRESTAPI)
+            wrapper = SpellbookRESTAPI.log_to_logger(api, lambda: 'done')
+            wrapper()
+
+            logged = [str(c) for c in mock_req_log.info.call_args_list]
+            all_logged = ''.join(logged)
+
+            for secret in ('secret-api-key', 'xprv123', 'word word', 'hunter2'):
+                assert secret not in all_logged
+
+            assert any('nonce' in s and 'keepme' in s for s in logged)
+
+    def test_redact_helper(self):
+        """Test the _redact helper redacts sensitive keys directly."""
+        result = _redact({
+            'API_Key': 'x',
+            'api_secret': 'y',
+            'secret': 'z',
+            'private_key': 'p',
+            'privkey': 'q',
+            'mnemonic': 'm',
+            'xpriv': 'xr',
+            'password': 'pw',
+            'passphrase': 'pp',
+            'seed': 's',
+            'API_Sign': 'as',
+            'safe': 'visible',
+        })
+
+        for key in ('API_Key', 'api_secret', 'secret', 'private_key', 'privkey',
+                    'mnemonic', 'xpriv', 'password', 'passphrase', 'seed', 'API_Sign'):
+            assert result[key] == REDACTED_VALUE
+
+        assert result['safe'] == 'visible'
+
+        assert _redact({'Api_Key': 'mixed'})['Api_Key'] == REDACTED_VALUE
 
 
 # --- Static endpoint tests ----------------------------------------------------
