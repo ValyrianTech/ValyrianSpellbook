@@ -206,6 +206,36 @@ class TestPinnedIPAdapter:
         assert request.url == 'http://8.8.8.8:8080/webhook'
         assert request.headers['Host'] == 'example.com:8080'
 
+    def test_send_preserves_userinfo_with_password_no_port(self):
+        adapter = PinnedIPAdapter('8.8.8.8')
+        request = requests.Request('GET', 'http://user:secret@example.com/webhook').prepare()
+        with mock.patch.object(requests.adapters.HTTPAdapter, 'send', return_value='response'):
+            adapter.send(request)
+        assert request.url == 'http://user:secret@8.8.8.8/webhook'
+        assert request.headers['Host'] == 'example.com'
+
+    def test_send_preserves_userinfo_with_password_and_port(self):
+        adapter = PinnedIPAdapter('8.8.8.8')
+        request = requests.Request('GET', 'http://user:secret@example.com:8080/webhook').prepare()
+        with mock.patch.object(requests.adapters.HTTPAdapter, 'send', return_value='response'):
+            adapter.send(request)
+        assert request.url == 'http://user:secret@8.8.8.8:8080/webhook'
+        assert request.headers['Host'] == 'example.com:8080'
+
+    def test_send_preserves_username_only_userinfo(self):
+        adapter = PinnedIPAdapter('8.8.8.8')
+        request = requests.Request('GET', 'http://user@example.com/webhook').prepare()
+        with mock.patch.object(requests.adapters.HTTPAdapter, 'send', return_value='response'):
+            adapter.send(request)
+        assert request.url == 'http://user@8.8.8.8/webhook'
+
+    def test_send_preserves_percent_encoded_userinfo(self):
+        adapter = PinnedIPAdapter('8.8.8.8')
+        request = requests.Request('GET', 'http://user:pa%40ss@example.com/webhook').prepare()
+        with mock.patch.object(requests.adapters.HTTPAdapter, 'send', return_value='response'):
+            adapter.send(request)
+        assert request.url == 'http://user:pa%40ss@8.8.8.8/webhook'
+
     def test_build_connection_pool_key_attributes_sets_server_hostname(self):
         adapter = PinnedIPAdapter('8.8.8.8')
         adapter.hostname = 'example.com'
