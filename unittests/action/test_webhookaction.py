@@ -185,7 +185,6 @@ class TestPinnedIPAdapter:
     def test_init(self):
         adapter = PinnedIPAdapter('8.8.8.8')
         assert adapter.resolved_ip == '8.8.8.8'
-        assert adapter.hostname is None
 
     def test_send_rewrites_url_and_host_without_port(self):
         adapter = PinnedIPAdapter('8.8.8.8')
@@ -195,7 +194,6 @@ class TestPinnedIPAdapter:
         assert result == 'response'
         assert request.url == 'http://8.8.8.8/webhook'
         assert request.headers['Host'] == 'example.com'
-        assert adapter.hostname == 'example.com'
         mock_send.assert_called_once_with(request, stream=False, timeout=None, verify=True, cert=None, proxies=None)
 
     def test_send_rewrites_url_and_host_with_port(self):
@@ -238,8 +236,16 @@ class TestPinnedIPAdapter:
 
     def test_build_connection_pool_key_attributes_sets_server_hostname(self):
         adapter = PinnedIPAdapter('8.8.8.8')
-        adapter.hostname = 'example.com'
         request = requests.Request('GET', 'https://8.8.8.8/webhook').prepare()
+        request.headers['Host'] = 'example.com'
+        host_params, pool_kwargs = adapter.build_connection_pool_key_attributes(request, True, None)
+        assert host_params['host'] == '8.8.8.8'
+        assert pool_kwargs['server_hostname'] == 'example.com'
+
+    def test_build_connection_pool_key_attributes_strips_port_from_hostname(self):
+        adapter = PinnedIPAdapter('8.8.8.8')
+        request = requests.Request('GET', 'https://8.8.8.8/webhook').prepare()
+        request.headers['Host'] = 'example.com:8443'
         host_params, pool_kwargs = adapter.build_connection_pool_key_attributes(request, True, None)
         assert host_params['host'] == '8.8.8.8'
         assert pool_kwargs['server_hostname'] == 'example.com'
