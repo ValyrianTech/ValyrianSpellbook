@@ -78,6 +78,7 @@ class TestWebhookAction:
         result = action.run()
         assert result == (True, 'success')
         mock_session.get.assert_called_once_with('http://example.com/webhook', timeout=10, allow_redirects=False)
+        mock_session.close.assert_called_once()
 
     @mock.patch('action.webhookaction.resolve_and_validate_webhook_url', return_value='8.8.8.8')
     @mock.patch('action.webhookaction.requests.Session')
@@ -92,6 +93,7 @@ class TestWebhookAction:
         action.configure(webhook='http://example.com/webhook')
         result = action.run()
         assert result == (False, 'error')
+        mock_session.close.assert_called_once()
 
     @mock.patch('action.webhookaction.resolve_and_validate_webhook_url', return_value='8.8.8.8')
     @mock.patch('action.webhookaction.requests.Session')
@@ -162,6 +164,7 @@ class TestWebhookAction:
         action.configure(webhook='http://example.com/webhook')
         result = action.run()
         assert not result
+        mock_session.close.assert_called_once()
 
     @mock.patch('action.webhookaction.resolve_and_validate_webhook_url', return_value='8.8.8.8')
     @mock.patch('action.webhookaction.requests.Session')
@@ -173,6 +176,7 @@ class TestWebhookAction:
         action.configure(webhook='http://example.com/webhook')
         result = action.run()
         assert not result
+        mock_session.close.assert_called_once()
 
 
 class TestPinnedIPAdapter:

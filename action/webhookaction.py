@@ -70,10 +70,10 @@ class WebhookAction(Action):
 
         session = requests.Session()
         adapter = PinnedIPAdapter(resolved_ip)
-        session.mount('http://', adapter)
-        session.mount('https://', adapter)
-
         try:
+            session.mount('http://', adapter)
+            session.mount('https://', adapter)
+
             if self.request_type == 'GET':
                 r = session.get(self.webhook, timeout=10, allow_redirects=False)
             elif self.request_type == 'POST':
@@ -92,6 +92,8 @@ class WebhookAction(Action):
             else:
                 LOG.error(f'Webhook failed: status code webhook: {r.status_code}')
                 return False, r.text
+        finally:
+            session.close()
 
     def configure(self, **config):
         """
