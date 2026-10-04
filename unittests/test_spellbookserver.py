@@ -30,8 +30,8 @@ import spellbookserver as srv
 from spellbookserver import (
     REDACTED_VALUE,
     SpellbookRESTAPI,
-    _redact,
     _is_redacted_header,
+    _redact,
     convert_aac_to_opus,
     enable_cors,
 )
