@@ -5,7 +5,7 @@ import pytest
 import requests
 
 from action.actiontype import ActionType
-from action.webhookaction import WebhookAction
+from action.webhookaction import PinnedIPAdapter, WebhookAction
 
 
 @pytest.fixture(autouse=True)
@@ -64,37 +64,43 @@ class TestWebhookAction:
         action = WebhookAction('test_webhook_action')
         assert not action.run()
 
-    @mock.patch('action.webhookaction.requests.get')
-    def test_webhookaction_run_get_success(self, mock_get):
+    @mock.patch('action.webhookaction.resolve_and_validate_webhook_url', return_value='8.8.8.8')
+    @mock.patch('action.webhookaction.requests.Session')
+    def test_webhookaction_run_get_success(self, mock_session_cls, _mock_resolve):
+        mock_session = mock_session_cls.return_value
         mock_response = mock.MagicMock()
         mock_response.status_code = 200
         mock_response.text = 'success'
-        mock_get.return_value = mock_response
+        mock_session.get.return_value = mock_response
 
         action = WebhookAction('test_webhook_action')
         action.configure(webhook='http://example.com/webhook')
         result = action.run()
         assert result == (True, 'success')
-        mock_get.assert_called_once_with('http://example.com/webhook', timeout=10)
+        mock_session.get.assert_called_once_with('http://example.com/webhook', timeout=10, allow_redirects=False)
 
-    @mock.patch('action.webhookaction.requests.get')
-    def test_webhookaction_run_get_failure_status(self, mock_get):
+    @mock.patch('action.webhookaction.resolve_and_validate_webhook_url', return_value='8.8.8.8')
+    @mock.patch('action.webhookaction.requests.Session')
+    def test_webhookaction_run_get_failure_status(self, mock_session_cls, _mock_resolve):
+        mock_session = mock_session_cls.return_value
         mock_response = mock.MagicMock()
         mock_response.status_code = 500
         mock_response.text = 'error'
-        mock_get.return_value = mock_response
+        mock_session.get.return_value = mock_response
 
         action = WebhookAction('test_webhook_action')
         action.configure(webhook='http://example.com/webhook')
         result = action.run()
         assert result == (False, 'error')
 
-    @mock.patch('action.webhookaction.requests.post')
-    def test_webhookaction_run_post_success(self, mock_post):
+    @mock.patch('action.webhookaction.resolve_and_validate_webhook_url', return_value='8.8.8.8')
+    @mock.patch('action.webhookaction.requests.Session')
+    def test_webhookaction_run_post_success(self, mock_session_cls, _mock_resolve):
+        mock_session = mock_session_cls.return_value
         mock_response = mock.MagicMock()
         mock_response.status_code = 200
         mock_response.text = 'posted'
-        mock_post.return_value = mock_response
+        mock_session.post.return_value = mock_response
 
         action = WebhookAction('test_webhook_action')
         action.configure(
@@ -104,29 +110,83 @@ class TestWebhookAction:
         )
         result = action.run()
         assert result == (True, 'posted')
-        mock_post.assert_called_once_with('http://example.com/webhook', data='test data', timeout=10)
+        mock_session.post.assert_called_once_with('http://example.com/webhook', data='test data', timeout=10, allow_redirects=False)
 
-    def test_webhookaction_run_unsupported_request_type(self):
+    @mock.patch('action.webhookaction.resolve_and_validate_webhook_url', return_value='8.8.8.8')
+    def test_webhookaction_run_unsupported_request_type(self, _mock_resolve):
         action = WebhookAction('test_webhook_action')
         action.webhook = 'http://example.com/webhook'
         action.request_type = 'PUT'
         result = action.run()
         assert not result
 
-    @mock.patch('action.webhookaction.requests.get')
-    def test_webhookaction_run_exception(self, mock_get):
-        mock_get.side_effect = ValueError('Connection error')
+    @mock.patch('action.webhookaction.resolve_and_validate_webhook_url', return_value=None)
+    def test_webhookaction_run_request_time_revalidation_failure(self, _mock_resolve):
+        action = WebhookAction('test_webhook_action')
+        action.configure(webhook='http://example.com/webhook')
+        result = action.run()
+        assert not result
+
+    @mock.patch('action.webhookaction.resolve_and_validate_webhook_url', return_value='8.8.8.8')
+    @mock.patch('action.webhookaction.requests.Session')
+    def test_webhookaction_run_exception(self, mock_session_cls, _mock_resolve):
+        mock_session = mock_session_cls.return_value
+        mock_session.get.side_effect = ValueError('Connection error')
 
         action = WebhookAction('test_webhook_action')
         action.configure(webhook='http://example.com/webhook')
         result = action.run()
         assert not result
 
-    @mock.patch('action.webhookaction.requests.get')
-    def test_webhookaction_run_requests_exception(self, mock_get):
-        mock_get.side_effect = requests.RequestException('Connection error')
+    @mock.patch('action.webhookaction.resolve_and_validate_webhook_url', return_value='8.8.8.8')
+    @mock.patch('action.webhookaction.requests.Session')
+    def test_webhookaction_run_requests_exception(self, mock_session_cls, _mock_resolve):
+        mock_session = mock_session_cls.return_value
+        mock_session.get.side_effect = requests.RequestException('Connection error')
 
         action = WebhookAction('test_webhook_action')
         action.configure(webhook='http://example.com/webhook')
         result = action.run()
         assert not result
+
+
+class TestPinnedIPAdapter:
+    """Tests for the SSRF-safe PinnedIPAdapter."""
+
+    def test_init(self):
+        adapter = PinnedIPAdapter('8.8.8.8')
+        assert adapter.resolved_ip == '8.8.8.8'
+        assert adapter.hostname is None
+
+    def test_send_rewrites_url_and_host_without_port(self):
+        adapter = PinnedIPAdapter('8.8.8.8')
+        request = requests.Request('GET', 'http://example.com/webhook').prepare()
+        with mock.patch.object(requests.adapters.HTTPAdapter, 'send', return_value='response') as mock_send:
+            result = adapter.send(request)
+        assert result == 'response'
+        assert request.url == 'http://8.8.8.8/webhook'
+        assert request.headers['Host'] == 'example.com'
+        assert adapter.hostname == 'example.com'
+        mock_send.assert_called_once_with(request, stream=False, timeout=None, verify=True, cert=None, proxies=None)
+
+    def test_send_rewrites_url_and_host_with_port(self):
+        adapter = PinnedIPAdapter('8.8.8.8')
+        request = requests.Request('GET', 'http://example.com:8080/webhook').prepare()
+        with mock.patch.object(requests.adapters.HTTPAdapter, 'send', return_value='response'):
+            adapter.send(request)
+        assert request.url == 'http://8.8.8.8:8080/webhook'
+        assert request.headers['Host'] == 'example.com:8080'
+
+    def test_build_connection_pool_key_attributes_sets_server_hostname(self):
+        adapter = PinnedIPAdapter('8.8.8.8')
+        adapter.hostname = 'example.com'
+        request = requests.Request('GET', 'https://8.8.8.8/webhook').prepare()
+        host_params, pool_kwargs = adapter.build_connection_pool_key_attributes(request, True, None)
+        assert host_params['host'] == '8.8.8.8'
+        assert pool_kwargs['server_hostname'] == 'example.com'
+
+    def test_build_connection_pool_key_attributes_no_hostname(self):
+        adapter = PinnedIPAdapter('8.8.8.8')
+        request = requests.Request('GET', 'http://8.8.8.8/webhook').prepare()
+        _host_params, pool_kwargs = adapter.build_connection_pool_key_attributes(request, True, None)
+        assert 'server_hostname' not in pool_kwargs

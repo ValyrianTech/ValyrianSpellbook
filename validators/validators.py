@@ -87,41 +87,55 @@ def valid_url(url):
     return isinstance(url, str) and re.match(URL_REGEX, url) is not None
 
 
-def valid_webhook_url(url):
-    """Check if the given URL is a valid, publicly-resolvable webhook URL (SSRF-safe)."""
+def resolve_and_validate_webhook_url(url):
+    """Resolve a webhook URL's hostname and return its validated public IP (SSRF-safe).
+
+    The URL must be a valid http/https URL whose hostname resolves exclusively to
+    public IP addresses. Returns the first resolved public IP string on success, or
+    None if the URL is invalid, uses a non-http(s) scheme, cannot be resolved, or
+    resolves (in whole or in part) to a non-public address.
+    """
     if not valid_url(url):
-        return False
+        return None
 
     try:
         parsed = urlparse(url)
     except (ValueError, TypeError):
         LOG.error(f'Webhook URL {url} is invalid: could not be parsed')
-        return False
+        return None
 
     hostname = parsed.hostname
     if not hostname:
         LOG.error(f'Webhook URL {url} is invalid: no hostname')
-        return False
+        return None
 
     scheme = parsed.scheme.lower()
     if scheme not in ('http', 'https'):
         LOG.error(f'Webhook URL {url} is invalid: unsupported scheme {scheme}')
-        return False
+        return None
 
     try:
         addresses = socket.getaddrinfo(hostname, None)
     except (socket.gaierror, OSError, UnicodeError) as ex:
         LOG.error(f'Webhook URL {url} is invalid: could not resolve hostname {hostname}: {ex}')
-        return False
+        return None
 
+    resolved_ip = None
     for address in addresses:
         ip_string = address[4][0].split('%')[0]
         ip = ipaddress.ip_address(ip_string)
         if (not ip.is_global or ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved or ip.is_multicast or ip.is_unspecified):
             LOG.error(f'Webhook URL {url} is invalid: hostname {hostname} resolves to non-public address {ip_string}')
-            return False
+            return None
+        if resolved_ip is None:
+            resolved_ip = ip_string
 
-    return True
+    return resolved_ip
+
+
+def valid_webhook_url(url):
+    """Check if the given URL is a valid, publicly-resolvable webhook URL (SSRF-safe)."""
+    return resolve_and_validate_webhook_url(url) is not None
 
 
 def valid_creator(creator):
