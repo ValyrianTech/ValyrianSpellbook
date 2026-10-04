@@ -94,6 +94,10 @@ def resolve_and_validate_webhook_url(url):
     public IP addresses. Returns the first resolved public IP string on success, or
     None if the URL is invalid, uses a non-http(s) scheme, cannot be resolved, or
     resolves (in whole or in part) to a non-public address.
+
+    Note: userinfo/credentials embedded in a webhook URL are preserved by the
+    IP-pinning adapter; the resolved IP replaces only the host component of the
+    netloc.
     """
     if not valid_url(url):
         return None

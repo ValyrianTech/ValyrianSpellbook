@@ -24,9 +24,12 @@ class PinnedIPAdapter(requests.adapters.HTTPAdapter):
     def send(self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None):
         parsed = urlparse(request.url)
         self.hostname = parsed.hostname
-        netloc = self.resolved_ip
+        userinfo = ''
+        if '@' in parsed.netloc:
+            userinfo = parsed.netloc.rsplit('@', 1)[0] + '@'
+        netloc = f'{userinfo}{self.resolved_ip}'
         if parsed.port is not None:
-            netloc = f'{self.resolved_ip}:{parsed.port}'
+            netloc = f'{userinfo}{self.resolved_ip}:{parsed.port}'
         request.url = urlunparse((parsed.scheme, netloc, parsed.path, parsed.params, parsed.query, parsed.fragment))
 
         host_header = parsed.hostname
