@@ -70,16 +70,18 @@ def initialize_api_keys_file():
 def load_last_nonces():
     """
     Load the last seen nonces from the json file into the in-memory LAST_NONCES dict.
-    If the file is missing, log a DEBUG message and create an empty nonce file via
-    save_last_nonces(). If the file contains a dict, merge it into LAST_NONCES. Only an
-    OSError (or a non-dict payload) leaves LAST_NONCES unchanged.
+    If the file is missing, log a DEBUG message and persist the current in-memory
+    LAST_NONCES via save_last_nonces() (normally empty on first run/import, but it may
+    contain previously-recorded nonces if load is invoked later). If the file contains a
+    dict, merge it into LAST_NONCES. Only an OSError (or a non-dict payload) leaves
+    LAST_NONCES unchanged.
     """
     try:
         data = load_from_json_file(LAST_NONCES_FILE)
     except FileNotFoundError:
-        # First run: no nonce file yet. Create an empty default so we don't
-        # log this every time a process starts.
-        LOG.debug(f'No last nonces file at {LAST_NONCES_FILE}; starting with empty nonce store.')
+        # No nonce file yet. Persist the current in-memory store as-is so we
+        # don't log this every time a process starts.
+        LOG.debug(f'No last nonces file at {LAST_NONCES_FILE}; persisting current in-memory nonce store.')
         save_last_nonces()
         return
     except OSError as ex:
