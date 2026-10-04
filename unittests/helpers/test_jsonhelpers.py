@@ -3,6 +3,8 @@ import os
 import tempfile
 from unittest import mock
 
+import pytest
+
 from helpers.jsonhelpers import load_from_json_file, save_to_json_file
 
 
@@ -118,3 +120,10 @@ class TestJsonHelpers:
         assert result is None
         mock_sleep.assert_called_once_with(1)
         mock_log.error.assert_called()
+
+    def test_load_from_json_file_missing_file_raises(self):
+        """A missing file is a normal condition: load_from_json_file re-raises FileNotFoundError."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            missing = os.path.join(tmpdir, 'does_not_exist.json')
+            with pytest.raises(FileNotFoundError):
+                load_from_json_file(missing)
