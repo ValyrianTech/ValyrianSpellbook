@@ -19,11 +19,9 @@ class PinnedIPAdapter(requests.adapters.HTTPAdapter):
     def __init__(self, resolved_ip, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.resolved_ip = resolved_ip
-        self.hostname = None
 
     def send(self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None):
         parsed = urlparse(request.url)
-        self.hostname = parsed.hostname
         userinfo = ''
         if '@' in parsed.netloc:
             userinfo = parsed.netloc.rsplit('@', 1)[0] + '@'
@@ -41,8 +39,15 @@ class PinnedIPAdapter(requests.adapters.HTTPAdapter):
 
     def build_connection_pool_key_attributes(self, request, verify, cert=None):
         host_params, pool_kwargs = super().build_connection_pool_key_attributes(request, verify, cert)
-        if self.hostname is not None:
-            pool_kwargs['server_hostname'] = self.hostname
+
+        # The Host header was pinned to the original hostname by send(). Derive the
+        # server hostname from that header (immutable per-call request data) rather than
+        # from mutable instance state shared across method calls.
+        host_header = request.headers.get('Host')
+        if host_header is not None:
+            hostname = host_header.split(':', 1)[0]
+            pool_kwargs['server_hostname'] = hostname
+
         return host_params, pool_kwargs
 
 
