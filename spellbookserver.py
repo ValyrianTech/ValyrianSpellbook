@@ -116,8 +116,17 @@ if get_enable_transcribe() is True:
     WHISPER_MODEL = WhisperModel(model_size_or_path=model_size_or_path, device="cpu", compute_type="int8")
 
 SENSITIVE_KEYS = {'api_key', 'api_secret', 'secret', 'private_key', 'privkey', 'mnemonic', 'xpriv', 'password', 'passphrase', 'seed', 'API_Sign', 'API_Key'}
-REDACTED_HEADERS = {'API_Key', 'API_Sign', 'API_Nonce', 'Authorization', 'Cookie'}
+REDACTED_HEADERS = {'api-key', 'api-sign', 'api-nonce', 'authorization', 'cookie'}
 REDACTED_VALUE = '********'
+
+
+def _is_redacted_header(name):
+    """Return True if a request header name is a sensitive header to redact.
+
+    Bottle/WSGI normalize header names via WSGIHeaderDict (underscores become
+    hyphens and names are title-cased), so matching must normalize both sides.
+    """
+    return name.lower().replace('_', '-') in REDACTED_HEADERS
 
 
 def _redact(mapping):
@@ -366,7 +375,7 @@ class SpellbookRESTAPI(Bottle):
 
             if request.headers is not None:
                 for key, value in request.headers.items():
-                    if key in REDACTED_HEADERS:
+                    if _is_redacted_header(key):
                         value = REDACTED_VALUE
                     REQUESTS_LOG.info('  HEADERS | {}: {}'.format(key, str(value).encode('utf-8')))
 
