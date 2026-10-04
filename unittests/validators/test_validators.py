@@ -577,3 +577,43 @@ class TestValidWebhookUrl:
     @mock.patch('validators.validators.socket.getaddrinfo', side_effect=socket.gaierror('no such host'))
     def test_valid_webhook_url_gai_error(self, mock_getaddrinfo):
         assert not validators.valid_webhook_url('http://example.com')
+
+
+class TestResolveAndValidateWebhookUrl:
+    """Tests for resolve_and_validate_webhook_url (SSRF-safe IP resolution helper)."""
+
+    @staticmethod
+    def _getaddrinfo_result(*ips):
+        return [(mock.ANY, mock.ANY, mock.ANY, '', (ip, 0)) for ip in ips]
+
+    @mock.patch('validators.validators.socket.getaddrinfo')
+    def test_returns_resolved_ip(self, mock_getaddrinfo):
+        mock_getaddrinfo.return_value = self._getaddrinfo_result('8.8.8.8')
+        assert validators.resolve_and_validate_webhook_url('http://example.com/webhook') == '8.8.8.8'
+
+    @mock.patch('validators.validators.socket.getaddrinfo')
+    def test_returns_first_of_multiple_public_ips(self, mock_getaddrinfo):
+        mock_getaddrinfo.return_value = self._getaddrinfo_result('8.8.8.8', '8.8.4.4')
+        assert validators.resolve_and_validate_webhook_url('http://example.com/webhook') == '8.8.8.8'
+
+    @mock.patch('validators.validators.socket.getaddrinfo')
+    def test_returns_none_for_non_public(self, mock_getaddrinfo):
+        mock_getaddrinfo.return_value = self._getaddrinfo_result('127.0.0.1')
+        assert validators.resolve_and_validate_webhook_url('http://example.com/webhook') is None
+
+    def test_returns_none_for_invalid_url(self):
+        assert validators.resolve_and_validate_webhook_url('not_a_valid_url') is None
+
+    def test_returns_none_for_non_http_scheme(self):
+        assert validators.resolve_and_validate_webhook_url('ftp://example.com') is None
+
+    def test_returns_none_for_empty_hostname(self):
+        assert validators.resolve_and_validate_webhook_url('www.example.com') is None
+
+    @mock.patch('validators.validators.urlparse', side_effect=ValueError('bad url'))
+    def test_returns_none_for_parse_error(self, _mock_urlparse):
+        assert validators.resolve_and_validate_webhook_url('http://example.com') is None
+
+    @mock.patch('validators.validators.socket.getaddrinfo', side_effect=socket.gaierror('no such host'))
+    def test_returns_none_for_resolution_error(self, mock_getaddrinfo):
+        assert validators.resolve_and_validate_webhook_url('http://example.com') is None

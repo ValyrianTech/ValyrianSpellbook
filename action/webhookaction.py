@@ -2,13 +2,53 @@
 
 """Action that sends data to a webhook URL."""
 
+from urllib.parse import urlparse, urlunparse
+
 import requests
 
 from helpers.loghelpers import LOG
-from validators.validators import valid_webhook_url
+from validators.validators import resolve_and_validate_webhook_url, valid_webhook_url
 
 from .action import Action
 from .actiontype import ActionType
+
+
+class PinnedIPAdapter(requests.adapters.HTTPAdapter):
+    """HTTPAdapter that pins the connection to a pre-resolved, validated IP address."""
+
+    def __init__(self, resolved_ip, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.resolved_ip = resolved_ip
+
+    def send(self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None):
+        parsed = urlparse(request.url)
+        userinfo = ''
+        if '@' in parsed.netloc:
+            userinfo = parsed.netloc.rsplit('@', 1)[0] + '@'
+        netloc = f'{userinfo}{self.resolved_ip}'
+        if parsed.port is not None:
+            netloc = f'{userinfo}{self.resolved_ip}:{parsed.port}'
+        request.url = urlunparse((parsed.scheme, netloc, parsed.path, parsed.params, parsed.query, parsed.fragment))
+
+        host_header = parsed.hostname
+        if parsed.port is not None:
+            host_header = f'{parsed.hostname}:{parsed.port}'
+        request.headers['Host'] = host_header
+
+        return super().send(request, stream=stream, timeout=timeout, verify=verify, cert=cert, proxies=proxies)
+
+    def build_connection_pool_key_attributes(self, request, verify, cert=None):
+        host_params, pool_kwargs = super().build_connection_pool_key_attributes(request, verify, cert)
+
+        # The Host header was pinned to the original hostname by send(). Derive the
+        # server hostname from that header (immutable per-call request data) rather than
+        # from mutable instance state shared across method calls.
+        host_header = request.headers.get('Host')
+        if host_header is not None:
+            hostname = host_header.split(':', 1)[0]
+            pool_kwargs['server_hostname'] = hostname
+
+        return host_params, pool_kwargs
 
 
 class WebhookAction(Action):
@@ -30,11 +70,22 @@ class WebhookAction(Action):
             return False
 
         LOG.info(f'executing webhook: {self.webhook}')
+
+        resolved_ip = resolve_and_validate_webhook_url(self.webhook)
+        if resolved_ip is None:
+            LOG.error(f'Webhook failed: {self.webhook} does not resolve to a public IP address')
+            return False
+
+        session = requests.Session()
+        adapter = PinnedIPAdapter(resolved_ip)
         try:
+            session.mount('http://', adapter)
+            session.mount('https://', adapter)
+
             if self.request_type == 'GET':
-                r = requests.get(self.webhook, timeout=10)
+                r = session.get(self.webhook, timeout=10, allow_redirects=False)
             elif self.request_type == 'POST':
-                r = requests.post(self.webhook, data=self.body, timeout=10)
+                r = session.post(self.webhook, data=self.body, timeout=10, allow_redirects=False)
             else:
                 LOG.error(f'Webhook failed: unsupported request type: {self.request_type}')
                 return False
@@ -49,6 +100,8 @@ class WebhookAction(Action):
             else:
                 LOG.error(f'Webhook failed: status code webhook: {r.status_code}')
                 return False, r.text
+        finally:
+            session.close()
 
     def configure(self, **config):
         """
