@@ -70,7 +70,9 @@ def initialize_api_keys_file():
 def load_last_nonces():
     """
     Load the last seen nonces from the json file into the in-memory LAST_NONCES dict.
-    If the file does not exist or is invalid, LAST_NONCES is left unchanged.
+    If the file is missing, log a DEBUG message and create an empty nonce file via
+    save_last_nonces(). If the file contains a dict, merge it into LAST_NONCES. Only an
+    OSError (or a non-dict payload) leaves LAST_NONCES unchanged.
     """
     try:
         data = load_from_json_file(LAST_NONCES_FILE)
