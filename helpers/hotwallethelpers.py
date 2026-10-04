@@ -3,6 +3,7 @@
 
 import getpass
 import os
+import sys
 
 import simplejson
 
@@ -15,34 +16,63 @@ from bips.bip44 import (
     get_xpriv_key,
     get_xpub_key,
 )
-from helpers.configurationhelpers import get_default_wallet, get_wallet_dir
+from helpers.configurationhelpers import get_allow_empty_password, get_default_wallet, get_wallet_dir
+from helpers.loghelpers import LOG
 
 HOT_WALLET_PASSWORD = None
+
+WALLET_PASSWORD_ENV_VAR = 'SPELLBOOK_WALLET_PASSWORD'
+
+
+class HotWalletError(ValueError):
+    """Base exception for hot wallet errors."""
+
+
+class HotWalletPasswordRequired(HotWalletError):
+    """Raised when no decryption password is available and none can be prompted."""
+
+
+class HotWalletDecryptionError(HotWalletError):
+    """Raised when the hot wallet cannot be decrypted (wrong password / corrupt)."""
+
+
+def _is_interactive():
+    """Return whether the process is running in an interactive terminal."""
+    try:
+        return sys.stdin.isatty()
+    except (AttributeError, ValueError, OSError):
+        return False
 
 
 def get_hot_wallet():
     """Decrypt and return the hot wallet data, prompting for password if needed."""
     wallet_dir, wallet_id = get_wallet_dir(), get_default_wallet()
+    wallet_file = os.path.join(wallet_dir, f'{wallet_id}.enc')
 
-    if HOT_WALLET_PASSWORD is None:
-        # Try empty password first (Reminder: in production there should always be a decryption password for the hot wallet)
-        try:
-            cipher = AESCipher(key='')
-            with open(os.path.join(wallet_dir, f'{wallet_id}.enc'), 'r') as input_file:
-                encrypted_data = input_file.read()
-                return simplejson.loads(cipher.decrypt(encrypted_data))
+    if not os.path.isfile(wallet_file):
+        return {}
 
-        except (ValueError, KeyError, TypeError, OSError):
-            prompt_decryption_password()
+    global HOT_WALLET_PASSWORD
+    password = HOT_WALLET_PASSWORD
+    if password is None:
+        password = os.environ.get(WALLET_PASSWORD_ENV_VAR)
+        if password is None:
+            if get_allow_empty_password() is True:
+                LOG.warning('Hot wallet allow_empty_password is enabled: decrypting hot wallet with an EMPTY password. This provides no protection for your private keys and should only be used for legacy/test wallets!')
+                password = ''
+            elif _is_interactive():
+                password = prompt_decryption_password()
+            else:
+                raise HotWalletPasswordRequired('No hot wallet decryption password available: set the SPELLBOOK_WALLET_PASSWORD environment variable or run interactively to be prompted.')
 
     try:
-        cipher = AESCipher(key=HOT_WALLET_PASSWORD)
-        with open(os.path.join(wallet_dir, f'{wallet_id}.enc'), 'r') as input_file:
+        cipher = AESCipher(key=password)
+        with open(wallet_file, 'r') as input_file:
             encrypted_data = input_file.read()
             return simplejson.loads(cipher.decrypt(encrypted_data))
 
     except (ValueError, KeyError, TypeError, OSError):
-        raise ValueError('Invalid password to decrypt hot wallet!')
+        raise HotWalletDecryptionError('Invalid password to decrypt hot wallet!')
 
 
 def prompt_decryption_password():
@@ -50,6 +80,7 @@ def prompt_decryption_password():
     global HOT_WALLET_PASSWORD
     # if this is running in pycharm console, make sure 'Emulate terminal in output console' is checked in the configuration
     HOT_WALLET_PASSWORD = getpass.getpass('Enter the password to decrypt the hot wallet: ')
+    return HOT_WALLET_PASSWORD
 
 
 def get_address_from_wallet(account, index):

@@ -4,6 +4,7 @@ from unittest import mock
 from helpers.configurationhelpers import (
     get_allowed_extensions,
     get_allowed_extensions_transcribe,
+    get_allow_empty_password,
     get_app_data_dir,
     get_default_wallet,
     get_domain_name,
@@ -198,6 +199,14 @@ class TestConfigurationGetters:
         try:
             result = get_default_wallet()
             assert result is not None
+        except (ValueError, KeyError, TypeError):
+            return
+
+    def test_get_allow_empty_password(self):
+        """Test getting allow_empty_password"""
+        try:
+            result = get_allow_empty_password()
+            assert isinstance(result, bool)
         except (ValueError, KeyError, TypeError):
             return
 
