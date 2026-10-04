@@ -1,27 +1,37 @@
 #!/usr/bin/env python
 """Helper functions for retrieving recommended Bitcoin transaction fees."""
+import math
+
 import requests
 
 from helpers.configurationhelpers import get_use_testnet
 from helpers.loghelpers import LOG
 
+MIN_SAT_PER_BYTE = 1
+
+
+def _per_byte(fee_per_kb):
+    """Convert a per-kilobyte fee into a ceiled per-byte rate clamped to at least MIN_SAT_PER_BYTE."""
+    rate = math.ceil(int(fee_per_kb) / 1024)
+    return max(rate, MIN_SAT_PER_BYTE)
+
 
 def get_medium_priority_fee():
     """Get the medium-priority fee per byte from BlockCypher."""
     data = get_recommended_fee_blockcypher()
-    return int(data['medium_priority']/1024)
+    return _per_byte(data['medium_priority'])
 
 
 def get_low_priority_fee():
     """Get the low-priority fee per byte from BlockCypher."""
     data = get_recommended_fee_blockcypher()
-    return int(data['low_priority']/1024)
+    return _per_byte(data['low_priority'])
 
 
 def get_high_priority_fee():
     """Get the high-priority fee per byte from BlockCypher."""
     data = get_recommended_fee_blockcypher()
-    return int(data['high_priority']/1024)
+    return _per_byte(data['high_priority'])
 
 
 def get_recommended_fee():
