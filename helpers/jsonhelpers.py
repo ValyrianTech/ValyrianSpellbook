@@ -45,6 +45,10 @@ def load_from_json_file(filename):
     try:
         with open(filename, 'r') as input_file:
             data = simplejson.load(input_file)
+    except FileNotFoundError:
+        # A missing file is a normal condition (e.g. an action or trigger that
+        # does not exist yet); let callers handle it instead of retrying.
+        raise
     except (ValueError, KeyError, TypeError, OSError) as ex:
         LOG.error(f'Failed to load {filename}: {ex}')
         LOG.error('Sleeping for 1 second before retrying')
