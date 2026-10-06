@@ -260,6 +260,11 @@ def _resolve_script_path(script):
     ``'resolved_outside_roots'`` (resolves to an existing file outside the
     allowed roots, i.e. a path-traversal attempt) or ``'not_found'`` (no such
     file in the allowed roots).
+
+    Note that ``'resolved_outside_roots'`` is also returned for a nonexistent
+    script name that contains a ``..`` segment (e.g. ``foo/../bar.py``): the
+    ``..`` segment is rejected by ``safe_path`` before any existence check, so
+    such a name is reported as a traversal attempt rather than as ``'not_found'``.
     """
     if not isinstance(script, str):
         return None, 'invalid_type'

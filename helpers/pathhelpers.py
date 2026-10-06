@@ -21,6 +21,13 @@ def safe_path(base_dir, candidate):
     - it is an absolute path (``os.path.isabs``);
     - it resolves (after following symlinks) outside the base directory.
 
+    Note that the ``..``-segment check is stricter than a pure containment/escape
+    check: it rejects *any* candidate containing a ``..`` segment, including an
+    internal ``..`` such as ``foo/../bar`` that would otherwise resolve back
+    inside the base directory. Such candidates are rejected before any
+    resolution or existence check, so they fail even when they would stay within
+    the base.
+
     The base directory is resolved first with ``os.path.realpath`` so that
     symlinks in the base are followed and the base is canonical. The candidate
     is then resolved relative to that canonical base and must remain within it
