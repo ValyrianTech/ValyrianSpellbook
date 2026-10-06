@@ -128,7 +128,7 @@ class RedeemVoucher(SpellbookScript):
         action.amount = amount
         success = action.run()
 
-        return action.txid if success is True else None
+        return action.txid if success else None
 
     @staticmethod
     def send_alert_email(voucher, address, txid):
