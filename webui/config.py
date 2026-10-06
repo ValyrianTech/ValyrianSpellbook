@@ -17,6 +17,7 @@ To generate a key manually::
 import os
 import secrets
 import sys
+import time
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -70,24 +71,36 @@ class Settings:
         variable when set and non-empty. Otherwise it is read from the
         persisted file at ``SESSION_SECRET_KEY_FILE``, generating and writing a
         new ``secrets.token_hex(32)`` key (with permissions 0o600) on first
-        access. The result is always a JSON-serializable string and is stable
-        across process restarts and shared across workers.
+        access. First-time creation is atomic via ``os.O_CREAT | os.O_EXCL``,
+        so concurrent workers cannot diverge on the key; if another process
+        wins the race, its file is re-read instead, retrying a few times in
+        case the winning process has not yet written the secret. The result is
+        always a non-empty stripped string and is stable across process
+        restarts and shared across workers.
         """
         env_secret = os.environ.get("SPELLBOOK_SESSION_SECRET")
         if env_secret:
             return env_secret
 
         key_file = SESSION_SECRET_KEY_FILE
-        if not os.path.exists(key_file):
-            os.makedirs(os.path.dirname(key_file), exist_ok=True)
-            secret = secrets.token_hex(32)
-            with open(key_file, "w") as key_file_handle:
-                key_file_handle.write(secret)
-            os.chmod(key_file, 0o600)
+        os.makedirs(os.path.dirname(key_file), exist_ok=True)
+
+        try:
+            fd = os.open(key_file, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+        except FileExistsError:
+            for _ in range(10):
+                with open(key_file, "r") as key_file_handle:
+                    secret = key_file_handle.read().strip()
+                if secret:
+                    return secret
+                time.sleep(0.05)
             return secret
 
-        with open(key_file, "r") as key_file_handle:
-            return key_file_handle.read().strip()
+        secret = secrets.token_hex(32)
+        with os.fdopen(fd, "w") as key_file_handle:
+            key_file_handle.write(secret)
+        os.chmod(key_file, 0o600)
+        return secret
 
 
 settings = Settings()

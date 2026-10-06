@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Tests for webui.config Settings."""
 import stat
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -74,3 +74,34 @@ class TestSettings:
         second = Settings().SESSION_SECRET_KEY
         assert first == "existing-stable-secret"
         assert first == second
+
+    def test_session_secret_key_race_fallback_returns_winner(self, isolated_secret_key):
+        from config import Settings
+        isolated_secret_key.write_text("winner-key")
+        with patch("config.os.open", side_effect=FileExistsError):
+            assert Settings().SESSION_SECRET_KEY == "winner-key"
+
+    def test_session_secret_key_retries_until_secret_appears(self, isolated_secret_key):
+        from config import Settings
+        reads = iter(["", "late-key"])
+        mock_file = MagicMock()
+        mock_file.__enter__.return_value = mock_file
+        mock_file.read.side_effect = lambda: next(reads)
+        sleep_mock = MagicMock()
+        with patch("config.os.open", side_effect=FileExistsError), \
+             patch("builtins.open", return_value=mock_file), \
+             patch("config.time.sleep", sleep_mock):
+            assert Settings().SESSION_SECRET_KEY == "late-key"
+        assert sleep_mock.call_count >= 1
+
+    def test_session_secret_key_exhausted_retries_returns_empty(self, isolated_secret_key):
+        from config import Settings
+        mock_file = MagicMock()
+        mock_file.__enter__.return_value = mock_file
+        mock_file.read.return_value = ""
+        sleep_mock = MagicMock()
+        with patch("config.os.open", side_effect=FileExistsError), \
+             patch("builtins.open", return_value=mock_file), \
+             patch("config.time.sleep", sleep_mock):
+            assert Settings().SESSION_SECRET_KEY == ""
+        assert sleep_mock.call_count == 10
