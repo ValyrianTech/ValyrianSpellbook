@@ -430,6 +430,275 @@ class TestModuleConstants(unittest.TestCase):
                     
                     self.assertFalse(result)
 
+    @patch('helpers.mailhelpers.get_enable_smtp', return_value=True)
+    @patch('helpers.mailhelpers.load_smtp_settings')
+    @patch('helpers.mailhelpers.LOG')
+    def test_sendmail_none_recipients(self, mock_log, mock_load, mock_enable):
+        """Test sendmail rejects a None recipients argument"""
+        from helpers.mailhelpers import sendmail
+
+        result = sendmail(None, 'Subject', 'test_template')
+
+        self.assertFalse(result)
+        mock_log.error.assert_called()
+
+    @patch('helpers.mailhelpers.get_enable_smtp', return_value=True)
+    @patch('helpers.mailhelpers.load_smtp_settings')
+    @patch('helpers.mailhelpers.LOG')
+    def test_sendmail_invalid_recipients(self, mock_log, mock_load, mock_enable):
+        """Test sendmail rejects an invalid email address"""
+        from helpers.mailhelpers import sendmail
+
+        result = sendmail('not-an-email', 'Subject', 'test_template')
+
+        self.assertFalse(result)
+        mock_log.error.assert_called()
+
+    @patch('helpers.mailhelpers.get_enable_smtp', return_value=True)
+    @patch('helpers.mailhelpers.load_smtp_settings')
+    @patch('helpers.mailhelpers.LOG')
+    def test_sendmail_path_traversal_template_rejected(self, mock_log, mock_load, mock_enable):
+        """Test sendmail rejects a body_template that escapes the template directories"""
+        from helpers.mailhelpers import sendmail
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with patch('helpers.mailhelpers.TEMPLATE_DIR', temp_dir), \
+                 patch('helpers.mailhelpers.APPS_DIR', temp_dir):
+                result = sendmail(
+                    recipients='test@example.com',
+                    subject='Test Subject',
+                    body_template='../../etc/passwd'
+                )
+
+                self.assertFalse(result)
+                mock_log.error.assert_called()
+
+    @patch('helpers.mailhelpers.get_enable_smtp', return_value=True)
+    @patch('helpers.mailhelpers.load_smtp_settings')
+    @patch('helpers.mailhelpers.LOG')
+    @patch('helpers.mailhelpers.smtplib.SMTP')
+    def test_sendmail_image_path_traversal_rejected_but_sends(self, mock_smtp, mock_log, mock_load, mock_enable):
+        """Test sendmail rejects an image path escaping the allowed dirs but still sends"""
+        from helpers.mailhelpers import sendmail
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            txt_path = os.path.join(temp_dir, 'test_template.txt')
+            with open(txt_path, 'w') as f:
+                f.write('Test content')
+
+            with patch('helpers.mailhelpers.TEMPLATE_DIR', temp_dir), \
+                 patch('helpers.mailhelpers.IMAGE_DIRS', [temp_dir]):
+                mock_session = MagicMock()
+                mock_smtp.return_value = mock_session
+
+                result = sendmail(
+                    recipients='test@example.com',
+                    subject='Test Subject',
+                    body_template='test_template',
+                    images={'logo': '../../etc/passwd'}
+                )
+
+                self.assertTrue(result)
+                mock_log.error.assert_called()
+
+    @patch('helpers.mailhelpers.get_enable_smtp', return_value=True)
+    @patch('helpers.mailhelpers.load_smtp_settings')
+    @patch('helpers.mailhelpers.LOG')
+    @patch('helpers.mailhelpers.smtplib.SMTP')
+    def test_sendmail_attachment_path_traversal_rejected_but_sends(self, mock_smtp, mock_log, mock_load, mock_enable):
+        """Test sendmail rejects an attachment path escaping the allowed dirs but still sends"""
+        from helpers.mailhelpers import sendmail
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            txt_path = os.path.join(temp_dir, 'test_template.txt')
+            with open(txt_path, 'w') as f:
+                f.write('Test content')
+
+            with patch('helpers.mailhelpers.TEMPLATE_DIR', temp_dir), \
+                 patch('helpers.mailhelpers.ATTACHMENT_DIRS', [temp_dir]):
+                mock_session = MagicMock()
+                mock_smtp.return_value = mock_session
+
+                result = sendmail(
+                    recipients='test@example.com',
+                    subject='Test Subject',
+                    body_template='test_template',
+                    attachments={'secret.txt': '../../etc/passwd'}
+                )
+
+                self.assertTrue(result)
+                mock_log.error.assert_called()
+
+    @patch('helpers.mailhelpers.get_enable_smtp', return_value=True)
+    @patch('helpers.mailhelpers.load_smtp_settings')
+    @patch('helpers.mailhelpers.LOG')
+    @patch('helpers.mailhelpers.smtplib.SMTP')
+    def test_sendmail_image_within_template_dir_attaches(self, mock_smtp, mock_log, mock_load, mock_enable):
+        """Test sendmail attaches an image resolved within TEMPLATE_DIR"""
+        from helpers.mailhelpers import sendmail
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            html_path = os.path.join(temp_dir, 'test_template.html')
+            with open(html_path, 'w') as f:
+                f.write('<html><body><img src="cid:logo"></body></html>')
+
+            image_path = os.path.join(temp_dir, 'logo.png')
+            with open(image_path, 'wb') as f:
+                f.write(b'\x89PNG\r\n\x1a\n')
+
+            with patch('helpers.mailhelpers.TEMPLATE_DIR', temp_dir), \
+                 patch('helpers.mailhelpers.IMAGE_DIRS', [temp_dir]):
+                mock_session = MagicMock()
+                mock_smtp.return_value = mock_session
+
+                result = sendmail(
+                    recipients='test@example.com',
+                    subject='Test Subject',
+                    body_template='test_template',
+                    images={'logo': 'logo.png'}
+                )
+
+                self.assertTrue(result)
+                sent_message = mock_session.sendmail.call_args[0][2]
+                self.assertIn('Content-ID: <logo>', sent_message)
+
+    @patch('helpers.mailhelpers.get_enable_smtp', return_value=True)
+    @patch('helpers.mailhelpers.load_smtp_settings')
+    @patch('helpers.mailhelpers.LOG')
+    @patch('helpers.mailhelpers.smtplib.SMTP')
+    def test_sendmail_attachment_within_template_dir_attaches(self, mock_smtp, mock_log, mock_load, mock_enable):
+        """Test sendmail attaches an attachment resolved within TEMPLATE_DIR"""
+        from helpers.mailhelpers import sendmail
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            txt_path = os.path.join(temp_dir, 'test_template.txt')
+            with open(txt_path, 'w') as f:
+                f.write('Test content')
+
+            attachment_path = os.path.join(temp_dir, 'document.pdf')
+            with open(attachment_path, 'wb') as f:
+                f.write(b'%PDF-1.4')
+
+            with patch('helpers.mailhelpers.TEMPLATE_DIR', temp_dir), \
+                 patch('helpers.mailhelpers.ATTACHMENT_DIRS', [temp_dir]):
+                mock_session = MagicMock()
+                mock_smtp.return_value = mock_session
+
+                result = sendmail(
+                    recipients='test@example.com',
+                    subject='Test Subject',
+                    body_template='test_template',
+                    attachments={'document.pdf': 'document.pdf'}
+                )
+
+                self.assertTrue(result)
+                sent_message = mock_session.sendmail.call_args[0][2]
+                self.assertIn('document.pdf', sent_message)
+
+    @patch('helpers.mailhelpers.get_enable_smtp', return_value=True)
+    @patch('helpers.mailhelpers.load_smtp_settings')
+    @patch('helpers.mailhelpers.LOG')
+    @patch('helpers.mailhelpers.smtplib.SMTP')
+    def test_sendmail_image_open_error(self, mock_smtp, mock_log, mock_load, mock_enable):
+        """Test sendmail logs an error when a resolvable image fails to open but still sends"""
+        from helpers.mailhelpers import sendmail
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            txt_path = os.path.join(temp_dir, 'test_template.txt')
+            with open(txt_path, 'w') as f:
+                f.write('Test content')
+
+            image_path = os.path.join(temp_dir, 'logo.png')
+            with open(image_path, 'wb') as f:
+                f.write(b'\x89PNG\r\n\x1a\n')
+            os.chmod(image_path, 0o000)
+
+            try:
+                with patch('helpers.mailhelpers.TEMPLATE_DIR', temp_dir), \
+                     patch('helpers.mailhelpers.IMAGE_DIRS', [temp_dir]):
+                    mock_session = MagicMock()
+                    mock_smtp.return_value = mock_session
+
+                    result = sendmail(
+                        recipients='test@example.com',
+                        subject='Test Subject',
+                        body_template='test_template',
+                        images={'logo': 'logo.png'}
+                    )
+
+                    self.assertTrue(result)
+                    mock_log.error.assert_called()
+            finally:
+                os.chmod(image_path, 0o644)
+
+    @patch('helpers.mailhelpers.get_enable_smtp', return_value=True)
+    @patch('helpers.mailhelpers.load_smtp_settings')
+    @patch('helpers.mailhelpers.LOG')
+    @patch('helpers.mailhelpers.smtplib.SMTP')
+    def test_sendmail_attachment_open_error(self, mock_smtp, mock_log, mock_load, mock_enable):
+        """Test sendmail logs an error when a resolvable attachment fails to open but still sends"""
+        from helpers.mailhelpers import sendmail
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            txt_path = os.path.join(temp_dir, 'test_template.txt')
+            with open(txt_path, 'w') as f:
+                f.write('Test content')
+
+            attachment_path = os.path.join(temp_dir, 'document.pdf')
+            with open(attachment_path, 'wb') as f:
+                f.write(b'%PDF-1.4')
+            os.chmod(attachment_path, 0o000)
+
+            try:
+                with patch('helpers.mailhelpers.TEMPLATE_DIR', temp_dir), \
+                     patch('helpers.mailhelpers.ATTACHMENT_DIRS', [temp_dir]):
+                    mock_session = MagicMock()
+                    mock_smtp.return_value = mock_session
+
+                    result = sendmail(
+                        recipients='test@example.com',
+                        subject='Test Subject',
+                        body_template='test_template',
+                        attachments={'document.pdf': 'document.pdf'}
+                    )
+
+                    self.assertTrue(result)
+                    mock_log.error.assert_called()
+            finally:
+                os.chmod(attachment_path, 0o644)
+
+
+class TestResolveWithin(unittest.TestCase):
+    """Test cases for the _resolve_within helper"""
+
+    def test_resolve_within_success(self):
+        """Test _resolve_within returns the real path for a file inside root"""
+        from helpers.mailhelpers import _resolve_within
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            file_path = os.path.join(temp_dir, 'template.html')
+            with open(file_path, 'w') as f:
+                f.write('content')
+
+            result = _resolve_within(temp_dir, 'template', '.html')
+            self.assertEqual(result, os.path.realpath(file_path))
+
+    def test_resolve_within_escape(self):
+        """Test _resolve_within returns None when the path escapes root"""
+        from helpers.mailhelpers import _resolve_within
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            result = _resolve_within(temp_dir, '../outside', '.html')
+            self.assertIsNone(result)
+
+    def test_resolve_within_commonpath_valueerror(self):
+        """Test _resolve_within returns None when commonpath raises ValueError"""
+        from helpers.mailhelpers import _resolve_within
+
+        with patch('os.path.commonpath', side_effect=ValueError('mixed paths')):
+            result = _resolve_within('/tmp', 'test')
+            self.assertIsNone(result)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -18,6 +18,7 @@ from helpers.configurationhelpers import (
     get_smtp_user,
 )
 from helpers.loghelpers import LOG
+from validators.validators import valid_email
 
 FROM_ADDRESS = ''
 HOST = ''
@@ -28,6 +29,24 @@ PASSWORD = ''
 PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 TEMPLATE_DIR = os.path.join(PROGRAM_DIR, 'email_templates')
 APPS_DIR = os.path.join(PROGRAM_DIR, 'apps')
+
+IMAGE_DIRS = [TEMPLATE_DIR, APPS_DIR]
+ATTACHMENT_DIRS = [TEMPLATE_DIR, APPS_DIR]
+
+
+def _resolve_within(root, name, suffix=''):
+    """Resolve name (optionally with suffix) inside root, returning the real path or None.
+
+    Returns None when the resolved path escapes root or is not an existing file.
+    """
+    root = os.path.realpath(root)
+    candidate = os.path.realpath(os.path.join(root, f'{name}{suffix}'))
+    try:
+        if os.path.commonpath([candidate, root]) != root or not os.path.isfile(candidate):
+            return None
+    except ValueError:
+        return None
+    return candidate
 
 
 def load_smtp_settings():
@@ -60,6 +79,15 @@ def sendmail(recipients, subject, body_template, variables=None, images=None, at
     # Load the smtp settings
     load_smtp_settings()
 
+    if recipients is None:
+        LOG.error(f'Invalid recipient(s): {recipients}')
+        return False
+
+    for recipient in recipients.split(','):
+        if not valid_email(recipient.strip()):
+            LOG.error(f'Invalid recipient(s): {recipients}')
+            return False
+
     if variables is None:
         variables = {}
 
@@ -80,15 +108,13 @@ def sendmail(recipients, subject, body_template, variables=None, images=None, at
     html_template_filename = None
     txt_template_filename = None
     # Search the 'email-templates' and 'apps' directory for the template
-    if os.path.isfile(os.path.join(TEMPLATE_DIR, f'{body_template}.html')):  # First see if a html template is found in the main template directory
-        html_template_filename = os.path.join(TEMPLATE_DIR, f'{body_template}.html')
-    elif os.path.isfile(os.path.join(APPS_DIR, f'{body_template}.html')):  # Check the app directory for a html template
-        html_template_filename = os.path.join(APPS_DIR, f'{body_template}.html')
+    html_template_filename = _resolve_within(TEMPLATE_DIR, body_template, '.html')
+    if html_template_filename is None:
+        html_template_filename = _resolve_within(APPS_DIR, body_template, '.html')
 
-    if os.path.isfile(os.path.join(TEMPLATE_DIR, f'{body_template}.txt')):  # Then check if a txt template if found in the main template directory
-        txt_template_filename = os.path.join(TEMPLATE_DIR, f'{body_template}.txt')
-    elif os.path.isfile(os.path.join(APPS_DIR, f'{body_template}.txt')):  # Lastly, check the app directory for a txt template
-        txt_template_filename = os.path.join(APPS_DIR, f'{body_template}.txt')
+    txt_template_filename = _resolve_within(TEMPLATE_DIR, body_template, '.txt')
+    if txt_template_filename is None:
+        txt_template_filename = _resolve_within(APPS_DIR, body_template, '.txt')
 
     if html_template_filename is None and txt_template_filename is None:
         LOG.error(f'Template {body_template} for email not found!')
@@ -133,8 +159,16 @@ def sendmail(recipients, subject, body_template, variables=None, images=None, at
     # Attach all images that are referenced in the html email template
     for image_name, image_file in images.items():
         LOG.info(f'adding image {image_file}')
+        resolved_image_file = None
+        for image_dir in IMAGE_DIRS:
+            resolved_image_file = _resolve_within(image_dir, image_file)
+            if resolved_image_file is not None:
+                break
+        if resolved_image_file is None:
+            LOG.error(f'Unable to add image {image_name} to email: image file {image_file} not found in allowed directories')
+            continue
         try:
-            with open(image_file, 'rb') as fp:
+            with open(resolved_image_file, 'rb') as fp:
                 mime_image = MIMEImage(fp.read())
 
             # Define the image's ID as referenced in the template
@@ -147,8 +181,16 @@ def sendmail(recipients, subject, body_template, variables=None, images=None, at
     # Attach all attachments
     for attachment_name, attachment_file in attachments.items():
         LOG.info(f'adding attachment {attachment_file}')
+        resolved_attachment_file = None
+        for attachment_dir in ATTACHMENT_DIRS:
+            resolved_attachment_file = _resolve_within(attachment_dir, attachment_file)
+            if resolved_attachment_file is not None:
+                break
+        if resolved_attachment_file is None:
+            LOG.error(f'Unable to add attachment {attachment_name} to email: attachment file {attachment_file} not found in allowed directories')
+            continue
         try:
-            with open(attachment_file, 'rb') as fp:
+            with open(resolved_attachment_file, 'rb') as fp:
                 mime_file = MIMEBase('application', "octet-stream")
                 mime_file.set_payload(fp.read())
                 encoders.encode_base64(mime_file)
