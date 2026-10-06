@@ -461,17 +461,17 @@ class TestModuleConstants(unittest.TestCase):
         """Test sendmail rejects a body_template that escapes the template directories"""
         from helpers.mailhelpers import sendmail
 
-        with tempfile.TemporaryDirectory() as temp_dir:
-            with patch('helpers.mailhelpers.TEMPLATE_DIR', temp_dir), \
-                 patch('helpers.mailhelpers.APPS_DIR', temp_dir):
-                result = sendmail(
-                    recipients='test@example.com',
-                    subject='Test Subject',
-                    body_template='../../etc/passwd'
-                )
+        with tempfile.TemporaryDirectory() as temp_dir, \
+             patch('helpers.mailhelpers.TEMPLATE_DIR', temp_dir), \
+             patch('helpers.mailhelpers.APPS_DIR', temp_dir):
+            result = sendmail(
+                recipients='test@example.com',
+                subject='Test Subject',
+                body_template='../../etc/passwd'
+            )
 
-                self.assertFalse(result)
-                mock_log.error.assert_called()
+            self.assertFalse(result)
+            mock_log.error.assert_called()
 
     @patch('helpers.mailhelpers.get_enable_smtp', return_value=True)
     @patch('helpers.mailhelpers.load_smtp_settings')
