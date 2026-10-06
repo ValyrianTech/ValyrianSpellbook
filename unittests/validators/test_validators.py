@@ -656,3 +656,27 @@ class TestFindScriptPath:
 
     def test_absolute_path_component_returns_none(self):
         assert validators.find_script_path('/etc/passwd.py') is None
+
+
+class TestValidScript:
+    """Tests for valid_script's distinct rejection log messages."""
+
+    @mock.patch('validators.validators.LOG')
+    def test_invalid_type_logs_message(self, mock_log):
+        assert validators.valid_script(123) is False
+        mock_log.error.assert_called_once_with('Script 123 is invalid: must be a string ending in .py')
+
+    @mock.patch('validators.validators.LOG')
+    def test_invalid_extension_logs_message(self, mock_log):
+        assert validators.valid_script('Echo.txt') is False
+        mock_log.error.assert_called_once_with('Script Echo.txt is invalid: must be a string ending in .py')
+
+    @mock.patch('validators.validators.LOG')
+    def test_not_found_logs_message(self, mock_log):
+        assert validators.valid_script('nonexistent.py') is False
+        mock_log.error.assert_called_once_with('Script nonexistent.py is invalid: file not found in spellbookscripts or apps directory')
+
+    @mock.patch('validators.validators.LOG')
+    def test_traversal_logs_distinct_message(self, mock_log):
+        assert validators.valid_script('../transactionfactory.py') is False
+        mock_log.error.assert_called_once_with('Script ../transactionfactory.py is invalid: not found in or resolved outside spellbookscripts/apps')
