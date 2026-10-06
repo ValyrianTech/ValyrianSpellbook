@@ -8,7 +8,6 @@ import pytest
 from trigger.trigger import Trigger
 from trigger.triggertype import TriggerType
 
-
 SCRIPT_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     'spellbookscripts',

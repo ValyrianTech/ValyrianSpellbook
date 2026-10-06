@@ -33,6 +33,7 @@ from validators.validators import (
 )
 
 from .action import Action
+from .actionresult import ActionResult
 from .actiontype import ActionType
 from .transactiontype import TransactionType
 
@@ -203,11 +204,11 @@ class SendTransactionAction(Action):
         """
         Run the action
 
-        :return: True upon success, False upon failure
+        :return: An ActionResult indicating success or failure
         """
         if self.sending_address is None:
             LOG.error('Can not activate SendTransaction action: sending address is None!')
-            return False
+            return ActionResult(success=False)
 
         LOG.info(f'Activating SendTransaction action {self.id}')
 
@@ -227,34 +228,34 @@ class SendTransactionAction(Action):
         else:
             error_msg = data.get('error', '')
             LOG.error(f'Error while retrieving utxos: {error_msg}')
-            return False
+            return ActionResult(success=False)
 
         tx_inputs = self.construct_transaction_inputs()
         if len(tx_inputs) == 0:
-            return False
+            return ActionResult(success=False)
 
         total_value_in_inputs = int(sum([utxo['value'] for utxo in tx_inputs]))
         LOG.info(f'Total available value in utxos: {total_value_in_inputs}')
 
         if self.minimum_amount is not None and total_value_in_inputs < self.minimum_amount:
             LOG.error(f'SendTransaction action aborted: Total value is less than minimum amount: {self.minimum_amount}')
-            return False
+            return ActionResult(success=False)
 
         spellbook_fee = self.calculate_spellbook_fee(total_value_in_inputs)
 
         if self.amount == 0 and total_value_in_inputs < spellbook_fee:
             LOG.error(f'SendTransaction action aborted: Total input value is less than the spellbook fee: {total_value_in_inputs} < {spellbook_fee}')
-            return False
+            return ActionResult(success=False)
         elif total_value_in_inputs < spellbook_fee + self.amount:
             LOG.error(f'SendTransaction action aborted: Total input value is not enough: {total_value_in_inputs} < {self.amount} + {spellbook_fee}')
-            return False
+            return ActionResult(success=False)
 
         sending_amount = total_value_in_inputs - spellbook_fee if self.amount == 0 else self.amount
         receiving_outputs = self.get_receiving_outputs(sending_amount)
 
         if len(receiving_outputs) == 0:
             LOG.error('SendTransaction action aborted: There are no receiving outputs!')
-            return False
+            return ActionResult(success=False)
 
         change_output = None
         # There should only be a change output if we are sending a specific amount, when sending all available funds there should never be a change output
@@ -276,13 +277,13 @@ class SendTransactionAction(Action):
         # Get the necessary private keys from the hot wallet if no private key is given
         private_keys = self.get_private_key() if self.private_key is None else {self.sending_address: self.private_key}
         if len(private_keys) == 0:
-            return False
+            return ActionResult(success=False)
 
         # Make transaction without fee first to get the size
         transaction = make_custom_tx(private_keys=private_keys, tx_inputs=tx_inputs, tx_outputs=tx_outputs, op_return_data=self.op_return_data, allow_zero_conf=self.utxo_confirmations == 0)
 
         if transaction is None:
-            return False
+            return ActionResult(success=False)
 
         # Get the transaction fee in satoshis per byte
         if self.tx_fee_type == 'High':
@@ -310,13 +311,13 @@ class SendTransactionAction(Action):
             total_sending_value = sum([output.value for output in receiving_outputs])
             if total_sending_value < transaction_fee:
                 LOG.error(f'Aborting SendTransaction: The total value of the receiving outputs is less than the transaction fee: {total_sending_value} < {transaction_fee}')
-                return False
+                return ActionResult(success=False)
 
             fee_share = int(transaction_fee/len(receiving_outputs))
             for receiving_output in receiving_outputs:
                 if receiving_output.value < fee_share:
                     LOG.error(f'Aborting SendTransaction: The value of at least one receiving output is not enough to subtract its share of the transaction fee: {receiving_output.value} < {fee_share}')
-                    return False
+                    return ActionResult(success=False)
                 else:
                     receiving_output.value -= fee_share
 
@@ -327,7 +328,7 @@ class SendTransactionAction(Action):
         elif self.amount > 0 and change_output is not None:
             if change_output.value < transaction_fee:
                 LOG.error(f'Aborting SendTransaction: The value of the change output is less than the transaction fee: {change_output.value} < {transaction_fee}')
-                return False
+                return ActionResult(success=False)
             else:
                 change_output.value -= transaction_fee
 
@@ -340,7 +341,7 @@ class SendTransactionAction(Action):
 
         # Do a sanity check on the transaction fee compared to the total value in inputs, abort if the fee is to high
         if not self.is_fee_acceptable(transaction_fee=transaction_fee, total_value_in_inputs=total_value_in_inputs):
-            return False
+            return ActionResult(success=False)
 
         # Now make the real transaction including the transaction fee
         transaction = make_custom_tx(private_keys=private_keys, tx_inputs=tx_inputs, tx_outputs=tx_outputs, op_return_data=self.op_return_data, tx_fee=transaction_fee, allow_zero_conf=self.utxo_confirmations == 0)
@@ -350,7 +351,7 @@ class SendTransactionAction(Action):
 
         if transaction is None:
             LOG.error('No transaction to be sent!')
-            return False
+            return ActionResult(success=False)
 
         LOG.info(f'Raw transaction: {transaction}')
 
@@ -360,10 +361,10 @@ class SendTransactionAction(Action):
         # Broadcast the transaction to the network
         response = push_tx(tx=transaction)
         if 'success' in response and response['success'] is True:
-            return True
+            return ActionResult(success=True)
         else:
             LOG.error('Broadcasting tx failed: {}'.format(response['error']))
-            return False
+            return ActionResult(success=False)
 
     def get_private_key(self):
         """

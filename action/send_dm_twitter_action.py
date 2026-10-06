@@ -6,6 +6,7 @@ from helpers.loghelpers import LOG
 from helpers.twitterhelpers import create_direct_message
 
 from .action import Action
+from .actionresult import ActionResult
 from .actiontype import ActionType
 
 
@@ -25,7 +26,7 @@ class SendDMTwitterAction(Action):
         """
         Run the action
 
-        :return: True upon success, False upon failure
+        :return: An ActionResult indicating success or failure
         """
         LOG.info('Creating DM on twitter')
         LOG.info(f'dm_conversation_id: {self.dm_conversation_id}')
@@ -43,9 +44,9 @@ class SendDMTwitterAction(Action):
 
         except (ValueError, KeyError, TypeError, OSError) as ex:
             LOG.error(f'Unable to create direct message on twitter: {ex}')
-            return False
+            return ActionResult(success=False)
 
-        return True
+        return ActionResult(success=True)
 
     def configure(self, **config):
         """

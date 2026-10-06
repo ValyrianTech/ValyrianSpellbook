@@ -34,7 +34,7 @@ assert response['webhook'] == webhook
 # --------------------------------------------------------------------------------------------------------
 print('Running the action we just created')
 response = spellbook_call('run_action', action_name)
-assert response is True
+assert response[0] is True
 
 # --------------------------------------------------------------------------------------------------------
 # WebhookAction.configure() validates the URL with valid_webhook_url (SSRF-safe, DNS-resolving),
@@ -50,4 +50,4 @@ assert response['webhook'] is None
 
 print('Running the action with a bad url')
 response = spellbook_call('run_action', action_name)
-assert response is False
+assert response[0] is False

@@ -5,6 +5,7 @@
 from helpers.loghelpers import LOG
 
 from .action import Action
+from .actionresult import ActionResult
 from .actiontype import ActionType
 
 
@@ -19,14 +20,14 @@ class DeleteTriggerAction(Action):
         """
         Run the action
 
-        :return: True upon success, False upon failure
+        :return: An ActionResult indicating success or failure
         """
         # avoid circular import
         from helpers.triggerhelpers import delete_trigger, get_triggers
 
         if self.trigger_ids is None or len(self.trigger_ids) == 0:
             LOG.error('Can not delete triggers: no trigger_ids set')
-            return False
+            return ActionResult(success=False)
 
         LOG.info(f'Deleting triggers {self.trigger_ids}')
         configured_triggers = get_triggers()
@@ -37,7 +38,7 @@ class DeleteTriggerAction(Action):
                 delete_trigger(trigger_id=trigger_id)
                 LOG.info(f'Trigger {trigger_id} is deleted')
 
-        return True
+        return ActionResult(success=True)
 
     def configure(self, **config):
         """

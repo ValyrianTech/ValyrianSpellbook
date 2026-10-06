@@ -32,7 +32,7 @@ assert response['run_command'] == run_command
 # --------------------------------------------------------------------------------------------------------
 print('Running the action we just created')
 response = spellbook_call('run_action', action_name)
-assert response is True
+assert response[0] is True
 
 
 #########################################################################################################
@@ -64,7 +64,7 @@ assert response['mail_body_template'] == mail_body_template
 # --------------------------------------------------------------------------------------------------------
 print('Running the action we just created')
 response = spellbook_call('run_action', action_name)
-assert response is True
+assert response[0] is True
 
 
 #########################################################################################################
@@ -92,7 +92,7 @@ assert response['webhook'] == webhook
 # --------------------------------------------------------------------------------------------------------
 print('Running the action we just created')
 response = spellbook_call('run_action', action_name)
-assert response is True
+assert response[0] is True
 
 
 #########################################################################################################
@@ -127,7 +127,7 @@ assert response is None
 # --------------------------------------------------------------------------------------------------------
 print('Activating the action we just created')
 response = spellbook_call('run_action', action_name)
-assert response is True
+assert response[0] is True
 
 # --------------------------------------------------------------------------------------------------------
 print('Checking if reveal is given because action has been activated')
