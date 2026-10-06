@@ -19,7 +19,7 @@ def mock_settings():
         mp.setattr("config.settings.WEBUI_HOST", "127.0.0.1")
         mp.setattr("config.settings.WEBUI_PORT", 5001)
         mp.setattr("config.settings.DEBUG", False)
-        mp.setattr("config.settings.SESSION_SECRET_KEY", "test-secret-key-for-testing")
+        mp.setenv("SPELLBOOK_SESSION_SECRET", "test-secret-key-for-testing")
         yield mp
 
 
