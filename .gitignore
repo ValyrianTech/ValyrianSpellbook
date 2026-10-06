@@ -139,6 +139,7 @@ spellbookscripts/
 
 # spellbookconfiguration
 configuration/spellbook.conf
+configuration/session_secret.key
 
 # IPFS
 ipfs/
