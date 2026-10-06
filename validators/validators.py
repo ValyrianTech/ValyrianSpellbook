@@ -249,21 +249,41 @@ def valid_phase(phase):
     return phase in range(6)
 
 
-def valid_script(script):
-    """Check if the given script name is a valid .py file in spellbookscripts or apps."""
+def find_script_path(script):
+    """Return the absolute, real path of a script confined to the allowed roots.
+
+    Returns None if script is not a string ending in .py, or if the resolved path
+    does not live inside spellbookscripts/ or apps/ (defends against '..' segments,
+    absolute paths and symlinks that escape the allowed roots).
+    """
     if not isinstance(script, str):
-        return False
+        return None
 
     if not script.endswith('.py'):
-        LOG.error(f'Script {script} is invalid: does not end with .py extension')
-        return False
+        return None
 
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    if os.path.isfile(os.path.join(project_root, 'spellbookscripts', script)) or os.path.isfile(os.path.join(project_root, 'apps', script)):
-        return True
-    else:
+
+    for root_dir in ('spellbookscripts', 'apps'):
+        allowed_root = os.path.realpath(os.path.join(project_root, root_dir)) + os.sep
+        candidate = os.path.realpath(os.path.join(project_root, root_dir, script))
+        if os.path.isfile(candidate) and candidate.startswith(allowed_root):
+            return candidate
+
+    return None
+
+
+def valid_script(script):
+    """Check if the given script name is a valid .py file in spellbookscripts or apps."""
+    if not isinstance(script, str) or not script.endswith('.py'):
+        LOG.error(f'Script {script} is invalid: must be a string ending in .py')
+        return False
+
+    if find_script_path(script) is None:
         LOG.error(f'Script {script} is invalid: file not found in spellbookscripts or apps directory')
         return False
+
+    return True
 
 
 def valid_bech32_address(address):
