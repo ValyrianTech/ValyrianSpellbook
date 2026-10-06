@@ -45,7 +45,7 @@ class Action:
         Save the action as a json file
         """
         filename = safe_path(ACTIONS_DIR, f'{self.id}.json')
-        print('save action to json file: {}'.format(filename))
+        print(f'save action to json file: {filename}')
         save_to_json_file(filename, self.json_encodable())
 
     def json_encodable(self):
