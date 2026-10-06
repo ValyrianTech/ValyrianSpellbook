@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Tests for webui.config Settings."""
+import os
 import stat
 from unittest.mock import MagicMock, patch
 
@@ -94,14 +95,50 @@ class TestSettings:
             assert Settings().SESSION_SECRET_KEY == "late-key"
         assert sleep_mock.call_count >= 1
 
-    def test_session_secret_key_exhausted_retries_returns_empty(self, isolated_secret_key):
+    def test_session_secret_key_exhausted_retries_regenerates(self, isolated_secret_key):
         from config import Settings
+        key_file = isolated_secret_key
+        real_open = os.open
+
+        def fake_open(path, *args, **kwargs):
+            if path == str(key_file):
+                raise FileExistsError
+            return real_open(path, *args, **kwargs)
+
         mock_file = MagicMock()
         mock_file.__enter__.return_value = mock_file
         mock_file.read.return_value = ""
         sleep_mock = MagicMock()
-        with patch("config.os.open", side_effect=FileExistsError), \
+        with patch("config.os.open", side_effect=fake_open), \
              patch("builtins.open", return_value=mock_file), \
              patch("config.time.sleep", sleep_mock):
-            assert Settings().SESSION_SECRET_KEY == ""
+            secret = Settings().SESSION_SECRET_KEY
+
+        assert isinstance(secret, str)
+        assert len(secret) == 64
+        assert key_file.read_text() == secret
+        assert stat.S_IMODE(key_file.stat().st_mode) == 0o600
         assert sleep_mock.call_count == 10
+
+    def test_session_secret_key_fails_closed_on_empty_secret(self, isolated_secret_key):
+        from config import Settings
+        with patch("config.secrets.token_hex", return_value=""), \
+             pytest.raises(RuntimeError, match="non-empty session secret"):
+            _ = Settings().SESSION_SECRET_KEY
+
+    def test_atomic_write_secret_writes_file(self, isolated_secret_key):
+        from config import _atomic_write_secret
+        key_file = isolated_secret_key
+        _atomic_write_secret(str(key_file), "written-secret")
+        assert key_file.read_text() == "written-secret"
+        assert stat.S_IMODE(key_file.stat().st_mode) == 0o600
+
+    def test_atomic_write_secret_removes_temp_file_on_failure(self, isolated_secret_key):
+        from config import _atomic_write_secret
+        key_file = isolated_secret_key
+        key_dir = key_file.parent
+        with patch("config.os.replace", side_effect=OSError("boom")), \
+             pytest.raises(OSError):
+            _atomic_write_secret(str(key_file), "written-secret")
+        assert not key_file.exists()
+        assert list(key_dir.iterdir()) == []
