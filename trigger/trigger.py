@@ -13,6 +13,7 @@ from helpers.jsonhelpers import save_to_json_file
 from helpers.loghelpers import LOG
 from spellbookscripts.spellbookscript import SpellbookScript
 from validators.validators import (
+    find_script_path,
     valid_actions,
     valid_amount,
     valid_creator,
@@ -193,26 +194,22 @@ class Trigger:
             if not valid_script(self.script):
                 return
 
-            script_name = self.script[:-3]  # script name without the .py extension
-            script_path = None
-            script_module_name = None
-
-            # Search for the script in the allowed root directories
-            for root_dir in ['spellbookscripts', 'apps']:
-                if os.path.isfile(os.path.join(root_dir, self.script)):
-                    script_path = os.path.join(root_dir, self.script)
-                    if platform.system() == 'Windows':
-                        script_module_name = '{}.{}'.format(root_dir, script_name.replace('\\', '.'))
-                    elif platform.system() == 'Linux':
-                        script_module_name = '{}.{}'.format(root_dir, script_name.replace('/', '.'))
-                    else:
-                        raise NotImplementedError('Unsupported platform: only windows and linux are supported')
-
+            script_path = find_script_path(self.script)
             if script_path is None:
                 LOG.error(f'Can not find spellbook script {self.script}')
                 return
 
             LOG.info(f'Loading Spellbook Script {script_path}')
+
+            project_root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+
+            system = platform.system()
+            if system not in ('Windows', 'Linux'):
+                raise NotImplementedError('Unsupported platform: only windows and linux are supported')
+
+            relative_path = os.path.relpath(script_path, project_root)
+            script_module_name = relative_path[:-3].replace(os.sep, '.')
+
             LOG.info(f'Script module: {script_module_name} ({type(script_module_name)})')
             try:
                 script_module = importlib.import_module(script_module_name)

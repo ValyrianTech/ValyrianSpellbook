@@ -103,7 +103,7 @@ Actions perform tasks when triggered. Here are a few example actions:
 
 ## Scripts
 
-Custom Python scripts can be added and managed, providing tailor-made functionalities enacted by triggers:
+Custom Python scripts can be added and managed, providing tailor-made functionalities enacted by triggers: custom scripts must live under the `spellbookscripts/` or `apps/` directories, and the script name supplied to a trigger is confined to those directories (path-traversal out of them is rejected).
 
 ```python
 # Template script

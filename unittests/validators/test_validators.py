@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 import socket
 from unittest import mock
 
@@ -617,3 +618,65 @@ class TestResolveAndValidateWebhookUrl:
     @mock.patch('validators.validators.socket.getaddrinfo', side_effect=socket.gaierror('no such host'))
     def test_returns_none_for_resolution_error(self, mock_getaddrinfo):
         assert validators.resolve_and_validate_webhook_url('http://example.com') is None
+
+
+class TestFindScriptPath:
+    """Tests for find_script_path (path-confined script resolution)."""
+
+    @pytest.mark.parametrize('script', [
+        123,
+        None,
+        ['Echo.py'],
+    ])
+    def test_non_string_returns_none(self, script):
+        assert validators.find_script_path(script) is None
+
+    def test_non_py_extension_returns_none(self):
+        assert validators.find_script_path('Echo.txt') is None
+
+    def test_valid_script_in_spellbookscripts(self):
+        path = validators.find_script_path('Echo.py')
+        assert path is not None
+        assert path.endswith(os.path.join('spellbookscripts', 'Echo.py'))
+
+    def test_valid_nested_script_in_apps(self):
+        path = validators.find_script_path('Notary/Notary.py')
+        assert path is not None
+        assert path.endswith(os.path.join('apps', 'Notary', 'Notary.py'))
+
+    def test_nonexistent_py_file_returns_none(self):
+        assert validators.find_script_path('nonexistent.py') is None
+
+    def test_path_traversal_rejected(self):
+        assert validators.find_script_path('../../some_other_package/module.py') is None
+
+    def test_valid_script_rejects_traversal_out_of_roots(self):
+        assert validators.valid_script('../../transactionfactory.py') is False
+        assert validators.valid_script('../transactionfactory.py') is False
+
+    def test_absolute_path_component_returns_none(self):
+        assert validators.find_script_path('/etc/passwd.py') is None
+
+
+class TestValidScript:
+    """Tests for valid_script's distinct rejection log messages."""
+
+    @mock.patch('validators.validators.LOG')
+    def test_invalid_type_logs_message(self, mock_log):
+        assert validators.valid_script(123) is False
+        mock_log.error.assert_called_once_with('Script 123 is invalid: must be a string ending in .py')
+
+    @mock.patch('validators.validators.LOG')
+    def test_invalid_extension_logs_message(self, mock_log):
+        assert validators.valid_script('Echo.txt') is False
+        mock_log.error.assert_called_once_with('Script Echo.txt is invalid: must be a string ending in .py')
+
+    @mock.patch('validators.validators.LOG')
+    def test_not_found_logs_message(self, mock_log):
+        assert validators.valid_script('nonexistent.py') is False
+        mock_log.error.assert_called_once_with('Script nonexistent.py is invalid: file not found in spellbookscripts or apps directory')
+
+    @mock.patch('validators.validators.LOG')
+    def test_traversal_logs_distinct_message(self, mock_log):
+        assert validators.valid_script('../transactionfactory.py') is False
+        mock_log.error.assert_called_once_with('Script ../transactionfactory.py is invalid: not found in or resolved outside spellbookscripts/apps')
