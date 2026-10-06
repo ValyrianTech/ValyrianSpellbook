@@ -43,6 +43,11 @@ class TestActionHelpers:
         result = get_action_config('nonexistent')
         assert result == {}
 
+    def test_get_action_config_invalid_id(self):
+        """Test getting config for a path-traversal action id returns empty dict"""
+        result = get_action_config('../evil')
+        assert result == {}
+
     @mock.patch('helpers.actionhelpers.load_from_json_file')
     def test_get_action_command(self, mock_load):
         """Test getting a Command action"""
@@ -147,6 +152,11 @@ class TestActionHelpers:
     def test_delete_action_not_found(self, mock_isfile):
         """Test deleting a non-existent action"""
         result = delete_action('nonexistent')
+        assert 'error' in result
+
+    def test_delete_action_invalid_id(self):
+        """Test deleting a path-traversal action id returns an error"""
+        result = delete_action('../evil')
         assert 'error' in result
 
     @mock.patch('helpers.actionhelpers.get_action')

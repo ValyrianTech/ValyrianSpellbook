@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from helpers.actionhelpers import get_action, get_actions
 from helpers.jsonhelpers import save_to_json_file
 from helpers.loghelpers import LOG
+from helpers.pathhelpers import safe_path
 from spellbookscripts.spellbookscript import SpellbookScript
 from validators.validators import (
     find_script_path,
@@ -167,7 +168,8 @@ class Trigger:
 
     def save(self):
         """Save."""
-        save_to_json_file(os.path.join(TRIGGERS_DIR, f'{self.id}.json'), self.json_encodable())
+        filename = safe_path(TRIGGERS_DIR, f'{self.id}.json')
+        save_to_json_file(filename, self.json_encodable())
 
     def json_encodable(self):
         """Json encodable."""

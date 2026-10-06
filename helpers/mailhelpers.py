@@ -18,6 +18,7 @@ from helpers.configurationhelpers import (
     get_smtp_user,
 )
 from helpers.loghelpers import LOG
+from helpers.pathhelpers import safe_path
 from validators.validators import valid_email
 
 FROM_ADDRESS = ''
@@ -39,12 +40,11 @@ def _resolve_within(root, name, suffix=''):
 
     Returns None when the resolved path escapes root or is not an existing file.
     """
-    root = os.path.realpath(root)
-    candidate = os.path.realpath(os.path.join(root, f'{name}{suffix}'))
     try:
-        if os.path.commonpath([candidate, root]) != root or not os.path.isfile(candidate):
-            return None
+        candidate = safe_path(root, f'{name}{suffix}')
     except ValueError:
+        return None
+    if not os.path.isfile(candidate):
         return None
     return candidate
 

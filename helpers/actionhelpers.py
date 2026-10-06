@@ -14,6 +14,7 @@ from action.sendtransactionaction import SendTransactionAction
 from action.spawnprocessaction import SpawnProcessAction
 from action.webhookaction import WebhookAction
 from helpers.jsonhelpers import load_from_json_file
+from helpers.pathhelpers import safe_path
 
 ACTIONS_DIR = 'json/public/actions'
 
@@ -37,7 +38,14 @@ def get_action_config(action_id):
     :return: a dict containing the configuration of the action
     """
     try:
-        action_config = load_from_json_file(os.path.join(ACTIONS_DIR, f'{action_id}.json'))
+        filename = safe_path(ACTIONS_DIR, f'{action_id}.json')
+    except ValueError:
+        # Action id is invalid (traversal/absolute/non-str); treat as unknown
+        action_config = {}
+        return action_config
+
+    try:
+        action_config = load_from_json_file(filename)
     except OSError:
         # Action does not exist yet, return empty dict
         action_config = {}
@@ -115,7 +123,11 @@ def delete_action(action_id):
 
     :param action_id: The id of the action to delete
     """
-    filename = os.path.join(ACTIONS_DIR, f'{action_id}.json')
+    try:
+        filename = safe_path(ACTIONS_DIR, f'{action_id}.json')
+    except ValueError:
+        return {'error': f'Unknown action id: {action_id}'}
+
     if os.path.isfile(filename):
         os.remove(filename)
     else:
