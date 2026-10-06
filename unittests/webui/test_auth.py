@@ -66,6 +66,17 @@ class TestValidateCredentials:
     def test_both_wrong(self, mock_secret, mock_key):
         assert validate_credentials("wrong", "wrong") is False
 
+    @patch(
+        "auth.hmac.compare_digest",
+        side_effect=lambda a, b: a == b,
+    )
+    @patch("auth.get_key", return_value="test-key")
+    @patch("auth.get_secret", return_value="test-secret")
+    def test_uses_compare_digest(self, mock_secret, mock_key, mock_compare_digest):
+        assert validate_credentials("test-key", "test-secret") is True
+        assert validate_credentials("wrong-key", "wrong-secret") is False
+        assert mock_compare_digest.call_count == 4
+
 
 class TestLoginUser:
     @patch("auth.validate_credentials", return_value=True)
