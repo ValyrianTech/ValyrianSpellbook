@@ -1,9 +1,22 @@
 #!/usr/bin/env python
+import multiprocessing
+import os
+import sys
 from unittest import mock
 
 import pytest
 
 from helpers.runcommandprocess import PROCESS_LOG, RunCommandProcess
+
+
+def _mock_process(stdout_lines=(), stderr_lines=(), returncode=0):
+    """Build a mocked Popen result with controlled streams and return code."""
+    mock_process = mock.MagicMock()
+    mock_process.stdout.readline.side_effect = list(stdout_lines) + ['']
+    mock_process.stderr.readline.side_effect = list(stderr_lines) + ['']
+    mock_process.returncode = returncode
+    mock_process.wait.return_value = returncode
+    return mock_process
 
 
 class TestRunCommandProcess:
@@ -19,17 +32,14 @@ class TestRunCommandProcess:
         assert process.command == 'echo hello'
         assert process.working_dir == '/tmp'
 
+    @mock.patch('helpers.runcommandprocess.PROCESS_LOG')
     @mock.patch('helpers.runcommandprocess.Popen')
-    def test_run_simple_command(self, mock_popen):
-        mock_process = mock.MagicMock()
-        mock_process.stdout.readline.side_effect = ['output line\n', '']
-        mock_process.stderr.readline.side_effect = ['']
-        mock_popen.return_value = mock_process
-
+    def test_run_simple_command(self, mock_popen, mock_log):
+        mock_popen.return_value = _mock_process(['output line\n'])
         process = RunCommandProcess('echo hello')
-        process.run()
-
+        result = process.run()
         mock_popen.assert_called_once()
+        assert result == 0
 
     def test_run_with_working_dir_attribute(self):
         # Test that working_dir is properly stored
@@ -37,94 +47,138 @@ class TestRunCommandProcess:
         assert process.working_dir == '/tmp'
         assert process.command == 'echo hello'
 
+    @mock.patch('helpers.runcommandprocess.PROCESS_LOG')
     @mock.patch('helpers.runcommandprocess.Popen')
-    def test_run_with_stderr(self, mock_popen):
-        mock_process = mock.MagicMock()
-        mock_process.stdout.readline.side_effect = ['']
-        mock_process.stderr.readline.side_effect = ['error message\n', '']
-        mock_popen.return_value = mock_process
-
+    def test_run_with_stderr(self, mock_popen, mock_log):
+        mock_popen.return_value = _mock_process([], ['error message\n'])
         process = RunCommandProcess('failing_command')
-        process.run()
-
+        result = process.run()
         mock_popen.assert_called_once()
+        assert result == 0
 
+    @mock.patch('helpers.runcommandprocess.PROCESS_LOG')
     @mock.patch('helpers.runcommandprocess.Popen')
-    @mock.patch('helpers.runcommandprocess.os.chdir')
-    @mock.patch('helpers.runcommandprocess.os.getcwd')
-    def test_run_with_working_dir_change(self, mock_getcwd, mock_chdir, mock_popen):
-        """Test that run() changes to working_dir and back"""
-        mock_getcwd.side_effect = ['/original/dir', '/working/dir', '/working/dir', '/original/dir']
-        mock_process = mock.MagicMock()
-        mock_process.stdout.readline.side_effect = ['']
-        mock_process.stderr.readline.side_effect = ['']
-        mock_popen.return_value = mock_process
-
-        process = RunCommandProcess('echo hello', working_dir='/working/dir')
-        process.run()
-
-        mock_popen.assert_called_once()
-
-    @mock.patch('helpers.runcommandprocess.Popen')
-    @mock.patch('helpers.runcommandprocess.os.getcwd', return_value='/same/dir')
-    @mock.patch('helpers.runcommandprocess.os.chdir')
-    def test_run_no_dir_change_when_same(self, mock_chdir, mock_getcwd, mock_popen):
-        """Test that run() does not change dir when already there"""
-        mock_process = mock.MagicMock()
-        mock_process.stdout.readline.side_effect = ['']
-        mock_process.stderr.readline.side_effect = ['']
-        mock_popen.return_value = mock_process
-
-        process = RunCommandProcess('echo hello', working_dir='/same/dir')
-        process.run()
-
-        mock_chdir.assert_not_called()
-
-    @mock.patch('helpers.runcommandprocess.Popen')
-    def test_run_multiple_output_lines(self, mock_popen):
-        mock_process = mock.MagicMock()
-        mock_process.stdout.readline.side_effect = ['line 1\n', 'line 2\n', 'line 3\n', '']
-        mock_process.stderr.readline.side_effect = ['']
-        mock_popen.return_value = mock_process
-
+    def test_run_multiple_output_lines(self, mock_popen, mock_log):
+        mock_popen.return_value = _mock_process(['line 1\n', 'line 2\n', 'line 3\n'], [])
         process = RunCommandProcess('multi_line_command')
-        process.run()
-
+        result = process.run()
         mock_popen.assert_called_once()
+        assert result == 0
 
     def test_process_is_multiprocessing_process(self):
         # Test that RunCommandProcess is a proper multiprocessing.Process subclass
-        import multiprocessing
         process = RunCommandProcess('echo hello')
         assert isinstance(process, multiprocessing.Process)
 
+    @mock.patch('helpers.runcommandprocess.PROCESS_LOG')
     @mock.patch('helpers.runcommandprocess.Popen')
-    def test_run_with_list_command(self, mock_popen):
-        mock_process = mock.MagicMock()
-        mock_process.stdout.readline.side_effect = ['']
-        mock_process.stderr.readline.side_effect = ['']
-        mock_popen.return_value = mock_process
-
+    def test_run_with_list_command(self, mock_popen, mock_log):
+        mock_popen.return_value = _mock_process()
         process = RunCommandProcess(['echo', 'hello'])
-        process.run()
-
+        result = process.run()
         mock_popen.assert_called_once()
         assert mock_popen.call_args[0][0] == ['echo', 'hello']
         assert mock_popen.call_args.kwargs.get('shell') is not True
+        assert result == 0
 
+    @mock.patch('helpers.runcommandprocess.PROCESS_LOG')
     @mock.patch('helpers.runcommandprocess.Popen')
-    def test_run_with_string_command_is_split(self, mock_popen):
-        mock_process = mock.MagicMock()
-        mock_process.stdout.readline.side_effect = ['']
-        mock_process.stderr.readline.side_effect = ['']
-        mock_popen.return_value = mock_process
+    def test_run_with_string_command_is_split(self, mock_popen, mock_log):
+        mock_popen.return_value = _mock_process()
+        process = RunCommandProcess('echo hello')
+        result = process.run()
+        mock_popen.assert_called_once()
+        assert mock_popen.call_args[0][0] == ['echo', 'hello']
+        assert mock_popen.call_args.kwargs.get('shell') is not True
+        assert result == 0
 
+    @mock.patch('helpers.runcommandprocess.PROCESS_LOG')
+    @mock.patch('helpers.runcommandprocess.Popen')
+    def test_run_logs_stdout_info_and_stderr_error(self, mock_popen, mock_log):
+        process_id = multiprocessing.current_process().name
+        mock_popen.return_value = _mock_process(['output line\n'], ['error message\n'])
         process = RunCommandProcess('echo hello')
         process.run()
+        mock_log.info.assert_any_call(f'{process_id} | output line')
+        mock_log.error.assert_any_call(f'{process_id} | error message')
 
-        mock_popen.assert_called_once()
-        assert mock_popen.call_args[0][0] == ['echo', 'hello']
-        assert mock_popen.call_args.kwargs.get('shell') is not True
+    @mock.patch('helpers.runcommandprocess.PROCESS_LOG')
+    @mock.patch('helpers.runcommandprocess.Popen')
+    def test_run_nonzero_returncode(self, mock_popen, mock_log):
+        mock_popen.return_value = _mock_process([], ['error message\n'], returncode=3)
+        process = RunCommandProcess('failing_command')
+        result = process.run()
+        assert result == 3
+        error_msgs = [call.args[0] for call in mock_log.error.call_args_list if call.args]
+        assert any('Command failed with exit code 3' in msg for msg in error_msgs)
+
+    @mock.patch('helpers.runcommandprocess.PROCESS_LOG')
+    @mock.patch('helpers.runcommandprocess.Popen')
+    def test_run_passes_cwd_to_popen(self, mock_popen, mock_log):
+        mock_popen.return_value = _mock_process()
+        process = RunCommandProcess('echo hello', working_dir='/working/dir')
+        process.run()
+        assert mock_popen.call_args.kwargs.get('cwd') == '/working/dir'
+
+    @mock.patch('helpers.runcommandprocess.PROCESS_LOG')
+    @mock.patch('helpers.runcommandprocess.Popen')
+    def test_run_inherits_cwd_when_none(self, mock_popen, mock_log):
+        mock_popen.return_value = _mock_process()
+        process = RunCommandProcess('echo hello')
+        process.run()
+        assert mock_popen.call_args.kwargs.get('cwd') is None
+
+
+class TestRunCommandProcessReal:
+    """Integration tests exercising run() against real subprocesses."""
+
+    def test_large_stdout_no_deadlock(self):
+        code = 'import sys\nsys.stdout.write("x" * 3000000 + "\\n")\n'
+        process = RunCommandProcess([sys.executable, '-c', code])
+        with mock.patch('helpers.runcommandprocess.PROCESS_LOG') as log:
+            result = process.run()
+        assert result == 0
+        assert log.info.call_count >= 1
+
+    def test_large_stderr_no_deadlock(self):
+        code = 'import sys\nsys.stderr.write("y" * 3000000 + "\\n")\n'
+        process = RunCommandProcess([sys.executable, '-c', code])
+        with mock.patch('helpers.runcommandprocess.PROCESS_LOG') as log:
+            result = process.run()
+        assert result == 0
+        assert log.error.call_count >= 1
+
+    def test_large_stdout_and_stderr_no_deadlock(self):
+        code = (
+            'import sys\n'
+            'sys.stdout.write("o" * 2000000 + "\\n")\n'
+            'sys.stderr.write("e" * 2000000 + "\\n")\n'
+        )
+        process = RunCommandProcess([sys.executable, '-c', code])
+        with mock.patch('helpers.runcommandprocess.PROCESS_LOG'):
+            result = process.run()
+        assert result == 0
+
+    def test_nonzero_exit_code_surfaced(self):
+        code = 'import sys\nsys.stderr.write("boom\\n")\nsys.exit(3)\n'
+        process = RunCommandProcess([sys.executable, '-c', code])
+        with mock.patch('helpers.runcommandprocess.PROCESS_LOG') as log:
+            result = process.run()
+        assert result == 3
+        error_msgs = [call.args[0] for call in log.error.call_args_list if call.args]
+        assert any('Command failed with exit code 3' in msg for msg in error_msgs)
+
+    def test_working_dir_not_mutated(self, tmp_path):
+        before = os.getcwd()
+        code = 'import os\nprint(os.getcwd())\n'
+        process = RunCommandProcess([sys.executable, '-c', code], working_dir=str(tmp_path))
+        with mock.patch('helpers.runcommandprocess.PROCESS_LOG') as log:
+            result = process.run()
+        assert result == 0
+        assert os.getcwd() == before
+        expected = os.path.realpath(str(tmp_path))
+        info_msgs = [call.args[0] for call in log.info.call_args_list if call.args]
+        assert any(expected in msg for msg in info_msgs)
 
 
 class TestProcessLog:
@@ -210,14 +264,15 @@ class TestShellMetacharacterDetection:
 
     def test_explicit_shell_argv_list_is_supported(self):
         """Passing an explicit shell argv list is the documented escape hatch."""
-        with mock.patch('helpers.runcommandprocess.Popen') as mock_popen:
-            mock_process = mock.MagicMock()
-            mock_process.stdout.readline.side_effect = ['']
-            mock_process.stderr.readline.side_effect = ['']
-            mock_popen.return_value = mock_process
+        with (
+            mock.patch('helpers.runcommandprocess.PROCESS_LOG'),
+            mock.patch('helpers.runcommandprocess.Popen') as mock_popen,
+        ):
+            mock_popen.return_value = _mock_process()
 
             process = RunCommandProcess(['sh', '-c', 'echo $HOME | cat'])
-            process.run()
+            result = process.run()
 
+        assert result == 0
         assert mock_popen.call_args[0][0] == ['sh', '-c', 'echo $HOME | cat']
         assert mock_popen.call_args.kwargs.get('shell') is not True

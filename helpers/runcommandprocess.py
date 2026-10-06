@@ -6,6 +6,7 @@ import multiprocessing
 import os
 import shlex
 import sys
+import threading
 from logging.handlers import RotatingFileHandler
 from subprocess import PIPE, Popen
 
@@ -76,27 +77,37 @@ class RunCommandProcess(multiprocessing.Process):
 
     def run(self):
         """Execute the command, stream stdout/stderr to the process logger, then restore cwd."""
-        current_run_dir = os.getcwd()
-        if self.working_dir is not None and current_run_dir != self.working_dir:
-            os.chdir(self.working_dir)
-            PROCESS_LOG.info(f'Switched to working dir: {os.getcwd()}')
-
         process_id = multiprocessing.current_process().name
         PROCESS_LOG.info(f'{process_id} | Spawned new process to run command: {self.command}')
         PROCESS_LOG.info(f'{process_id} | Process starting...')
 
         # Intentional (breaking change): the shell is NOT used, so shell features are unavailable.
         argv = shlex.split(self.command) if isinstance(self.command, str) else self.command
-        command_process = Popen(argv, stdout=PIPE, stderr=PIPE, universal_newlines=True)
+        command_process = Popen(
+            argv,
+            stdout=PIPE,
+            stderr=PIPE,
+            universal_newlines=True,
+            cwd=self.working_dir,
+        )
 
-        for stdout_line in iter(command_process.stdout.readline, ""):
-            PROCESS_LOG.info(f'{process_id} | {stdout_line.strip()}')
+        def drain(stream, log_fn):
+            for line in iter(stream.readline, ""):
+                log_fn(f'{process_id} | {line.strip()}')
 
-        for stdout_line in iter(command_process.stderr.readline, ""):
-            PROCESS_LOG.error(f'{process_id} | {stdout_line.strip()}')
+        stdout_thread = threading.Thread(target=drain, args=(command_process.stdout, PROCESS_LOG.info))
+        stderr_thread = threading.Thread(target=drain, args=(command_process.stderr, PROCESS_LOG.error))
+        stdout_thread.start()
+        stderr_thread.start()
+        stdout_thread.join()
+        stderr_thread.join()
+
+        command_process.wait()
 
         PROCESS_LOG.info(f'{process_id} | Process finished')
 
-        if current_run_dir != os.getcwd():
-            os.chdir(current_run_dir)
-            PROCESS_LOG.info(f'Switched back to: {os.getcwd()}')
+        if command_process.returncode != 0:
+            PROCESS_LOG.error(f'{process_id} | Command failed with exit code {command_process.returncode}')
+            return command_process.returncode
+
+        return 0
