@@ -2,7 +2,6 @@
 
 """Base Action class and registry for all Spellbook actions."""
 
-import os
 from abc import ABCMeta, abstractmethod
 from datetime import datetime, timezone
 
