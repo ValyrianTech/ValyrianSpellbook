@@ -2,6 +2,7 @@
 from unittest import mock
 
 import pytest
+import simplejson
 
 from authentication import AuthenticationStatus
 from decorators import (
@@ -128,6 +129,18 @@ class TestOutputJson:
 
         result = test_func()
         assert result is None
+
+    def test_output_json_json_encodable(self):
+        class Encodable:
+            def json_encodable(self):
+                return [True, 'out', 'err']
+
+        @output_json
+        def test_func():
+            return Encodable()
+
+        result = test_func()
+        assert result == simplejson.dumps([True, 'out', 'err'], indent=4, sort_keys=True)
 
 
 class TestVerifyConfig:

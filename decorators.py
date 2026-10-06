@@ -71,6 +71,8 @@ def output_json(f):
         """Execute function and return its output as a JSON string."""
         output = f(*args, **kwargs)
         if output is not None:
+            if hasattr(output, 'json_encodable') and callable(output.json_encodable):
+                output = output.json_encodable()
             return simplejson.dumps(output, indent=4, sort_keys=True)
 
     return decorated_function

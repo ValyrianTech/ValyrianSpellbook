@@ -6,6 +6,7 @@ from helpers.loghelpers import LOG
 from helpers.twitterhelpers import like_tweet
 
 from .action import Action
+from .actionresult import ActionResult
 from .actiontype import ActionType
 
 
@@ -20,10 +21,10 @@ class LikeTweetAction(Action):
         """
         Run the action
 
-        :return: True upon success, False upon failure
+        :return: An ActionResult indicating success or failure
         """
         if self.tweet_id is None:
-            return False
+            return ActionResult(success=False)
 
         LOG.info(f'Liking tweet: {self.tweet_id}')
 
@@ -31,9 +32,9 @@ class LikeTweetAction(Action):
             like_tweet(tweet_id=self.tweet_id)
         except (ValueError, KeyError, TypeError, OSError) as ex:
             LOG.error(f'Unable to like tweet {self.tweet_id}: {ex}')
-            return False
+            return ActionResult(success=False)
 
-        return True
+        return ActionResult(success=True)
 
     def configure(self, **config):
         """

@@ -6,6 +6,7 @@ from helpers.loghelpers import LOG
 from helpers.runcommandprocess import RunCommandProcess
 
 from .action import Action
+from .actionresult import ActionResult
 from .actiontype import ActionType
 
 
@@ -21,19 +22,19 @@ class SpawnProcessAction(Action):
         """
         Run the action
 
-        :return: True upon success, False upon failure
+        :return: An ActionResult indicating success or failure
         """
         if self.run_command is None or self.run_command == '':
-            return False
+            return ActionResult(success=False)
 
         try:
             process = RunCommandProcess(command=self.run_command, working_dir=self.working_dir)
             process.start()
         except (ValueError, KeyError, TypeError, OSError) as ex:
             LOG.error(f'Spawning process failed: {ex}')
-            return False
+            return ActionResult(success=False)
 
-        return True
+        return ActionResult(success=True)
 
     def configure(self, **config):
         """

@@ -5,6 +5,7 @@
 from helpers.mailhelpers import sendmail
 
 from .action import Action
+from .actionresult import ActionResult
 from .actiontype import ActionType
 
 
@@ -24,14 +25,14 @@ class SendMailAction(Action):
         """
         Run the action
 
-        :return: True upon success, False upon failure
+        :return: An ActionResult indicating success or failure
         """
-        return sendmail(recipients=self.mail_recipients,
-                        subject=self.mail_subject,
-                        body_template=self.mail_body_template,
-                        variables=self.mail_variables,
-                        images=self.mail_images,
-                        attachments=self.mail_attachments)
+        return ActionResult(success=bool(sendmail(recipients=self.mail_recipients,
+                                                  subject=self.mail_subject,
+                                                  body_template=self.mail_body_template,
+                                                  variables=self.mail_variables,
+                                                  images=self.mail_images,
+                                                  attachments=self.mail_attachments)))
 
     def configure(self, **config):
         """

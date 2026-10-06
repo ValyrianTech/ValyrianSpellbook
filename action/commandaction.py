@@ -7,6 +7,7 @@ import subprocess
 from helpers.loghelpers import LOG
 
 from .action import Action
+from .actionresult import ActionResult
 from .actiontype import ActionType
 
 
@@ -31,10 +32,11 @@ class CommandAction(Action):
         by shlex.quote() then interacts with the surrounding quoting, and the value becomes a literal substring of that
         single argument rather than its own quoted token.
 
-        :return: True upon success, False upon failure
+        :return: An ActionResult indicating success or failure, along with the
+                 stdout and stderr produced by the command
         """
         if self.run_command is None or self.run_command == '':
-            return False
+            return ActionResult(success=False)
 
         command = self.run_command
         placeholders = kwargs.get('placeholders', {})
@@ -51,7 +53,7 @@ class CommandAction(Action):
             result = subprocess.run(argv, shell=False, capture_output=True, cwd=self.working_dir, check=False)
         except OSError as e:
             LOG.error(f'Command failed to run: {e}')
-            return False, b'', str(e).encode()
+            return ActionResult(success=False, stdout=b'', stderr=str(e).encode())
         stripped_output = result.stdout.strip()
         LOG.info(f'Command output: {stripped_output}')
 
@@ -60,9 +62,9 @@ class CommandAction(Action):
             LOG.error(f'Command error: {stripped_error}')
 
         if result.returncode == 0:
-            return True, stripped_output, stripped_error
+            return ActionResult(success=True, stdout=stripped_output, stderr=stripped_error)
         else:
-            return False, stripped_output, stripped_error
+            return ActionResult(success=False, stdout=stripped_output, stderr=stripped_error)
 
     def configure(self, **config):
         """

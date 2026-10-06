@@ -6,6 +6,7 @@ from helpers.loghelpers import LOG
 from helpers.twitterhelpers import create_tweet
 
 from .action import Action
+from .actionresult import ActionResult
 from .actiontype import ActionType
 
 
@@ -33,7 +34,7 @@ class CreateTweetAction(Action):
         """
         Run the action
 
-        :return: True upon success, False upon failure
+        :return: An ActionResult indicating success or failure
         """
         LOG.info('Creating tweet')
         LOG.info(f'text: {self.text}')
@@ -67,9 +68,9 @@ class CreateTweetAction(Action):
 
         except (ValueError, KeyError, TypeError, OSError) as ex:
             LOG.error(f'Unable to create tweet: {ex}')
-            return False
+            return ActionResult(success=False)
 
-        return True
+        return ActionResult(success=True)
 
     def configure(self, **config):
         """
