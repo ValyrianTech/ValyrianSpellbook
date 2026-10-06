@@ -22,6 +22,12 @@ class SpawnProcessAction(Action):
         """
         Run the action
 
+        A successful ActionResult (success=True) means the underlying process was
+        successfully launched, i.e. RunCommandProcess.start() did not raise an
+        exception. It does NOT mean the spawned process ran to completion or
+        completed successfully. Callers should not interpret success=True as
+        evidence of the spawned process's outcome.
+
         :return: An ActionResult indicating success or failure
         """
         if self.run_command is None or self.run_command == '':
