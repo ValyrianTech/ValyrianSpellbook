@@ -249,6 +249,40 @@ def valid_phase(phase):
     return phase in range(6)
 
 
+def _resolve_script_path(script):
+    """Resolve a script name to a (path, reason) pair within the allowed roots.
+
+    Returns ``(absolute_real_path, None)`` when the script resolves to an existing
+    file inside ``spellbookscripts/`` or ``apps/``. On failure it returns
+    ``(None, reason)`` where ``reason`` is one of ``'invalid_type'`` (not a
+    string), ``'invalid_extension'`` (not ending in ``.py``),
+    ``'resolved_outside_roots'`` (resolves to an existing file outside the
+    allowed roots, i.e. a path-traversal attempt) or ``'not_found'`` (no such
+    file in the allowed roots).
+    """
+    if not isinstance(script, str):
+        return None, 'invalid_type'
+
+    if not script.endswith('.py'):
+        return None, 'invalid_extension'
+
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    resolved_outside = False
+    for root_dir in ('spellbookscripts', 'apps'):
+        allowed_root = os.path.realpath(os.path.join(project_root, root_dir)) + os.sep
+        candidate = os.path.realpath(os.path.join(project_root, root_dir, script))
+        if os.path.isfile(candidate):
+            if candidate.startswith(allowed_root):
+                return candidate, None
+            resolved_outside = True
+
+    if resolved_outside:
+        return None, 'resolved_outside_roots'
+
+    return None, 'not_found'
+
+
 def find_script_path(script):
     """Return the absolute, real path of a script confined to the allowed roots.
 
@@ -256,21 +290,8 @@ def find_script_path(script):
     does not live inside spellbookscripts/ or apps/ (defends against '..' segments,
     absolute paths and symlinks that escape the allowed roots).
     """
-    if not isinstance(script, str):
-        return None
-
-    if not script.endswith('.py'):
-        return None
-
-    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-    for root_dir in ('spellbookscripts', 'apps'):
-        allowed_root = os.path.realpath(os.path.join(project_root, root_dir)) + os.sep
-        candidate = os.path.realpath(os.path.join(project_root, root_dir, script))
-        if os.path.isfile(candidate) and candidate.startswith(allowed_root):
-            return candidate
-
-    return None
+    path, _ = _resolve_script_path(script)
+    return path
 
 
 def valid_script(script):
@@ -279,8 +300,12 @@ def valid_script(script):
         LOG.error(f'Script {script} is invalid: must be a string ending in .py')
         return False
 
-    if find_script_path(script) is None:
-        LOG.error(f'Script {script} is invalid: file not found in spellbookscripts or apps directory')
+    path, reason = _resolve_script_path(script)
+    if path is None:
+        if reason == 'resolved_outside_roots':
+            LOG.error(f'Script {script} is invalid: not found in or resolved outside spellbookscripts/apps')
+        else:
+            LOG.error(f'Script {script} is invalid: file not found in spellbookscripts or apps directory')
         return False
 
     return True
