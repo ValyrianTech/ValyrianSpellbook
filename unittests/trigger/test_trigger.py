@@ -326,22 +326,22 @@ class TestTrigger:
     def test_trigger_load_script_windows(self, mock_platform, mock_find, mock_valid):
         trigger = ConcreteTrigger('test_trigger_id')
         trigger.script = 'subdir\\testscript.py'
-        
-        with mock.patch('importlib.import_module') as mock_import:
+
+        with mock.patch('trigger.trigger.os.sep', '\\'), \
+             mock.patch('trigger.trigger.os.path.relpath', return_value='spellbookscripts\\testscript.py'), \
+             mock.patch('importlib.import_module') as mock_import, \
+             mock.patch('trigger.trigger.isinstance', return_value=True):
             mock_script_class = mock.MagicMock()
             mock_script_instance = mock.MagicMock()
             mock_script_class.return_value = mock_script_instance
             mock_module = mock.MagicMock()
             mock_module.testscript = mock_script_class
             mock_import.return_value = mock_module
-            
-            with mock.patch('trigger.trigger.isinstance', return_value=True):
-                trigger.configure(created=1609459200)
-                trigger.load_script()
-            
-            # Verify Windows path handling
-            call_args = mock_import.call_args[0][0]
-            assert '.' in call_args
+
+            trigger.configure(created=1609459200)
+            trigger.load_script()
+
+        mock_import.assert_called_once_with('spellbookscripts.testscript')
 
     @mock.patch('trigger.trigger.valid_script', return_value=True)
     @mock.patch('trigger.trigger.find_script_path', return_value=SCRIPT_PATH)
