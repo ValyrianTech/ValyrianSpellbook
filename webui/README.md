@@ -38,7 +38,17 @@ python main.py
 
 The web UI will start on port 5001 by default. Access it at: http://localhost:5001
 
-### 3. Login
+### 3. Session secret (optional)
+
+The session signing secret is stable by default: it is generated once and persisted to `configuration/session_secret.key` (with file permissions `0600`), then reused on subsequent starts, so sessions survive restarts and are shared across worker processes. The file is created atomically (`O_CREAT|O_EXCL`) on first access; if several workers race to create it, the losers re-read the winner's file, so all workers share one key.
+
+To override the key, set the `SPELLBOOK_SESSION_SECRET` environment variable (useful for container or multi-worker deployments, or when the config directory is ephemeral or read-only). Generate one with:
+
+```bash
+python -c 'import secrets; print(secrets.token_hex(32))'
+```
+
+### 4. Login
 
 Use your Spellbook API key and secret to log in. These are the same credentials used for the CLI and REST API.
 
