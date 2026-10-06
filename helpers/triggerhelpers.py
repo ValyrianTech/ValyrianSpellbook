@@ -14,6 +14,7 @@ from helpers.hotwallethelpers import (
 from helpers.jsonhelpers import load_from_json_file
 from helpers.loghelpers import LOG
 from helpers.messagehelpers import sign_and_verify, verify_message
+from helpers.pathhelpers import safe_path
 from trigger.balancetrigger import BalanceTrigger
 from trigger.blockheighttrigger import BlockHeightTrigger
 from trigger.deadmansswitchtrigger import DeadMansSwitchTrigger
@@ -53,7 +54,14 @@ def get_trigger_config(trigger_id):
     :return: a dict containing the configuration of the trigger
     """
     try:
-        trigger_config = load_from_json_file(os.path.join(TRIGGERS_DIR, f'{trigger_id}.json'))
+        filename = safe_path(TRIGGERS_DIR, f'{trigger_id}.json')
+    except ValueError:
+        # Trigger id is invalid (traversal/absolute/non-str); treat as unknown
+        trigger_config = {}
+        return trigger_config
+
+    try:
+        trigger_config = load_from_json_file(filename)
     except OSError:
         # Trigger does not exist yet, return empty dict
         trigger_config = {}
@@ -144,7 +152,11 @@ def delete_trigger(trigger_id):
 
     :param trigger_id: The id of the trigger to delete
     """
-    filename = os.path.join(TRIGGERS_DIR, f'{trigger_id}.json')
+    try:
+        filename = safe_path(TRIGGERS_DIR, f'{trigger_id}.json')
+    except ValueError:
+        return {'error': f'Unknown trigger id: {trigger_id}'}
+
     if os.path.isfile(filename):
         os.remove(filename)
     else:
@@ -157,7 +169,12 @@ def activate_trigger(trigger_id):
 
     :param trigger_id: The id of the trigger
     """
-    if not os.path.isfile(os.path.join(TRIGGERS_DIR, f'{trigger_id}.json')):
+    try:
+        filename = safe_path(TRIGGERS_DIR, f'{trigger_id}.json')
+    except ValueError:
+        return {'error': f'Unknown trigger id: {trigger_id}'}
+
+    if not os.path.isfile(filename):
         return {'error': f'Unknown trigger id: {trigger_id}'}
 
     trigger = get_trigger(trigger_id)

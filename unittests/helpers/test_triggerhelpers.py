@@ -51,6 +51,11 @@ class TestTriggerHelpers:
         result = get_trigger_config('nonexistent')
         assert result == {}
 
+    def test_get_trigger_config_invalid_id(self):
+        """Test getting config for a path-traversal trigger id returns empty dict"""
+        result = get_trigger_config('../evil')
+        assert result == {}
+
     @mock.patch('helpers.triggerhelpers.load_from_json_file')
     def test_get_trigger_manual(self, mock_load):
         """Test getting a Manual trigger"""
@@ -199,10 +204,20 @@ class TestTriggerHelpers:
         result = delete_trigger('nonexistent')
         assert 'error' in result
 
+    def test_delete_trigger_invalid_id(self):
+        """Test deleting a path-traversal trigger id returns an error"""
+        result = delete_trigger('../evil')
+        assert 'error' in result
+
     @mock.patch('os.path.isfile', return_value=False)
     def test_activate_trigger_not_found(self, mock_isfile):
         """Test activating a non-existent trigger"""
         result = activate_trigger('nonexistent')
+        assert 'error' in result
+
+    def test_activate_trigger_invalid_id(self):
+        """Test activating a path-traversal trigger id returns an error"""
+        result = activate_trigger('../evil')
         assert 'error' in result
 
     @mock.patch('os.path.isfile', return_value=True)
