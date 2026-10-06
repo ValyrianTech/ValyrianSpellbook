@@ -657,6 +657,13 @@ class TestFindScriptPath:
     def test_absolute_path_component_returns_none(self):
         assert validators.find_script_path('/etc/passwd.py') is None
 
+    def test_nonexistent_internal_traversal_reports_resolved_outside_roots(self):
+        from validators.validators import _resolve_script_path
+        path, reason = _resolve_script_path('foo/../nonexistent.py')
+        assert path is None
+        assert reason == 'resolved_outside_roots'
+        assert validators.find_script_path('foo/../nonexistent.py') is None
+
 
 class TestValidScript:
     """Tests for valid_script's distinct rejection log messages."""

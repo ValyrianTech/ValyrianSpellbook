@@ -2,11 +2,11 @@
 
 """Base Action class and registry for all Spellbook actions."""
 
-import os
 from abc import ABCMeta, abstractmethod
 from datetime import datetime, timezone
 
 from helpers.jsonhelpers import save_to_json_file
+from helpers.pathhelpers import safe_path
 from validators.validators import valid_action_type
 
 ACTIONS_DIR = 'json/public/actions'
@@ -44,8 +44,9 @@ class Action:
         """
         Save the action as a json file
         """
-        print('save action to json file: {}'.format(os.path.join(ACTIONS_DIR, f'{self.id}.json')))
-        save_to_json_file(os.path.join(ACTIONS_DIR, f'{self.id}.json'), self.json_encodable())
+        filename = safe_path(ACTIONS_DIR, f'{self.id}.json')
+        print('save action to json file: {}'.format(filename))
+        save_to_json_file(filename, self.json_encodable())
 
     def json_encodable(self):
         """

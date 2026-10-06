@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 
 from helpers.bech32 import bech32_decode
 from helpers.loghelpers import LOG
+from helpers.pathhelpers import safe_path
 
 ALL_CHARACTERS_REGEX = "^[a-zA-Z0-9àáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$"
 YOUTUBE_REGEX = r"^(http(s?):\/\/)?(www\.)?youtu(be)?\.([a-z])+\/(watch(.*?)(\?|\&)v=)?(.*?)(&(.)*)?$"
@@ -259,6 +260,11 @@ def _resolve_script_path(script):
     ``'resolved_outside_roots'`` (resolves to an existing file outside the
     allowed roots, i.e. a path-traversal attempt) or ``'not_found'`` (no such
     file in the allowed roots).
+
+    Note that ``'resolved_outside_roots'`` is also returned for a nonexistent
+    script name that contains a ``..`` segment (e.g. ``foo/../bar.py``): the
+    ``..`` segment is rejected by ``safe_path`` before any existence check, so
+    such a name is reported as a traversal attempt rather than as ``'not_found'``.
     """
     if not isinstance(script, str):
         return None, 'invalid_type'
@@ -270,12 +276,14 @@ def _resolve_script_path(script):
 
     resolved_outside = False
     for root_dir in ('spellbookscripts', 'apps'):
-        allowed_root = os.path.realpath(os.path.join(project_root, root_dir)) + os.sep
-        candidate = os.path.realpath(os.path.join(project_root, root_dir, script))
-        if os.path.isfile(candidate):
-            if candidate.startswith(allowed_root):
-                return candidate, None
+        allowed_root = os.path.join(project_root, root_dir)
+        try:
+            candidate = safe_path(allowed_root, script)
+        except ValueError:
             resolved_outside = True
+            continue
+        if os.path.isfile(candidate):
+            return candidate, None
 
     if resolved_outside:
         return None, 'resolved_outside_roots'
