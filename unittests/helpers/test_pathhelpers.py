@@ -14,6 +14,21 @@ class TestSafePath:
         with pytest.raises(ValueError):
             safe_path('/tmp', candidate)
 
+    def test_rejects_internal_parent_segment_resolving_inside_base(self, tmp_path):
+        base = tmp_path / 'base'
+        base.mkdir()
+        (base / 'bar').write_text('content')
+
+        with pytest.raises(ValueError):
+            safe_path(str(base), 'foo/../bar')
+
+    def test_rejects_internal_parent_segment_without_existing_dir(self, tmp_path):
+        base = tmp_path / 'base'
+        base.mkdir()
+
+        with pytest.raises(ValueError):
+            safe_path(str(base), 'foo/../bar')
+
     @pytest.mark.parametrize('candidate', ['/etc/passwd', '/tmp/foo'])
     def test_rejects_absolute_path(self, candidate):
         with pytest.raises(ValueError):
