@@ -47,7 +47,18 @@ class LaunchEvolverAction(SpawnProcessAction):
         return ret
 
     def run(self):
-        """Run."""
+        """
+        Run the action
+
+        Sets the run command for darwin and delegates to SpawnProcessAction.run().
+
+        A successful ActionResult (success=True) means the evolver process was
+        successfully launched, i.e. start() did not raise an exception. It does
+        NOT mean the evolution job ran to completion or succeeded. Callers should
+        not interpret success=True as evidence of the evolution job's outcome.
+
+        :return: An ActionResult indicating success or failure
+        """
         self.run_command = f'python3.7 "{DARWIN_PROGRAM}" {self.job_config}'
         LOG.info(f'Launching evolver with command: {self.run_command}')
         return super().run()
