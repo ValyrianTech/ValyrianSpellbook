@@ -155,7 +155,7 @@ class TestRunCommandProcessReal:
             'sys.stderr.write("e" * 2000000 + "\\n")\n'
         )
         process = RunCommandProcess([sys.executable, '-c', code])
-        with mock.patch('helpers.runcommandprocess.PROCESS_LOG') as log:
+        with mock.patch('helpers.runcommandprocess.PROCESS_LOG'):
             result = process.run()
         assert result == 0
 
@@ -264,12 +264,14 @@ class TestShellMetacharacterDetection:
 
     def test_explicit_shell_argv_list_is_supported(self):
         """Passing an explicit shell argv list is the documented escape hatch."""
-        with mock.patch('helpers.runcommandprocess.PROCESS_LOG'):
-            with mock.patch('helpers.runcommandprocess.Popen') as mock_popen:
-                mock_popen.return_value = _mock_process()
+        with (
+            mock.patch('helpers.runcommandprocess.PROCESS_LOG'),
+            mock.patch('helpers.runcommandprocess.Popen') as mock_popen,
+        ):
+            mock_popen.return_value = _mock_process()
 
-                process = RunCommandProcess(['sh', '-c', 'echo $HOME | cat'])
-                result = process.run()
+            process = RunCommandProcess(['sh', '-c', 'echo $HOME | cat'])
+            result = process.run()
 
         assert result == 0
         assert mock_popen.call_args[0][0] == ['sh', '-c', 'echo $HOME | cat']
