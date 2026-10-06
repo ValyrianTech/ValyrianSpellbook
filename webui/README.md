@@ -40,7 +40,7 @@ The web UI will start on port 5001 by default. Access it at: http://localhost:50
 
 ### 3. Session secret (optional)
 
-The session signing secret is stable by default: it is generated once and persisted to `configuration/session_secret.key` (with file permissions `0600`), then reused on subsequent starts, so sessions survive restarts and are shared across worker processes. The file is created atomically (`O_CREAT|O_EXCL`) on first access; if several workers race to create it, the losers re-read the winner's file, so all workers share one key.
+The session signing secret is stable by default: it is generated once and persisted to `configuration/session_secret.key` (with file permissions `0600`), then reused on subsequent starts, so sessions survive restarts and are shared across worker processes. The file is created atomically (`O_CREAT|O_EXCL`) on first access; if several workers race to create it, the losers re-read the winner's file, so all workers share one key. If the key file already exists but is empty (for example, a previous writer crashed before writing its key), the Web UI now generates and persists a fresh key atomically rather than starting with an empty secret. If a non-empty secret still cannot be obtained, startup fails closed with a `RuntimeError` instead of running with an empty session secret.
 
 To override the key, set the `SPELLBOOK_SESSION_SECRET` environment variable (useful for container or multi-worker deployments, or when the config directory is ephemeral or read-only). Generate one with:
 
