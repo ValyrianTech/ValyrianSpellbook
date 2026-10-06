@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 from datetime import datetime, timezone
 from unittest import mock
 
@@ -6,6 +7,13 @@ import pytest
 
 from trigger.trigger import Trigger
 from trigger.triggertype import TriggerType
+
+
+SCRIPT_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    'spellbookscripts',
+    'testscript.py',
+)
 
 
 class ConcreteTrigger(Trigger):
@@ -274,18 +282,18 @@ class TestTrigger:
         assert result == {'status': 'ok'}
 
     @mock.patch('trigger.trigger.valid_script', return_value=True)
-    @mock.patch('os.path.isfile', return_value=False)
-    def test_trigger_load_script_not_found(self, mock_isfile, mock_valid):
+    @mock.patch('trigger.trigger.find_script_path', return_value=None)
+    def test_trigger_load_script_not_found(self, mock_find, mock_valid):
         trigger = ConcreteTrigger('test_trigger_id')
         trigger.script = 'nonexistent.py'
         result = trigger.load_script()
         assert result is None
 
     @mock.patch('trigger.trigger.valid_script', return_value=True)
-    @mock.patch('os.path.isfile', return_value=True)
+    @mock.patch('trigger.trigger.find_script_path', return_value=SCRIPT_PATH)
     @mock.patch('importlib.import_module')
     @mock.patch('platform.system', return_value='Linux')
-    def test_trigger_load_script_success(self, mock_platform, mock_import, mock_isfile, mock_valid):
+    def test_trigger_load_script_success(self, mock_platform, mock_import, mock_find, mock_valid):
         mock_script_class = mock.MagicMock()
         mock_script_instance = mock.MagicMock()
         mock_script_class.return_value = mock_script_instance
@@ -303,19 +311,19 @@ class TestTrigger:
         mock_import.assert_called_once()
 
     @mock.patch('trigger.trigger.valid_script', return_value=True)
-    @mock.patch('os.path.isfile', return_value=True)
+    @mock.patch('trigger.trigger.find_script_path', return_value=SCRIPT_PATH)
     @mock.patch('importlib.import_module', side_effect=ValueError('Import error'))
     @mock.patch('platform.system', return_value='Linux')
-    def test_trigger_load_script_import_error(self, mock_platform, mock_import, mock_isfile, mock_valid):
+    def test_trigger_load_script_import_error(self, mock_platform, mock_import, mock_find, mock_valid):
         trigger = ConcreteTrigger('test_trigger_id')
         trigger.script = 'testscript.py'
         result = trigger.load_script()
         assert result is None
 
     @mock.patch('trigger.trigger.valid_script', return_value=True)
-    @mock.patch('os.path.isfile', return_value=True)
+    @mock.patch('trigger.trigger.find_script_path', return_value=SCRIPT_PATH)
     @mock.patch('platform.system', return_value='Windows')
-    def test_trigger_load_script_windows(self, mock_platform, mock_isfile, mock_valid):
+    def test_trigger_load_script_windows(self, mock_platform, mock_find, mock_valid):
         trigger = ConcreteTrigger('test_trigger_id')
         trigger.script = 'subdir\\testscript.py'
         
@@ -336,9 +344,9 @@ class TestTrigger:
             assert '.' in call_args
 
     @mock.patch('trigger.trigger.valid_script', return_value=True)
-    @mock.patch('os.path.isfile', return_value=True)
+    @mock.patch('trigger.trigger.find_script_path', return_value=SCRIPT_PATH)
     @mock.patch('platform.system', return_value='Darwin')
-    def test_trigger_load_script_unsupported_platform(self, mock_platform, mock_isfile, mock_valid):
+    def test_trigger_load_script_unsupported_platform(self, mock_platform, mock_find, mock_valid):
         trigger = ConcreteTrigger('test_trigger_id')
         trigger.script = 'testscript.py'
         
@@ -346,10 +354,10 @@ class TestTrigger:
             trigger.load_script()
 
     @mock.patch('trigger.trigger.valid_script', return_value=True)
-    @mock.patch('os.path.isfile', return_value=True)
+    @mock.patch('trigger.trigger.find_script_path', return_value=SCRIPT_PATH)
     @mock.patch('importlib.import_module')
     @mock.patch('platform.system', return_value='Linux')
-    def test_trigger_load_script_invalid_script_type(self, mock_platform, mock_import, mock_isfile, mock_valid):
+    def test_trigger_load_script_invalid_script_type(self, mock_platform, mock_import, mock_find, mock_valid):
         mock_script_class = mock.MagicMock()
         mock_script_instance = mock.MagicMock()
         mock_script_class.return_value = mock_script_instance
