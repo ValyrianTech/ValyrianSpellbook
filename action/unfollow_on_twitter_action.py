@@ -6,6 +6,7 @@ from helpers.loghelpers import LOG
 from helpers.twitterhelpers import unfollow_user
 
 from .action import Action
+from .actionresult import ActionResult
 from .actiontype import ActionType
 
 
@@ -20,11 +21,11 @@ class UnfollowOnTwitterAction(Action):
         """
         Run the action
 
-        :return: True upon success, False upon failure
+        :return: An ActionResult indicating success or failure
         """
         if self.user_id is None:
             LOG.error('Unable to unfollow on twitter: No user_id')
-            return False
+            return ActionResult(success=False)
 
         LOG.info(f'Unfollowing user {self.user_id} on twitter')
 
@@ -32,9 +33,9 @@ class UnfollowOnTwitterAction(Action):
             unfollow_user(target_user_id=self.user_id)
         except (ValueError, KeyError, TypeError, OSError) as ex:
             LOG.error(f'Unable to unfollow user {self.user_id}: {ex}')
-            return False
+            return ActionResult(success=False)
 
-        return True
+        return ActionResult(success=True)
 
     def configure(self, **config):
         """

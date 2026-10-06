@@ -65,5 +65,5 @@ class Action:
         """
         Run the action
 
-        :return: True upon success, False upon failure
+        :return: An ActionResult indicating success or failure
         """

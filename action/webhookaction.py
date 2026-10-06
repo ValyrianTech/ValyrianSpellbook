@@ -10,6 +10,7 @@ from helpers.loghelpers import LOG
 from validators.validators import resolve_and_validate_webhook_url, valid_webhook_url
 
 from .action import Action
+from .actionresult import ActionResult
 from .actiontype import ActionType
 
 
@@ -64,17 +65,18 @@ class WebhookAction(Action):
         """
         Run the action
 
-        :return: True upon success, False upon failure
+        :return: An ActionResult indicating success or failure, along with the
+                 webhook response text on success
         """
         if self.webhook is None:
-            return False
+            return ActionResult(success=False)
 
         LOG.info(f'executing webhook: {self.webhook}')
 
         resolved_ip = resolve_and_validate_webhook_url(self.webhook)
         if resolved_ip is None:
             LOG.error(f'Webhook failed: {self.webhook} does not resolve to a public IP address')
-            return False
+            return ActionResult(success=False)
 
         session = requests.Session()
         adapter = PinnedIPAdapter(resolved_ip)
@@ -88,18 +90,18 @@ class WebhookAction(Action):
                 r = session.post(self.webhook, data=self.body, timeout=10, allow_redirects=False)
             else:
                 LOG.error(f'Webhook failed: unsupported request type: {self.request_type}')
-                return False
+                return ActionResult(success=False)
 
         except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Webhook failed: {ex}')
-            return False
+            return ActionResult(success=False)
         else:
             if r.status_code == 200:
                 LOG.info(f'status code webhook: {r.status_code}')
-                return True, r.text
+                return ActionResult(success=True, stdout=r.text)
             else:
                 LOG.error(f'Webhook failed: status code webhook: {r.status_code}')
-                return False, r.text
+                return ActionResult(success=False, stdout=r.text)
         finally:
             session.close()
 

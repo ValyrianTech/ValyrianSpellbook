@@ -47,6 +47,22 @@ class TestLaunchEvolverAction:
         assert DARWIN_PROGRAM in action.run_command
         assert 'config.json' in action.run_command
 
+    @mock.patch('action.spawnprocessaction.RunCommandProcess')
+    def test_launchevolveraction_run_returns_action_result(self, mock_process_class):
+        from action.actionresult import ActionResult
+
+        mock_process = mock.MagicMock()
+        mock_process_class.return_value = mock_process
+
+        action = LaunchEvolverAction('test_evolver_action')
+        action.configure(job_config='config.json')
+        result = action.run()
+
+        assert isinstance(result, ActionResult)
+        assert result
+        assert result.success
+        mock_process.start.assert_called_once()
+
 
 class TestLaunchEvolverActionPlatformCheck:
     """Tests for platform-specific module-level code in launchevolveraction.py"""

@@ -5,6 +5,7 @@
 from helpers.loghelpers import LOG
 
 from .action import Action
+from .actionresult import ActionResult
 from .actiontype import ActionType
 
 
@@ -21,12 +22,12 @@ class RevealSecretAction(Action):
         """
         Run the action
 
-        :return: True upon success, False upon failure
+        :return: An ActionResult indicating success or failure
         """
         LOG.info(f'Allowing reveal of RevealSecret action {self.id}')
         self.allow_reveal = True
         self.save()
-        return True
+        return ActionResult(success=True)
 
     def configure(self, **config):
         """
