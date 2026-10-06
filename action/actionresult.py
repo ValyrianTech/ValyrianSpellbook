@@ -74,6 +74,13 @@ class ActionResult:
             return (self.success, self.stdout, self.stderr)[:len(other)] == other
         return NotImplemented
 
+    # Instances are intentionally unhashable. A custom ``__eq__`` normally
+    # sets ``__hash__`` to None implicitly; we declare it explicitly because the
+    # tuple-prefix comparison semantics cannot be reconciled with a consistent
+    # hash (equal objects must have equal hashes, but an ActionResult can equal
+    # many different tuples of varying lengths).
+    __hash__ = None  # type: ignore[assignment]
+
     def __len__(self) -> int:
         """
         Return the number of fields in the result.

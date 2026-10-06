@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import pytest
+
 from action.actionresult import ActionResult
 
 
@@ -52,6 +54,10 @@ class TestActionResult:
 
     def test_eq_non_tuple_returns_notimplemented(self):
         assert ActionResult(success=True).__eq__(5) is NotImplemented
+
+    def test_unhashable(self):
+        with pytest.raises(TypeError):
+            hash(ActionResult(success=True))
 
     def test_json_encodable(self):
         result = ActionResult(success=True, stdout='out', stderr='err')
