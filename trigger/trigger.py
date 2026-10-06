@@ -201,7 +201,7 @@ class Trigger:
 
             LOG.info(f'Loading Spellbook Script {script_path}')
 
-            project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            project_root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
             system = platform.system()
             if system not in ('Windows', 'Linux'):
