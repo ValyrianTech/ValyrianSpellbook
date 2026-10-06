@@ -94,7 +94,7 @@ Triggers invoke actions based on specific conditions:
 Actions perform tasks when triggered. Here are a few example actions:
 
 - **Send Transaction**: Automates Bitcoin transactions.
-- **Send Email**: Configures and sends emails automatically.
+- **Send Email**: Configures and sends emails automatically. Email templates, referenced images, and attachments are confined to the `email_templates/` and `apps/` directories (paths escaping those directories are rejected), and recipient addresses are validated before sending.
 - **Command and SpawnProcess**: Executes system commands or spawns new processes.
 - **Reveal Secret**: Reveals a pre-configured secret upon trigger activation.
 - **Webhook**: Sends data to specified webhooks. Webhook URLs are validated to be publicly reachable (SSRF-safe), the outbound connection is pinned to the pre-resolved validated public IP (defeating DNS-rebinding), and redirects are disabled.
