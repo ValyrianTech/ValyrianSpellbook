@@ -30,8 +30,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `helpers/vLLMchat_llm.py` -> `helpers/vllmchat_llm.py`
   - The remaining renames are integration-test and unit-test files renamed to snake_case.
 - `AESCipher.encrypt()` now requires `bytes` input (raising `TypeError` otherwise) and returns base64-encoded `bytes`, and `AESCipher.decrypt()` now raises `ValueError` on tampered, malformed, or corrupt input.
+- `RunCommandProcess.run()` (`helpers/runcommandprocess.py`) now returns the child process's exit code instead of `None`: it returns `0` on success and the child's non-zero exit code (logging an `ERROR`) when the command fails.
+- `RunCommandProcess.run()` now passes the working directory to `Popen(cwd=...)` instead of calling `os.chdir()` before spawning the process and restoring the original directory afterward, so running a command no longer mutates the parent process's working directory.
 
 ### Fixed
+
+- `RunCommandProcess.run()` now drains `stdout` and `stderr` concurrently using a separate thread per stream (each joined before the process is awaited), instead of reading `stdout` fully and then `stderr` sequentially. This prevents the child process from deadlocking when it produces enough `stderr` output to fill the pipe buffer while `stdout` is still being read.
 
 - Resolved all remaining ruff lint errors; the repository is now lint-clean.
 - Resolved all remaining mypy type-check errors; the repository is now type-check clean.
