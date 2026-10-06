@@ -3,6 +3,7 @@
 Authentication helpers for the Valyrian Spellbook Web UI
 """
 
+import hmac
 import os
 import sys
 from functools import wraps
@@ -50,8 +51,14 @@ def validate_credentials(api_key: str, api_secret: str) -> bool:
     """
     configured_key = get_key()
     configured_secret = get_secret()
-    
-    return api_key == configured_key and api_secret == configured_secret
+
+    key_matches = hmac.compare_digest(
+        str(api_key).encode("utf-8"), str(configured_key).encode("utf-8")
+    )
+    secret_matches = hmac.compare_digest(
+        str(api_secret).encode("utf-8"), str(configured_secret).encode("utf-8")
+    )
+    return key_matches and secret_matches
 
 
 def login_user(request: Request, api_key: str, api_secret: str) -> bool:

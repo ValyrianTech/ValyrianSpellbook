@@ -50,7 +50,7 @@ python -c 'import secrets; print(secrets.token_hex(32))'
 
 ### 4. Login
 
-Use your Spellbook API key and secret to log in. These are the same credentials used for the CLI and REST API.
+Use your Spellbook API key and secret to log in. These are the same credentials used for the CLI and REST API. Credentials are compared with `hmac.compare_digest` on UTF-8-encoded bytes, so key/secret comparison is constant-time and does not leak timing information.
 
 ## Development
 
