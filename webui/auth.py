@@ -3,6 +3,7 @@
 Authentication helpers for the Valyrian Spellbook Web UI
 """
 
+import contextlib
 import hmac
 import json
 import os
@@ -163,8 +164,29 @@ def get_api_client(request: Request) -> SpellbookAPIClient:
 
 
 def is_authenticated(request: Request) -> bool:
-    """Check if the user is authenticated"""
-    return request.session.get('authenticated', False)
+    """Check if the user is authenticated.
+
+    A request is only considered authenticated when both of the following
+    hold: the signed session cookie carries a truthy ``authenticated`` flag,
+    and a valid, non-expired record exists in the server-side ``_SESSION_STORE``
+    for the cookie's ``session_id``. If the cookie flag is set but the store
+    record is missing (e.g. after a restart or because the record was purged,
+    deleted, or expired), the stale client session is cleared so the user is
+    forced back to ``/login`` and ``False`` is returned.
+    """
+    if not request.session.get('authenticated', False):
+        return False
+
+    session_id = request.session.get('session_id')
+    if _SESSION_STORE.get(session_id) is not None:
+        return True
+
+    # The cookie claims authentication but the server-side record is gone.
+    # Clear the stale client session (ignoring any failure to do so, e.g. a
+    # read-only session) so the user is forced back to /login.
+    with contextlib.suppress(Exception):
+        request.session.clear()
+    return False
 
 
 def require_auth(func):
