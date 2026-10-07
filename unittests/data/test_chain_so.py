@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 from unittest import mock
 
+import requests
+
 from data.blockexplorers.chain_so import ChainSoAPI
+from data.blockexplorers.explorer_http import DEFAULT_TIMEOUT
 
 
 def make_mock_response(json_data=None, text_data=None, status_code=200):
@@ -349,3 +352,24 @@ class TestGetPrimeInputAddress:
         api = ChainSoAPI()
         result = api.get_prime_input_address('txid')
         assert 'error' in result
+
+
+class TestTimeoutHandling:
+    @mock.patch('data.blockexplorers.chain_so.requests.get')
+    def test_timeout_exception_is_caught(self, mock_get):
+        mock_get.side_effect = requests.exceptions.ReadTimeout('timed out')
+        api = ChainSoAPI()
+        result = api.get_latest_block()
+        assert 'error' in result
+
+    @mock.patch('data.blockexplorers.chain_so.requests.get')
+    def test_timeout_kwarg_is_passed(self, mock_get):
+        mock_get.side_effect = [
+            make_mock_response(json_data={'data': {'blocks': 100}}),
+            make_mock_response(json_data={
+                'data': {'block_no': 100, 'blockhash': 'abc', 'time': 123, 'merkleroot': 'm', 'size': 500}
+            })
+        ]
+        api = ChainSoAPI()
+        api.get_latest_block()
+        assert mock_get.call_args.kwargs.get('timeout') == DEFAULT_TIMEOUT

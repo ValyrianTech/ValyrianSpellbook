@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 from unittest import mock
 
+import requests
+
 from data.blockexplorers.blockchain_info import BlockchainInfoAPI
+from data.blockexplorers.explorer_http import DEFAULT_TIMEOUT
 
 
 def make_mock_response(json_data=None, text_data=None, status_code=200):
@@ -478,3 +481,22 @@ class TestPushTx:
         api = BlockchainInfoAPI()
         result = api.push_tx('rawtx')
         assert 'error' in result
+
+
+class TestTimeoutHandling:
+    @mock.patch('data.blockexplorers.blockchain_info.requests.get')
+    def test_timeout_exception_is_caught(self, mock_get):
+        mock_get.side_effect = requests.exceptions.ReadTimeout('timed out')
+        api = BlockchainInfoAPI()
+        result = api.get_latest_block()
+        assert 'error' in result
+
+    @mock.patch('data.blockexplorers.blockchain_info.requests.get')
+    def test_timeout_kwarg_is_passed(self, mock_get):
+        mock_get.side_effect = [
+            make_mock_response(json_data={'height': 100, 'hash': 'abc', 'time': 12345}),
+            make_mock_response(json_data={'mrkl_root': 'merkle', 'size': 1000})
+        ]
+        api = BlockchainInfoAPI()
+        api.get_latest_block()
+        assert mock_get.call_args.kwargs.get('timeout') == DEFAULT_TIMEOUT

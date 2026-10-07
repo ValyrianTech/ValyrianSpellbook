@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 from unittest import mock
 
+import requests
+
 from data.blockexplorers.blockstream import BlockstreamAPI
+from data.blockexplorers.explorer_http import DEFAULT_TIMEOUT
 
 
 def make_mock_response(json_data=None, text_data=None, status_code=200):
@@ -366,3 +369,22 @@ class TestPushTx:
         api = BlockstreamAPI()
         result = api.push_tx('rawtx')
         assert 'error' in result
+
+
+class TestTimeoutHandling:
+    @mock.patch('data.blockexplorers.blockstream.requests.get')
+    def test_timeout_exception_is_caught(self, mock_get):
+        mock_get.side_effect = requests.exceptions.ReadTimeout('timed out')
+        api = BlockstreamAPI()
+        result = api.get_latest_block()
+        assert 'error' in result
+
+    @mock.patch('data.blockexplorers.blockstream.requests.get')
+    def test_timeout_kwarg_is_passed(self, mock_get):
+        mock_get.side_effect = [
+            make_mock_response(text_data='blockhash123'),
+            make_mock_response(json_data={'height': 100, 'id': 'blockhash123', 'timestamp': 123, 'merkle_root': 'm', 'size': 500})
+        ]
+        api = BlockstreamAPI()
+        api.get_latest_block()
+        assert mock_get.call_args.kwargs.get('timeout') == DEFAULT_TIMEOUT

@@ -4,6 +4,7 @@ from time import sleep
 
 import requests
 
+from data.blockexplorers.explorer_http import DEFAULT_TIMEOUT
 from data.explorer_api import ExplorerAPI
 from data.transaction import TX, TxInput, TxOutput
 from helpers.loghelpers import LOG
@@ -26,9 +27,9 @@ class BlockchainInfoAPI(ExplorerAPI):
         url = f'{self.url}/latestblock'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get latest block from Blockchain.info: {ex}')
             return {'error': 'Unable to get latest block from Blockchain.info'}
 
@@ -40,7 +41,7 @@ class BlockchainInfoAPI(ExplorerAPI):
             url = '{api_url}/rawblock/{hash}'.format(api_url=self.url, hash=latest_block['hash'])
             try:
                 LOG.info(f'GET {url}')
-                r = requests.get(url)
+                r = requests.get(url, timeout=DEFAULT_TIMEOUT)
                 data = r.json()
             except ValueError:
                 LOG.error('Blockchain.info returned invalid json data: %s', r.text)
@@ -63,9 +64,9 @@ class BlockchainInfoAPI(ExplorerAPI):
         url = f'{self.url}/rawblock/{block_hash}'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get block {block_hash} from Blockchain.info: {ex}')
             return {'error': f'Unable to get block {block_hash} from Blockchain.info'}
 
@@ -84,9 +85,9 @@ class BlockchainInfoAPI(ExplorerAPI):
         url = f'{self.url}/block-height/{height}?format=json'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get block {height} from Blockchain.info: {ex}')
             return {'error': f'Unable to get block {height} from Blockchain.info'}
 
@@ -117,9 +118,9 @@ class BlockchainInfoAPI(ExplorerAPI):
             url = f'{self.url}/address/{address}?format=json&limit={limit}&offset={limit * i}'
             try:
                 LOG.info(f'GET {url}')
-                r = requests.get(url)
+                r = requests.get(url, timeout=DEFAULT_TIMEOUT)
                 data = r.json()
-            except (ValueError, KeyError, TypeError, OSError) as ex:
+            except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
                 LOG.error(f'Unable to get transactions of address {address} from {url}: {ex}')
                 return {'error': f'Unable to get transactions of address {address} from {url}'}
 
@@ -181,27 +182,27 @@ class BlockchainInfoAPI(ExplorerAPI):
         url = f'{self.url}/q/addressbalance/{address}?confirmations=1'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             final_balance = int(r.text)
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get balance of address {address} from Blockchain.info: {ex}')
             return {'error': f'Unable to get balance of address {address} from Blockchain.info'}
 
         url = f'{self.url}/q/getreceivedbyaddress/{address}?confirmations=1'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             received_balance = int(r.text)
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get balance of address {address} from Blockchain.info: {ex}')
             return {'error': f'Unable to get balance of address {address} from Blockchain.info'}
 
         url = f'{self.url}/q/getsentbyaddress/{address}?confirmations=1'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             sent_balance = int(r.text)
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get balance of address {address} from Blockchain.info: {ex}')
             return {'error': f'Unable to get balance of address {address} from Blockchain.info'}
 
@@ -215,9 +216,9 @@ class BlockchainInfoAPI(ExplorerAPI):
         url = f'{self.url}/rawtx/{txid}'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get tx {txid} from Blockchain.info: {ex}')
             return {'error': f'Unable to get tx {txid} from Blockchain.info'}
 
@@ -257,9 +258,9 @@ class BlockchainInfoAPI(ExplorerAPI):
         url = f'{self.url}/rawtx/{txid}'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get prime input address of tx {txid} from Blockchain.info: {ex}')
             return {'error': f'Unable to get prime input address of tx {txid} from Blockchain.info'}
 
@@ -286,12 +287,12 @@ class BlockchainInfoAPI(ExplorerAPI):
         url = f'{self.url}/unspent?active={address}&limit={limit}&confirmations={confirmations}'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             if r.text == 'No free outputs to spend':
                 return {'utxos': []}
 
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get utxos of address {address} from {url}: {ex}')
             return {'error': f'Unable to get utxos of address {address} from {url}'}
 
@@ -317,8 +318,8 @@ class BlockchainInfoAPI(ExplorerAPI):
         url = f'{self.url}/pushtx'
         LOG.info(f'POST {url}')
         try:
-            r = requests.post(url, data={'tx': tx})
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+            r = requests.post(url, data={'tx': tx}, timeout=DEFAULT_TIMEOUT)
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to push tx via Blockchain.info: {ex}')
             return {'error': f'Unable to push tx Blockchain.info: {ex}'}
 
