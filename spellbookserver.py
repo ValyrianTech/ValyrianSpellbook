@@ -471,11 +471,6 @@ class SpellbookRESTAPI(Bottle):
         explorers = get_explorers()
         if explorers is None:
             return {'error': 'Unable to retrieve explorer_ids'}
-        # Redact per-explorer secrets as defense in depth
-        values = explorers.values() if isinstance(explorers, dict) else explorers
-        for explorer in values:
-            if isinstance(explorer, dict) and explorer.get('api_key'):
-                explorer['api_key'] = REDACTED_VALUE
         return explorers
 
     @staticmethod
