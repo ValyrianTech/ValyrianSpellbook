@@ -2,7 +2,10 @@
 """Tests for webui.auth helpers."""
 from unittest.mock import MagicMock, patch
 
+import auth
+import pytest
 from auth import (
+    SessionStore,
     get_api_client,
     is_authenticated,
     login_user,
@@ -12,10 +15,60 @@ from auth import (
 )
 
 
+@pytest.fixture(autouse=True)
+def reset_session_store():
+    """Reset the module-level session store before each test."""
+    auth._SESSION_STORE = SessionStore()
+    yield
+    auth._SESSION_STORE = SessionStore()
+
+
+class TestSessionStore:
+    def test_create_and_get(self):
+        store = SessionStore()
+        session_id = store.create("key", "secret")
+        record = store.get(session_id)
+        assert record is not None
+        assert record["api_key"] == "key"
+        assert record["api_secret"] == "secret"
+        assert "created" in record
+
+    def test_get_returns_none_for_falsy_id(self):
+        store = SessionStore()
+        assert store.get(None) is None
+        assert store.get("") is None
+
+    def test_get_returns_none_for_unknown_id(self):
+        store = SessionStore()
+        assert store.get("does-not-exist") is None
+
+    def test_delete_removes_record(self):
+        store = SessionStore()
+        session_id = store.create("key", "secret")
+        store.delete(session_id)
+        assert store.get(session_id) is None
+
+    def test_delete_missing_id_is_noop(self):
+        store = SessionStore()
+        store.delete("does-not-exist")
+        store.delete(None)
+
+    def test_ttl_expiry_purges_record(self):
+        store = SessionStore()
+        with patch("auth.time.time", return_value=1000.0):
+            session_id = store.create("key", "secret")
+        with patch("auth.time.time", return_value=1000.0 + auth.SESSION_TTL_SECONDS + 1):
+            assert store.get(session_id) is None
+        # The entry should have been purged from the store.
+        assert store._records == {}
+        assert store.get(session_id) is None
+
+
 class TestGetApiClient:
-    def test_with_credentials(self):
+    def test_with_credentials_from_store(self):
         request = MagicMock()
-        request.session.get = MagicMock(side_effect=lambda key: {"api_key": "key", "api_secret": "secret"}.get(key))
+        session_id = auth._SESSION_STORE.create("key", "secret")
+        request.session.get = MagicMock(side_effect=lambda key: {"session_id": session_id}.get(key))
         client = get_api_client(request)
         assert client.api_key == "key"
         assert client.api_secret == "secret"
@@ -23,6 +76,13 @@ class TestGetApiClient:
     def test_without_credentials(self):
         request = MagicMock()
         request.session.get = MagicMock(return_value=None)
+        client = get_api_client(request)
+        assert client.api_key is None
+        assert client.api_secret is None
+
+    def test_with_unknown_session_id(self):
+        request = MagicMock()
+        request.session.get = MagicMock(return_value="unknown-id")
         client = get_api_client(request)
         assert client.api_key is None
         assert client.api_secret is None
@@ -86,8 +146,9 @@ class TestLoginUser:
         result = login_user(request, "key", "secret")
         assert result is True
         assert request.session["authenticated"] is True
-        assert request.session["api_key"] == "key"
-        assert request.session["api_secret"] == "secret"
+        assert "session_id" in request.session
+        assert "api_key" not in request.session
+        assert "api_secret" not in request.session
 
     @patch("auth.validate_credentials", return_value=False)
     def test_failed_login(self, mock_validate):
@@ -101,7 +162,18 @@ class TestLoginUser:
 class TestLogoutUser:
     def test_logout_clears_session(self):
         request = MagicMock()
+        session_id = auth._SESSION_STORE.create("key", "secret")
         request.session = MagicMock()
+        request.session.get.return_value = session_id
+        assert auth._SESSION_STORE.get(session_id) is not None
+        logout_user(request)
+        request.session.clear.assert_called_once()
+        assert auth._SESSION_STORE.get(session_id) is None
+
+    def test_logout_without_session_id_is_safe(self):
+        request = MagicMock()
+        request.session = MagicMock()
+        request.session.get.return_value = None
         logout_user(request)
         request.session.clear.assert_called_once()
 

@@ -18,7 +18,7 @@ def mock_settings():
     with pytest.MonkeyPatch.context() as mp:
         mp.setattr("config.settings.WEBUI_HOST", "127.0.0.1")
         mp.setattr("config.settings.WEBUI_PORT", 5001)
-        mp.setattr("config.settings.DEBUG", False)
+        mp.delenv("SPELLBOOK_WEBUI_DEBUG", raising=False)
         mp.setenv("SPELLBOOK_SESSION_SECRET", "test-secret-key-for-testing")
         yield mp
 
