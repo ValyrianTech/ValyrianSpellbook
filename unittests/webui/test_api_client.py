@@ -167,7 +167,7 @@ class TestAPIMethods:
     @patch.object(SpellbookAPIClient, "_request")
     def test_get_explorers(self, mock_req):
         self.client.get_explorers()
-        mock_req.assert_called_once_with("GET", "/spellbook/explorers")
+        mock_req.assert_called_once_with("GET", "/spellbook/explorers", authenticate=True)
 
     @patch.object(SpellbookAPIClient, "_request")
     def test_get_explorer_config(self, mock_req):

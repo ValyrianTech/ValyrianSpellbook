@@ -412,15 +412,49 @@ class TestGetExplorers:
     @patch('spellbookserver.get_explorers')
     def test_get_explorers_with_data(self, mock_get, mock_resp):
         mock_get.return_value = {'blockstream': {}, 'blockchain.info': {}}
-        result = SpellbookRESTAPI.get_explorers()
-        assert 'blockstream' in result
+        with patch('decorators.check_authentication') as mock_dec:
+            mock_dec.return_value = 'OK'
+            result = SpellbookRESTAPI.get_explorers()
+            assert 'blockstream' in result
 
     @patch('spellbookserver.response')
     @patch('spellbookserver.get_explorers')
     def test_get_explorers_none(self, mock_get, mock_resp):
         mock_get.return_value = None
-        result = SpellbookRESTAPI.get_explorers()
-        assert 'error' in result
+        with patch('decorators.check_authentication') as mock_dec:
+            mock_dec.return_value = 'OK'
+            result = SpellbookRESTAPI.get_explorers()
+            assert 'error' in result
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.get_explorers')
+    def test_get_explorers_requires_authentication(self, mock_get, mock_resp):
+        mock_get.return_value = {'blockstream': {'api_key': 'secret'}}
+        with patch('decorators.check_authentication') as mock_dec:
+            mock_dec.return_value = 'No API key supplied'
+            result = SpellbookRESTAPI.get_explorers()
+            assert 'error' in result
+            assert 'blockstream' not in result
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.get_explorers')
+    def test_get_explorers_redacts_api_key_dict(self, mock_get, mock_resp):
+        mock_get.return_value = {'blockstream': {'api_key': 'secret'}, 'blockchain.info': {'name': 'bc'}}
+        with patch('decorators.check_authentication') as mock_dec:
+            mock_dec.return_value = 'OK'
+            result = SpellbookRESTAPI.get_explorers()
+            assert result['blockstream']['api_key'] == REDACTED_VALUE
+            assert result['blockchain.info'] == {'name': 'bc'}
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.get_explorers')
+    def test_get_explorers_redacts_api_key_list(self, mock_get, mock_resp):
+        mock_get.return_value = [{'api_key': 'secret'}, {'name': 'bc'}]
+        with patch('decorators.check_authentication') as mock_dec:
+            mock_dec.return_value = 'OK'
+            result = SpellbookRESTAPI.get_explorers()
+            assert result[0]['api_key'] == REDACTED_VALUE
+            assert result[1] == {'name': 'bc'}
 
 
 class TestGetExplorerConfig:
