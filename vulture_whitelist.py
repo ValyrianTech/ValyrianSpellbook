@@ -69,6 +69,7 @@ kw
 fn_name
 module
 reset_globals
+reset_session_store  # pytest autouse fixture (applied without explicit reference)
 address_compressed
 address_uncompressed
 public_key_compressed

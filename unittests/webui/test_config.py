@@ -17,14 +17,51 @@ def isolated_secret_key(monkeypatch, tmp_path):
 
 
 class TestSettings:
-    def test_default_values(self, isolated_secret_key):
+    def test_default_values(self, isolated_secret_key, monkeypatch):
         from config import Settings
+        monkeypatch.delenv("SPELLBOOK_WEBUI_DEBUG", raising=False)
+        monkeypatch.delenv("SPELLBOOK_SESSION_HTTPS_ONLY", raising=False)
         s = Settings()
         assert s.WEBUI_HOST == "0.0.0.0"
         assert s.WEBUI_PORT == 5001
-        assert s.DEBUG is True
+        assert s.DEBUG is False
+        assert s.SESSION_COOKIE_HTTPS_ONLY is False
         assert isinstance(s.SESSION_SECRET_KEY, str)
         assert len(s.SESSION_SECRET_KEY) == 64  # 32 bytes hex = 64 chars
+
+    @pytest.mark.parametrize("value", ["1", "true", "yes", "on", "TRUE", "Yes", "ON"])
+    def test_debug_true_for_truthy_env(self, monkeypatch, value):
+        from config import Settings
+        monkeypatch.setenv("SPELLBOOK_WEBUI_DEBUG", value)
+        assert Settings().DEBUG is True
+
+    @pytest.mark.parametrize("value", ["0", "false", "no", "off", "", "random"])
+    def test_debug_false_for_other_env(self, monkeypatch, value):
+        from config import Settings
+        monkeypatch.setenv("SPELLBOOK_WEBUI_DEBUG", value)
+        assert Settings().DEBUG is False
+
+    def test_debug_false_when_env_unset(self, monkeypatch):
+        from config import Settings
+        monkeypatch.delenv("SPELLBOOK_WEBUI_DEBUG", raising=False)
+        assert Settings().DEBUG is False
+
+    @pytest.mark.parametrize("value", ["1", "true", "yes", "on", "TRUE", "Yes", "ON"])
+    def test_session_cookie_https_only_true_for_truthy_env(self, monkeypatch, value):
+        from config import Settings
+        monkeypatch.setenv("SPELLBOOK_SESSION_HTTPS_ONLY", value)
+        assert Settings().SESSION_COOKIE_HTTPS_ONLY is True
+
+    @pytest.mark.parametrize("value", ["0", "false", "no", "off", "", "random"])
+    def test_session_cookie_https_only_false_for_other_env(self, monkeypatch, value):
+        from config import Settings
+        monkeypatch.setenv("SPELLBOOK_SESSION_HTTPS_ONLY", value)
+        assert Settings().SESSION_COOKIE_HTTPS_ONLY is False
+
+    def test_session_cookie_https_only_false_when_env_unset(self, monkeypatch):
+        from config import Settings
+        monkeypatch.delenv("SPELLBOOK_SESSION_HTTPS_ONLY", raising=False)
+        assert Settings().SESSION_COOKIE_HTTPS_ONLY is False
 
     def test_spellbook_api_host(self):
         from config import Settings
