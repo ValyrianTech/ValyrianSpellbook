@@ -4,6 +4,7 @@ from time import sleep
 
 import requests
 
+from data.blockexplorers.explorer_http import DEFAULT_TIMEOUT
 from data.explorer_api import ExplorerAPI
 from data.transaction import TX, TxInput, TxOutput
 from helpers.loghelpers import LOG
@@ -25,9 +26,9 @@ class BlockstreamAPI(ExplorerAPI):
         url = self.url + '/blocks/tip/hash'
         LOG.info(f'GET {url}')
         try:
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             block_hash = r.text
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get latest block_hash from Blockstream.info: {ex}')
             return {'error': 'Unable to get latest block_hash from Blockstream.info'}
 
@@ -38,9 +39,9 @@ class BlockstreamAPI(ExplorerAPI):
         url = self.url + f'/block/{block_hash}'
         LOG.info(f'GET {url}')
         try:
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get block {block_hash} from Blockstream.info: {ex}')
             return {'error': f'Unable to get block {block_hash} from Blockstream.info'}
 
@@ -59,9 +60,9 @@ class BlockstreamAPI(ExplorerAPI):
         url = self.url + f'/block-height/{height}'
         LOG.info(f'GET {url}')
         try:
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             block_hash = r.text
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get block {height} from Blockstream.info: {ex}')
             return {'error': f'Unable to get block {height} from Blockstream.info'}
 
@@ -72,18 +73,18 @@ class BlockstreamAPI(ExplorerAPI):
         url = self.url + '/blocks/tip/height'
         LOG.info(f'GET {url}')
         try:
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             latest_block_height = int(r.text)
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get latest block_height from Blockstream.info: {ex}')
             return {'error': 'Unable to get latest block_height from Blockstream.info'}
 
         url = self.url + f'/address/{address}/txs'
         LOG.info(f'GET {url}')
         try:
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get address transactions for {address} from Blockstream.info: {ex}')
             return {'error': f'Unable to get address transactions for {address} from Blockstream.info'}
 
@@ -98,9 +99,9 @@ class BlockstreamAPI(ExplorerAPI):
             url = self.url + f'/address/{address}/txs/chain/{last_txid}'
             LOG.info(f'GET {url}')
             try:
-                r = requests.get(url)
+                r = requests.get(url, timeout=DEFAULT_TIMEOUT)
                 data = r.json()
-            except (ValueError, KeyError, TypeError, OSError) as ex:
+            except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
                 LOG.error(f'Unable to get address transactions for {address} from Blockstream.info: {ex}')
                 return {'error': f'Unable to get address transactions for {address} from Blockstream.info'}
 
@@ -116,9 +117,9 @@ class BlockstreamAPI(ExplorerAPI):
         url = self.url + f'/address/{address}'
         LOG.info(f'GET {url}')
         try:
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get address info for {address} from Blockstream.info: {ex}')
             return {'error': f'Unable to get address info for {address} from Blockstream.info'}
 
@@ -136,9 +137,9 @@ class BlockstreamAPI(ExplorerAPI):
         url = self.url + f'/tx/{txid}'
         LOG.info(f'GET {url}')
         try:
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get transaction {txid} from Blockstream.info: {ex}')
             return {'error': f'Unable to get transaction {txid} from Blockstream.info'}
 
@@ -152,9 +153,9 @@ class BlockstreamAPI(ExplorerAPI):
             url = self.url + '/blocks/tip/height'
             LOG.info(f'GET {url}')
             try:
-                r = requests.get(url)
+                r = requests.get(url, timeout=DEFAULT_TIMEOUT)
                 latest_block_height = int(r.text)
-            except (ValueError, KeyError, TypeError, OSError) as ex:
+            except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
                 LOG.error(f'Unable to get latest block_height from Blockstream.info: {ex}')
                 return {'error': 'Unable to get latest block_height from Blockstream.info'}
 
@@ -199,18 +200,18 @@ class BlockstreamAPI(ExplorerAPI):
         url = self.url + '/blocks/tip/height'
         LOG.info(f'GET {url}')
         try:
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             latest_block_height = int(r.text)
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get latest block_height from Blockstream.info: {ex}')
             return {'error': 'Unable to get latest block_height from Blockstream.info'}
 
         url = self.url + f'/address/{address}/utxo'
         LOG.info(f'GET {url}')
         try:
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get address utxos for {address} from Blockstream.info: {ex}')
             return {'error': f'Unable to get utxos info for {address} from Blockstream.info'}
 
@@ -235,8 +236,8 @@ class BlockstreamAPI(ExplorerAPI):
         url = self.url + f'/broadcast?tx={tx}'
         LOG.info(f'GET {url}')
         try:
-            r = requests.get(url)
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to push tx via Blockstream.info: {ex}')
             return {'error': f'Unable to push tx Blockstream.info: {ex}'}
 

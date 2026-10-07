@@ -156,6 +156,8 @@ Currently supported blockchain explorers are:
 * Blocktrail.com (testnet seems to be broken, no longer maintained)  
 * Chain.so (not recommended)
 
+Block explorer HTTP requests now use a timeout, so a slow or unresponsive explorer is handled gracefully and the next configured explorer can be used.
+
 
 Segwit
 ------

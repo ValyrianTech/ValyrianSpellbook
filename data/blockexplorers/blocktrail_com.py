@@ -7,6 +7,7 @@ from time import sleep
 
 import requests
 
+from data.blockexplorers.explorer_http import DEFAULT_TIMEOUT
 from data.explorer_api import ExplorerAPI
 from data.transaction import TX, TxInput, TxOutput
 from helpers.loghelpers import LOG
@@ -29,9 +30,9 @@ class BlocktrailComAPI(ExplorerAPI):
         url = f'{self.url}/block/latest?api_key={self.key}'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get latest block from Blocktrail.com: {ex}')
             return {'error': 'Unable to get latest block from Blocktrail.com'}
 
@@ -45,9 +46,9 @@ class BlocktrailComAPI(ExplorerAPI):
         url = f'{self.url}/block/{height}?api_key={self.key}'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get block {height} from Blocktrail.com: {ex}')
             return {'error': f'Unable to get block {height} from Blocktrail.com'}
 
@@ -67,9 +68,9 @@ class BlocktrailComAPI(ExplorerAPI):
         url = f'{self.url}/block/{block_hash}?api_key={self.key}'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get block {block_hash} from Blocktrail.com: {ex}')
             return {'error': f'Unable to get block {block_hash} from Blocktrail.com'}
 
@@ -95,9 +96,9 @@ class BlocktrailComAPI(ExplorerAPI):
             url = f'{self.url}/address/{address}/transactions?api_key={self.key}&limit={limit}&page={page}&sort_dir=asc'
             try:
                 LOG.info(f'GET {url}')
-                r = requests.get(url)
+                r = requests.get(url, timeout=DEFAULT_TIMEOUT)
                 data = r.json()
-            except (ValueError, KeyError, TypeError, OSError) as ex:
+            except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
                 LOG.error(f'Unable to get transactions of address {address} from Blocktrail.com: {ex}')
                 return {'error': f'Unable to get transactions of address {address} block from Blocktrail.com'}
 
@@ -162,9 +163,9 @@ class BlocktrailComAPI(ExplorerAPI):
         url = f'{self.url}/address/{address}?api_key={self.key}'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get balance of address {address} from Blocktrail.com: {ex}')
             return {'error': f'Unable to get balance of address {address} from Blocktrail.com'}
 
@@ -181,9 +182,9 @@ class BlocktrailComAPI(ExplorerAPI):
         url = f'{self.url}/transaction/{txid}?api_key={self.key}'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get transaction {txid} from Blocktrail.com: {ex}')
             return {'error': f'Unable to get transaction {txid} from Blocktrail.com'}
 
@@ -224,9 +225,9 @@ class BlocktrailComAPI(ExplorerAPI):
         url = f'{self.url}/transaction/{txid}?api_key={self.key}'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get prime input address from transaction {txid} from Blocktrail.com: {ex}')
             return {'error': f'Unable to get prime input address from transaction {txid} from Blocktrail.com'}
 
@@ -254,9 +255,9 @@ class BlocktrailComAPI(ExplorerAPI):
             url = f'{self.url}/address/{address}/unspent-outputs?api_key={self.key}&limit={limit}&page={page}&sort_dir=asc'
             try:
                 LOG.info(f'GET {url}')
-                r = requests.get(url)
+                r = requests.get(url, timeout=DEFAULT_TIMEOUT)
                 data = r.json()
-            except (ValueError, KeyError, TypeError, OSError) as ex:
+            except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
                 LOG.error(f'Unable to get utxos of address {address} from Blocktrail.com: {ex}')
                 return {'error': f'Unable to get utxos of address {address} block from Blocktrail.com'}
 
@@ -296,9 +297,9 @@ class BlocktrailComAPI(ExplorerAPI):
         url = f'{self.url}/fee-per-kb?api_key={self.key}'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get optimal fee per kb from Blocktrail.com: {ex}')
             return {'error': 'Unable to get optimal fee per kb from Blocktrail.com'}
 

@@ -2,8 +2,10 @@
 from unittest import mock
 
 import pytest
+import requests
 
 from data.blockexplorers.btc_com import BTCComAPI
+from data.blockexplorers.explorer_http import DEFAULT_TIMEOUT
 
 
 def make_mock_response(json_data=None, text_data=None, status_code=200):
@@ -401,3 +403,21 @@ class TestPushTx:
         result = BTCComAPI.push_tx('rawtx')
         assert result == {'success': True}
         mock_get_api.assert_called_once_with('blockchain.info')
+
+
+class TestTimeoutHandling:
+    @mock.patch('data.blockexplorers.btc_com.requests.get')
+    def test_timeout_exception_is_caught(self, mock_get):
+        mock_get.side_effect = requests.exceptions.ReadTimeout('timed out')
+        api = BTCComAPI()
+        result = api.get_latest_block()
+        assert 'error' in result
+
+    @mock.patch('data.blockexplorers.btc_com.requests.get')
+    def test_timeout_kwarg_is_passed(self, mock_get):
+        mock_get.return_value = make_mock_response(json_data={
+            'data': {'height': 100, 'hash': 'abc', 'timestamp': 123, 'mrkl_root': 'm', 'size': 500}
+        })
+        api = BTCComAPI()
+        api.get_latest_block()
+        assert mock_get.call_args.kwargs.get('timeout') == DEFAULT_TIMEOUT

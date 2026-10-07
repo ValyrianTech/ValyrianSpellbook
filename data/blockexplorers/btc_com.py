@@ -5,6 +5,7 @@ from time import sleep
 
 import requests
 
+from data.blockexplorers.explorer_http import DEFAULT_TIMEOUT
 from data.explorer_api import ExplorerAPI
 from data.transaction import TX, TxInput, TxOutput
 from helpers.loghelpers import LOG
@@ -27,9 +28,9 @@ class BTCComAPI(ExplorerAPI):
         url = f'{self.url}/block/latest'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get latest block from BTC.com: {ex}')
             return {'error': 'Unable to get latest block from BTC.com'}
         data = data['data'] if data['data'] is not None else {}
@@ -50,9 +51,9 @@ class BTCComAPI(ExplorerAPI):
         url = f'{self.url}/block/{height}'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get block {height} from Blocktrail.com: {ex}')
             return {'error': f'Unable to get block {height} from Blocktrail.com'}
         data = data['data'] if data['data'] is not None else {}
@@ -73,9 +74,9 @@ class BTCComAPI(ExplorerAPI):
         url = f'{self.url}/block/{block_hash}'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get block {block_hash} from Blocktrail.com: {ex}')
             return {'error': f'Unable to get block {block_hash} from Blocktrail.com'}
         data = data['data'] if data['data'] is not None else {}
@@ -102,9 +103,9 @@ class BTCComAPI(ExplorerAPI):
             url = f'{self.url}/address/{address}/tx?page={page}&pagesize={pagesize}&verbose=3'
             try:
                 LOG.info(f'GET {url}')
-                r = requests.get(url)
+                r = requests.get(url, timeout=DEFAULT_TIMEOUT)
                 data = r.json()
-            except (ValueError, KeyError, TypeError, OSError) as ex:
+            except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
                 LOG.error(f'Unable to get transactions of address {address} from BTC.com: {ex}')
                 return {'error': f'Unable to get transactions of address {address} from BTC.com'}
 
@@ -170,9 +171,9 @@ class BTCComAPI(ExplorerAPI):
         url = f'{self.url}/address/{address}'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get balance of address {address} from Blocktrail.com: {ex}')
             return {'error': f'Unable to get balance of address {address} from Blocktrail.com'}
 
@@ -191,9 +192,9 @@ class BTCComAPI(ExplorerAPI):
         url = f'{self.url}/tx/{txid}?verbose=3'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get transaction {txid} from BTC.com: {ex}')
             return {'error': f'Unable to get transaction {txid} from BTC.com'}
 
@@ -262,9 +263,9 @@ class BTCComAPI(ExplorerAPI):
             url = f'{self.url}/address/{address}/unspent?page={page}&pagesize={pagesize}&verbose=3'
             try:
                 LOG.info(f'GET {url}')
-                r = requests.get(url)
+                r = requests.get(url, timeout=DEFAULT_TIMEOUT)
                 data = r.json()
-            except (ValueError, KeyError, TypeError, OSError) as ex:
+            except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
                 LOG.error(f'Unable to get utxos of address {address} from BTC.com: {ex}')
                 return {'error': f'Unable to get utxos of address {address} block from BTC.com'}
 
