@@ -32,6 +32,7 @@ from spellbookserver import (
     SpellbookRESTAPI,
     _is_redacted_header,
     _redact,
+    _redact_explorers,
     convert_aac_to_opus,
     enable_cors,
 )
@@ -411,16 +412,39 @@ class TestGetExplorers:
     @patch('spellbookserver.response')
     @patch('spellbookserver.get_explorers')
     def test_get_explorers_with_data(self, mock_get, mock_resp):
-        mock_get.return_value = {'blockstream': {}, 'blockchain.info': {}}
-        result = SpellbookRESTAPI.get_explorers()
-        assert 'blockstream' in result
+        mock_get.return_value = ['blockstream', 'blockchain.info']
+        with patch('decorators.check_authentication') as mock_dec:
+            mock_dec.return_value = 'OK'
+            result = SpellbookRESTAPI.get_explorers()
+            assert result == ['blockstream', 'blockchain.info']
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.get_explorers')
+    def test_get_explorers_with_dict_of_configs(self, mock_get, mock_resp):
+        mock_get.return_value = {'name': 'blockstream', 'api_key': 'super-secret'}
+        with patch('decorators.check_authentication') as mock_dec:
+            mock_dec.return_value = 'OK'
+            result = SpellbookRESTAPI.get_explorers()
+            assert result['api_key'] == REDACTED_VALUE
 
     @patch('spellbookserver.response')
     @patch('spellbookserver.get_explorers')
     def test_get_explorers_none(self, mock_get, mock_resp):
         mock_get.return_value = None
-        result = SpellbookRESTAPI.get_explorers()
-        assert 'error' in result
+        with patch('decorators.check_authentication') as mock_dec:
+            mock_dec.return_value = 'OK'
+            result = SpellbookRESTAPI.get_explorers()
+            assert 'error' in result
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.get_explorers')
+    def test_get_explorers_requires_authentication(self, mock_get, mock_resp):
+        mock_get.return_value = ['blockstream', 'blockchain.info']
+        with patch('decorators.check_authentication') as mock_dec:
+            mock_dec.return_value = 'No API key supplied'
+            result = SpellbookRESTAPI.get_explorers()
+            assert 'error' in result
+            assert 'blockstream' not in result
 
 
 class TestGetExplorerConfig:
@@ -435,12 +459,43 @@ class TestGetExplorerConfig:
 
     @patch('spellbookserver.response')
     @patch('spellbookserver.get_explorer_config')
+    def test_get_explorer_config_redacts_api_key(self, mock_get, mock_resp):
+        mock_get.return_value = {'name': 'blockstream', 'api_key': 'super-secret'}
+        with patch('decorators.check_authentication') as mock_dec:
+            mock_dec.return_value = 'OK'
+            result = SpellbookRESTAPI.get_explorer_config('blockstream')
+            assert result['api_key'] == REDACTED_VALUE
+            assert result['name'] == 'blockstream'
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.get_explorer_config')
     def test_get_explorer_config_not_found(self, mock_get, mock_resp):
         mock_get.return_value = None
         with patch('decorators.check_authentication') as mock_dec:
             mock_dec.return_value = 'OK'
             result = SpellbookRESTAPI.get_explorer_config('nope')
             assert 'error' in result
+
+
+class TestRedactExplorers:
+    def test_redact_explorers_dict(self):
+        result = _redact_explorers({'api_key': 'secret', 'name': 'blockstream'})
+        assert result['api_key'] == REDACTED_VALUE
+        assert result['name'] == 'blockstream'
+
+    def test_redact_explorers_list_of_ids(self):
+        result = _redact_explorers(['blockstream.info', 'btc.com'])
+        assert result == ['blockstream.info', 'btc.com']
+
+    def test_redact_explorers_list_with_dict(self):
+        result = _redact_explorers(['blockstream.info', {'api_key': 'secret'}, 'btc.com'])
+        assert result[0] == 'blockstream.info'
+        assert result[1]['api_key'] == REDACTED_VALUE
+        assert result[2] == 'btc.com'
+
+    def test_redact_explorers_non_dict_non_list(self):
+        assert _redact_explorers(None) is None
+        assert _redact_explorers('blockstream.info') == 'blockstream.info'
 
 
 class TestSaveExplorer:

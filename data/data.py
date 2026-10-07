@@ -83,6 +83,11 @@ def save_explorer(explorer_id, explorer_config):
     """
     explorers = load_from_json_file(EXPLORERS_JSON_FILE)
 
+    # Prevent masked api_key to override existing api_key
+    if explorer_config.get('api_key', None) == '********':
+        existing_api_key = explorers.get(explorer_id, {}).get('api_key', None)
+        explorer_config['api_key'] = existing_api_key
+
     explorer = Explorer()
     if 'type' in explorer_config:
         explorer.explorer_type = explorer_config['type']

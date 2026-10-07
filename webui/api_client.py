@@ -87,7 +87,7 @@ class SpellbookAPIClient:
     
     def get_explorers(self) -> dict[str, Any]:
         """Get list of configured explorers"""
-        return self._request('GET', '/spellbook/explorers')
+        return self._request('GET', '/spellbook/explorers', authenticate=True)
     
     def get_explorer_config(self, explorer_id: str) -> dict:
         """Get configuration for a specific explorer"""

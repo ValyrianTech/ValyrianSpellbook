@@ -553,10 +553,30 @@ class TestDeadMansSwitchTrigger:
         trigger.timeout = 86400
         trigger.warning_email = 'test@example.com'
         trigger.phase = SwitchPhase.PHASE_0
-        trigger.arm()
+        result = trigger.arm()
         assert trigger.phase == SwitchPhase.PHASE_1
         assert trigger.activation_time is not None
         mock_sendmail.assert_called_once()
+        assert result is not None
+        assert isinstance(result, dict)
+        assert result['success'] is True
+        assert result['phase'] == SwitchPhase.PHASE_1
+        assert result['activation_time'] == trigger.activation_time
+
+    @mock.patch('trigger.deadmansswitchtrigger.sendmail')
+    @mock.patch('trigger.deadmansswitchtrigger.DeadMansSwitchTrigger.save')
+    def test_deadmansswitchtrigger_arm_already_armed(self, mock_save, mock_sendmail):
+        trigger = DeadMansSwitchTrigger('test_dms')
+        trigger.timeout = 86400
+        trigger.warning_email = 'test@example.com'
+        trigger.phase = SwitchPhase.PHASE_1
+        result = trigger.arm()
+        assert trigger.phase == SwitchPhase.PHASE_1
+        mock_sendmail.assert_not_called()
+        assert result is not None
+        assert isinstance(result, dict)
+        assert result['success'] is False
+        assert result['phase'] == SwitchPhase.PHASE_1
 
     @mock.patch('trigger.deadmansswitchtrigger.sendmail')
     @mock.patch('trigger.deadmansswitchtrigger.DeadMansSwitchTrigger.save')

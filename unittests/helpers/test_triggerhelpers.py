@@ -20,6 +20,8 @@ from helpers.triggerhelpers import (
     signed_message_request,
     verify_signed_message,
 )
+from trigger.deadmansswitchtrigger import DeadMansSwitchTrigger
+from trigger.manualtrigger import ManualTrigger
 from trigger.triggertype import TriggerType
 
 
@@ -226,10 +228,12 @@ class TestTriggerHelpers:
         """Test activating a Manual trigger"""
         mock_trigger = mock.MagicMock()
         mock_trigger.trigger_type = TriggerType.MANUAL
+        mock_trigger.activate.return_value = {'success': True}
         mock_get_trigger.return_value = mock_trigger
         
-        activate_trigger('test_trigger')
+        result = activate_trigger('test_trigger')
         mock_trigger.activate.assert_called_once()
+        assert result == {'success': True}
 
     @mock.patch('os.path.isfile', return_value=True)
     @mock.patch('helpers.triggerhelpers.get_trigger')
@@ -237,10 +241,12 @@ class TestTriggerHelpers:
         """Test activating a DeadMansSwitch trigger"""
         mock_trigger = mock.MagicMock()
         mock_trigger.trigger_type = TriggerType.DEADMANSSWITCH
+        mock_trigger.arm.return_value = {'success': True}
         mock_get_trigger.return_value = mock_trigger
         
-        activate_trigger('test_trigger')
+        result = activate_trigger('test_trigger')
         mock_trigger.arm.assert_called_once()
+        assert result == {'success': True}
 
     @mock.patch('os.path.isfile', return_value=True)
     @mock.patch('helpers.triggerhelpers.get_trigger')
@@ -252,6 +258,41 @@ class TestTriggerHelpers:
         
         result = activate_trigger('test_trigger')
         assert 'error' in result
+
+    @mock.patch('os.path.isfile', return_value=True)
+    @mock.patch('helpers.triggerhelpers.get_trigger')
+    def test_activate_trigger_manual_real(self, mock_get_trigger, mock_isfile):
+        """Test activating a real Manual trigger returns a non-None dict"""
+        trigger = ManualTrigger('test_trigger')
+        trigger.configure(created=1609459200)
+        mock_get_trigger.return_value = trigger
+
+        with mock.patch('trigger.trigger.get_actions', return_value=[]), \
+             mock.patch('trigger.trigger.save_to_json_file'):
+            result = activate_trigger('test_trigger')
+
+        assert result is not None
+        assert isinstance(result, dict)
+        assert result == {'success': True, 'status': 'Succeeded'}
+
+    @mock.patch('os.path.isfile', return_value=True)
+    @mock.patch('helpers.triggerhelpers.get_trigger')
+    def test_activate_trigger_deadmansswitch_real(self, mock_get_trigger, mock_isfile):
+        """Test activating a real DeadMansSwitch trigger returns a non-None dict"""
+        trigger = DeadMansSwitchTrigger('test_trigger')
+        trigger.timeout = 86400
+        trigger.warning_email = 'test@example.com'
+        mock_get_trigger.return_value = trigger
+
+        with mock.patch('trigger.deadmansswitchtrigger.sendmail'), \
+             mock.patch('trigger.deadmansswitchtrigger.DeadMansSwitchTrigger.save'):
+            result = activate_trigger('test_trigger')
+
+        assert result is not None
+        assert isinstance(result, dict)
+        assert result['success'] is True
+        assert result['phase'] == 1
+        assert result['activation_time'] is not None
 
     @mock.patch('helpers.triggerhelpers.get_triggers', return_value=['trigger1'])
     @mock.patch('helpers.triggerhelpers.get_trigger')
