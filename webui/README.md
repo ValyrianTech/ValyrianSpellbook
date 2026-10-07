@@ -54,7 +54,9 @@ Use your Spellbook API key and secret to log in. These are the same credentials 
 
 ### 5. Session storage, cookies & error handling
 
-Your API credentials are kept **server-side**, not in the cookie. On login, the key and secret are stored in a thread-safe, in-memory session store (`webui/auth.py`) keyed by an opaque `session_id` (generated with `secrets.token_urlsafe(32)`); only that `session_id` is placed in the signed session cookie, so secrets are never written into the cookie (which is signed but not encrypted). Records expire after 24 hours and are lazily purged on access, and logging out deletes the record.
+Your API credentials are kept **server-side**, not in the cookie. On login, the key and secret are stored in a thread-safe, file-backed session store (`webui/auth.py`) keyed by an opaque `session_id` (generated with `secrets.token_urlsafe(32)`); only that `session_id` is placed in the signed session cookie, so secrets are never written into the cookie (which is signed but not encrypted). Session records are persisted as one JSON file per session id under `configuration/webui_sessions/`, so they are visible across multiple worker processes and survive restarts (they are not process-local). Records expire after 24 hours and are lazily purged on access, and logging out deletes the record.
+
+The `configuration/webui_sessions/` directory holds API credentials, so its files are created with `0o600` permissions (readable/writable only by the owner). For multi-host deployments, this directory can be placed on a shared filesystem so every Web UI instance shares the same session records.
 
 The session cookie is set with `SameSite=Strict`. To make it HTTPS-only, set the `SPELLBOOK_SESSION_HTTPS_ONLY` environment variable (accepts `1`/`true`/`yes`/`on`, case-insensitive).
 

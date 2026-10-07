@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 """Tests for webui.auth helpers."""
+import stat
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import auth
@@ -16,16 +18,16 @@ from auth import (
 
 
 @pytest.fixture(autouse=True)
-def reset_session_store():
+def reset_session_store(tmp_path):
     """Reset the module-level session store before each test."""
-    auth._SESSION_STORE = SessionStore()
+    auth._SESSION_STORE = SessionStore(directory=str(tmp_path))
     yield
-    auth._SESSION_STORE = SessionStore()
+    auth._SESSION_STORE = SessionStore(directory=str(tmp_path))
 
 
 class TestSessionStore:
-    def test_create_and_get(self):
-        store = SessionStore()
+    def test_create_and_get(self, tmp_path):
+        store = SessionStore(directory=str(tmp_path))
         session_id = store.create("key", "secret")
         record = store.get(session_id)
         assert record is not None
@@ -33,35 +35,90 @@ class TestSessionStore:
         assert record["api_secret"] == "secret"
         assert "created" in record
 
-    def test_get_returns_none_for_falsy_id(self):
-        store = SessionStore()
+    def test_get_returns_none_for_falsy_id(self, tmp_path):
+        store = SessionStore(directory=str(tmp_path))
         assert store.get(None) is None
         assert store.get("") is None
 
-    def test_get_returns_none_for_unknown_id(self):
-        store = SessionStore()
+    def test_get_returns_none_for_unknown_id(self, tmp_path):
+        store = SessionStore(directory=str(tmp_path))
         assert store.get("does-not-exist") is None
 
-    def test_delete_removes_record(self):
-        store = SessionStore()
+    def test_get_returns_none_for_corrupt_json(self, tmp_path):
+        store = SessionStore(directory=str(tmp_path))
+        session_id = store.create("key", "secret")
+        path = Path(auth._session_file_path(str(tmp_path), session_id))
+        path.write_text("{not valid json")
+        assert store.get(session_id) is None
+
+    def test_get_returns_none_for_non_dict_record(self, tmp_path):
+        store = SessionStore(directory=str(tmp_path))
+        session_id = store.create("key", "secret")
+        path = Path(auth._session_file_path(str(tmp_path), session_id))
+        path.write_text("[]")
+        assert store.get(session_id) is None
+
+    def test_get_returns_none_for_unreadable_file(self, tmp_path):
+        store = SessionStore(directory=str(tmp_path))
+        session_id = store.create("key", "secret")
+        path = Path(auth._session_file_path(str(tmp_path), session_id))
+        path.unlink()
+        path.mkdir()
+        assert store.get(session_id) is None
+
+    def test_delete_removes_record(self, tmp_path):
+        store = SessionStore(directory=str(tmp_path))
         session_id = store.create("key", "secret")
         store.delete(session_id)
         assert store.get(session_id) is None
 
-    def test_delete_missing_id_is_noop(self):
-        store = SessionStore()
+    def test_delete_missing_id_is_noop(self, tmp_path):
+        store = SessionStore(directory=str(tmp_path))
         store.delete("does-not-exist")
         store.delete(None)
 
-    def test_ttl_expiry_purges_record(self):
-        store = SessionStore()
+    def test_ttl_expiry_purges_record(self, tmp_path):
+        store = SessionStore(directory=str(tmp_path))
         with patch("auth.time.time", return_value=1000.0):
             session_id = store.create("key", "secret")
+        path = Path(auth._session_file_path(str(tmp_path), session_id))
+        assert path.exists()
         with patch("auth.time.time", return_value=1000.0 + auth.SESSION_TTL_SECONDS + 1):
             assert store.get(session_id) is None
         # The entry should have been purged from the store.
-        assert store._records == {}
+        assert not path.exists()
         assert store.get(session_id) is None
+
+    def test_get_purges_record_without_created(self, tmp_path):
+        store = SessionStore(directory=str(tmp_path))
+        session_id = store.create("key", "secret")
+        path = Path(auth._session_file_path(str(tmp_path), session_id))
+        path.write_text('{"api_key": "key", "api_secret": "secret"}')
+        assert store.get(session_id) is None
+        assert not path.exists()
+
+    def test_create_writes_file_with_0600_permissions(self, tmp_path):
+        store = SessionStore(directory=str(tmp_path))
+        session_id = store.create("key", "secret")
+        path = Path(auth._session_file_path(str(tmp_path), session_id))
+        assert path.exists()
+        assert stat.S_IMODE(path.stat().st_mode) == 0o600
+
+    def test_records_visible_across_store_instances(self, tmp_path):
+        store_a = SessionStore(directory=str(tmp_path))
+        session_id = store_a.create("key", "secret")
+        store_b = SessionStore(directory=str(tmp_path))
+        record = store_b.get(session_id)
+        assert record is not None
+        assert record["api_key"] == "key"
+        assert record["api_secret"] == "secret"
+
+    def test_atomic_write_failure_removes_temp_and_raises(self, tmp_path):
+        store = SessionStore(directory=str(tmp_path))
+        with patch("auth.os.replace", side_effect=OSError("boom")), \
+                pytest.raises(OSError):
+            store.create("key", "secret")
+        assert list(tmp_path.iterdir()) == []
 
 
 class TestGetApiClient:
