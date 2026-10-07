@@ -158,6 +158,7 @@ Currently supported blockchain explorers are:
 
 Block explorer HTTP requests now use a timeout, so a slow or unresponsive explorer is handled gracefully and the next configured explorer can be used.
 
+Requesting an unknown explorer, or running with no block explorers configured at all, now returns an error instead of crashing.
 
 Segwit
 ------
