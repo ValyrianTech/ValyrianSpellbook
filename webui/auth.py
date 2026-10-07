@@ -27,6 +27,11 @@ from helpers.configurationhelpers import get_key, get_secret
 # How long a server-side session record remains valid (seconds).
 SESSION_TTL_SECONDS = 86400
 
+# Known keys stored in a session record. ``SessionStore.get`` returns a
+# defensive copy containing only these fields, so callers cannot mutate the
+# internal record or observe unexpected extra keys.
+SESSION_RECORD_KEYS = ("api_key", "api_secret", "created")
+
 # Absolute path to the shared, on-disk session store directory, rooted at the
 # repo root (the parent directory of the ``webui/`` package). Because records
 # are stored as files here (rather than in process memory), they are visible
@@ -107,7 +112,11 @@ class SessionStore:
             raise
 
     def get(self, session_id: str | None) -> dict | None:
-        """Return the stored record for ``session_id`` or None.
+        """Return a defensive copy of the stored record for ``session_id`` or None.
+
+        The returned dict contains only the known fields (``SESSION_RECORD_KEYS``)
+        from the stored record, so callers cannot mutate the internal record or
+        observe unexpected extra keys.
 
         Records older than ``SESSION_TTL_SECONDS`` are treated as expired,
         purged from the store, and reported as absent. A missing, unreadable,
@@ -130,7 +139,7 @@ class SessionStore:
             if created is None or time.time() - created > SESSION_TTL_SECONDS:
                 self._remove(path)
                 return None
-            return record
+            return {key: record[key] for key in SESSION_RECORD_KEYS if key in record}
 
     def delete(self, session_id: str | None) -> None:
         """Remove the record for ``session_id`` (no-op if absent)."""
