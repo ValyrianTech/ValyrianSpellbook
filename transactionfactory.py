@@ -179,9 +179,13 @@ def add_op_return(msg, tx_hex=None):
             outs = deserialize(tx_hex).get('outs')
 
         txo = deserialize(tx_hex)
-        assert (len(outs) > 0) and sum(multiaccess(outs, 'value')) > 0 \
-            and not any(o for o in outs if o.get("script")[:2] == '6a'), \
-            "Tx limited to *1* OP_RETURN, and only whilst the other outputs send funds"
+        outs = txo.get('outs') or []
+        has_funding = sum(multiaccess(outs, 'value')) > 0
+        has_op_return = any(o.get('script', '')[:2] == '6a' for o in outs)
+        if not outs or not has_funding or has_op_return:
+            raise ValueError(
+                'Tx limited to *1* OP_RETURN, and only whilst the other outputs send funds'
+            )
         txo['outs'].append({'script': hex_data, 'value': 0})
         return serialize(txo)
 

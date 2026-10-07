@@ -209,8 +209,14 @@ class TestTransactionFactory:
         msg = 'test'
         tx_hex = mktx({'output': 'a' * 64 + ':0'}, {'address': 'n4KmgAd3J7ubthHpe9vyLy2xyiVZpF7dPa', 'value': 50000})
         tx_with_op_return = add_op_return(msg, tx_hex)
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError, match='Tx limited to'):
             add_op_return('again', tx_with_op_return)
+
+    def test_add_op_return_no_funding_outputs_raises(self):
+        msg = 'test'
+        tx_hex = mktx({'output': 'a' * 64 + ':0'}, {'address': 'n4KmgAd3J7ubthHpe9vyLy2xyiVZpF7dPa', 'value': 0})
+        with pytest.raises(ValueError, match='Tx limited to'):
+            add_op_return(msg, tx_hex)
 
     def test_serialize_and_deserialize_roundtrip(self):
         tx_hex = mktx({'output': 'a' * 64 + ':0'}, {'address': 'n4KmgAd3J7ubthHpe9vyLy2xyiVZpF7dPa', 'value': 50000})
