@@ -3,6 +3,7 @@
 
 import requests
 
+from data.blockexplorers.explorer_http import DEFAULT_TIMEOUT
 from data.explorer_api import ExplorerAPI
 from data.transaction import TX, TxInput, TxOutput
 from helpers.loghelpers import LOG
@@ -16,9 +17,9 @@ class InsightAPI(ExplorerAPI):
         url = self.url + '/status?q=getBestBlockHash'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get latest blockhash from {self.url}: {ex}')
             return {'error': f'Unable to get latest blockhash from {self.url}'}
 
@@ -32,9 +33,9 @@ class InsightAPI(ExplorerAPI):
         url = self.url + '/block/' + block_hash
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get block {block_hash} from {self.url}: {ex}')
             return {'error': f'Unable to get block {block_hash} from {self.url}'}
 
@@ -54,9 +55,9 @@ class InsightAPI(ExplorerAPI):
         url = self.url + '/block-index/' + str(height)
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get hash of block at height {height} from {self.url}: {ex}')
             return {'error': f'Unable to get hash of block at height {height} from {self.url}'}
 
@@ -76,9 +77,9 @@ class InsightAPI(ExplorerAPI):
             url = self.url + '/addrs/' + address + '/txs?from=' + str(limit*i) + '&to=' + str(limit*(i+1))
             try:
                 LOG.info(f'GET {url}')
-                r = requests.get(url)
+                r = requests.get(url, timeout=DEFAULT_TIMEOUT)
                 data = r.json()
-            except (ValueError, KeyError, TypeError, OSError) as ex:
+            except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
                 LOG.error(f'Unable to get transactions of address {address} from {url}: {ex}')
                 return {'error': f'Unable to get transactions of address {address} from {url}'}
 
@@ -139,9 +140,9 @@ class InsightAPI(ExplorerAPI):
         url = f'{self.url}/addr/{address}/balance'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = int(r.text)
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get balance of {address} from {self.url}: {ex}')
             return {'error': f'Unable to get balance {address} from {self.url}'}
 
@@ -150,9 +151,9 @@ class InsightAPI(ExplorerAPI):
         url = f'{self.url}/addr/{address}/totalReceived'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = int(r.text)
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get total received of {address} from {self.url}: {ex}')
             return {'error': f'Unable to get total received {address} from {self.url}'}
 
@@ -161,9 +162,9 @@ class InsightAPI(ExplorerAPI):
         url = f'{self.url}/addr/{address}/totalSent'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = int(r.text)
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get total sent of {address} from {self.url}: {ex}')
             return {'error': f'Unable to get total sent {address} from {self.url}'}
 
@@ -201,9 +202,9 @@ class InsightAPI(ExplorerAPI):
         url = self.url + '/tx/' + str(txid)
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get transaction {txid} from {self.url}: {ex}')
             return {'error': f'Unable to get transaction {txid} from {self.url}'}
 
@@ -246,9 +247,9 @@ class InsightAPI(ExplorerAPI):
         url = self.url + '/tx/' + str(txid)
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get prime input address of transaction {txid} from {self.url}: {ex}')
             return {'error': f'Unable to get prime input address of transaction {txid} from {self.url}'}
 
@@ -270,9 +271,9 @@ class InsightAPI(ExplorerAPI):
         url = self.url + '/addrs/' + address + '/utxo?noCache=1'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get utxos of address {address} from {url}: {ex}')
             return {'error': f'Unable to get utxos of address {address} from {url}'}
 
@@ -295,8 +296,8 @@ class InsightAPI(ExplorerAPI):
         url = f'{self.url}/tx/send'
         LOG.info(f'POST {url}')
         try:
-            r = requests.post(url, data={'rawtx': tx})
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+            r = requests.post(url, data={'rawtx': tx}, timeout=DEFAULT_TIMEOUT)
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to push tx via {self.url}: {ex}')
             return {'error': f'Unable to push tx via {self.url}: {ex}'}
 

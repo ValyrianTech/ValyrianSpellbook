@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 from unittest import mock
 
+import requests
+
+from data.blockexplorers.explorer_http import DEFAULT_TIMEOUT
 from data.blockexplorers.insight import InsightAPI
 
 
@@ -411,3 +414,22 @@ class TestPushTx:
         api = InsightAPI(url='http://example.com')
         result = api.push_tx('rawtx')
         assert 'error' in result
+
+
+class TestTimeoutHandling:
+    @mock.patch('data.blockexplorers.insight.requests.get')
+    def test_timeout_exception_is_caught(self, mock_get):
+        mock_get.side_effect = requests.exceptions.ReadTimeout('timed out')
+        api = InsightAPI(url='http://example.com')
+        result = api.get_latest_block()
+        assert 'error' in result
+
+    @mock.patch('data.blockexplorers.insight.requests.get')
+    def test_timeout_kwarg_is_passed(self, mock_get):
+        mock_get.side_effect = [
+            make_mock_response(json_data={'bestblockhash': 'abc'}),
+            make_mock_response(json_data={'height': 100, 'hash': 'abc', 'time': 123, 'merkleroot': 'm', 'size': 500})
+        ]
+        api = InsightAPI(url='http://example.com')
+        api.get_latest_block()
+        assert mock_get.call_args.kwargs.get('timeout') == DEFAULT_TIMEOUT

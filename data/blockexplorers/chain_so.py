@@ -6,6 +6,7 @@ from time import sleep
 
 import requests
 
+from data.blockexplorers.explorer_http import DEFAULT_TIMEOUT
 from data.explorer_api import ExplorerAPI
 from data.transaction import TX, TxInput, TxOutput
 from helpers.conversionhelpers import btc2satoshis
@@ -30,9 +31,9 @@ class ChainSoAPI(ExplorerAPI):
         url = f'{self.url}/address/{self.network}/{address}'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get transactions of address {address} from Chain.so: {ex}')
             return {'error': f'Unable to get transactions of address {address} from Chain.so'}
 
@@ -59,9 +60,9 @@ class ChainSoAPI(ExplorerAPI):
         url = f'{self.url}/get_block/{self.network}/{height}'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get block {height} from Chain.so: {ex}')
             return {'error': f'Unable to get block {height} from Chain.so'}
 
@@ -86,9 +87,9 @@ class ChainSoAPI(ExplorerAPI):
         url = f'{self.url}/get_info/{self.network}'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get latest block from Chain.so: {ex}')
             return {'error': 'Unable to get latest block from Chain.so'}
 
@@ -109,9 +110,9 @@ class ChainSoAPI(ExplorerAPI):
         url = f'{self.url}/get_tx_unspent/{self.network}/{address}'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get transaction of address {address} from Chain.so: {ex}')
             return {'error': f'Unable to get transactions of address {address} from Chain.so'}
 
@@ -138,9 +139,9 @@ class ChainSoAPI(ExplorerAPI):
         url = f'{self.url}/get_block/{self.network}/{block_hash}'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get block {block_hash} from Chain.so: {ex}')
             return {'error': f'Unable to get block {block_hash} from Chain.so'}
 
@@ -165,9 +166,9 @@ class ChainSoAPI(ExplorerAPI):
         url = f'{self.url}/address/{self.network}/{address}'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get balance of address {address} from Chain.so: {ex}')
             return {'error': f'Unable to get balance of address {address} from Chain.so'}
 
@@ -209,9 +210,9 @@ class ChainSoAPI(ExplorerAPI):
         url = f'{self.url}/get_tx/{self.network}/{txid}'
         try:
             LOG.info(f'GET {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=DEFAULT_TIMEOUT)
             data = r.json()
-        except (ValueError, KeyError, TypeError, OSError) as ex:
+        except (ValueError, KeyError, TypeError, OSError, requests.RequestException) as ex:
             LOG.error(f'Unable to get transaction {txid} from Chain.so: {ex}')
             return {'error': f'Unable to get transaction {txid} from Chain.so'}
 

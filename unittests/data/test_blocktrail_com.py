@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 from unittest import mock
 
+import requests
+
 from data.blockexplorers.blocktrail_com import BlocktrailComAPI
+from data.blockexplorers.explorer_http import DEFAULT_TIMEOUT
 
 
 def make_mock_response(json_data=None, text_data=None, status_code=200):
@@ -390,3 +393,25 @@ class TestPushTx:
         result = BlocktrailComAPI.push_tx('rawtx')
         assert result == {'success': True}
         mock_get_api.assert_called_once_with('blockchain.info')
+
+
+class TestTimeoutHandling:
+    @mock.patch('data.blockexplorers.blocktrail_com.requests.get')
+    def test_timeout_exception_is_caught(self, mock_get):
+        mock_get.side_effect = requests.exceptions.ReadTimeout('timed out')
+        api = BlocktrailComAPI(key='mykey')
+        result = api.get_latest_block()
+        assert 'error' in result
+
+    @mock.patch('data.blockexplorers.blocktrail_com.requests.get')
+    def test_timeout_kwarg_is_passed(self, mock_get):
+        mock_get.side_effect = [
+            make_mock_response(json_data={'height': 100, 'hash': 'abc'}),
+            make_mock_response(json_data={
+                'height': 100, 'hash': 'abc', 'block_time': '2020-01-01T00:00:00+0000',
+                'merkleroot': 'm', 'byte_size': 500
+            })
+        ]
+        api = BlocktrailComAPI(key='mykey')
+        api.get_latest_block()
+        assert mock_get.call_args.kwargs.get('timeout') == DEFAULT_TIMEOUT
