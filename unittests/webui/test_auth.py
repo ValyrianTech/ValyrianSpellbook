@@ -113,6 +113,32 @@ class TestSessionStore:
         assert record["api_key"] == "key"
         assert record["api_secret"] == "secret"
 
+    def test_get_returns_defensive_copy(self, tmp_path):
+        store = SessionStore(directory=str(tmp_path))
+        session_id = store.create("key", "secret")
+        record = store.get(session_id)
+        assert record is not None
+        # Mutating the returned dict must not affect the stored record.
+        record["api_key"] = "tampered"
+        record["api_secret"] = "tampered"
+        fresh = store.get(session_id)
+        assert fresh is not None
+        assert fresh["api_key"] == "key"
+        assert fresh["api_secret"] == "secret"
+
+    def test_get_filters_to_known_keys(self, tmp_path):
+        store = SessionStore(directory=str(tmp_path))
+        session_id = store.create("key", "secret")
+        path = Path(auth._session_file_path(str(tmp_path), session_id))
+        import json as _json
+        data = _json.loads(path.read_text())
+        data["extra"] = "should-be-hidden"
+        path.write_text(_json.dumps(data))
+        record = store.get(session_id)
+        assert record is not None
+        assert "extra" not in record
+        assert set(record) == set(auth.SESSION_RECORD_KEYS)
+
     def test_atomic_write_failure_removes_temp_and_raises(self, tmp_path):
         store = SessionStore(directory=str(tmp_path))
         with patch("auth.os.replace", side_effect=OSError("boom")), \
