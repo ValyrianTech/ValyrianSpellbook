@@ -102,6 +102,33 @@ class TestSaveExplorer:
         assert saved['myexplorer']['url'] == ''
         assert saved['myexplorer']['priority'] == 0
 
+    @mock.patch('data.data.save_to_json_file')
+    @mock.patch('data.data.load_from_json_file')
+    def test_save_explorer_masked_api_key_restores_existing(self, mock_load, mock_save):
+        mock_load.return_value = {'myexplorer': {'type': 'Blockstream.info', 'priority': 1, 'url': '', 'api_key': 'real_key', 'testnet': False}}
+        config = {'type': 'Blockstream.info', 'url': 'https://example.com', 'priority': '1', 'api_key': '********', 'testnet': True}
+        data.save_explorer('myexplorer', config)
+        saved = mock_save.call_args[0][1]
+        assert saved['myexplorer']['api_key'] == 'real_key'
+
+    @mock.patch('data.data.save_to_json_file')
+    @mock.patch('data.data.load_from_json_file')
+    def test_save_explorer_masked_api_key_new_explorer(self, mock_load, mock_save):
+        mock_load.return_value = {}
+        config = {'type': 'Blockstream.info', 'url': 'https://example.com', 'priority': '1', 'api_key': '********', 'testnet': True}
+        data.save_explorer('myexplorer', config)
+        saved = mock_save.call_args[0][1]
+        assert saved['myexplorer']['api_key'] is None
+
+    @mock.patch('data.data.save_to_json_file')
+    @mock.patch('data.data.load_from_json_file')
+    def test_save_explorer_normal_api_key_stored(self, mock_load, mock_save):
+        mock_load.return_value = {'myexplorer': {'type': 'Blockstream.info', 'priority': 1, 'url': '', 'api_key': 'old_key', 'testnet': False}}
+        config = {'type': 'Blockstream.info', 'url': 'https://example.com', 'priority': '1', 'api_key': 'new_key', 'testnet': True}
+        data.save_explorer('myexplorer', config)
+        saved = mock_save.call_args[0][1]
+        assert saved['myexplorer']['api_key'] == 'new_key'
+
 
 class TestDeleteExplorer:
     """Tests for delete_explorer function"""
