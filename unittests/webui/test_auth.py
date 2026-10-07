@@ -146,20 +146,83 @@ class TestGetApiClient:
 
 
 class TestIsAuthenticated:
-    def test_authenticated(self):
+    def test_authenticated_with_valid_store_record(self):
         request = MagicMock()
-        request.session.get.return_value = True
+        session_id = auth._SESSION_STORE.create("key", "secret")
+        request.session.get = MagicMock(
+            side_effect=lambda key, default=None: {
+                "authenticated": True,
+                "session_id": session_id,
+            }.get(key, default)
+        )
         assert is_authenticated(request) is True
+        request.session.clear.assert_not_called()
 
-    def test_not_authenticated(self):
+    def test_authenticated_but_missing_store_record(self):
         request = MagicMock()
-        request.session.get.return_value = False
+        request.session.get = MagicMock(
+            side_effect=lambda key, default=None: {
+                "authenticated": True,
+                "session_id": "unknown-id",
+            }.get(key, default)
+        )
         assert is_authenticated(request) is False
+        request.session.clear.assert_called_once()
 
-    def test_default_not_authenticated(self):
+    def test_authenticated_but_deleted_store_record(self):
         request = MagicMock()
-        request.session.get.return_value = None
-        assert not is_authenticated(request)
+        session_id = auth._SESSION_STORE.create("key", "secret")
+        auth._SESSION_STORE.delete(session_id)
+        request.session.get = MagicMock(
+            side_effect=lambda key, default=None: {
+                "authenticated": True,
+                "session_id": session_id,
+            }.get(key, default)
+        )
+        assert is_authenticated(request) is False
+        request.session.clear.assert_called_once()
+
+    def test_authenticated_but_missing_session_id(self):
+        request = MagicMock()
+        request.session.get = MagicMock(
+            side_effect=lambda key, default=None: {
+                "authenticated": True,
+                "session_id": None,
+            }.get(key, default)
+        )
+        assert is_authenticated(request) is False
+        request.session.clear.assert_called_once()
+
+    def test_not_authenticated_no_cleanup(self):
+        request = MagicMock()
+        request.session.get = MagicMock(
+            side_effect=lambda key, default=None: {
+                "authenticated": False,
+            }.get(key, default)
+        )
+        assert is_authenticated(request) is False
+        request.session.clear.assert_not_called()
+
+    def test_default_not_authenticated_no_cleanup(self):
+        request = MagicMock()
+        request.session.get = MagicMock(
+            side_effect=lambda key, default=None: {
+                "authenticated": None,
+            }.get(key, default)
+        )
+        assert is_authenticated(request) is False
+        request.session.clear.assert_not_called()
+
+    def test_cleanup_failure_still_returns_false(self):
+        request = MagicMock()
+        request.session.get = MagicMock(
+            side_effect=lambda key, default=None: {
+                "authenticated": True,
+                "session_id": "unknown-id",
+            }.get(key, default)
+        )
+        request.session.clear = MagicMock(side_effect=Exception("read-only session"))
+        assert is_authenticated(request) is False
 
 
 class TestValidateCredentials:
@@ -255,7 +318,13 @@ class TestRequireAuth:
             return {"success": True}
 
         request = MagicMock()
-        request.session.get.return_value = True
+        session_id = auth._SESSION_STORE.create("key", "secret")
+        request.session.get = MagicMock(
+            side_effect=lambda key, default=None: {
+                "authenticated": True,
+                "session_id": session_id,
+            }.get(key, default)
+        )
         import asyncio
         result = asyncio.run(view(request))
         assert result == {"success": True}
