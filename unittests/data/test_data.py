@@ -355,12 +355,47 @@ class TestQuery:
     @mock.patch('data.data.get_explorers')
     def test_query_with_specific_explorer(self, mock_get_explorers, mock_get_api):
         data.EXPLORER = 'specific_explorer'
+        mock_get_explorers.return_value = ['specific_explorer']
         mock_api = mock.MagicMock()
         mock_api.get_balance.return_value = {'balance': 50}
         mock_get_api.return_value = mock_api
         result = data.query('balance', ['addr'])
-        mock_get_explorers.assert_not_called()
         assert result == {'balance': 50}
+        data.EXPLORER = None
+
+    @mock.patch('data.data.get_explorer_api')
+    @mock.patch('data.data.get_explorers')
+    def test_query_unknown_explorer(self, mock_get_explorers, mock_get_api):
+        data.EXPLORER = 'unknown_explorer'
+        mock_get_explorers.return_value = ['explorer1']
+        result = data.query('balance', ['addr'])
+        assert result == {'error': 'Unknown explorer: unknown_explorer'}
+        mock_get_api.assert_not_called()
+        data.EXPLORER = None
+
+    @mock.patch('data.data.get_explorer_api')
+    @mock.patch('data.data.get_explorers')
+    def test_query_no_explorers_configured(self, mock_get_explorers, mock_get_api):
+        mock_get_explorers.return_value = None
+        result = data.query('balance', ['addr'])
+        assert result == {'error': 'No block explorers configured'}
+        mock_get_api.assert_not_called()
+
+    @mock.patch('data.data.get_explorer_api')
+    @mock.patch('data.data.get_explorers')
+    def test_query_no_explorers_configured_empty_list(self, mock_get_explorers, mock_get_api):
+        mock_get_explorers.return_value = []
+        result = data.query('balance', ['addr'])
+        assert result == {'error': 'No block explorers configured'}
+        mock_get_api.assert_not_called()
+
+    @mock.patch('data.data.get_explorer_api')
+    @mock.patch('data.data.get_explorers')
+    def test_query_unknown_explorer_when_get_explorers_returns_none(self, mock_get_explorers, mock_get_api):
+        data.EXPLORER = 'unknown_explorer'
+        mock_get_explorers.return_value = None
+        result = data.query('balance', ['addr'])
+        assert result == {'error': 'Unknown explorer: unknown_explorer'}
         data.EXPLORER = None
 
     @mock.patch('data.data.get_explorer_api')
