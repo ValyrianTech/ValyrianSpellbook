@@ -7,7 +7,7 @@ from configparser import ConfigParser
 from functools import wraps
 
 import simplejson
-from bottle import request
+from bottle import request, response
 
 from authentication import AuthenticationStatus, check_authentication
 from data.data import clear_explorer, get_last_explorer, set_explorer
@@ -24,12 +24,15 @@ def authentication_required(f):
     :return: The result of the function OR a json dict containing the reason of the authentication failure
     """
 
+    @wraps(f)
     def decorated_function(*args, **kwargs):
         """Execute the decorated function if authentication succeeds."""
         authentication_status = check_authentication(request.headers, request.json)
         if authentication_status == AuthenticationStatus.OK:
             return f(*args, **kwargs)
         else:
+            response.status = 401
+            response.content_type = 'application/json'
             return {'error': authentication_status}
 
     return decorated_function

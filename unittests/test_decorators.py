@@ -33,9 +33,10 @@ class TestAuthenticationRequired:
         result = test_func()
         assert result == {'success': True}
 
+    @mock.patch('decorators.response')
     @mock.patch('decorators.request')
     @mock.patch('decorators.check_authentication')
-    def test_authentication_failed(self, mock_check, mock_request):
+    def test_authentication_failed(self, mock_check, mock_request, mock_response):
         mock_check.return_value = AuthenticationStatus.INVALID_API_KEY
         mock_request.headers = {}
         mock_request.json = {}
@@ -47,6 +48,26 @@ class TestAuthenticationRequired:
         result = test_func()
         assert 'error' in result
         assert result['error'] == AuthenticationStatus.INVALID_API_KEY
+        assert mock_response.status == 401
+        assert mock_response.content_type == 'application/json'
+
+    @mock.patch('decorators.response')
+    @mock.patch('decorators.request')
+    @mock.patch('decorators.check_authentication')
+    def test_authentication_failed_invalid_nonce(self, mock_check, mock_request, mock_response):
+        mock_check.return_value = AuthenticationStatus.INVALID_NONCE
+        mock_request.headers = {}
+        mock_request.json = {}
+
+        @authentication_required
+        def test_func():
+            return {'success': True}
+
+        result = test_func()
+        assert 'error' in result
+        assert result['error'] == AuthenticationStatus.INVALID_NONCE
+        assert mock_response.status == 401
+        assert mock_response.content_type == 'application/json'
 
 
 class TestUseExplorer:
