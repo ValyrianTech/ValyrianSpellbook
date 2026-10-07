@@ -73,6 +73,9 @@ class DeadMansSwitchTrigger(Trigger):
             email_variables = {'activation_time': datetime.fromtimestamp(self.activation_time, tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}
             sendmail(self.warning_email, f"Warning: Dead Man's Switch {self.id} has been armed", 'deadmansswitchwarning', email_variables)
             self.save()
+            return {'success': True, 'phase': self.phase, 'activation_time': self.activation_time}
+
+        return {'success': False, 'phase': self.phase}
 
     def configure(self, **config):
         """Configure."""
