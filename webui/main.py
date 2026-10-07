@@ -6,6 +6,7 @@ A web-based admin dashboard for managing the Valyrian Spellbook.
 Runs alongside the existing Bottle REST API server.
 """
 
+import logging
 import os
 import sys
 
@@ -19,6 +20,8 @@ from fastapi.templating import Jinja2Templates
 from routers import actions, blockchain, dashboard, explorers, llms, triggers
 from starlette.middleware.sessions import SessionMiddleware
 
+logger = logging.getLogger(__name__)
+
 # Create FastAPI app
 app = FastAPI(
     title="Valyrian Spellbook Admin",
@@ -31,7 +34,9 @@ app.add_middleware(
     SessionMiddleware,
     secret_key=settings.SESSION_SECRET_KEY,
     session_cookie="spellbook_session",
-    max_age=86400  # 24 hours
+    max_age=86400,  # 24 hours
+    same_site="strict",
+    https_only=settings.SESSION_COOKIE_HTTPS_ONLY
 )
 
 # Mount static files
@@ -63,11 +68,12 @@ async def not_found_handler(request: Request, exc):
 
 @app.exception_handler(500)
 async def server_error_handler(request: Request, exc):
-    """Handle 500 errors by rendering the 500 error template with error details."""
+    """Handle 500 errors by logging the exception and rendering a generic page."""
+    logger.exception("Unhandled exception in web UI request", exc_info=exc)
     return templates.TemplateResponse(
         request,
         "errors/500.html",
-        {"error": str(exc)},
+        {},
         status_code=500
     )
 

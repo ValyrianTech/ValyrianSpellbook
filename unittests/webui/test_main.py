@@ -48,6 +48,28 @@ class TestExceptionHandlers:
             with TestClient(app, raise_server_exceptions=False) as c:
                 response = c.get("/", follow_redirects=False)
                 assert response.status_code == 500
+                # The raw exception text must not leak into the response body.
+                assert "test error" not in response.text
+
+    def test_500_handler_logs_exception(self, app):
+        # Trigger a 500 and assert the exception is logged server-side.
+        import main as main_module
+        with patch("routers.dashboard.is_authenticated", return_value=True), \
+             patch("routers.dashboard.get_api_client") as mock_get_client, \
+             patch.object(main_module.logger, "exception") as mock_exception:
+            mock_client = MagicMock()
+            mock_client.get_triggers.side_effect = ValueError("test error")
+            mock_client.get_actions.return_value = []
+            mock_client.get_llms.return_value = []
+            mock_client.get_explorers.return_value = []
+            mock_client.ping.return_value = {"success": True}
+            mock_client.get_latest_block.return_value = {}
+            mock_get_client.return_value = mock_client
+            from starlette.testclient import TestClient
+            with TestClient(app, raise_server_exceptions=False) as c:
+                response = c.get("/", follow_redirects=False)
+                assert response.status_code == 500
+            mock_exception.assert_called_once()
 
 
 class TestMainModule:

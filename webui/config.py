@@ -25,6 +25,12 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from helpers.configurationhelpers import get_host, get_port
 
+# Environment variable that opts the Web UI into debug mode.
+DEBUG_ENV_VAR = "SPELLBOOK_WEBUI_DEBUG"
+
+# Environment variable that opts the session cookie into HTTPS-only.
+SESSION_COOKIE_HTTPS_ONLY_ENV_VAR = "SPELLBOOK_SESSION_HTTPS_ONLY"
+
 # Absolute path to the persisted session secret key file, rooted at the repo
 # root (the parent directory of the ``webui/`` package).
 SESSION_SECRET_KEY_FILE = os.path.join(
@@ -72,7 +78,27 @@ class Settings:
     # Web UI server settings
     WEBUI_HOST: str = "0.0.0.0"
     WEBUI_PORT: int = 5001
-    DEBUG: bool = True
+
+    @property
+    def DEBUG(self) -> bool:
+        """Return whether debug mode is enabled.
+
+        Debug mode is opt-in via the ``SPELLBOOK_WEBUI_DEBUG`` environment
+        variable, accepting the common truthy strings (``1``, ``true``,
+        ``yes``, ``on``) case-insensitively. Absent or any other value means
+        False.
+        """
+        return os.environ.get(DEBUG_ENV_VAR, '').strip().lower() in ('1', 'true', 'yes', 'on')
+
+    @property
+    def SESSION_COOKIE_HTTPS_ONLY(self) -> bool:
+        """Return whether the session cookie should be HTTPS-only.
+
+        Opt-in via the ``SPELLBOOK_SESSION_HTTPS_ONLY`` environment variable,
+        accepting the common truthy strings case-insensitively. Absent or any
+        other value means False.
+        """
+        return os.environ.get(SESSION_COOKIE_HTTPS_ONLY_ENV_VAR, '').strip().lower() in ('1', 'true', 'yes', 'on')
 
     # Spellbook REST API settings (the existing Bottle server)
     @property
