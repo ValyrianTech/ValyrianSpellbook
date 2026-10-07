@@ -138,7 +138,7 @@ class Trigger:
         for action_id in self.actions:
             if action_id not in configured_actions:
                 LOG.error(f'Unknown action id: {action_id}')
-                return
+                return {'error': f'Unknown action id: {action_id}'}
 
         for i, action_id in enumerate(self.actions):
             LOG.info(f'Running action {i+1}: {action_id}')
@@ -150,7 +150,7 @@ class Trigger:
                 self.triggered += 1
                 self.status = 'Failed' if self.multi is False else 'Active'
                 self.save()
-                return
+                return {'success': False, 'status': self.status}
 
         # All actions were successful
         self.triggered += 1
@@ -160,7 +160,11 @@ class Trigger:
 
         if script is not None:
             script.cleanup()
-            return script.http_response
+            if script.http_response is not None:
+                return script.http_response
+            return {'success': True, 'status': self.status}
+
+        return {'success': True, 'status': self.status}
 
     def get_script_variables(self):
         """Get script variables."""

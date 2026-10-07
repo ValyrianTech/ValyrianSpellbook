@@ -5,6 +5,7 @@ from unittest import mock
 
 import pytest
 
+from trigger.manualtrigger import ManualTrigger
 from trigger.trigger import Trigger
 from trigger.triggertype import TriggerType
 
@@ -203,10 +204,11 @@ class TestTrigger:
         trigger = ConcreteTrigger('test_trigger_id')
         trigger.configure(created=1609459200)
         trigger.actions = ['action1']
-        trigger.activate()
+        result = trigger.activate()
         
         assert trigger.triggered == 1
         assert trigger.status == 'Succeeded'
+        assert result == {'success': True, 'status': 'Succeeded'}
         mock_action.run.assert_called_once()
 
     @mock.patch('trigger.trigger.save_to_json_file')
@@ -220,10 +222,11 @@ class TestTrigger:
         trigger = ConcreteTrigger('test_trigger_id')
         trigger.configure(created=1609459200)
         trigger.actions = ['action1']
-        trigger.activate()
+        result = trigger.activate()
         
         assert trigger.triggered == 1
         assert trigger.status == 'Failed'
+        assert result == {'success': False, 'status': 'Failed'}
 
     @mock.patch('trigger.trigger.save_to_json_file')
     @mock.patch('trigger.trigger.get_action')
@@ -237,10 +240,11 @@ class TestTrigger:
         trigger.configure(created=1609459200)
         trigger.actions = ['action1']
         trigger.multi = True
-        trigger.activate()
+        result = trigger.activate()
         
         assert trigger.triggered == 1
         assert trigger.status == 'Active'
+        assert result == {'success': True, 'status': 'Active'}
 
     @mock.patch('trigger.trigger.get_actions', return_value={})
     def test_trigger_activate_unknown_action(self, mock_get_actions):
@@ -248,7 +252,7 @@ class TestTrigger:
         trigger.configure(created=1609459200)
         trigger.actions = ['unknown_action']
         result = trigger.activate()
-        assert result is None
+        assert result == {'error': 'Unknown action id: unknown_action'}
 
     @mock.patch('trigger.trigger.get_actions', return_value={'action1': {}})
     @mock.patch('trigger.trigger.valid_actions', return_value=True)
@@ -279,6 +283,39 @@ class TestTrigger:
         mock_script.run.assert_called_once()
         mock_script.cleanup.assert_called_once()
         assert result == {'status': 'ok'}
+
+    @mock.patch('trigger.trigger.save_to_json_file')
+    @mock.patch('trigger.trigger.get_action')
+    @mock.patch('trigger.trigger.get_actions', return_value={'action1': {}})
+    def test_trigger_activate_with_script_none_response(self, mock_get_actions, mock_get_action, mock_save):
+        mock_action = mock.MagicMock()
+        mock_action.run.return_value = True
+        mock_get_action.return_value = mock_action
+
+        mock_script = mock.MagicMock()
+        mock_script.new_actions = []
+        mock_script.http_response = None
+
+        trigger = ConcreteTrigger('test_trigger_id')
+        trigger.configure(created=1609459200)
+        trigger.actions = ['action1']
+
+        with mock.patch.object(trigger, 'load_script', return_value=mock_script):
+            result = trigger.activate()
+
+        mock_script.run.assert_called_once()
+        mock_script.cleanup.assert_called_once()
+        assert result == {'success': True, 'status': 'Succeeded'}
+
+    @mock.patch('trigger.trigger.save_to_json_file')
+    @mock.patch('trigger.trigger.get_actions', return_value={})
+    def test_trigger_activate_manual_trigger_returns_dict(self, mock_get_actions, mock_save):
+        trigger = ManualTrigger('test_manual_trigger')
+        trigger.configure(created=1609459200)
+        result = trigger.activate()
+        assert result is not None
+        assert isinstance(result, dict)
+        assert result == {'success': True, 'status': 'Succeeded'}
 
     @mock.patch('trigger.trigger.valid_script', return_value=True)
     @mock.patch('trigger.trigger.find_script_path', return_value=None)
