@@ -162,6 +162,15 @@ def query(query_type, param=None):
     # Get the list of explorers ordered by priority unless a specific explorer is specified
     explorers = get_explorers() if EXPLORER is None else [EXPLORER]
 
+    # Validate a request-supplied explorer against the configured explorers
+    if EXPLORER is not None and EXPLORER not in (get_explorers() or []):
+        LOG.error(f'Unknown explorer: {EXPLORER}')
+        return {'error': f'Unknown explorer: {EXPLORER}'}
+
+    if not explorers:
+        LOG.error('No block explorers configured')
+        return {'error': 'No block explorers configured'}
+
     message = ''
     for i in range(len(explorers)):
         explorer_api = get_explorer_api(explorers[i])
