@@ -52,6 +52,16 @@ python -c 'import secrets; print(secrets.token_hex(32))'
 
 Use your Spellbook API key and secret to log in. These are the same credentials used for the CLI and REST API. Credentials are compared with `hmac.compare_digest` on UTF-8-encoded bytes, so key/secret comparison is constant-time and does not leak timing information.
 
+### 5. Session storage, cookies & error handling
+
+Your API credentials are kept **server-side**, not in the cookie. On login, the key and secret are stored in a thread-safe, in-memory session store (`webui/auth.py`) keyed by an opaque `session_id` (generated with `secrets.token_urlsafe(32)`); only that `session_id` is placed in the signed session cookie, so secrets are never written into the cookie (which is signed but not encrypted). Records expire after 24 hours and are lazily purged on access, and logging out deletes the record.
+
+The session cookie is set with `SameSite=Strict`. To make it HTTPS-only, set the `SPELLBOOK_SESSION_HTTPS_ONLY` environment variable (accepts `1`/`true`/`yes`/`on`, case-insensitive).
+
+Debug mode is opt-in via the `SPELLBOOK_WEBUI_DEBUG` environment variable (accepts `1`/`true`/`yes`/`on`, case-insensitive) and is **off by default** (previously debug mode was always enabled).
+
+Internal server errors render a generic 500 page and are logged server-side; exception details are no longer returned to the browser.
+
 ## Development
 
 ### Building CSS
