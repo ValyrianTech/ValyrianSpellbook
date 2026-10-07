@@ -137,6 +137,24 @@ def _redact(mapping):
     }
 
 
+def _redact_explorers(explorers):
+    """Return a redacted copy of the explorer data returned by the data layer.
+
+    ``data.get_explorers`` returns a list of explorer-id strings (no secrets),
+    while ``data.get_explorer_config`` returns a single explorer config dict that
+    may contain an ``api_key``.  Both shapes are handled here so the redaction is
+    correct regardless of which one is passed in.
+    """
+    if isinstance(explorers, dict):
+        return _redact(explorers)
+    if isinstance(explorers, list):
+        return [
+            _redact(item) if isinstance(item, dict) else item
+            for item in explorers
+        ]
+    return explorers
+
+
 def enable_cors(fn):
     """Decorator that adds CORS headers to a route's response."""
     def _enable_cors(*args, **kwargs):
@@ -471,7 +489,7 @@ class SpellbookRESTAPI(Bottle):
         explorers = get_explorers()
         if explorers is None:
             return {'error': 'Unable to retrieve explorer_ids'}
-        return explorers
+        return _redact_explorers(explorers)
 
     @staticmethod
     @authentication_required
@@ -487,7 +505,7 @@ class SpellbookRESTAPI(Bottle):
         response.content_type = 'application/json'
         explorer_config = get_explorer_config(explorer_id)
         if explorer_config is not None:
-            return explorer_config
+            return _redact(explorer_config)
         else:
             return {'error': f'No explorer configured with id: {explorer_id}'}
 
