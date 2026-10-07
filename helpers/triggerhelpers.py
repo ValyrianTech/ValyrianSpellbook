@@ -168,6 +168,7 @@ def activate_trigger(trigger_id):
     Activate a Manual trigger or a DeadMansSwitch trigger
 
     :param trigger_id: The id of the trigger
+    :return: A dict with the activation result or an error message
     """
     try:
         filename = safe_path(TRIGGERS_DIR, f'{trigger_id}.json')
@@ -179,9 +180,9 @@ def activate_trigger(trigger_id):
 
     trigger = get_trigger(trigger_id)
     if trigger.trigger_type == TriggerType.MANUAL:
-        trigger.activate()
+        return trigger.activate()
     elif trigger.trigger_type == TriggerType.DEADMANSSWITCH:
-        trigger.arm()
+        return trigger.arm()
     else:
         return {'error': 'Only triggers of type Manual or DeadmansSwitch can be activated manually'}
 

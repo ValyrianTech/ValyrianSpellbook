@@ -226,10 +226,12 @@ class TestTriggerHelpers:
         """Test activating a Manual trigger"""
         mock_trigger = mock.MagicMock()
         mock_trigger.trigger_type = TriggerType.MANUAL
+        mock_trigger.activate.return_value = {'success': True}
         mock_get_trigger.return_value = mock_trigger
         
-        activate_trigger('test_trigger')
+        result = activate_trigger('test_trigger')
         mock_trigger.activate.assert_called_once()
+        assert result == {'success': True}
 
     @mock.patch('os.path.isfile', return_value=True)
     @mock.patch('helpers.triggerhelpers.get_trigger')
@@ -237,10 +239,12 @@ class TestTriggerHelpers:
         """Test activating a DeadMansSwitch trigger"""
         mock_trigger = mock.MagicMock()
         mock_trigger.trigger_type = TriggerType.DEADMANSSWITCH
+        mock_trigger.arm.return_value = {'success': True}
         mock_get_trigger.return_value = mock_trigger
         
-        activate_trigger('test_trigger')
+        result = activate_trigger('test_trigger')
         mock_trigger.arm.assert_called_once()
+        assert result == {'success': True}
 
     @mock.patch('os.path.isfile', return_value=True)
     @mock.patch('helpers.triggerhelpers.get_trigger')
