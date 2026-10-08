@@ -2,7 +2,7 @@
 """Configuration helpers for reading Spellbook settings from the config file."""
 
 import os
-from configparser import ConfigParser
+from configparser import ConfigParser, NoOptionError, NoSectionError
 
 import requests
 
@@ -391,3 +391,18 @@ def get_max_file_size_transcribe():
 def get_allowed_extensions_transcribe():
     """Get the allowed file extensions for transcription from the configuration."""
     return spellbook_config().get('Transcribe', 'allowed_extensions')
+
+
+def get_cors_allowed_origins():
+    """Get the list of origins allowed to make cross-origin requests from the configuration.
+
+    Reads the comma-separated ``allowed_origins`` option from the ``[RESTAPI]``
+    section and returns a list of trimmed, non-empty origins. Returns an empty
+    list when the option (or section) is absent from the configuration.
+    """
+    try:
+        allowed_origins = spellbook_config().get('RESTAPI', 'allowed_origins')
+    except (NoSectionError, NoOptionError):
+        return []
+
+    return [origin.strip() for origin in allowed_origins.split(',') if origin.strip()]

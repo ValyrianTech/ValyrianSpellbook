@@ -78,20 +78,105 @@ def mock_bottle_response():
 
 # --- enable_cors tests --------------------------------------------------------
 class TestEnableCors:
-    def test_cors_headers_set(self):
-        """Test that enable_cors sets the correct CORS headers."""
-        with patch('spellbookserver.response') as mock_resp:
+    def test_allowed_origin_echoed_back(self):
+        """Allowed origin is echoed back, credentials and Vary set, fn called."""
+        fn = MagicMock(return_value='result')
+
+        with patch('spellbookserver.response') as mock_resp, \
+             patch('spellbookserver.request') as mock_req, \
+             patch('spellbookserver.get_cors_allowed_origins', return_value=['https://app.example.com']):
             mock_resp.headers = {}
+            mock_req.headers = {'Origin': 'https://app.example.com'}
 
-            @enable_cors
-            def dummy():
-                return 'ok'
+            result = enable_cors(fn)()
+            assert result == 'result'
+            fn.assert_called_once_with()
+            assert mock_resp.headers['Access-Control-Allow-Origin'] == 'https://app.example.com'
+            assert mock_resp.headers['Access-Control-Allow-Credentials'] == 'true'
+            assert mock_resp.headers['Vary'] == 'Origin'
 
-            result = dummy()
-            assert result == 'ok'
-            assert mock_resp.headers['Access-Control-Allow-Origin'] == '*'
-            assert mock_resp.headers['Access-Control-Allow-Credentials'] is True
+    def test_disallowed_origin_no_cors_headers(self):
+        """Disallowed origin sets no ACAO/ACAC, but methods/headers still set."""
+        fn = MagicMock(return_value='result')
+
+        with patch('spellbookserver.response') as mock_resp, \
+             patch('spellbookserver.request') as mock_req, \
+             patch('spellbookserver.get_cors_allowed_origins', return_value=['https://app.example.com']):
+            mock_resp.headers = {}
+            mock_req.headers = {'Origin': 'https://evil.example.com'}
+
+            result = enable_cors(fn)()
+            assert result == 'result'
+            fn.assert_called_once_with()
+            assert 'Access-Control-Allow-Origin' not in mock_resp.headers
+            assert 'Access-Control-Allow-Credentials' not in mock_resp.headers
             assert 'GET' in mock_resp.headers['Access-Control-Allow-Methods']
+            assert 'Authorization' in mock_resp.headers['Access-Control-Allow-Headers']
+
+    def test_missing_origin_no_cors_headers(self):
+        """Missing Origin header results in no ACAO/ACAC."""
+        fn = MagicMock(return_value='result')
+
+        with patch('spellbookserver.response') as mock_resp, \
+             patch('spellbookserver.request') as mock_req, \
+             patch('spellbookserver.get_cors_allowed_origins', return_value=['https://app.example.com']):
+            mock_resp.headers = {}
+            mock_req.headers = {'X-Other': 'val'}
+
+            result = enable_cors(fn)()
+            assert result == 'result'
+            fn.assert_called_once_with()
+            assert 'Access-Control-Allow-Origin' not in mock_resp.headers
+            assert 'Access-Control-Allow-Credentials' not in mock_resp.headers
+
+    def test_request_headers_none(self):
+        """request.headers being None is treated as no origin."""
+        fn = MagicMock(return_value='result')
+
+        with patch('spellbookserver.response') as mock_resp, \
+             patch('spellbookserver.request') as mock_req, \
+             patch('spellbookserver.get_cors_allowed_origins', return_value=['https://app.example.com']):
+            mock_resp.headers = {}
+            mock_req.headers = None
+
+            result = enable_cors(fn)()
+            assert result == 'result'
+            fn.assert_called_once_with()
+            assert 'Access-Control-Allow-Origin' not in mock_resp.headers
+            assert 'Access-Control-Allow-Credentials' not in mock_resp.headers
+
+    def test_empty_allow_list(self):
+        """Empty allow-list results in no ACAO/ACAC."""
+        fn = MagicMock(return_value='result')
+
+        with patch('spellbookserver.response') as mock_resp, \
+             patch('spellbookserver.request') as mock_req, \
+             patch('spellbookserver.get_cors_allowed_origins', return_value=[]):
+            mock_resp.headers = {}
+            mock_req.headers = {'Origin': 'https://app.example.com'}
+
+            result = enable_cors(fn)()
+            assert result == 'result'
+            fn.assert_called_once_with()
+            assert 'Access-Control-Allow-Origin' not in mock_resp.headers
+            assert 'Access-Control-Allow-Credentials' not in mock_resp.headers
+
+    def test_methods_and_headers_values(self):
+        """Methods header drops 'authorization' token; headers include Authorization."""
+        with patch('spellbookserver.response') as mock_resp, \
+             patch('spellbookserver.request') as mock_req, \
+             patch('spellbookserver.get_cors_allowed_origins', return_value=['https://app.example.com']):
+            mock_resp.headers = {}
+            mock_req.headers = {'Origin': 'https://app.example.com'}
+
+            enable_cors(lambda: None)()
+
+            methods = mock_resp.headers['Access-Control-Allow-Methods']
+            assert 'authorization' not in methods
+            assert 'DELETE' in methods
+            assert 'GET' in methods
+            allow_headers = mock_resp.headers['Access-Control-Allow-Headers']
+            assert 'Authorization' in allow_headers
 
 
 # --- log_to_logger tests ------------------------------------------------------
@@ -1338,7 +1423,8 @@ class TestTranscribe:
     @patch('spellbookserver.os.remove')
     @patch('spellbookserver.convert_aac_to_opus')
     @patch('spellbookserver.LOG')
-    def test_transcribe_mp4_conversion(self, mock_log, mock_convert, mock_remove, mock_exists, mock_magic_cls, mock_max, mock_ext, mock_enable, mock_req):
+    @patch('spellbookserver.get_cors_allowed_origins', return_value=[])
+    def test_transcribe_mp4_conversion(self, mock_cors, mock_log, mock_convert, mock_remove, mock_exists, mock_magic_cls, mock_max, mock_ext, mock_enable, mock_req):
         mock_req.method = 'POST'
         mock_file = MagicMock()
         mock_file.filename = 'test.mp4'
@@ -1369,7 +1455,8 @@ class TestTranscribe:
     @patch('spellbookserver.os.remove')
     @patch('spellbookserver.convert_aac_to_opus')
     @patch('spellbookserver.LOG')
-    def test_transcribe_mp4_cleanup_old_files(self, mock_log, mock_convert, mock_remove, mock_exists, mock_magic_cls, mock_max, mock_ext, mock_enable, mock_req):
+    @patch('spellbookserver.get_cors_allowed_origins', return_value=[])
+    def test_transcribe_mp4_cleanup_old_files(self, mock_cors, mock_log, mock_convert, mock_remove, mock_exists, mock_magic_cls, mock_max, mock_ext, mock_enable, mock_req):
         """Test that old temp files are cleaned up before MP4 conversion (lines 875, 878)."""
         mock_req.method = 'POST'
         mock_file = MagicMock()

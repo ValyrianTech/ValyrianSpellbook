@@ -54,6 +54,7 @@ from helpers.actionhelpers import (
 from helpers.configurationhelpers import (
     get_allowed_extensions,
     get_allowed_extensions_transcribe,
+    get_cors_allowed_origins,
     get_enable_ssl,
     get_enable_transcribe,
     get_enable_uploads,
@@ -159,11 +160,21 @@ def enable_cors(fn):
     """Decorator that adds CORS headers to a route's response."""
     def _enable_cors(*args, **kwargs):
         """ enable cors endpoint."""
-        # set CORS headers
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        response.headers['Access-Control-Allow-Credentials'] = True
-        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, OPTIONS, HEAD, authorization'
-        response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
+        headers = getattr(request, 'headers', None)
+        origin = headers.get('Origin') if headers else None
+
+        allowed_origins = get_cors_allowed_origins()
+
+        if origin and origin in allowed_origins:
+            response.headers['Access-Control-Allow-Origin'] = origin
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Vary'] = 'Origin'
+        else:
+            response.headers.pop('Access-Control-Allow-Origin', None)
+            response.headers.pop('Access-Control-Allow-Credentials', None)
+
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS, HEAD'
+        response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token, Authorization'
 
         return fn(*args, **kwargs)
 

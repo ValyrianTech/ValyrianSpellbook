@@ -5,6 +5,7 @@ from helpers.configurationhelpers import (
     get_allowed_extensions,
     get_allowed_extensions_transcribe,
     get_app_data_dir,
+    get_cors_allowed_origins,
     get_default_wallet,
     get_domain_name,
     get_enable_ipfs,
@@ -602,3 +603,30 @@ class TestConfigurationGetters:
                 assert result == 'test_key'
         finally:
             os.unlink(tmp_path)
+
+
+class TestGetCorsAllowedOrigins:
+    """Tests for the get_cors_allowed_origins helper."""
+
+    def test_get_cors_allowed_origins_present(self):
+        """Test parsing a comma-separated allow-list of origins from the config."""
+        from configparser import ConfigParser
+
+        mock_config = ConfigParser()
+        mock_config.add_section('RESTAPI')
+        mock_config.set('RESTAPI', 'allowed_origins', ' https://app.example.com, , https://admin.example.com , ')
+
+        with mock.patch('helpers.configurationhelpers.spellbook_config', return_value=mock_config):
+            result = get_cors_allowed_origins()
+            assert result == ['https://app.example.com', 'https://admin.example.com']
+
+    def test_get_cors_allowed_origins_absent(self):
+        """Test that a missing option returns an empty list."""
+        from configparser import NoOptionError
+
+        mock_config = mock.MagicMock()
+        mock_config.get.side_effect = NoOptionError('allowed_origins', 'RESTAPI')
+
+        with mock.patch('helpers.configurationhelpers.spellbook_config', return_value=mock_config):
+            result = get_cors_allowed_origins()
+            assert result == []
