@@ -87,6 +87,7 @@ mock_cert
 mock_channel
 mock_consumer_key
 mock_consumer_secret
+mock_cors
 mock_cpu
 mock_domain
 mock_dotenv

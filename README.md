@@ -65,6 +65,10 @@ Refer to the provided `configuration/` directory to adjust settings for your env
 python spellbookserver.py
 ```
 
+### CORS / Cross-origin access
+
+The REST API supports cross-origin requests (CORS) for clients such as the Web UI/admin. Set the `allowed_origins` option in the `[RESTAPI]` section of `configuration/spellbook.conf` to a comma-separated allow-list of origins permitted to make cross-origin requests. The server echoes the request's `Origin` header back with `Access-Control-Allow-Credentials: true` only when it is in the allow-list. When `allowed_origins` is empty (the default), no cross-origin requests are allowed, so the Web UI/admin must set this option to call the REST API from another origin.
+
 ### Using the CLI
 
 The CLI tool `spellbook.py` helps manage triggers, actions, and configurations:
