@@ -1526,6 +1526,7 @@ class TestUploadFile:
         assert 'error' in result
         assert mock_resp.status == 413
         mock_file.file.read.assert_not_called()
+        mock_req.files.get.assert_not_called()
 
     @patch('spellbookserver.response')
     @patch('spellbookserver.get_enable_uploads', return_value=True)
@@ -1658,6 +1659,7 @@ class TestTranscribe:
         result = SpellbookRESTAPI.transcribe()
         assert '413' in str(result.status)
         mock_file.file.read.assert_not_called()
+        mock_req.files.get.assert_not_called()
 
     @patch('spellbookserver.request')
     @patch('spellbookserver.time.time', side_effect=[1000.0, 1001.0])
