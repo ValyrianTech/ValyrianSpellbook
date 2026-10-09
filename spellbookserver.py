@@ -984,6 +984,21 @@ class SpellbookRESTAPI(Bottle):
         if not os.path.exists(uploads_dir):
             os.makedirs(uploads_dir)
 
+        max_file_size = get_max_file_size()
+
+        # Pre-check the advertised Content-Length BEFORE touching request.files.
+        # Accessing request.files triggers Bottle's POST/_body machinery, which
+        # buffers the entire request body into memory; checking here lets us
+        # reject an oversized body before that buffering happens when the client
+        # declares its size up front. This is defense-in-depth only: Content-Length
+        # may be absent or inaccurate, so the bounded read below remains the
+        # authoritative size guard.
+        content_length = request.content_length
+        if isinstance(content_length, int) and content_length > max_file_size:
+            LOG.error(f"Declared content length {content_length} exceeds maximum allowed size of {max_file_size} bytes")
+            response.status = 413
+            return {"error": f"File size exceeds maximum allowed size of {max_file_size} bytes"}
+
         uploaded_file = request.files.get('file')
 
         if not uploaded_file:
@@ -998,16 +1013,6 @@ class SpellbookRESTAPI(Bottle):
             LOG.error(f"File extension {file_extension} is not allowed")
             response.status = 403
             return {"error": f"File extension {file_extension} is not allowed"}
-
-        max_file_size = get_max_file_size()
-
-        # Cheap pre-check against the advertised Content-Length (defense in depth only).
-        # This avoids buffering an oversized body when the client declares its size up front.
-        content_length = request.content_length
-        if isinstance(content_length, int) and content_length > max_file_size:
-            LOG.error(f"Declared content length {content_length} exceeds maximum allowed size of {max_file_size} bytes")
-            response.status = 413
-            return {"error": f"File size exceeds maximum allowed size of {max_file_size} bytes"}
 
         # Bounded read so we never buffer more than max_file_size (+1 to detect overflow)
         file_content = uploaded_file.file.read(max_file_size + 1)
@@ -1051,6 +1056,20 @@ class SpellbookRESTAPI(Bottle):
         if get_enable_transcribe() is False:
             return HTTPResponse(status=403, body={"error": "Transcribe endpoint is not enabled"})
 
+        max_file_size = get_max_file_size_transcribe()
+
+        # Pre-check the advertised Content-Length BEFORE touching request.files.
+        # Accessing request.files triggers Bottle's POST/_body machinery, which
+        # buffers the entire request body into memory; checking here lets us
+        # reject an oversized body before that buffering happens when the client
+        # declares its size up front. This is defense-in-depth only: Content-Length
+        # may be absent or inaccurate, so the bounded read below remains the
+        # authoritative size guard.
+        content_length = request.content_length
+        if isinstance(content_length, int) and content_length > max_file_size:
+            LOG.error(f"Declared content length {content_length} exceeds maximum allowed size of {max_file_size} bytes")
+            return HTTPResponse(status=413, body={"error": f"File size exceeds maximum allowed size of {max_file_size} bytes"})
+
         uploaded_file = request.files.get('file')
 
         if not uploaded_file:
@@ -1061,14 +1080,6 @@ class SpellbookRESTAPI(Bottle):
 
         if file_extension[1:] not in allowed_extensions:
             return HTTPResponse(status=403, body={"error": f"File extension {file_extension} is not allowed"})
-
-        max_file_size = get_max_file_size_transcribe()
-
-        # Cheap pre-check against the advertised Content-Length (defense in depth only).
-        content_length = request.content_length
-        if isinstance(content_length, int) and content_length > max_file_size:
-            LOG.error(f"Declared content length {content_length} exceeds maximum allowed size of {max_file_size} bytes")
-            return HTTPResponse(status=413, body={"error": f"File size exceeds maximum allowed size of {max_file_size} bytes"})
 
         # Bounded read so we never buffer more than max_file_size (+1 to detect overflow)
         file_content = uploaded_file.file.read(max_file_size + 1)
