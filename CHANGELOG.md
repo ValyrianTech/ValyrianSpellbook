@@ -95,6 +95,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The Web UI no longer stores API credentials in the signed session cookie. On login, the API key and secret are stored server-side in a thread-safe, in-memory session store (`webui/auth.py`) keyed by an opaque `session_id` (generated with `secrets.token_urlsafe(32)`), and only that `session_id` is placed in the signed session cookie. Records expire after 24 hours (`SESSION_TTL_SECONDS = 86400`) and are lazily purged on access; logout deletes the record. This closes a vulnerability where the signed (but not encrypted) session cookie carried the API key and secret in the clear.
 - The Web UI session cookie (`webui/main.py`) is now set with `SameSite=Strict` and can be made HTTPS-only via the `SPELLBOOK_SESSION_HTTPS_ONLY` environment variable (opt-in, accepts `1`/`true`/`yes`/`on`, case-insensitively).
 - The Web UI 500 error handler (`webui/main.py`) no longer returns exception details to the client: it logs the exception server-side (`logger.exception(...)`) and renders a generic error page (the raw `error` block was removed from `webui/templates/errors/500.html`), instead of exposing `str(exc)` to the browser.
+- The REST API `sign_message` endpoint (`spellbookserver.py`) no longer logs the full request body, which previously included the caller-supplied `private_key` in plaintext; the handler now logs only the request's `address`.
 
 ### Internal
 
