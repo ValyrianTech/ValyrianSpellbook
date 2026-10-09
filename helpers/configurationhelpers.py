@@ -338,6 +338,25 @@ def get_llms_default_model():
     """Get the default LLM model name from the configuration."""
     return spellbook_config().get('LLMs', 'default_model')
 
+def get_llm_ca_bundle():
+    """Get the CA bundle path used to verify TLS certificates for outbound LLM requests.
+
+    Reads the ``ca_bundle`` option from the ``[LLMs]`` section. When the option is
+    absent or empty, returns ``True`` so that requests uses its default behaviour of
+    verifying against the system certificate store. Set the option to the path of a
+    CA bundle (e.g. to trust a self-signed certificate) to override.
+    """
+    try:
+        ca_bundle = spellbook_config().get('LLMs', 'ca_bundle')
+    except (NoSectionError, NoOptionError):
+        return True
+
+    ca_bundle = ca_bundle.strip()
+    if ca_bundle == '':
+        return True
+
+    return ca_bundle
+
 @verify_config('LLMs', 'enable_together_ai')
 def get_enable_together_ai():
     """Get whether Together.ai integration is enabled from the configuration."""
