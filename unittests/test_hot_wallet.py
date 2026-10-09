@@ -34,20 +34,38 @@ def make_args(**kwargs):
     return argparse.Namespace(**kwargs)
 
 
+class TestGetWalletPassword:
+
+    @mock.patch.dict(os.environ, {'SPELLBOOK_WALLET_PASSWORD': 'envpass'})
+    @mock.patch('hot_wallet.getpass.getpass')
+    def test_env_var_set(self, mock_getpass):
+        result = hot_wallet._get_wallet_password('prompt: ')
+        assert result == 'envpass'
+        mock_getpass.assert_not_called()
+
+    @mock.patch.dict(os.environ, {}, clear=True)
+    @mock.patch('hot_wallet.getpass.getpass', return_value='typedpass')
+    def test_env_var_unset(self, mock_getpass):
+        result = hot_wallet._get_wallet_password('prompt: ')
+        assert result == 'typedpass'
+        mock_getpass.assert_called_once_with('prompt: ')
+
+
 class TestLoadWallet:
 
     @mock.patch('hot_wallet.os.path.isfile', return_value=False)
     def test_no_wallet_file_returns_empty(self, mock_isfile):
-        hot_wallet.args = make_args(wallet=None, wallet_password=None)
+        hot_wallet.args = make_args(wallet=None)
         result = hot_wallet.load_wallet()
         assert result == {}
 
+    @mock.patch.dict(os.environ, {'SPELLBOOK_WALLET_PASSWORD': 'mypassword'})
     @mock.patch('hot_wallet.simplejson.loads', return_value={'addr1': 'key1'})
     @mock.patch('hot_wallet.AESCipher')
     @mock.patch('builtins.open', new_callable=mock.mock_open, read_data='encrypted_data')
     @mock.patch('hot_wallet.os.path.isfile', return_value=True)
     def test_load_with_password(self, mock_isfile, mock_open, mock_aes, mock_loads):
-        hot_wallet.args = make_args(wallet=None, wallet_password='mypassword')
+        hot_wallet.args = make_args(wallet=None)
         mock_cipher = mock_aes.return_value
         mock_cipher.decrypt.return_value = 'decrypted_json'
         result = hot_wallet.load_wallet()
@@ -55,13 +73,14 @@ class TestLoadWallet:
         mock_aes.assert_called_once_with(key='mypassword')
         mock_cipher.decrypt.assert_called_once_with('encrypted_data')
 
+    @mock.patch.dict(os.environ, {}, clear=True)
     @mock.patch('hot_wallet.getpass.getpass', return_value='interactive_pass')
     @mock.patch('hot_wallet.simplejson.loads', return_value={'addr': 'k'})
     @mock.patch('hot_wallet.AESCipher')
     @mock.patch('builtins.open', new_callable=mock.mock_open, read_data='enc')
     @mock.patch('hot_wallet.os.path.isfile', return_value=True)
     def test_load_interactive_password(self, mock_isfile, mock_open, mock_aes, mock_loads, mock_getpass):
-        hot_wallet.args = make_args(wallet=None, wallet_password=None)
+        hot_wallet.args = make_args(wallet=None)
         mock_cipher = mock_aes.return_value
         mock_cipher.decrypt.return_value = 'decrypted'
         result = hot_wallet.load_wallet()
@@ -69,37 +88,40 @@ class TestLoadWallet:
         mock_getpass.assert_called_once()
         mock_aes.assert_called_once_with(key='interactive_pass')
 
+    @mock.patch('hot_wallet.getpass.getpass', return_value='pass')
     @mock.patch('hot_wallet.simplejson.loads', return_value={'a': 'b'})
     @mock.patch('hot_wallet.AESCipher')
     @mock.patch('builtins.open', new_callable=mock.mock_open, read_data='enc')
     @mock.patch('hot_wallet.os.path.isfile', return_value=True)
-    def test_load_with_wallet_arg(self, mock_isfile, mock_open, mock_aes, mock_loads):
-        hot_wallet.args = make_args(wallet='custom_wallet', wallet_password='pass')
+    def test_load_with_wallet_arg(self, mock_isfile, mock_open, mock_aes, mock_loads, mock_getpass):
+        hot_wallet.args = make_args(wallet='custom_wallet')
         mock_cipher = mock_aes.return_value
         mock_cipher.decrypt.return_value = 'decrypted'
         hot_wallet.load_wallet()
         assert hot_wallet.WALLET_ID == 'custom_wallet'
 
+    @mock.patch('hot_wallet.getpass.getpass', return_value='pass')
     @mock.patch('hot_wallet.sys.exit')
     @mock.patch('builtins.print')
     @mock.patch('builtins.open', side_effect=OSError('File not found'))
     @mock.patch('hot_wallet.AESCipher')
     @mock.patch('hot_wallet.os.path.isfile', return_value=True)
-    def test_load_io_error(self, mock_isfile, mock_aes, mock_open, mock_print, mock_exit):
-        hot_wallet.args = make_args(wallet=None, wallet_password='pass')
+    def test_load_io_error(self, mock_isfile, mock_aes, mock_open, mock_print, mock_exit, mock_getpass):
+        hot_wallet.args = make_args(wallet=None)
         mock_cipher = mock_aes.return_value
         mock_cipher.decrypt.return_value = 'decrypted'
         hot_wallet.load_wallet()
         mock_exit.assert_called_once_with(1)
 
+    @mock.patch('hot_wallet.getpass.getpass', return_value='pass')
     @mock.patch('hot_wallet.sys.exit')
     @mock.patch('builtins.print')
     @mock.patch('hot_wallet.simplejson.loads', side_effect=ValueError('Bad decrypt'))
     @mock.patch('hot_wallet.AESCipher')
     @mock.patch('builtins.open', new_callable=mock.mock_open, read_data='enc')
     @mock.patch('hot_wallet.os.path.isfile', return_value=True)
-    def test_load_decrypt_error(self, mock_isfile, mock_open, mock_aes, mock_loads, mock_print, mock_exit):
-        hot_wallet.args = make_args(wallet=None, wallet_password='pass')
+    def test_load_decrypt_error(self, mock_isfile, mock_open, mock_aes, mock_loads, mock_print, mock_exit, mock_getpass):
+        hot_wallet.args = make_args(wallet=None)
         mock_cipher = mock_aes.return_value
         mock_cipher.decrypt.return_value = 'decrypted'
         hot_wallet.load_wallet()
@@ -108,47 +130,51 @@ class TestLoadWallet:
 
 class TestSaveWallet:
 
+    @mock.patch.dict(os.environ, {'SPELLBOOK_WALLET_PASSWORD': 'mypassword'})
+    @mock.patch('hot_wallet.getpass.getpass')
     @mock.patch('builtins.open', new_callable=mock.mock_open)
     @mock.patch('hot_wallet.AESCipher')
     @mock.patch('hot_wallet.simplejson.dumps', return_value='{"addr": "key"}')
-    def test_save_with_password(self, mock_dumps, mock_aes, mock_open):
-        hot_wallet.args = make_args(wallet_password='mypassword')
+    def test_save_with_password(self, mock_dumps, mock_aes, mock_open, mock_getpass):
         mock_cipher = mock_aes.return_value
         mock_cipher.encrypt.return_value = b'encrypted_data'
         hot_wallet.save_wallet({'addr': 'key'})
         mock_aes.assert_called_once_with(key='mypassword')
         mock_cipher.encrypt.assert_called_once()
+        mock_getpass.assert_not_called()
 
+    @mock.patch.dict(os.environ, {}, clear=True)
     @mock.patch('builtins.open', new_callable=mock.mock_open)
     @mock.patch('hot_wallet.AESCipher')
     @mock.patch('hot_wallet.simplejson.dumps', return_value='{"addr": "key"}')
     @mock.patch('hot_wallet.getpass.getpass', side_effect=['pass1', 'pass1'])
     def test_save_interactive_password_match(self, mock_getpass, mock_dumps, mock_aes, mock_open):
-        hot_wallet.args = make_args(wallet_password=None)
         mock_aes.return_value.encrypt.return_value = b'encrypted'
         hot_wallet.save_wallet({'addr': 'key'})
         assert mock_getpass.call_count == 2
         mock_aes.assert_called_once_with(key='pass1')
         mock_aes.return_value.encrypt.assert_called_once()
 
+    @mock.patch.dict(os.environ, {}, clear=True)
     @mock.patch('hot_wallet.sys.exit', side_effect=SystemExit(1))
     @mock.patch('builtins.print')
     @mock.patch('hot_wallet.getpass.getpass', side_effect=['pass1', 'pass2'])
     def test_save_interactive_password_mismatch(self, mock_getpass, mock_print, mock_exit):
-        hot_wallet.args = make_args(wallet_password=None)
         with pytest.raises(SystemExit):
             hot_wallet.save_wallet({'addr': 'key'})
         mock_exit.assert_called_once_with(1)
 
+    @mock.patch.dict(os.environ, {'SPELLBOOK_WALLET_PASSWORD': ''})
+    @mock.patch('hot_wallet.getpass.getpass')
     @mock.patch('builtins.open', new_callable=mock.mock_open)
     @mock.patch('hot_wallet.AESCipher')
     @mock.patch('hot_wallet.simplejson.dumps', return_value='{}')
-    def test_save_empty_password(self, mock_dumps, mock_aes, mock_open):
-        hot_wallet.args = make_args(wallet_password='')
+    def test_save_empty_password(self, mock_dumps, mock_aes, mock_open, mock_getpass):
         mock_cipher = mock_aes.return_value
         mock_cipher.encrypt.return_value = b'enc'
         hot_wallet.save_wallet({})
         mock_aes.assert_called_once_with(key='')
+        mock_getpass.assert_not_called()
 
 
 class TestAddKey:
@@ -158,7 +184,7 @@ class TestAddKey:
     @mock.patch('hot_wallet.get_use_testnet', return_value=False)
     @mock.patch('hot_wallet.load_wallet', return_value={'existing': 'key'})
     def test_add_key_valid(self, mock_load, mock_testnet, mock_privkey, mock_save):
-        hot_wallet.args = make_args(private_key='5myprivatekey123', wallet=None, wallet_password='pass')
+        hot_wallet.args = make_args(private_key='5myprivatekey123', wallet=None)
         hot_wallet.add_key()
         mock_privkey.assert_called_once_with('5myprivatekey123', magicbyte=0)
         mock_save.assert_called_once_with({'existing': 'key', '1TestAddress': '5myprivatekey123'})
@@ -168,7 +194,7 @@ class TestAddKey:
     @mock.patch('hot_wallet.get_use_testnet', return_value=True)
     @mock.patch('hot_wallet.load_wallet', return_value={})
     def test_add_key_testnet(self, mock_load, mock_testnet, mock_privkey, mock_save):
-        hot_wallet.args = make_args(private_key='5myprivatekey123', wallet=None, wallet_password='pass')
+        hot_wallet.args = make_args(private_key='5myprivatekey123', wallet=None)
         hot_wallet.add_key()
         mock_privkey.assert_called_once_with('5myprivatekey123', magicbyte=111)
         mock_save.assert_called_once_with({'1TestAddr': '5myprivatekey123'})
@@ -179,7 +205,7 @@ class TestAddKey:
     @mock.patch('hot_wallet.get_use_testnet', return_value=False)
     @mock.patch('hot_wallet.load_wallet', return_value={})
     def test_add_key_invalid(self, mock_load, mock_testnet, mock_privkey, mock_print, mock_exit):
-        hot_wallet.args = make_args(private_key='invalid', wallet=None, wallet_password='pass')
+        hot_wallet.args = make_args(private_key='invalid', wallet=None)
         with pytest.raises(SystemExit):
             hot_wallet.add_key()
         mock_exit.assert_called_once_with(1)
@@ -190,21 +216,21 @@ class TestDeleteKey:
     @mock.patch('hot_wallet.save_wallet')
     @mock.patch('hot_wallet.load_wallet', return_value={'addr1': 'key1', 'addr2': 'key2'})
     def test_delete_existing_key(self, mock_load, mock_save):
-        hot_wallet.args = make_args(address='addr1', wallet=None, wallet_password='pass')
+        hot_wallet.args = make_args(address='addr1', wallet=None)
         hot_wallet.delete_key()
         mock_save.assert_called_once_with({'addr2': 'key2'})
 
     @mock.patch('hot_wallet.save_wallet')
     @mock.patch('hot_wallet.load_wallet', return_value={'addr1': 'key1'})
     def test_delete_non_existing_key(self, mock_load, mock_save):
-        hot_wallet.args = make_args(address='nonexistent', wallet=None, wallet_password='pass')
+        hot_wallet.args = make_args(address='nonexistent', wallet=None)
         hot_wallet.delete_key()
         mock_save.assert_called_once_with({'addr1': 'key1'})
 
     @mock.patch('hot_wallet.save_wallet')
     @mock.patch('hot_wallet.load_wallet', return_value={})
     def test_delete_from_empty_wallet(self, mock_load, mock_save):
-        hot_wallet.args = make_args(address='addr1', wallet=None, wallet_password='pass')
+        hot_wallet.args = make_args(address='addr1', wallet=None)
         hot_wallet.delete_key()
         mock_save.assert_called_once_with({})
 
@@ -215,7 +241,7 @@ class TestSetBip44:
     @mock.patch('hot_wallet.load_wallet', return_value={})
     def test_set_bip44_12_words(self, mock_load, mock_save):
         words = ['word'] * 12
-        hot_wallet.args = make_args(mnemonic=words, passphrase=None, wallet=None, wallet_password='pass')
+        hot_wallet.args = make_args(mnemonic=words, passphrase=None, wallet=None)
         hot_wallet.set_bip44()
         mock_save.assert_called_once_with({'mnemonic': words, 'passphrase': ''})
 
@@ -223,7 +249,7 @@ class TestSetBip44:
     @mock.patch('hot_wallet.load_wallet', return_value={})
     def test_set_bip44_24_words(self, mock_load, mock_save):
         words = ['word'] * 24
-        hot_wallet.args = make_args(mnemonic=words, passphrase='secret', wallet=None, wallet_password='pass')
+        hot_wallet.args = make_args(mnemonic=words, passphrase='secret', wallet=None)
         hot_wallet.set_bip44()
         mock_save.assert_called_once_with({'mnemonic': words, 'passphrase': 'secret'})
 
@@ -231,7 +257,7 @@ class TestSetBip44:
     @mock.patch('hot_wallet.load_wallet', return_value={'existing': 'data'})
     def test_set_bip44_preserves_existing(self, mock_load, mock_save):
         words = ['word'] * 12
-        hot_wallet.args = make_args(mnemonic=words, passphrase='pass', wallet=None, wallet_password='pass')
+        hot_wallet.args = make_args(mnemonic=words, passphrase='pass', wallet=None)
         hot_wallet.set_bip44()
         mock_save.assert_called_once_with({'existing': 'data', 'mnemonic': words, 'passphrase': 'pass'})
 
@@ -239,7 +265,7 @@ class TestSetBip44:
     @mock.patch('builtins.print')
     @mock.patch('hot_wallet.load_wallet', return_value={})
     def test_set_bip44_invalid_word_count(self, mock_load, mock_print, mock_exit):
-        hot_wallet.args = make_args(mnemonic=['word'] * 15, passphrase=None, wallet=None, wallet_password='pass')
+        hot_wallet.args = make_args(mnemonic=['word'] * 15, passphrase=None, wallet=None)
         with pytest.raises(SystemExit):
             hot_wallet.set_bip44()
         mock_exit.assert_called_once_with(1)
@@ -248,7 +274,7 @@ class TestSetBip44:
     @mock.patch('builtins.print')
     @mock.patch('hot_wallet.load_wallet', return_value={})
     def test_set_bip44_too_few_words(self, mock_load, mock_print, mock_exit):
-        hot_wallet.args = make_args(mnemonic=['word'] * 6, passphrase=None, wallet=None, wallet_password='pass')
+        hot_wallet.args = make_args(mnemonic=['word'] * 6, passphrase=None, wallet=None)
         with pytest.raises(SystemExit):
             hot_wallet.set_bip44()
         mock_exit.assert_called_once_with(1)
@@ -259,14 +285,14 @@ class TestShow:
     @mock.patch('hot_wallet.pprint')
     @mock.patch('hot_wallet.load_wallet', return_value={'addr1': 'key1'})
     def test_show(self, mock_load, mock_pprint):
-        hot_wallet.args = make_args(wallet=None, wallet_password='pass')
+        hot_wallet.args = make_args(wallet=None)
         hot_wallet.show()
         mock_pprint.assert_called_once_with({'addr1': 'key1'})
 
     @mock.patch('hot_wallet.pprint')
     @mock.patch('hot_wallet.load_wallet', return_value={})
     def test_show_empty_wallet(self, mock_load, mock_pprint):
-        hot_wallet.args = make_args(wallet=None, wallet_password='pass')
+        hot_wallet.args = make_args(wallet=None)
         hot_wallet.show()
         mock_pprint.assert_called_once_with({})
 
@@ -301,3 +327,8 @@ class TestModuleLevel:
         # show has no positional arguments
         ns = hot_wallet.parser.parse_args(['show', '-w', 'testwallet'])
         assert ns.command == 'show'
+
+    def test_parser_rejects_wallet_password(self):
+        """The insecure --wallet-password flag must no longer be accepted."""
+        with pytest.raises(SystemExit):
+            hot_wallet.parser.parse_args(['show', '--wallet-password', 'x'])
