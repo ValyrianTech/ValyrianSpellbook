@@ -1534,6 +1534,89 @@ class TestUploadFile:
     @patch('spellbookserver.os.path.exists', return_value=True)
     @patch('spellbookserver.request')
     @patch('spellbookserver.get_allowed_extensions', return_value='jpg,jpeg,png')
+    @patch('spellbookserver.get_max_file_size', return_value=100)
+    @patch('spellbookserver.LOG')
+    def test_upload_declared_content_length_absent(self, mock_log, mock_max, mock_ext, mock_req, mock_exists, mock_dir, mock_enable, mock_resp):
+        mock_file = MagicMock()
+        mock_file.filename = 'test.exe'
+        mock_req.files.get.return_value = mock_file
+        mock_req.content_length = None
+        result = SpellbookRESTAPI.upload_file()
+        assert mock_resp.status == 403
+        assert 'File extension' in result['error']
+        mock_req.files.get.assert_called_once()
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.get_enable_uploads', return_value=True)
+    @patch('spellbookserver.get_uploads_dir', return_value='/tmp/uploads')
+    @patch('spellbookserver.os.path.exists', return_value=True)
+    @patch('spellbookserver.request')
+    @patch('spellbookserver.get_allowed_extensions', return_value='jpg,jpeg,png')
+    @patch('spellbookserver.get_max_file_size', return_value=100)
+    @patch('spellbookserver.LOG')
+    def test_upload_declared_content_length_negative_one(self, mock_log, mock_max, mock_ext, mock_req, mock_exists, mock_dir, mock_enable, mock_resp):
+        mock_file = MagicMock()
+        mock_file.filename = 'test.exe'
+        mock_req.files.get.return_value = mock_file
+        mock_req.content_length = -1
+        result = SpellbookRESTAPI.upload_file()
+        assert mock_resp.status == 403
+        assert 'File extension' in result['error']
+        mock_req.files.get.assert_called_once()
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.get_enable_uploads', return_value=True)
+    @patch('spellbookserver.get_uploads_dir', return_value='/tmp/uploads')
+    @patch('spellbookserver.os.path.exists', return_value=True)
+    @patch('spellbookserver.request')
+    @patch('spellbookserver.get_allowed_extensions', return_value='jpg,jpeg,png')
+    @patch('spellbookserver.get_max_file_size', return_value=100)
+    @patch('spellbookserver.LOG')
+    def test_upload_declared_content_length_exact_boundary(self, mock_log, mock_max, mock_ext, mock_req, mock_exists, mock_dir, mock_enable, mock_resp):
+        mock_file = MagicMock()
+        mock_file.filename = 'test.exe'
+        mock_req.files.get.return_value = mock_file
+        mock_req.content_length = 100
+        result = SpellbookRESTAPI.upload_file()
+        assert mock_resp.status == 403
+        assert 'File extension' in result['error']
+        mock_req.files.get.assert_called_once()
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.get_enable_uploads', return_value=True)
+    @patch('spellbookserver.get_uploads_dir', return_value='/tmp/uploads')
+    @patch('spellbookserver.os.path.exists', return_value=True)
+    @patch('spellbookserver.request')
+    @patch('spellbookserver.get_allowed_extensions', return_value='jpg,jpeg,png')
+    @patch('spellbookserver.get_max_file_size', return_value=100)
+    @patch('spellbookserver.magic.Magic')
+    @patch('spellbookserver.LOG')
+    def test_upload_read_bounded_to_max_file_size_plus_one(self, mock_log, mock_magic_cls, mock_max, mock_ext, mock_req, mock_exists, mock_dir, mock_enable, mock_resp):
+        mock_file = MagicMock()
+        mock_file.filename = 'test.jpg'
+        sizes = []
+
+        def read_side_effect(size):
+            sizes.append(size)
+            return b'x' * min(size, 10)
+
+        mock_file.file.read.side_effect = read_side_effect
+        mock_req.files.get.return_value = mock_file
+        mock_req.content_length = 50
+        mock_mime = MagicMock()
+        mock_mime.from_buffer.return_value = 'application/exe'
+        mock_magic_cls.return_value = mock_mime
+        result = SpellbookRESTAPI.upload_file()
+        mock_file.file.read.assert_called_once_with(101)
+        assert sizes == [101]
+        assert mock_resp.status == 403
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.get_enable_uploads', return_value=True)
+    @patch('spellbookserver.get_uploads_dir', return_value='/tmp/uploads')
+    @patch('spellbookserver.os.path.exists', return_value=True)
+    @patch('spellbookserver.request')
+    @patch('spellbookserver.get_allowed_extensions', return_value='jpg,jpeg,png')
     @patch('spellbookserver.get_max_file_size', return_value=1000000)
     @patch('spellbookserver.magic.Magic')
     @patch('spellbookserver.uuid')
@@ -1660,6 +1743,81 @@ class TestTranscribe:
         assert '413' in str(result.status)
         mock_file.file.read.assert_not_called()
         mock_req.files.get.assert_not_called()
+
+    @patch('spellbookserver.request')
+    @patch('spellbookserver.get_enable_transcribe', return_value=True)
+    @patch('spellbookserver.get_allowed_extensions_transcribe', return_value='mp3')
+    @patch('spellbookserver.get_max_file_size_transcribe', return_value=100)
+    @patch('spellbookserver.LOG')
+    def test_transcribe_declared_content_length_absent(self, mock_log, mock_max, mock_ext, mock_enable, mock_req):
+        mock_req.method = 'POST'
+        mock_file = MagicMock()
+        mock_file.filename = 'test.exe'
+        mock_req.files.get.return_value = mock_file
+        mock_req.content_length = None
+        result = SpellbookRESTAPI.transcribe()
+        assert '403' in str(result.status)
+        assert 'File extension' in result.body['error']
+        mock_req.files.get.assert_called_once()
+
+    @patch('spellbookserver.request')
+    @patch('spellbookserver.get_enable_transcribe', return_value=True)
+    @patch('spellbookserver.get_allowed_extensions_transcribe', return_value='mp3')
+    @patch('spellbookserver.get_max_file_size_transcribe', return_value=100)
+    @patch('spellbookserver.LOG')
+    def test_transcribe_declared_content_length_negative_one(self, mock_log, mock_max, mock_ext, mock_enable, mock_req):
+        mock_req.method = 'POST'
+        mock_file = MagicMock()
+        mock_file.filename = 'test.exe'
+        mock_req.files.get.return_value = mock_file
+        mock_req.content_length = -1
+        result = SpellbookRESTAPI.transcribe()
+        assert '403' in str(result.status)
+        assert 'File extension' in result.body['error']
+        mock_req.files.get.assert_called_once()
+
+    @patch('spellbookserver.request')
+    @patch('spellbookserver.get_enable_transcribe', return_value=True)
+    @patch('spellbookserver.get_allowed_extensions_transcribe', return_value='mp3')
+    @patch('spellbookserver.get_max_file_size_transcribe', return_value=100)
+    @patch('spellbookserver.LOG')
+    def test_transcribe_declared_content_length_exact_boundary(self, mock_log, mock_max, mock_ext, mock_enable, mock_req):
+        mock_req.method = 'POST'
+        mock_file = MagicMock()
+        mock_file.filename = 'test.exe'
+        mock_req.files.get.return_value = mock_file
+        mock_req.content_length = 100
+        result = SpellbookRESTAPI.transcribe()
+        assert '403' in str(result.status)
+        assert 'File extension' in result.body['error']
+        mock_req.files.get.assert_called_once()
+
+    @patch('spellbookserver.request')
+    @patch('spellbookserver.get_enable_transcribe', return_value=True)
+    @patch('spellbookserver.get_allowed_extensions_transcribe', return_value='mp3')
+    @patch('spellbookserver.get_max_file_size_transcribe', return_value=100)
+    @patch('spellbookserver.magic.Magic')
+    @patch('spellbookserver.LOG')
+    def test_transcribe_read_bounded_to_max_file_size_plus_one(self, mock_log, mock_magic_cls, mock_max, mock_ext, mock_enable, mock_req):
+        mock_req.method = 'POST'
+        mock_file = MagicMock()
+        mock_file.filename = 'test.mp3'
+        sizes = []
+
+        def read_side_effect(size):
+            sizes.append(size)
+            return b'x' * min(size, 10)
+
+        mock_file.file.read.side_effect = read_side_effect
+        mock_req.files.get.return_value = mock_file
+        mock_req.content_length = 50
+        mock_mime = MagicMock()
+        mock_mime.from_buffer.return_value = 'text/plain'
+        mock_magic_cls.return_value = mock_mime
+        result = SpellbookRESTAPI.transcribe()
+        mock_file.file.read.assert_called_once_with(101)
+        assert sizes == [101]
+        assert '403' in str(result.status)
 
     @patch('spellbookserver.request')
     @patch('spellbookserver.time.time', side_effect=[1000.0, 1001.0])
