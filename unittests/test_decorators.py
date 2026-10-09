@@ -121,6 +121,36 @@ class TestUseExplorer:
         assert result == "string result"
         mock_clear.assert_called_once()
 
+    @mock.patch('decorators.clear_explorer')
+    @mock.patch('decorators.get_last_explorer')
+    @mock.patch('decorators.set_explorer')
+    @mock.patch('decorators.request')
+    def test_use_explorer_clears_on_exception(self, mock_request, mock_set, mock_get_last, mock_clear):
+        mock_request.query.explorer = 'blockstream'
+        mock_get_last.return_value = 'blockstream'
+
+        @use_explorer
+        def test_func():
+            raise ValueError('boom')
+
+        with pytest.raises(ValueError, match='boom'):
+            test_func()
+        mock_set.assert_called_once_with('blockstream')
+        mock_clear.assert_called_once()
+
+    @mock.patch('decorators.clear_explorer')
+    @mock.patch('decorators.get_last_explorer')
+    @mock.patch('decorators.set_explorer')
+    @mock.patch('decorators.request')
+    def test_use_explorer_preserves_name(self, mock_request, mock_set, mock_get_last, mock_clear):
+        mock_request.query.explorer = ''
+
+        @use_explorer
+        def my_func():
+            return {'data': 'test'}
+
+        assert my_func.__name__ == 'my_func'
+
 
 class TestOutputJson:
     """Tests for output_json decorator"""

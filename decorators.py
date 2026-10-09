@@ -47,16 +47,18 @@ def use_explorer(f):
     :return: The result of the function
     """
 
+    @wraps(f)
     def decorated_function(*args, **kwargs):
         """Set explorer, execute function, and append explorer info to the result."""
         if request.query.explorer != '':
             set_explorer(request.query.explorer)
-
-        ret = f(*args, **kwargs)
+        try:
+            ret = f(*args, **kwargs)
+            last_explorer = get_last_explorer()
+        finally:
+            clear_explorer()
         if isinstance(ret, dict):
-            ret['explorer'] = get_last_explorer()
-
-        clear_explorer()
+            ret['explorer'] = last_explorer
         return ret
 
     return decorated_function
