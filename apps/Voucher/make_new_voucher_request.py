@@ -2,6 +2,7 @@ import sys
 import requests
 
 from helpers.configurationhelpers import get_host, get_port
+from helpers.http_helpers import DEFAULT_HTTP_TIMEOUT
 from helpers.hotwallethelpers import get_address_from_wallet
 
 
@@ -13,7 +14,7 @@ data = {'voucher': voucher, 'address': address}
 
 print('Making new Voucher request')
 try:
-    r = requests.post(url, json=data)
+    r = requests.post(url, json=data, timeout=DEFAULT_HTTP_TIMEOUT)
     print(r.text)
 except Exception as ex:
     print('POST %s failed: %s' % (url, ex), file=sys.stderr)

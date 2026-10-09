@@ -14,6 +14,8 @@ from unittest import mock
 
 import pytest
 
+from helpers.http_helpers import DEFAULT_HTTP_TIMEOUT
+
 _BITCOINWAND_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'bitcoinwand.py')
 
 VALID_ADDRESS = '1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2'
@@ -42,11 +44,12 @@ def _import_bitcoinwand(message='hello', valid_addr=True, find_wallet=(0, 0), is
                    return_value={VALID_ADDRESS: PRIVATE_KEY}),
         mock.patch('os.path.isfile', return_value=isfile),
         mock.patch('helpers.messagehelpers.sign_message', return_value='signature'),
-        post_patch,
     ]
 
     if message_hash is not None:
         patches.append(mock.patch('helpers.ipfshelpers.add_json', return_value=message_hash))
+
+    post_mock = post_patch.start()
 
     for p in patches:
         p.start()
@@ -56,8 +59,10 @@ def _import_bitcoinwand(message='hello', valid_addr=True, find_wallet=(0, 0), is
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
         sys.modules['bitcoinwand'] = mod
+        mod._requests_post_mock = post_mock
         return mod
     finally:
+        post_patch.stop()
         for p in patches:
             p.stop()
 
@@ -96,6 +101,12 @@ class TestBitcoinwandImport:
         mod = _import_bitcoinwand(message='hello')
         actions = {a.dest for a in mod.parser._actions}
         assert 'url' in actions
+
+    def test_post_called_with_timeout(self):
+        mod = _import_bitcoinwand(message='hello')
+        mod._requests_post_mock.assert_called_once_with(
+            'http://example.com', json=mod.data, timeout=DEFAULT_HTTP_TIMEOUT
+        )
 
 
 class TestBitcoinwandInvalidAddress:

@@ -8,6 +8,7 @@ from action.sendtransactionaction import TransactionType
 from helpers.actionhelpers import get_action
 from helpers.configurationhelpers import get_app_data_dir, get_use_testnet
 from helpers.hotwallethelpers import get_address_from_wallet
+from helpers.http_helpers import DEFAULT_HTTP_TIMEOUT
 from helpers.loghelpers import LOG
 from spellbookscripts.spellbookscript import SpellbookScript
 from validators.validators import valid_address, valid_bech32_address
@@ -65,7 +66,7 @@ class RedeemVoucher(SpellbookScript):
         LOG.info('Retrieving BTCUSD price from bitcoinaverage.com')
         LOG.info('GET %s' % url)
         try:
-            r = requests.get(url=url)
+            r = requests.get(url=url, timeout=DEFAULT_HTTP_TIMEOUT)
             price_data = r.json()
         except Exception as ex:
             LOG.error('Unable to retrieve BTC price from bitcoinaverage.com: %s' % ex)
