@@ -43,3 +43,9 @@ class TestConversionHelpers:
         with pytest.raises(Exception) as excinfo:
             btc2satoshis([1, 2, 3])
         assert 'Invalid type' in str(excinfo.value)
+
+    def test_btc2satoshis_malformed_string_raises(self):
+        """Test that a malformed numeric string raises a TypeError."""
+        with pytest.raises(Exception) as excinfo:
+            btc2satoshis('not_a_number')
+        assert 'Invalid type' in str(excinfo.value)
