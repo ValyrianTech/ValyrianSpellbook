@@ -1183,6 +1183,20 @@ class TestTriggerEndpoints:
             SpellbookRESTAPI.sign_message()
             mock_sign.assert_called_once_with(message='hello')
 
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.sign_message')
+    @patch('spellbookserver.request')
+    def test_sign_message_does_not_log_private_key(self, mock_req, mock_sign, mock_resp):
+        with patch('decorators.check_authentication') as mock_dec:
+            mock_dec.return_value = 'OK'
+            mock_req.json = {'address': '1abc', 'message': 'hello', 'private_key': 'SENSITIVE_PRIVATE_KEY_VALUE'}
+            mock_sign.return_value = {'signature': 'abc'}
+            with patch('spellbookserver.LOG') as mock_log:
+                SpellbookRESTAPI.sign_message()
+            logged = repr(mock_log.info.call_args_list)
+            assert 'SENSITIVE_PRIVATE_KEY_VALUE' not in logged
+            mock_sign.assert_called_once_with(address='1abc', message='hello', private_key='SENSITIVE_PRIVATE_KEY_VALUE')
+
 
 class TestHttpRequestEndpoints:
     @patch('spellbookserver.response')
