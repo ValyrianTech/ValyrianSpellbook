@@ -275,6 +275,41 @@ class TestTextGenerationWebuiLLM(unittest.TestCase):
         self.assertEqual(result, 'Hello!')
         self.assertEqual(usage['prompt_tokens'], 0)
 
+    @patch('helpers.textgenerationwebui_llm.get_llm_ca_bundle', return_value='/custom/ca.pem')
+    @patch('helpers.llm_interface.init_websocket_server')
+    @patch('helpers.textgenerationwebui_llm.requests.post')
+    @patch('helpers.textgenerationwebui_llm.sseclient.SSEClient')
+    @patch('helpers.textgenerationwebui_llm.broadcast_message')
+    @patch('helpers.textgenerationwebui_llm.get_broadcast_channel', return_value='test-channel')
+    @patch('helpers.textgenerationwebui_llm.get_broadcast_sender', return_value='test-sender')
+    @patch('helpers.textgenerationwebui_llm.LOG')
+    def test_get_completion_text_verify(self, mock_log, mock_sender, mock_channel, mock_broadcast, mock_sse, mock_post, mock_ws, mock_ca_bundle):
+        """Test that the verify argument passed to requests.post matches get_llm_ca_bundle()."""
+        from helpers.textgenerationwebui_llm import TextGenerationWebuiLLM
+
+        mock_event = MagicMock()
+        mock_event.data = json.dumps({
+            'choices': [{'text': 'Hello!'}],
+            'usage': {'prompt_tokens': 10, 'completion_tokens': 5, 'total_tokens': 15}
+        })
+
+        mock_sse_client = MagicMock()
+        mock_sse_client.events.return_value = iter([mock_event])
+        mock_sse.return_value = mock_sse_client
+
+        llm = TextGenerationWebuiLLM(model_name='test-model', host='http://localhost', port=5000)
+        llm.prompt_tokens_cost = 0
+        llm.completion_tokens_cost = 0
+        llm.prompt_tokens_multiplier = 1
+        llm.completion_tokens_multiplier = 1
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        result, usage = llm.get_completion_text(messages)
+
+        self.assertEqual(result, 'Hello!')
+        self.assertEqual(mock_post.call_args.kwargs['verify'], '/custom/ca.pem')
+        self.assertNotEqual(mock_post.call_args.kwargs['verify'], False)
+
 
 if __name__ == '__main__':
     unittest.main()
