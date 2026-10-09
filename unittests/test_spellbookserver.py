@@ -1515,6 +1515,24 @@ class TestUploadFile:
     @patch('spellbookserver.os.path.exists', return_value=True)
     @patch('spellbookserver.request')
     @patch('spellbookserver.get_allowed_extensions', return_value='jpg,jpeg,png')
+    @patch('spellbookserver.get_max_file_size', return_value=100)
+    @patch('spellbookserver.LOG')
+    def test_upload_declared_content_length_too_large(self, mock_log, mock_max, mock_ext, mock_req, mock_exists, mock_dir, mock_enable, mock_resp):
+        mock_file = MagicMock()
+        mock_file.filename = 'test.jpg'
+        mock_req.files.get.return_value = mock_file
+        mock_req.content_length = 200
+        result = SpellbookRESTAPI.upload_file()
+        assert 'error' in result
+        assert mock_resp.status == 413
+        mock_file.file.read.assert_not_called()
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.get_enable_uploads', return_value=True)
+    @patch('spellbookserver.get_uploads_dir', return_value='/tmp/uploads')
+    @patch('spellbookserver.os.path.exists', return_value=True)
+    @patch('spellbookserver.request')
+    @patch('spellbookserver.get_allowed_extensions', return_value='jpg,jpeg,png')
     @patch('spellbookserver.get_max_file_size', return_value=1000000)
     @patch('spellbookserver.magic.Magic')
     @patch('spellbookserver.uuid')
@@ -1625,6 +1643,21 @@ class TestTranscribe:
         mock_magic_cls.return_value = mock_mime
         result = SpellbookRESTAPI.transcribe()
         assert '413' in str(result.status)
+
+    @patch('spellbookserver.request')
+    @patch('spellbookserver.get_enable_transcribe', return_value=True)
+    @patch('spellbookserver.get_allowed_extensions_transcribe', return_value='mp3')
+    @patch('spellbookserver.get_max_file_size_transcribe', return_value=100)
+    @patch('spellbookserver.LOG')
+    def test_transcribe_declared_content_length_too_large(self, mock_log, mock_max, mock_ext, mock_enable, mock_req):
+        mock_req.method = 'POST'
+        mock_file = MagicMock()
+        mock_file.filename = 'test.mp3'
+        mock_req.files.get.return_value = mock_file
+        mock_req.content_length = 200
+        result = SpellbookRESTAPI.transcribe()
+        assert '413' in str(result.status)
+        mock_file.file.read.assert_not_called()
 
     @patch('spellbookserver.request')
     @patch('spellbookserver.time.time', side_effect=[1000.0, 1001.0])
