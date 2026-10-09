@@ -100,6 +100,7 @@ from randomaddress.randomaddress import (
     random_address_from_lsl,
     random_address_from_sil,
 )
+from validators.validators import valid_xpub
 
 BaseRequest.MEMFILE_MAX = 10 * 1024 * 1024  # 10MB — override default 100KB for large AddMessage payloads
 
@@ -154,6 +155,32 @@ def _redact_explorers(explorers):
             for item in explorers
         ]
     return explorers
+
+
+def _require_json_field(name, cast=None):
+    """Return a required field from the JSON request body, optionally cast.
+
+    Raises ValueError when the JSON body is missing/not an object or when the
+    required field is absent. Any exception raised by ``cast`` (e.g. ValueError
+    from ``int('abc')``) propagates unchanged.
+    """
+    data = request.json
+    if not isinstance(data, dict) or name not in data:
+        raise ValueError(f'Missing required field: {name}')
+    value = data[name]
+    return cast(value) if cast else value
+
+
+def _require_xpub_field():
+    """Return a validated xpub from the JSON request body.
+
+    Raises ValueError when the field is missing or when the value is not a
+    valid extended public key (see ``validators.validators.valid_xpub``).
+    """
+    xpub = _require_json_field('xpub')
+    if not valid_xpub(xpub):
+        raise ValueError('Invalid xpub')
+    return xpub
 
 
 def enable_cors(fn):
@@ -596,7 +623,7 @@ class SpellbookRESTAPI(Bottle):
     def get_sil(address):
         """Return the Signed Input List (SIL)."""
         response.content_type = 'application/json'
-        block_height = int(request.json['block_height'])
+        block_height = _require_json_field('block_height', int)
         return get_sil(address, block_height)
 
     @staticmethod
@@ -605,7 +632,7 @@ class SpellbookRESTAPI(Bottle):
     def get_profile(address):
         """Return the profile for a given address."""
         response.content_type = 'application/json'
-        block_height = int(request.json['block_height'])
+        block_height = _require_json_field('block_height', int)
         return get_profile(address, block_height)
 
     @staticmethod
@@ -614,7 +641,7 @@ class SpellbookRESTAPI(Bottle):
     def get_sul(address):
         """Return the Signed Unsigned List (SUL)."""
         response.content_type = 'application/json'
-        confirmations = int(request.json['confirmations'])
+        confirmations = _require_json_field('confirmations', int)
         return get_sul(address, confirmations)
 
     @staticmethod
@@ -623,8 +650,8 @@ class SpellbookRESTAPI(Bottle):
     def get_lal(address):
         """Return the Linked Address List (LAL)."""
         response.content_type = 'application/json'
-        block_height = int(request.json['block_height'])
-        xpub = request.json['xpub']
+        block_height = _require_json_field('block_height', int)
+        xpub = _require_xpub_field()
         return get_lal(address, xpub, block_height)
 
     @staticmethod
@@ -633,8 +660,8 @@ class SpellbookRESTAPI(Bottle):
     def get_lbl(address):
         """Return the Linked Block List (LBL)."""
         response.content_type = 'application/json'
-        block_height = int(request.json['block_height'])
-        xpub = request.json['xpub']
+        block_height = _require_json_field('block_height', int)
+        xpub = _require_xpub_field()
         return get_lbl(address, xpub, block_height)
 
     @staticmethod
@@ -643,8 +670,8 @@ class SpellbookRESTAPI(Bottle):
     def get_lrl(address):
         """Return the Linked Request List (LRL)."""
         response.content_type = 'application/json'
-        block_height = int(request.json['block_height'])
-        xpub = request.json['xpub']
+        block_height = _require_json_field('block_height', int)
+        xpub = _require_xpub_field()
         return get_lrl(address, xpub, block_height)
 
     @staticmethod
@@ -653,8 +680,8 @@ class SpellbookRESTAPI(Bottle):
     def get_lsl(address):
         """Return the Linked Script List (LSL)."""
         response.content_type = 'application/json'
-        block_height = int(request.json['block_height'])
-        xpub = request.json['xpub']
+        block_height = _require_json_field('block_height', int)
+        xpub = _require_xpub_field()
         return get_lsl(address, xpub, block_height)
 
     @staticmethod
@@ -663,8 +690,8 @@ class SpellbookRESTAPI(Bottle):
     def get_random_address_from_sil(address):
         """get random address from sil endpoint."""
         response.content_type = 'application/json'
-        rng_block_height = int(request.json['rng_block_height'])
-        sil_block_height = int(request.json['sil_block_height'])
+        rng_block_height = _require_json_field('rng_block_height', int)
+        sil_block_height = _require_json_field('sil_block_height', int)
         return random_address_from_sil(address=address, sil_block_height=sil_block_height, rng_block_height=rng_block_height)
 
     @staticmethod
@@ -673,9 +700,9 @@ class SpellbookRESTAPI(Bottle):
     def get_random_address_from_lbl(address):
         """get random address from lbl endpoint."""
         response.content_type = 'application/json'
-        rng_block_height = int(request.json['rng_block_height'])
-        sil_block_height = int(request.json['sil_block_height'])
-        xpub = request.json['xpub']
+        rng_block_height = _require_json_field('rng_block_height', int)
+        sil_block_height = _require_json_field('sil_block_height', int)
+        xpub = _require_xpub_field()
         return random_address_from_lbl(address=address, xpub=xpub, sil_block_height=sil_block_height, rng_block_height=rng_block_height)
 
     @staticmethod
@@ -684,9 +711,9 @@ class SpellbookRESTAPI(Bottle):
     def get_random_address_from_lrl(address):
         """get random address from lrl endpoint."""
         response.content_type = 'application/json'
-        rng_block_height = int(request.json['rng_block_height'])
-        sil_block_height = int(request.json['sil_block_height'])
-        xpub = request.json['xpub']
+        rng_block_height = _require_json_field('rng_block_height', int)
+        sil_block_height = _require_json_field('sil_block_height', int)
+        xpub = _require_xpub_field()
         return random_address_from_lrl(address=address, xpub=xpub, sil_block_height=sil_block_height, rng_block_height=rng_block_height)
 
     @staticmethod
@@ -695,9 +722,9 @@ class SpellbookRESTAPI(Bottle):
     def get_random_address_from_lsl(address):
         """get random address from lsl endpoint."""
         response.content_type = 'application/json'
-        rng_block_height = int(request.json['rng_block_height'])
-        sil_block_height = int(request.json['sil_block_height'])
-        xpub = request.json['xpub']
+        rng_block_height = _require_json_field('rng_block_height', int)
+        sil_block_height = _require_json_field('sil_block_height', int)
+        xpub = _require_xpub_field()
         return random_address_from_lsl(address=address, xpub=xpub, sil_block_height=sil_block_height, rng_block_height=rng_block_height)
 
     @staticmethod
