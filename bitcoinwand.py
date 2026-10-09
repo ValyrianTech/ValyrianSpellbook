@@ -8,6 +8,7 @@ import sys
 import requests
 
 from helpers.hotwallethelpers import find_address_in_wallet, get_private_key_from_wallet
+from helpers.http_helpers import DEFAULT_HTTP_TIMEOUT
 from helpers.ipfshelpers import add_json
 from helpers.messagehelpers import sign_message
 from validators.validators import valid_address
@@ -64,7 +65,7 @@ data['signature'] = sign_message(message=data['message'], private_key=private_ke
 
 # Send the signed message as a POST request to the url
 try:
-    r = requests.post(f'{args.url}', json=data)
+    r = requests.post(f'{args.url}', json=data, timeout=DEFAULT_HTTP_TIMEOUT)
     print(r.text)
 except (ValueError, KeyError, TypeError, OSError) as ex:
     print(f'Unable to send signed message to trigger: {ex}')

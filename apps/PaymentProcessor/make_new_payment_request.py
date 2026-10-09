@@ -3,6 +3,7 @@ import requests
 import random
 
 from helpers.configurationhelpers import get_host, get_port
+from helpers.http_helpers import DEFAULT_HTTP_TIMEOUT
 
 
 url = 'http://{host}:{port}/spellbook/triggers/PaymentProcessorNewPayment/post'.format(host=get_host(), port=get_port())
@@ -13,7 +14,7 @@ data = {'seller_id': 'company1',
 
 print('Making new Payment request')
 try:
-    r = requests.post(url, json=data)
+    r = requests.post(url, json=data, timeout=DEFAULT_HTTP_TIMEOUT)
     print(r.text)
 except Exception as ex:
     print('POST %s failed: %s' % (url, ex), file=sys.stderr)
