@@ -12,6 +12,7 @@ from helpers.configurationhelpers import (
     get_twitter_consumer_key,
     get_twitter_consumer_secret,
 )
+from helpers.http_helpers import DEFAULT_HTTP_TIMEOUT
 
 # For Twitter API to work, you need to enable developer portal on your twitter account
 # go to https://developer.twitter.com/
@@ -64,7 +65,7 @@ def update_status_with_media(url, message):
         return
 
     filename = 'temp.jpg'
-    request = requests.get(url, stream=True)
+    request = requests.get(url, stream=True, timeout=DEFAULT_HTTP_TIMEOUT)
     if request.status_code == 200:
         with open(filename, 'wb') as image:
             image.writelines(request)

@@ -2,6 +2,7 @@
 from unittest import mock
 
 import pytest
+import requests
 
 from helpers.feehelpers import (
     MIN_SAT_PER_BYTE,
@@ -12,6 +13,7 @@ from helpers.feehelpers import (
     get_recommended_fee,
     get_recommended_fee_blockcypher,
 )
+from helpers.http_helpers import DEFAULT_HTTP_TIMEOUT
 
 
 class TestFeeHelpers:
@@ -133,6 +135,15 @@ class TestFeeHelpers:
             get_recommended_fee()
         assert 'Unable get recommended fee' in str(excinfo.value)
 
+    @mock.patch('helpers.feehelpers.requests.get')
+    def test_get_recommended_fee_timeout(self, mock_get):
+        """Test error handling when the bitcoinfees.earn.com request times out"""
+        mock_get.side_effect = requests.exceptions.Timeout('timed out')
+
+        with pytest.raises(ValueError) as excinfo:
+            get_recommended_fee()
+        assert 'Unable get recommended fee' in str(excinfo.value)
+
     @mock.patch('helpers.feehelpers.get_use_testnet', return_value=False)
     @mock.patch('helpers.feehelpers.requests.get')
     def test_get_recommended_fee_blockcypher_mainnet(self, mock_get, mock_testnet):
@@ -149,7 +160,7 @@ class TestFeeHelpers:
         assert result['high_priority'] == 20000
         assert result['medium_priority'] == 10000
         assert result['low_priority'] == 5000
-        mock_get.assert_called_with(url='https://api.blockcypher.com/v1/btc/main')
+        mock_get.assert_called_with(url='https://api.blockcypher.com/v1/btc/main', timeout=DEFAULT_HTTP_TIMEOUT)
 
     @mock.patch('helpers.feehelpers.get_use_testnet', return_value=True)
     @mock.patch('helpers.feehelpers.requests.get')
@@ -164,7 +175,7 @@ class TestFeeHelpers:
         mock_get.return_value = mock_response
         
         get_recommended_fee_blockcypher()
-        mock_get.assert_called_with(url='https://api.blockcypher.com/v1/btc/test3')
+        mock_get.assert_called_with(url='https://api.blockcypher.com/v1/btc/test3', timeout=DEFAULT_HTTP_TIMEOUT)
 
     @mock.patch('helpers.feehelpers.get_use_testnet', return_value=False)
     @mock.patch('helpers.feehelpers.requests.get')
@@ -175,3 +186,13 @@ class TestFeeHelpers:
         with pytest.raises(Exception) as excinfo:
             get_recommended_fee_blockcypher()
         assert 'Unable get recommended fee from blockcypher' in str(excinfo.value)
+
+    @mock.patch('helpers.feehelpers.get_use_testnet', return_value=False)
+    @mock.patch('helpers.feehelpers.requests.get')
+    def test_get_recommended_fee_blockcypher_timeout(self, mock_get, mock_testnet):
+        """Test error handling when the blockcypher request times out"""
+        mock_get.side_effect = requests.exceptions.Timeout('timed out')
+
+        with pytest.raises(ValueError) as excinfo:
+            get_recommended_fee_blockcypher()
+        assert 'Unable get recommended fee' in str(excinfo.value)

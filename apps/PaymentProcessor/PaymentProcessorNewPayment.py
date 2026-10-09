@@ -11,6 +11,7 @@ from helpers.actionhelpers import get_action
 from helpers.triggerhelpers import get_trigger
 from trigger.triggertype import TriggerType
 from helpers.configurationhelpers import get_host, get_port, get_use_testnet
+from helpers.http_helpers import DEFAULT_HTTP_TIMEOUT
 from helpers.hotwallethelpers import get_address_from_wallet
 from paymentprocessorscript import PaymentProcessorScript, PaymentRequest, ACCOUNT, LISTENER_TIMEOUT, REQUEST_TIMEOUT
 
@@ -53,7 +54,7 @@ class PaymentProcessorNewPayment(PaymentProcessorScript):
             LOG.info('Retrieving BTC%s price from bitcoinaverage.com' % payment_request.currency)
             LOG.info('GET %s' % url)
             try:
-                r = requests.get(url=url)
+                r = requests.get(url=url, timeout=DEFAULT_HTTP_TIMEOUT)
                 price_data = r.json()
             except Exception as ex:
                 LOG.error('Unable to retrieve BTC price from bitcoinaverage.com: %s' % ex)

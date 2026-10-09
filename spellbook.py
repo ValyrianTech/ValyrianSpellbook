@@ -19,6 +19,7 @@ from helpers.configurationhelpers import (
     get_secret,
     get_spellbook_uri,
 )
+from helpers.http_helpers import DEFAULT_HTTP_TIMEOUT
 from validators.validators import valid_distribution
 
 # Make sure we are in the correct working directory
@@ -1070,7 +1071,7 @@ def do_get_request(url, authenticate=False, data=None):
     headers = add_authentication_headers(data=data) if authenticate is True else None
 
     try:
-        r = requests.get(url, headers=headers, json=data)
+        r = requests.get(url, headers=headers, json=data, timeout=DEFAULT_HTTP_TIMEOUT)
         print(r.text)
     except (ValueError, KeyError, TypeError, OSError) as ex:
         print(f'GET {url} failed: {ex}', file=sys.stderr)
@@ -1083,7 +1084,7 @@ def do_post_request(url, authenticate=False, data=None):
     headers = add_authentication_headers(data=data) if authenticate is True else None
 
     try:
-        r = requests.post(url, headers=headers, json=data)
+        r = requests.post(url, headers=headers, json=data, timeout=DEFAULT_HTTP_TIMEOUT)
         print(r.text)
     except (ValueError, KeyError, TypeError, OSError) as ex:
         print(f'POST {url} failed: {ex}', file=sys.stderr)
@@ -1096,7 +1097,7 @@ def do_delete_request(url, authenticate=False, data=None):
     headers = add_authentication_headers(data=data) if authenticate is True else None
 
     try:
-        r = requests.delete(url, headers=headers, json=data)
+        r = requests.delete(url, headers=headers, json=data, timeout=DEFAULT_HTTP_TIMEOUT)
         print(r.text)
     except (ValueError, KeyError, TypeError, OSError) as ex:
         print(f'DELETE {url} failed: {ex}', file=sys.stderr)

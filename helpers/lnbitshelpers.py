@@ -3,6 +3,8 @@ import json
 
 import requests
 
+from helpers.http_helpers import DEFAULT_HTTP_TIMEOUT
+
 LNBITS_URL = 'https://legend.lnbits.com'
 
 
@@ -15,7 +17,7 @@ def get_wallet_details(api_key: str) -> dict | None:
     """
     url = f'{LNBITS_URL}/api/v1/wallet'
     headers = {'X-Api-Key': api_key}
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers, timeout=DEFAULT_HTTP_TIMEOUT)
 
     if response.status_code == 200:
         return response.json()
@@ -50,7 +52,7 @@ def create_invoice(api_key: str, amount: int, memo: str, expiry: int, unit: str 
         'webhook': webhook,
         'internal': internal
     }
-    response = requests.post(url, headers=headers, data=json.dumps(data))
+    response = requests.post(url, headers=headers, data=json.dumps(data), timeout=DEFAULT_HTTP_TIMEOUT)
 
     if response.status_code == 201:
         return response.json()
@@ -70,7 +72,7 @@ def decode_invoice(api_key: str, invoice: str) -> dict | None:
     url = f'{LNBITS_URL}/api/v1/payments/decode'
     headers = {'X-Api-Key': api_key}
     data = {'data': invoice}
-    response = requests.post(url, headers=headers, data=json.dumps(data))
+    response = requests.post(url, headers=headers, data=json.dumps(data), timeout=DEFAULT_HTTP_TIMEOUT)
 
     if response.status_code == 200:
         return response.json()
@@ -91,7 +93,7 @@ def check_invoice(api_key: str, payment_hash: str) -> dict | None:
     """
     url = f'{LNBITS_URL}/api/v1/payments/{payment_hash}'
     headers = {'X-Api-Key': api_key}
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers, timeout=DEFAULT_HTTP_TIMEOUT)
 
     if response.status_code == 200:
         return response.json()

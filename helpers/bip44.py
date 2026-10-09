@@ -22,6 +22,7 @@ from bips.bip44 import (
     get_xpriv_keys,
     get_xpub_keys,
 )
+from helpers.http_helpers import DEFAULT_HTTP_TIMEOUT
 from helpers.privatekeyhelpers import encode_privkey, privkey_to_pubkey
 from helpers.publickeyhelpers import pubkey_to_address
 
@@ -58,7 +59,7 @@ class BIP44Wallet:
                 chunk = addressList[i:i+chunk_size]
 
                 url = 'https://blockchain.info/multiaddr?active={}'.format('|'.join(chunk))
-                r = requests.get(url)
+                r = requests.get(url, timeout=DEFAULT_HTTP_TIMEOUT)
                 data = r.json()
 
                 for j in range(len(data['addresses'])):

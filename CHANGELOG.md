@@ -36,6 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- All remaining outbound HTTP requests now use explicit timeouts so a slow or unresponsive remote endpoint can no longer hang a server worker. A new shared module `helpers/http_helpers.py` exports `DEFAULT_HTTP_TIMEOUT = 10` (used for ordinary requests) and `STREAM_HTTP_TIMEOUT = (5, 300)` (connect, read; used for streaming LLM requests). `DEFAULT_HTTP_TIMEOUT` is now passed as the `requests` timeout in `helpers/bip44.py`, `helpers/configurationhelpers.py`, `helpers/feehelpers.py`, `helpers/lnbitshelpers.py`, `helpers/twitterhelpers.py`, and the CLI HTTP helpers in `spellbook.py` (`do_get_request`/`do_post_request`/`do_delete_request`), while `STREAM_HTTP_TIMEOUT` is passed in `helpers/self_hosted_llm.py` and `helpers/textgenerationwebui_llm.py`.
+
 - `RunCommandProcess.run()` now drains `stdout` and `stderr` concurrently using a separate thread per stream (each joined before the process is awaited), instead of reading `stdout` fully and then `stderr` sequentially. This prevents the child process from deadlocking when it produces enough `stderr` output to fill the pipe buffer while `stdout` is still being read.
 
 - Resolved all remaining ruff lint errors; the repository is now lint-clean.
