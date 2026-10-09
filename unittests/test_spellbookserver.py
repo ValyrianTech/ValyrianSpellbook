@@ -8,6 +8,7 @@ that out and test the endpoint callbacks as static methods.
 import importlib.util
 import logging
 import os
+import re
 import sys
 from unittest.mock import MagicMock, mock_open, patch
 
@@ -1881,6 +1882,35 @@ class TestSpellbookInit:
         SpellbookRESTAPI()
         mock_log.error.assert_any_call('An exception occurred in the main loop: server crashed')
         mock_sendmail.assert_called_once()
+
+
+class TestAddressRouteRegex:
+    """Regression test: bech32 addresses containing the digit '0' must route."""
+
+    BECH32_ADDRESS = 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq'
+
+    @patch('spellbookserver.get_enable_ssl', return_value=False)
+    @patch('spellbookserver.get_enable_wallet', return_value=False)
+    @patch('spellbookserver.get_explorers', return_value={'blockstream': {}})
+    @patch('spellbookserver.get_host', return_value='localhost')
+    @patch('spellbookserver.get_port', return_value=8080)
+    @patch('spellbookserver.os.path.isfile', return_value=True)
+    @patch('bottle.Bottle.run')
+    @patch('spellbookserver.LOG')
+    def test_bech32_address_with_zero_matches_all_address_routes(self, mock_log, mock_run, mock_isfile, mock_port, mock_host, mock_explorers, mock_wallet, mock_ssl):
+        """Address routes must accept the digit '0' in the address segment."""
+        app = SpellbookRESTAPI()
+
+        # Document intent: the address charset includes the digit 0.
+        assert re.fullmatch(r'[a-zA-Z0-9]+', self.BECH32_ADDRESS) is not None
+
+        address_rules = [route.rule for route in app.routes if '/spellbook/addresses/' in route.rule]
+        assert address_rules
+
+        for rule in address_rules:
+            path = re.sub(r'<address:re:[^>]+>', self.BECH32_ADDRESS, rule)
+            _route, args = app.match({'REQUEST_METHOD': 'GET', 'PATH_INFO': path})
+            assert args['address'] == self.BECH32_ADDRESS
 
 
 class TestMainBlock:
