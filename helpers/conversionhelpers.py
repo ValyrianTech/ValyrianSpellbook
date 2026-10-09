@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Helper functions for converting between Bitcoin units."""
 
-from decimal import Decimal, InvalidOperation, ROUND_DOWN
+from decimal import ROUND_DOWN, Decimal, InvalidOperation
 
 
 def btc2satoshis(btc):
