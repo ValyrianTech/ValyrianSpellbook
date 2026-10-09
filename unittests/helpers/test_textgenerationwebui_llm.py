@@ -304,7 +304,7 @@ class TestTextGenerationWebuiLLM(unittest.TestCase):
         llm.completion_tokens_multiplier = 1
 
         messages = [{'role': 'user', 'content': 'Hello'}]
-        result, usage = llm.get_completion_text(messages)
+        result, _usage = llm.get_completion_text(messages)
 
         self.assertEqual(result, 'Hello!')
         self.assertEqual(mock_post.call_args.kwargs['verify'], '/custom/ca.pem')
