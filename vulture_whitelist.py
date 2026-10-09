@@ -83,6 +83,7 @@ mock_bearer
 mock_bitcoin_msg
 mock_bottle_request
 mock_bottle_response
+mock_ca_bundle
 mock_cert
 mock_channel
 mock_consumer_key
