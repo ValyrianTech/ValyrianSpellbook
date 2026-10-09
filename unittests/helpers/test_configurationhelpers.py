@@ -28,6 +28,7 @@ from helpers.configurationhelpers import (
     get_ipfs_gateway_host,
     get_ipfs_gateway_port,
     get_key,
+    get_llm_ca_bundle,
     get_llms_default_model,
     get_mail_on_exception,
     get_mastodon_access_token,
@@ -640,3 +641,42 @@ class TestGetCorsAllowedOrigins:
         with mock.patch('helpers.configurationhelpers.spellbook_config', return_value=mock_config):
             result = get_cors_allowed_origins()
             assert result == []
+
+
+class TestGetLlmCaBundle:
+    """Tests for the get_llm_ca_bundle helper."""
+
+    def test_get_llm_ca_bundle_path(self):
+        """Test returning the configured CA bundle path from the config."""
+        from configparser import ConfigParser
+
+        mock_config = ConfigParser()
+        mock_config.add_section('LLMs')
+        mock_config.set('LLMs', 'ca_bundle', '/etc/ssl/certs/ca-bundle.crt')
+
+        with mock.patch('helpers.configurationhelpers.spellbook_config', return_value=mock_config):
+            result = get_llm_ca_bundle()
+            assert result == '/etc/ssl/certs/ca-bundle.crt'
+
+    def test_get_llm_ca_bundle_empty(self):
+        """Test that an empty CA bundle option returns True."""
+        from configparser import ConfigParser
+
+        mock_config = ConfigParser()
+        mock_config.add_section('LLMs')
+        mock_config.set('LLMs', 'ca_bundle', '   ')
+
+        with mock.patch('helpers.configurationhelpers.spellbook_config', return_value=mock_config):
+            result = get_llm_ca_bundle()
+            assert result is True
+
+    def test_get_llm_ca_bundle_absent(self):
+        """Test that a missing CA bundle option returns True."""
+        from configparser import NoOptionError
+
+        mock_config = mock.MagicMock()
+        mock_config.get.side_effect = NoOptionError('ca_bundle', 'LLMs')
+
+        with mock.patch('helpers.configurationhelpers.spellbook_config', return_value=mock_config):
+            result = get_llm_ca_bundle()
+            assert result is True
