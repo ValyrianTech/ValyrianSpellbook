@@ -33,6 +33,8 @@ from spellbookserver import (
     _is_redacted_header,
     _redact,
     _redact_explorers,
+    _require_json_field,
+    _require_xpub_field,
     convert_aac_to_opus,
     enable_cors,
 )
@@ -861,6 +863,230 @@ class TestRandomAddressEndpoints:
         mock_rand.return_value = {'address': '1xyz'}
         SpellbookRESTAPI.get_random_address_from_lsl('1abc')
         mock_rand.assert_called_once_with(address='1abc', xpub='xpub123', sil_block_height=799999, rng_block_height=800000)
+
+
+class TestRequireJsonFieldHelpers:
+    @patch('spellbookserver.request')
+    def test_require_json_field_returns_value(self, mock_req):
+        mock_req.json = {'a': 'b'}
+        assert _require_json_field('a') == 'b'
+
+    @patch('spellbookserver.request')
+    def test_require_json_field_casts_value(self, mock_req):
+        mock_req.json = {'n': '5'}
+        assert _require_json_field('n', int) == 5
+
+    @patch('spellbookserver.request')
+    def test_require_json_field_missing_body(self, mock_req):
+        mock_req.json = None
+        with pytest.raises(ValueError, match='Missing required field: x'):
+            _require_json_field('x')
+
+    @patch('spellbookserver.request')
+    def test_require_json_field_non_dict_body(self, mock_req):
+        mock_req.json = ['not', 'a', 'dict']
+        with pytest.raises(ValueError):
+            _require_json_field('x')
+
+    @patch('spellbookserver.request')
+    def test_require_json_field_missing_key(self, mock_req):
+        mock_req.json = {'other': 1}
+        with pytest.raises(ValueError, match='Missing required field: x'):
+            _require_json_field('x')
+
+    @patch('spellbookserver.request')
+    def test_require_json_field_cast_error_propagates(self, mock_req):
+        mock_req.json = {'n': 'abc'}
+        with pytest.raises(ValueError):
+            _require_json_field('n', int)
+
+    @patch('spellbookserver.request')
+    def test_require_xpub_field_valid(self, mock_req):
+        mock_req.json = {'xpub': 'xpub661MyMwAqRbc'}
+        assert _require_xpub_field() == 'xpub661MyMwAqRbc'
+
+    @patch('spellbookserver.request')
+    def test_require_xpub_field_invalid(self, mock_req):
+        mock_req.json = {'xpub': 'notanxpub'}
+        with pytest.raises(ValueError, match='Invalid xpub'):
+            _require_xpub_field()
+
+    @patch('spellbookserver.request')
+    def test_require_xpub_field_missing(self, mock_req):
+        mock_req.json = {'other': 1}
+        with pytest.raises(ValueError, match='Missing required field: xpub'):
+            _require_xpub_field()
+
+
+class TestInputEndpointsValidation:
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.get_sil')
+    @patch('decorators.get_last_explorer', return_value='blockstream')
+    @patch('decorators.clear_explorer')
+    @patch('decorators.set_explorer')
+    @patch('spellbookserver.request')
+    def test_get_sil_missing_body(self, mock_req, mock_set, mock_clear, mock_last, mock_sil, mock_resp):
+        mock_req.query.explorer = ''
+        mock_req.json = None
+        with pytest.raises(ValueError):
+            SpellbookRESTAPI.get_sil('1abc')
+        mock_sil.assert_not_called()
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.get_sil')
+    @patch('decorators.get_last_explorer', return_value='blockstream')
+    @patch('decorators.clear_explorer')
+    @patch('decorators.set_explorer')
+    @patch('spellbookserver.request')
+    def test_get_sil_missing_key(self, mock_req, mock_set, mock_clear, mock_last, mock_sil, mock_resp):
+        mock_req.query.explorer = ''
+        mock_req.json = {'other': 1}
+        with pytest.raises(ValueError):
+            SpellbookRESTAPI.get_sil('1abc')
+        mock_sil.assert_not_called()
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.get_sil')
+    @patch('decorators.get_last_explorer', return_value='blockstream')
+    @patch('decorators.clear_explorer')
+    @patch('decorators.set_explorer')
+    @patch('spellbookserver.request')
+    def test_get_sil_non_int(self, mock_req, mock_set, mock_clear, mock_last, mock_sil, mock_resp):
+        mock_req.query.explorer = ''
+        mock_req.json = {'block_height': 'abc'}
+        with pytest.raises(ValueError):
+            SpellbookRESTAPI.get_sil('1abc')
+        mock_sil.assert_not_called()
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.get_profile')
+    @patch('decorators.get_last_explorer', return_value='blockstream')
+    @patch('decorators.clear_explorer')
+    @patch('decorators.set_explorer')
+    @patch('spellbookserver.request')
+    def test_get_profile_missing_body(self, mock_req, mock_set, mock_clear, mock_last, mock_profile, mock_resp):
+        mock_req.query.explorer = ''
+        mock_req.json = None
+        with pytest.raises(ValueError):
+            SpellbookRESTAPI.get_profile('1abc')
+        mock_profile.assert_not_called()
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.get_sul')
+    @patch('decorators.get_last_explorer', return_value='blockstream')
+    @patch('decorators.clear_explorer')
+    @patch('decorators.set_explorer')
+    @patch('spellbookserver.request')
+    def test_get_sul_missing_key(self, mock_req, mock_set, mock_clear, mock_last, mock_sul, mock_resp):
+        mock_req.query.explorer = ''
+        mock_req.json = {'block_height': 1}
+        with pytest.raises(ValueError):
+            SpellbookRESTAPI.get_sul('1abc')
+        mock_sul.assert_not_called()
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.get_lal')
+    @patch('decorators.get_last_explorer', return_value='blockstream')
+    @patch('decorators.clear_explorer')
+    @patch('decorators.set_explorer')
+    @patch('spellbookserver.request')
+    def test_get_lal_invalid_xpub(self, mock_req, mock_set, mock_clear, mock_last, mock_lal, mock_resp):
+        mock_req.query.explorer = ''
+        mock_req.json = {'block_height': 800000, 'xpub': 'bad'}
+        with pytest.raises(ValueError):
+            SpellbookRESTAPI.get_lal('1abc')
+        mock_lal.assert_not_called()
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.get_lbl')
+    @patch('decorators.get_last_explorer', return_value='blockstream')
+    @patch('decorators.clear_explorer')
+    @patch('decorators.set_explorer')
+    @patch('spellbookserver.request')
+    def test_get_lbl_missing_xpub(self, mock_req, mock_set, mock_clear, mock_last, mock_lbl, mock_resp):
+        mock_req.query.explorer = ''
+        mock_req.json = {'block_height': 800000}
+        with pytest.raises(ValueError):
+            SpellbookRESTAPI.get_lbl('1abc')
+        mock_lbl.assert_not_called()
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.get_lrl')
+    @patch('decorators.get_last_explorer', return_value='blockstream')
+    @patch('decorators.clear_explorer')
+    @patch('decorators.set_explorer')
+    @patch('spellbookserver.request')
+    def test_get_lrl_missing_body(self, mock_req, mock_set, mock_clear, mock_last, mock_lrl, mock_resp):
+        mock_req.query.explorer = ''
+        mock_req.json = None
+        with pytest.raises(ValueError):
+            SpellbookRESTAPI.get_lrl('1abc')
+        mock_lrl.assert_not_called()
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.get_lsl')
+    @patch('decorators.get_last_explorer', return_value='blockstream')
+    @patch('decorators.clear_explorer')
+    @patch('decorators.set_explorer')
+    @patch('spellbookserver.request')
+    def test_get_lsl_invalid_xpub(self, mock_req, mock_set, mock_clear, mock_last, mock_lsl, mock_resp):
+        mock_req.query.explorer = ''
+        mock_req.json = {'block_height': 1, 'xpub': 'nope'}
+        with pytest.raises(ValueError):
+            SpellbookRESTAPI.get_lsl('1abc')
+        mock_lsl.assert_not_called()
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.random_address_from_sil')
+    @patch('decorators.get_last_explorer', return_value='blockstream')
+    @patch('decorators.clear_explorer')
+    @patch('decorators.set_explorer')
+    @patch('spellbookserver.request')
+    def test_get_random_address_from_sil_missing_key(self, mock_req, mock_set, mock_clear, mock_last, mock_rand, mock_resp):
+        mock_req.query.explorer = ''
+        mock_req.json = {'rng_block_height': 1}
+        with pytest.raises(ValueError):
+            SpellbookRESTAPI.get_random_address_from_sil('1abc')
+        mock_rand.assert_not_called()
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.random_address_from_lbl')
+    @patch('decorators.get_last_explorer', return_value='blockstream')
+    @patch('decorators.clear_explorer')
+    @patch('decorators.set_explorer')
+    @patch('spellbookserver.request')
+    def test_get_random_address_from_lbl_invalid_xpub(self, mock_req, mock_set, mock_clear, mock_last, mock_rand, mock_resp):
+        mock_req.query.explorer = ''
+        mock_req.json = {'rng_block_height': 1, 'sil_block_height': 2, 'xpub': 'bad'}
+        with pytest.raises(ValueError):
+            SpellbookRESTAPI.get_random_address_from_lbl('1abc')
+        mock_rand.assert_not_called()
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.random_address_from_lrl')
+    @patch('decorators.get_last_explorer', return_value='blockstream')
+    @patch('decorators.clear_explorer')
+    @patch('decorators.set_explorer')
+    @patch('spellbookserver.request')
+    def test_get_random_address_from_lrl_missing_body(self, mock_req, mock_set, mock_clear, mock_last, mock_rand, mock_resp):
+        mock_req.query.explorer = ''
+        mock_req.json = None
+        with pytest.raises(ValueError):
+            SpellbookRESTAPI.get_random_address_from_lrl('1abc')
+        mock_rand.assert_not_called()
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.random_address_from_lsl')
+    @patch('decorators.get_last_explorer', return_value='blockstream')
+    @patch('decorators.clear_explorer')
+    @patch('decorators.set_explorer')
+    @patch('spellbookserver.request')
+    def test_get_random_address_from_lsl_invalid_xpub(self, mock_req, mock_set, mock_clear, mock_last, mock_rand, mock_resp):
+        mock_req.query.explorer = ''
+        mock_req.json = {'rng_block_height': 1, 'sil_block_height': 2, 'xpub': 'bad'}
+        with pytest.raises(ValueError):
+            SpellbookRESTAPI.get_random_address_from_lsl('1abc')
+        mock_rand.assert_not_called()
 
 
 class TestTriggerEndpoints:
