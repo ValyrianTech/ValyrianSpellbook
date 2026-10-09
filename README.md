@@ -35,6 +35,7 @@ The Valyrian Spellbook, formerly known as the Bitcoin Spellbook, is an open plat
 
 - **Integration of Multiple Models**: Manage various LLMs through dynamic API end points.
 - **Text Processing and Interaction**: Automate responses and generate text.
+- **TLS Certificate Verification**: Outbound LLM requests verify TLS certificates against the system certificate store by default. To trust a custom certificate (e.g. a self-signed certificate for a self-hosted LLM), set the `ca_bundle` option in the `[LLMs]` section of the configuration to the path of a CA bundle.
 
 ### Actions and Triggers System
 
