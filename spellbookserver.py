@@ -793,10 +793,10 @@ class SpellbookRESTAPI(Bottle):
     @authentication_required
     def sign_message():
         """Sign a message with a private key."""
-        LOG.info('Sign message request received')
-        LOG.info(f'request json: {request.json}')
+        data = request.json if isinstance(request.json, dict) else {}
+        LOG.info('Sign message request received (address=%s)', data.get('address'))
         response.content_type = 'application/json'
-        return sign_message(**request.json)
+        return sign_message(**data)
 
     @staticmethod
     @enable_cors
