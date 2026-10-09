@@ -999,8 +999,22 @@ class SpellbookRESTAPI(Bottle):
             response.status = 403
             return {"error": f"File extension {file_extension} is not allowed"}
 
-        # Read file content into a variable
-        file_content = uploaded_file.file.read()
+        max_file_size = get_max_file_size()
+
+        # Cheap pre-check against the advertised Content-Length (defense in depth only).
+        # This avoids buffering an oversized body when the client declares its size up front.
+        content_length = request.content_length
+        if isinstance(content_length, int) and content_length > max_file_size:
+            LOG.error(f"Declared content length {content_length} exceeds maximum allowed size of {max_file_size} bytes")
+            response.status = 413
+            return {"error": f"File size exceeds maximum allowed size of {max_file_size} bytes"}
+
+        # Bounded read so we never buffer more than max_file_size (+1 to detect overflow)
+        file_content = uploaded_file.file.read(max_file_size + 1)
+        if len(file_content) > max_file_size:
+            LOG.error(f"File size exceeds maximum allowed size of {max_file_size} bytes, file size is {len(file_content)} bytes")
+            response.status = 413
+            return {"error": f"File size exceeds maximum allowed size of {max_file_size} bytes, file size is {len(file_content)} bytes"}
 
         # Validate file type with python-magic
         mime = magic.Magic(mime=True)
@@ -1010,12 +1024,6 @@ class SpellbookRESTAPI(Bottle):
             LOG.error(f"File type {file_type} is not allowed")
             response.status = 403
             return {"error": f"File type {file_type} is not allowed"}
-
-        max_file_size = get_max_file_size()
-        if len(file_content) > max_file_size:
-            LOG.error(f"File size exceeds maximum allowed size of {max_file_size} bytes, file size is {len(file_content)} bytes")
-            response.status = 413
-            return {"error": f"File size exceeds maximum allowed size of {max_file_size} bytes, file size is {len(file_content)} bytes"}
 
         # Reset the file pointer to the beginning
         uploaded_file.file.seek(0)
@@ -1054,8 +1062,18 @@ class SpellbookRESTAPI(Bottle):
         if file_extension[1:] not in allowed_extensions:
             return HTTPResponse(status=403, body={"error": f"File extension {file_extension} is not allowed"})
 
-        # Read file content into a variable
-        file_content = uploaded_file.file.read()
+        max_file_size = get_max_file_size_transcribe()
+
+        # Cheap pre-check against the advertised Content-Length (defense in depth only).
+        content_length = request.content_length
+        if isinstance(content_length, int) and content_length > max_file_size:
+            LOG.error(f"Declared content length {content_length} exceeds maximum allowed size of {max_file_size} bytes")
+            return HTTPResponse(status=413, body={"error": f"File size exceeds maximum allowed size of {max_file_size} bytes"})
+
+        # Bounded read so we never buffer more than max_file_size (+1 to detect overflow)
+        file_content = uploaded_file.file.read(max_file_size + 1)
+        if len(file_content) > max_file_size:
+            return HTTPResponse(status=413, body={"error": f"File size exceeds maximum allowed size of {max_file_size} bytes, file size is {len(file_content)} bytes"})
 
         # Validate file type with python-magic
         mime = magic.Magic(mime=True)
@@ -1085,10 +1103,6 @@ class SpellbookRESTAPI(Bottle):
             with open('opus_audio.opus', 'rb') as opus_fp:
                 uploaded_file.file = io.BytesIO(opus_fp.read())
 
-
-        max_file_size = get_max_file_size_transcribe()
-        if len(file_content) > max_file_size:
-            return HTTPResponse(status=413, body={"error": f"File size exceeds maximum allowed size of {max_file_size} bytes, file size is {len(file_content)} bytes"})
 
         # Reset the file pointer to the beginning
         uploaded_file.file.seek(0)
