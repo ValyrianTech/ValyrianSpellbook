@@ -162,6 +162,8 @@ Currently supported blockchain explorers are:
 
 Block explorer HTTP requests now use a timeout, so a slow or unresponsive explorer is handled gracefully and the next configured explorer can be used.
 
+Similarly, all other outbound HTTP requests made by the framework — fee lookups, IP lookups, LNbits calls, Twitter media downloads, the CLI HTTP helpers, and streaming LLM endpoints — now use explicit timeouts, so a slow or unresponsive remote endpoint can no longer hang a server worker.
+
 Requesting an unknown explorer, or running with no block explorers configured at all, now returns an error instead of crashing.
 
 Segwit
