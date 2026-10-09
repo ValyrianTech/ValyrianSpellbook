@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 from unittest import mock
 
+import requests
+
 from helpers.configurationhelpers import (
     get_allowed_extensions,
     get_allowed_extensions_transcribe,
@@ -91,6 +93,14 @@ class TestConfigurationHelpers:
         """Test getting IP address when API fails"""
         mock_get.side_effect = ValueError('Network error')
         
+        result = what_is_my_ip()
+        assert result == ''
+
+    @mock.patch('helpers.configurationhelpers.requests.get')
+    def test_what_is_my_ip_timeout(self, mock_get):
+        """Test getting IP address when the request times out"""
+        mock_get.side_effect = requests.exceptions.Timeout('timed out')
+
         result = what_is_my_ip()
         assert result == ''
 

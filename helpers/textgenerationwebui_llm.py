@@ -8,6 +8,7 @@ import requests
 import simplejson
 import sseclient
 
+from helpers.http_helpers import STREAM_HTTP_TIMEOUT
 from helpers.llm_interface import LLMInterface
 from helpers.loghelpers import LOG
 from helpers.textgenerationhelpers import parse_generation
@@ -78,7 +79,7 @@ class TextGenerationWebuiLLM(LLMInterface):
         }
         prompt_tokens, completion_tokens, total_tokens = 0, 0, 0
         try:
-            stream_response = requests.post(url, headers=headers, json=data, verify=False, stream=True)
+            stream_response = requests.post(url, headers=headers, json=data, verify=False, stream=True, timeout=STREAM_HTTP_TIMEOUT)
             client = sseclient.SSEClient(stream_response)
 
             for event in client.events():

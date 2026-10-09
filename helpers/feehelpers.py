@@ -5,6 +5,7 @@ import math
 import requests
 
 from helpers.configurationhelpers import get_use_testnet
+from helpers.http_helpers import DEFAULT_HTTP_TIMEOUT
 from helpers.loghelpers import LOG
 
 MIN_SAT_PER_BYTE = 1
@@ -40,7 +41,7 @@ def get_recommended_fee():
 
     try:
         LOG.info(f'GET {url}')
-        r = requests.get(url=url)
+        r = requests.get(url=url, timeout=DEFAULT_HTTP_TIMEOUT)
         data = r.json()
     except (ValueError, KeyError, TypeError, OSError) as ex:
         raise ValueError(f'Unable get recommended fee from bitcoinfees.earn.com: {ex}')
@@ -56,7 +57,7 @@ def get_recommended_fee_blockcypher():
 
     try:
         LOG.info(f'GET {url}')
-        r = requests.get(url=url)
+        r = requests.get(url=url, timeout=DEFAULT_HTTP_TIMEOUT)
         data = r.json()
     except (ValueError, KeyError, TypeError, OSError) as ex:
         raise ValueError(f'Unable get recommended fee from blockcypher.com: {ex}')
