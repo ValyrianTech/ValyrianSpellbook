@@ -1909,7 +1909,7 @@ class TestAddressRouteRegex:
 
         for rule in address_rules:
             path = re.sub(r'<address:re:[^>]+>', self.BECH32_ADDRESS, rule)
-            route, args = app.match({'REQUEST_METHOD': 'GET', 'PATH_INFO': path})
+            _route, args = app.match({'REQUEST_METHOD': 'GET', 'PATH_INFO': path})
             assert args['address'] == self.BECH32_ADDRESS
 
 
