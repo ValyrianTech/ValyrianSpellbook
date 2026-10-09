@@ -34,7 +34,8 @@ def sign_and_verify(private_key, message, address):
     """Sign a message and immediately verify it, returning the signature."""
     key = CBitcoinSecret(private_key)
     signature = SignMessage(key=key, message=BitcoinMessage(message))
-    assert VerifyMessage(address=address, message=BitcoinMessage(message), sig=signature)
+    if not VerifyMessage(address=address, message=BitcoinMessage(message), sig=signature):
+        raise ValueError('Signature verification failed')
     return signature
 
 
@@ -51,7 +52,7 @@ def sign_data(message_data: dict, account: int, index: int):
     :return: The signed data
     :rtype: dict
 
-    :raises AssertionError: If the signature is not valid
+    :raises ValueError: If the signature is not valid
     """
 
     address = get_address_from_wallet(account=account, index=index)
@@ -62,7 +63,8 @@ def sign_data(message_data: dict, account: int, index: int):
     message = f'/sha256/{sha256_hash}'
 
     signature = sign_message(message=message, private_key=private_key)
-    assert verify_message(address=address, message=message, signature=signature)
+    if not verify_message(address=address, message=message, signature=signature):
+        raise ValueError('Signature verification failed')
 
     data = {'address': address,
             'message': message,

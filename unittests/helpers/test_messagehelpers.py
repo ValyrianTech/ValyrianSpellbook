@@ -96,7 +96,7 @@ class TestSignAndVerify(unittest.TestCase):
         mock_sign.return_value = b'signature'
         mock_verify.return_value = False
         
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             sign_and_verify('private_key', 'message', '1Address')
 
 
@@ -139,7 +139,7 @@ class TestSignData(unittest.TestCase):
         
         data = {'key': 'value'}
         
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             sign_data(data, account=0, index=0)
 
     @patch('helpers.messagehelpers.get_address_from_wallet')
