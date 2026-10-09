@@ -1606,7 +1606,7 @@ class TestUploadFile:
         mock_mime = MagicMock()
         mock_mime.from_buffer.return_value = 'application/exe'
         mock_magic_cls.return_value = mock_mime
-        result = SpellbookRESTAPI.upload_file()
+        SpellbookRESTAPI.upload_file()
         mock_file.file.read.assert_called_once_with(101)
         assert sizes == [101]
         assert mock_resp.status == 403
