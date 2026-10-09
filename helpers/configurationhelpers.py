@@ -7,6 +7,7 @@ from configparser import ConfigParser, NoOptionError, NoSectionError
 import requests
 
 from decorators import verify_config
+from helpers.http_helpers import DEFAULT_HTTP_TIMEOUT
 
 CONFIGURATION_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "configuration", "spellbook.conf"))
 
@@ -26,7 +27,7 @@ def what_is_my_ip() -> str:
     :return: String - ip address
     """
     try:
-        ip = requests.get("https://api.ipify.org/?format=json").json()['ip']
+        ip = requests.get("https://api.ipify.org/?format=json", timeout=DEFAULT_HTTP_TIMEOUT).json()['ip']
     except (ValueError, KeyError, TypeError, OSError) as ex:
         print(f'Unable to get ip: {ex}')
         return ''

@@ -2,6 +2,9 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
+import requests
+
+from helpers.http_helpers import DEFAULT_HTTP_TIMEOUT
 from helpers.lnbitshelpers import (
     LNBITS_URL,
     check_invoice,
@@ -31,7 +34,8 @@ class TestLnbitsHelpers(unittest.TestCase):
         self.assertEqual(result, {'id': 'wallet123', 'name': 'Test Wallet', 'balance': 1000})
         mock_get.assert_called_once_with(
             f'{LNBITS_URL}/api/v1/wallet',
-            headers={'X-Api-Key': 'test-api-key'}
+            headers={'X-Api-Key': 'test-api-key'},
+            timeout=DEFAULT_HTTP_TIMEOUT
         )
 
     @patch('helpers.lnbitshelpers.requests.get')
@@ -44,6 +48,12 @@ class TestLnbitsHelpers(unittest.TestCase):
 
         result = get_wallet_details('invalid-key')
         self.assertIsNone(result)
+
+    @patch('helpers.lnbitshelpers.requests.get', side_effect=requests.exceptions.Timeout('t'))
+    def test_get_wallet_details_timeout(self, mock_get):
+        """Test that a Timeout from the underlying request propagates"""
+        with self.assertRaises(requests.exceptions.Timeout):
+            get_wallet_details('k')
 
     @patch('helpers.lnbitshelpers.requests.post')
     def test_create_invoice_success(self, mock_post):
