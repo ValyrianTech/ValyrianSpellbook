@@ -378,7 +378,7 @@ class SpellbookRESTAPI(Bottle):
             if get_enable_ssl() is True:
                 self.run(host=self.host, port=self.port, debug=False, server='sslwebserver')
             else:
-                self.run(host=self.host, port=self.port, debug=True, server='cheroot')
+                self.run(host=self.host, port=self.port, debug=False, server='cheroot')
 
         except (ValueError, KeyError, TypeError, OSError) as ex:
             LOG.error(f'An exception occurred in the main loop: {ex}')
