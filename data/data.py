@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """Blockchain data access layer with multi-explorer fallback support."""
 
+import contextvars
 import os
 
 from helpers.jsonhelpers import load_from_json_file, save_to_json_file
@@ -18,7 +19,16 @@ from .explorer import Explorer, ExplorerType
 PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 EXPLORERS_JSON_FILE = os.path.join(PROGRAM_DIR, 'json', 'private', 'explorers.json')
-EXPLORER = None
+_EXPLORER = contextvars.ContextVar('explorer', default=None)
+
+
+def __getattr__(name):
+    """
+    Provide backward-compatible read access to the per-context explorer via EXPLORER
+    """
+    if name == 'EXPLORER':
+        return _EXPLORER.get()
+    raise AttributeError(f'module {__name__!r} has no attribute {name!r}')
 
 
 def initialize_explorers_file():
@@ -154,18 +164,17 @@ def query(query_type, param=None):
     :param param:  The parameters for the query
     :return: The response of the query
     """
-    global EXPLORER
-
     if param is None:
         param = []
 
     # Get the list of explorers ordered by priority unless a specific explorer is specified
-    explorers = get_explorers() if EXPLORER is None else [EXPLORER]
+    explorers = get_explorers() if _EXPLORER.get() is None else [_EXPLORER.get()]
 
     # Validate a request-supplied explorer against the configured explorers
-    if EXPLORER is not None and EXPLORER not in (get_explorers() or []):
-        LOG.error(f'Unknown explorer: {EXPLORER}')
-        return {'error': f'Unknown explorer: {EXPLORER}'}
+    current = _EXPLORER.get()
+    if current is not None and current not in (get_explorers() or []):
+        LOG.error(f'Unknown explorer: {current}')
+        return {'error': f'Unknown explorer: {current}'}
 
     if not explorers:
         LOG.error('No block explorers configured')
@@ -206,7 +215,7 @@ def query(query_type, param=None):
                 LOG.error(message)
             else:
                 response = data
-                EXPLORER = explorers[i]
+                _EXPLORER.set(explorers[i])
                 return response
 
     if len(explorers) == 1:
@@ -328,20 +337,18 @@ def push_tx(tx):
 
 def set_explorer(explorer_id):
     """
-    Set a specific explorer to use in a global variable
+    Set a specific explorer to use in the current context
 
     :param explorer_id: The id of the explorer
     """
-    global EXPLORER
-    EXPLORER = explorer_id
+    _EXPLORER.set(explorer_id)
 
 
 def clear_explorer():
     """
-    Clear the global variable EXPLORER
+    Clear the explorer for the current context
     """
-    global EXPLORER
-    EXPLORER = None
+    _EXPLORER.set(None)
 
 
 def get_last_explorer():
@@ -350,5 +357,5 @@ def get_last_explorer():
 
     :return: The id of the last used explorer
     """
-    return EXPLORER
+    return _EXPLORER.get()
 
