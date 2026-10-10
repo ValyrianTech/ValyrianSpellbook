@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import threading
 from unittest import mock
 
 import pytest
@@ -206,7 +207,7 @@ class TestQuery:
     """Tests for query function"""
 
     def setup_method(self, method):
-        data.EXPLORER = None
+        data.clear_explorer()
 
     @mock.patch('data.data.get_explorer_api')
     @mock.patch('data.data.get_explorers')
@@ -354,24 +355,24 @@ class TestQuery:
     @mock.patch('data.data.get_explorer_api')
     @mock.patch('data.data.get_explorers')
     def test_query_with_specific_explorer(self, mock_get_explorers, mock_get_api):
-        data.EXPLORER = 'specific_explorer'
+        data.set_explorer('specific_explorer')
         mock_get_explorers.return_value = ['specific_explorer']
         mock_api = mock.MagicMock()
         mock_api.get_balance.return_value = {'balance': 50}
         mock_get_api.return_value = mock_api
         result = data.query('balance', ['addr'])
         assert result == {'balance': 50}
-        data.EXPLORER = None
+        data.clear_explorer()
 
     @mock.patch('data.data.get_explorer_api')
     @mock.patch('data.data.get_explorers')
     def test_query_unknown_explorer(self, mock_get_explorers, mock_get_api):
-        data.EXPLORER = 'unknown_explorer'
+        data.set_explorer('unknown_explorer')
         mock_get_explorers.return_value = ['explorer1']
         result = data.query('balance', ['addr'])
         assert result == {'error': 'Unknown explorer: unknown_explorer'}
         mock_get_api.assert_not_called()
-        data.EXPLORER = None
+        data.clear_explorer()
 
     @mock.patch('data.data.get_explorer_api')
     @mock.patch('data.data.get_explorers')
@@ -392,11 +393,11 @@ class TestQuery:
     @mock.patch('data.data.get_explorer_api')
     @mock.patch('data.data.get_explorers')
     def test_query_unknown_explorer_when_get_explorers_returns_none(self, mock_get_explorers, mock_get_api):
-        data.EXPLORER = 'unknown_explorer'
+        data.set_explorer('unknown_explorer')
         mock_get_explorers.return_value = None
         result = data.query('balance', ['addr'])
         assert result == {'error': 'Unknown explorer: unknown_explorer'}
-        data.EXPLORER = None
+        data.clear_explorer()
 
     @mock.patch('data.data.get_explorer_api')
     @mock.patch('data.data.get_explorers')
@@ -423,7 +424,7 @@ class TestWrapperFunctions:
     """Tests for wrapper functions (block, block_by_height, etc.)"""
 
     def setup_method(self, method):
-        data.EXPLORER = None
+        data.clear_explorer()
 
     @mock.patch('data.data.query')
     def test_block(self, mock_query):
@@ -495,21 +496,74 @@ class TestExplorerGlobalFunctions:
     """Tests for set_explorer, clear_explorer, get_last_explorer"""
 
     def setup_method(self, method):
-        data.EXPLORER = None
+        data.clear_explorer()
 
     def test_set_explorer(self):
         data.set_explorer('myexplorer')
-        assert data.EXPLORER == 'myexplorer'
+        assert data.get_last_explorer() == 'myexplorer'
 
     def test_clear_explorer(self):
-        data.EXPLORER = 'myexplorer'
+        data.set_explorer('myexplorer')
         data.clear_explorer()
-        assert data.EXPLORER is None
+        assert data.get_last_explorer() is None
 
     def test_get_last_explorer(self):
-        data.EXPLORER = 'myexplorer'
+        data.set_explorer('myexplorer')
         assert data.get_last_explorer() == 'myexplorer'
 
     def test_get_last_explorer_none(self):
-        data.EXPLORER = None
+        data.clear_explorer()
         assert data.get_last_explorer() is None
+
+    def test_explorer_attribute_backward_compat(self):
+        data.set_explorer('myexplorer')
+        assert data.EXPLORER == 'myexplorer'
+        data.clear_explorer()
+        assert data.EXPLORER is None
+
+
+class TestExplorerConcurrency:
+    """Tests proving cross-request/context isolation of the selected explorer"""
+
+    def setup_method(self, method):
+        data.clear_explorer()
+
+    def test_explorer_isolated_between_threads(self):
+        """A value set in a background thread/context is not visible to the main context"""
+        result = {}
+
+        def worker():
+            data.set_explorer('explorer_thread')
+            result['thread_value'] = data.get_last_explorer()
+
+        thread = threading.Thread(target=worker)
+        thread.start()
+        thread.join()
+
+        assert result['thread_value'] == 'explorer_thread'
+        assert data.get_last_explorer() is None
+
+    @mock.patch('data.data.get_explorer_api')
+    @mock.patch('data.data.get_explorers')
+    def test_explorer_selection_not_leaked_between_threads(self, mock_get_explorers, mock_get_api):
+        """A specific explorer set in the main thread is used, while a fresh thread sees None"""
+        data.set_explorer('main_explorer')
+        mock_get_explorers.return_value = ['main_explorer']
+        mock_api = mock.MagicMock()
+        mock_api.get_balance.return_value = {'balance': 100}
+        mock_get_api.return_value = mock_api
+
+        seen = []
+
+        def worker():
+            seen.append(data.get_last_explorer())
+
+        thread = threading.Thread(target=worker)
+        thread.start()
+        thread.join()
+
+        assert seen == [None]
+        assert data.get_last_explorer() == 'main_explorer'
+        result = data.query('balance', ['addr'])
+        assert result == {'balance': 100}
+        assert data.get_last_explorer() == 'main_explorer'
