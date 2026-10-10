@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 """Blockchain data access layer with multi-explorer fallback support."""
 
+import contextvars
 import os
+import sys
+import types
 
 from helpers.jsonhelpers import load_from_json_file, save_to_json_file
 from helpers.loghelpers import LOG
@@ -18,7 +21,23 @@ from .explorer import Explorer, ExplorerType
 PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 EXPLORERS_JSON_FILE = os.path.join(PROGRAM_DIR, 'json', 'private', 'explorers.json')
-EXPLORER = None
+_EXPLORER = contextvars.ContextVar('explorer', default=None)
+
+
+def __getattr__(name):
+    """
+    Provide backward-compatible read-only access to the per-context explorer.
+
+    ``data.EXPLORER`` is READ-ONLY: it is backed by the context-local
+    ``_EXPLORER`` ContextVar, so reads reflect the explorer selected for the
+    current context. To change the current explorer, call ``data.set_explorer()``
+    (or ``data.clear_explorer()`` to reset it). Assignment is not supported and
+    is rejected by the module-level ``_DataModule`` guard; this hook only
+    provides reads.
+    """
+    if name == 'EXPLORER':
+        return _EXPLORER.get()
+    raise AttributeError(f'module {__name__!r} has no attribute {name!r}')
 
 
 def initialize_explorers_file():
@@ -154,18 +173,17 @@ def query(query_type, param=None):
     :param param:  The parameters for the query
     :return: The response of the query
     """
-    global EXPLORER
-
     if param is None:
         param = []
 
     # Get the list of explorers ordered by priority unless a specific explorer is specified
-    explorers = get_explorers() if EXPLORER is None else [EXPLORER]
+    explorers = get_explorers() if _EXPLORER.get() is None else [_EXPLORER.get()]
 
     # Validate a request-supplied explorer against the configured explorers
-    if EXPLORER is not None and EXPLORER not in (get_explorers() or []):
-        LOG.error(f'Unknown explorer: {EXPLORER}')
-        return {'error': f'Unknown explorer: {EXPLORER}'}
+    current = _EXPLORER.get()
+    if current is not None and current not in (get_explorers() or []):
+        LOG.error(f'Unknown explorer: {current}')
+        return {'error': f'Unknown explorer: {current}'}
 
     if not explorers:
         LOG.error('No block explorers configured')
@@ -206,7 +224,7 @@ def query(query_type, param=None):
                 LOG.error(message)
             else:
                 response = data
-                EXPLORER = explorers[i]
+                _EXPLORER.set(explorers[i])
                 return response
 
     if len(explorers) == 1:
@@ -328,20 +346,18 @@ def push_tx(tx):
 
 def set_explorer(explorer_id):
     """
-    Set a specific explorer to use in a global variable
+    Set a specific explorer to use in the current context
 
     :param explorer_id: The id of the explorer
     """
-    global EXPLORER
-    EXPLORER = explorer_id
+    _EXPLORER.set(explorer_id)
 
 
 def clear_explorer():
     """
-    Clear the global variable EXPLORER
+    Clear the explorer for the current context
     """
-    global EXPLORER
-    EXPLORER = None
+    _EXPLORER.set(None)
 
 
 def get_last_explorer():
@@ -350,5 +366,31 @@ def get_last_explorer():
 
     :return: The id of the last used explorer
     """
-    return EXPLORER
+    return _EXPLORER.get()
+
+
+class _DataModule(types.ModuleType):
+    """
+    Module subclass used to make EXPLORER read-only.
+
+    PEP 562 module-level __getattr__ is only consulted when normal attribute
+    lookup fails, so a plain ``data.EXPLORER = 'foo'`` would silently create a
+    real module attribute that permanently shadows the shim and stops
+    reflecting the context-local value. Overriding __setattr__ here turns that
+    silent, wrong behaviour into an explicit error and points callers at
+    set_explorer().
+    """
+
+    def __setattr__(self, name, value):
+        if name == 'EXPLORER':
+            raise AttributeError(
+                "data.EXPLORER is read-only; use data.set_explorer() / "
+                "data.clear_explorer() to change the current explorer"
+            )
+        super().__setattr__(name, value)
+
+
+# Make EXPLORER assignment on the module itself fail loudly instead of
+# silently shadowing the PEP 562 __getattr__ shim above.
+sys.modules[__name__].__class__ = _DataModule
 

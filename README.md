@@ -167,6 +167,8 @@ Similarly, all other outbound HTTP requests made by the framework — fee lookup
 
 Requesting an unknown explorer, or running with no block explorers configured at all, now returns an error instead of crashing.
 
+The currently selected block explorer is now stored per-request/per-context (thread-safe) rather than in a shared global, so concurrent requests can no longer leak their explorer selection into each other, while existing `data.EXPLORER` usages keep working for backward compatibility.
+
 Segwit
 ------
 There currently is partial segwit support. It is possible to send to segwit addresses (including bech32 addresses).
