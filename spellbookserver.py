@@ -259,7 +259,7 @@ class SpellbookRESTAPI(Bottle):
         LOG.info('Starting Bitcoin Spellbook')
 
         try:
-            if get_enable_wallet() is True:
+            if get_enable_wallet():
                 get_hot_wallet()
         except (ValueError, KeyError, TypeError, OSError) as ex:
             LOG.error(f'Unable to decrypt hot wallet: {ex}')

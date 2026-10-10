@@ -193,7 +193,8 @@ class TestConfigurationGetters:
         """Test getting enable_wallet"""
         try:
             result = get_enable_wallet()
-            assert result is not None
+            assert isinstance(result, bool)
+            assert result is False
         except (ValueError, KeyError, TypeError):
             return
 
@@ -233,7 +234,8 @@ class TestConfigurationGetters:
         """Test getting enable_smtp"""
         try:
             result = get_enable_smtp()
-            assert result is not None
+            assert isinstance(result, bool)
+            assert result is False
         except (ValueError, KeyError, TypeError):
             return
 
