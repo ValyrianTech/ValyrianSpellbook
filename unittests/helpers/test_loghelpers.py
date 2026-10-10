@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from unittest import mock
+
 from helpers.loghelpers import LOG, REQUESTS_LOG, get_logs
 
 
@@ -20,10 +22,13 @@ class TestLogHelpers:
         logs = get_logs()
         assert isinstance(logs, list)
 
-    def test_get_logs_with_filter(self):
+    def test_get_logs_with_filter(self, tmp_path):
         """Test get_logs with a filter string"""
-        # Use a filter that likely won't match anything
-        logs = get_logs(filter_string='UNLIKELY_FILTER_STRING_12345')
+        # Use an isolated log file so real log content can't affect the result
+        log_file = tmp_path / 'spellbook.txt'
+        log_file.write_text('2026-01-01 00:00:00 | INFO | some log line\n')
+        with mock.patch('helpers.loghelpers.glob.glob', return_value=[str(log_file)]):
+            logs = get_logs(filter_string='UNLIKELY_FILTER_STRING_12345')
         assert isinstance(logs, list)
         assert len(logs) == 0
 
