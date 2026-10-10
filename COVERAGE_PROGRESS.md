@@ -72,6 +72,7 @@ The following `# pragma: no cover` annotations were added for genuinely unreacha
 | `transactionfactory.py` | 151-152 | Non-hex `tx_hex` never passed — function contract expects hex |
 | `transactionfactory.py` | 153-155 | Dict `tx_hex` would fail regex on line 151 first |
 | `transactionfactory.py` | 307-308 | Python 2 compat / `isinstance(re, bytes)` never true |
+| `data/vulture_whitelist.py` | 5 | vulture whitelist entry for the PEP 562 `data.__getattr__` hook; never imported/executed (static-analysis only) |
 
 ## Bug Fixes During Coverage Work
 
