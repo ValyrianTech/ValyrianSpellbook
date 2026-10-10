@@ -86,7 +86,7 @@ def get_secret():
 @verify_config('Wallet', 'enable_wallet')
 def get_enable_wallet():
     """Get whether the wallet is enabled from the configuration."""
-    return spellbook_config().get('Wallet', 'enable_wallet')
+    return spellbook_config().getboolean('Wallet', 'enable_wallet')
 
 
 @verify_config('Wallet', 'wallet_dir')
@@ -122,7 +122,7 @@ def get_minimum_output_value():
 @verify_config('SMTP', 'enable_smtp')
 def get_enable_smtp():
     """Get whether SMTP email is enabled from the configuration."""
-    return spellbook_config().get('SMTP', 'enable_smtp')
+    return spellbook_config().getboolean('SMTP', 'enable_smtp')
 
 
 @verify_config('SMTP', 'from_address')

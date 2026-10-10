@@ -537,7 +537,7 @@ class TestExplorerGlobalFunctions:
 
     def test_getattr_unknown_attribute_raises(self):
         with pytest.raises(AttributeError):
-            data.this_attribute_does_not_exist
+            data.this_attribute_does_not_exist  # noqa: B018
 
 
 class TestExplorerConcurrency:
