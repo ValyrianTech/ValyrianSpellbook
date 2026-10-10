@@ -3,6 +3,8 @@
 
 import contextvars
 import os
+import sys
+import types
 
 from helpers.jsonhelpers import load_from_json_file, save_to_json_file
 from helpers.loghelpers import LOG
@@ -24,7 +26,14 @@ _EXPLORER = contextvars.ContextVar('explorer', default=None)
 
 def __getattr__(name):
     """
-    Provide backward-compatible read access to the per-context explorer via EXPLORER
+    Provide backward-compatible read-only access to the per-context explorer.
+
+    ``data.EXPLORER`` is READ-ONLY: it is backed by the context-local
+    ``_EXPLORER`` ContextVar, so reads reflect the explorer selected for the
+    current context. To change the current explorer, call ``data.set_explorer()``
+    (or ``data.clear_explorer()`` to reset it). Assignment is not supported and
+    is rejected by the module-level ``_DataModule`` guard; this hook only
+    provides reads.
     """
     if name == 'EXPLORER':
         return _EXPLORER.get()
@@ -358,4 +367,30 @@ def get_last_explorer():
     :return: The id of the last used explorer
     """
     return _EXPLORER.get()
+
+
+class _DataModule(types.ModuleType):
+    """
+    Module subclass used to make EXPLORER read-only.
+
+    PEP 562 module-level __getattr__ is only consulted when normal attribute
+    lookup fails, so a plain ``data.EXPLORER = 'foo'`` would silently create a
+    real module attribute that permanently shadows the shim and stops
+    reflecting the context-local value. Overriding __setattr__ here turns that
+    silent, wrong behaviour into an explicit error and points callers at
+    set_explorer().
+    """
+
+    def __setattr__(self, name, value):
+        if name == 'EXPLORER':
+            raise AttributeError(
+                "data.EXPLORER is read-only; use data.set_explorer() / "
+                "data.clear_explorer() to change the current explorer"
+            )
+        super().__setattr__(name, value)
+
+
+# Make EXPLORER assignment on the module itself fail loudly instead of
+# silently shadowing the PEP 562 __getattr__ shim above.
+sys.modules[__name__].__class__ = _DataModule
 

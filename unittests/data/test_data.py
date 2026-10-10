@@ -521,6 +521,24 @@ class TestExplorerGlobalFunctions:
         data.clear_explorer()
         assert data.EXPLORER is None
 
+    def test_explorer_attribute_is_read_only(self):
+        data.set_explorer('myexplorer')
+        assert data.EXPLORER == 'myexplorer'
+        with pytest.raises(AttributeError):
+            data.EXPLORER = 'shadow'
+        assert data.EXPLORER == 'myexplorer'
+        assert data.get_last_explorer() == 'myexplorer'
+        data.clear_explorer()
+
+    def test_module_allows_other_attribute_assignment(self):
+        data._temporary_test_attribute = 123
+        assert data._temporary_test_attribute == 123
+        del data._temporary_test_attribute
+
+    def test_getattr_unknown_attribute_raises(self):
+        with pytest.raises(AttributeError):
+            data.this_attribute_does_not_exist
+
 
 class TestExplorerConcurrency:
     """Tests proving cross-request/context isolation of the selected explorer"""
