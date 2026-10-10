@@ -72,7 +72,7 @@ def sendmail(recipients, subject, body_template, variables=None, images=None, at
     :param attachments: A dict containing the filename and path for each attachment that needs to be added to the email
     :return: True upon success, False upon failure
     """
-    if get_enable_smtp() is False:
+    if not get_enable_smtp():
         LOG.warning('SMTP is disabled, mail will not be sent! see spellbook configuration file')
         return True  # Return true here so everything continues as normal
 
