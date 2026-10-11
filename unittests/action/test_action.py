@@ -53,6 +53,7 @@ class TestActionType:
             'Unfollow on twitter',
         }
         assert len(ActionType.all()) == 17
+        assert isinstance(ActionType.all(), frozenset)
 
 
 class TestTransactionType:

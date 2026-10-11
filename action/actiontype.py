@@ -26,6 +26,6 @@ class ActionType:
     UNFOLLOW_ON_TWITTER = 'Unfollow on twitter'
 
     @classmethod
-    def all(cls) -> set:
-        """Return the set of all valid action type string values."""
-        return {value for name, value in vars(cls).items() if not name.startswith('_') and isinstance(value, str)}
+    def all(cls) -> frozenset:
+        """Return the frozenset of all valid action type string values."""
+        return frozenset({value for name, value in vars(cls).items() if not name.startswith('_') and isinstance(value, str)})
