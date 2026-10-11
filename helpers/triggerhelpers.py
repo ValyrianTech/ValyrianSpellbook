@@ -94,36 +94,38 @@ def get_trigger(trigger_id, trigger_type=None):
     if trigger_type is not None:
         trigger_config['trigger_type'] = trigger_type
 
-    if trigger_config['trigger_type'] == TriggerType.BALANCE:
+    trigger_type = trigger_config.get('trigger_type', TriggerType.MANUAL)
+
+    if trigger_type == TriggerType.BALANCE:
         trigger = BalanceTrigger(trigger_id)
-    elif trigger_config['trigger_type'] == TriggerType.RECEIVED:
+    elif trigger_type == TriggerType.RECEIVED:
         trigger = ReceivedTrigger(trigger_id)
-    elif trigger_config['trigger_type'] == TriggerType.SENT:
+    elif trigger_type == TriggerType.SENT:
         trigger = SentTrigger(trigger_id)
-    elif trigger_config['trigger_type'] == TriggerType.BLOCK_HEIGHT:
+    elif trigger_type == TriggerType.BLOCK_HEIGHT:
         trigger = BlockHeightTrigger(trigger_id)
-    elif trigger_config['trigger_type'] == TriggerType.TX_CONFIRMATION:
+    elif trigger_type == TriggerType.TX_CONFIRMATION:
         trigger = TxConfirmationTrigger(trigger_id)
-    elif trigger_config['trigger_type'] == TriggerType.TIMESTAMP:
+    elif trigger_type == TriggerType.TIMESTAMP:
         trigger = TimestampTrigger(trigger_id)
-    elif trigger_config['trigger_type'] == TriggerType.RECURRING:
+    elif trigger_type == TriggerType.RECURRING:
         trigger = RecurringTrigger(trigger_id)
-    elif trigger_config['trigger_type'] == TriggerType.TRIGGERSTATUS:
+    elif trigger_type == TriggerType.TRIGGERSTATUS:
         trigger = TriggerStatusTrigger(trigger_id)
-    elif trigger_config['trigger_type'] == TriggerType.DEADMANSSWITCH:
+    elif trigger_type == TriggerType.DEADMANSSWITCH:
         trigger = DeadMansSwitchTrigger(trigger_id)
-    elif trigger_config['trigger_type'] == TriggerType.SIGNEDMESSAGE:
+    elif trigger_type == TriggerType.SIGNEDMESSAGE:
         trigger = SignedMessageTrigger(trigger_id)
-    elif trigger_config['trigger_type'] == TriggerType.MANUAL:
+    elif trigger_type == TriggerType.MANUAL:
         trigger = ManualTrigger(trigger_id)
-    elif trigger_config['trigger_type'] == TriggerType.HTTPGETREQUEST:
+    elif trigger_type == TriggerType.HTTPGETREQUEST:
         trigger = HTTPGetRequestTrigger(trigger_id)
-    elif trigger_config['trigger_type'] == TriggerType.HTTPPOSTREQUEST:
+    elif trigger_type == TriggerType.HTTPPOSTREQUEST:
         trigger = HTTPPostRequestTrigger(trigger_id)
-    elif trigger_config['trigger_type'] == TriggerType.HTTPDELETEREQUEST:
+    elif trigger_type == TriggerType.HTTPDELETEREQUEST:
         trigger = HTTPDeleteRequestTrigger(trigger_id)
     else:
-        raise NotImplementedError('Unknown trigger type: {}'.format(trigger_config['trigger_type']))
+        raise NotImplementedError('Unknown trigger type: {}'.format(trigger_type))
 
     trigger.configure(**trigger_config)
 
