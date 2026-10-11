@@ -7,6 +7,7 @@ import re
 import socket
 from urllib.parse import urlparse
 
+from action.actiontype import ActionType
 from helpers.bech32 import bech32_decode
 from helpers.loghelpers import LOG
 from helpers.pathhelpers import safe_path
@@ -24,6 +25,8 @@ LOWERCASE_TESTNET_BECH32_ADDRESS_REGEX = '^tb1[ac-hj-np-z02-9]{11,71}$'
 LOWERCASE_MAINNET_BECH32_ADDRESS_REGEX = '^bc1[ac-hj-np-z02-9]{11,71}$'
 UPPERCASE_TESTNET_BECH32_ADDRESS_REGEX = '^TB1[AC-HJ-NP-Z02-9]{11,71}$'
 UPPERCASE_MAINNET_BECH32_ADDRESS_REGEX = '^BC1[AC-HJ-NP-Z02-9]{11,71}$'
+
+_VALID_ACTION_TYPES = frozenset(ActionType.all())
 
 
 def valid_address(address):
@@ -227,7 +230,7 @@ def valid_trigger_type(trigger_type):
 
 def valid_action_type(action_type):
     """Check if the given action type is one of the allowed values."""
-    return action_type in ['Command', 'SendTransaction', 'RevealSecret', 'SendMail', 'Webhook']
+    return action_type in _VALID_ACTION_TYPES
 
 
 def valid_transaction_type(transaction_type):

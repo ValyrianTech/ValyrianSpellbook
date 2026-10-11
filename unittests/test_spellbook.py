@@ -13,6 +13,8 @@ from unittest import mock
 
 import pytest
 
+from action.actiontype import ActionType
+
 # spellbook.py runs argparse and command dispatch at module level.
 # The root __init__.py makes the directory a "spellbook" package, shadowing
 # spellbook.py, so we load the file directly via importlib.
@@ -830,6 +832,14 @@ class TestSaveAction:
             save_action()
         assert exc_info.value.code == 1
         mock_post.assert_not_called()
+
+
+class TestSaveActionCliChoices:
+
+    def test_save_action_type_choices_match_actiontype_all(self):
+        type_actions = [a for a in spellbook.save_action_parser._actions if a.dest == 'type']
+        assert len(type_actions) == 1
+        assert type_actions[0].choices == sorted(ActionType.all())
 
 
 class TestDeleteAction:

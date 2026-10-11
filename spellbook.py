@@ -11,6 +11,7 @@ import requests
 import simplejson
 
 import texts
+from action.actiontype import ActionType
 from authentication import signature
 from helpers.configurationhelpers import (
     get_host,
@@ -443,7 +444,7 @@ save_action_parser = subparsers.add_parser(name='save_action',
                                            epilog=texts.SAVE_ACTION_EPILOG)
 
 save_action_parser.add_argument('action_id', help='The id of the action')
-save_action_parser.add_argument('-t', '--type', help='The type of the action', choices=['Command', 'SpawnProcess', 'SendTransaction', 'RevealSecret', 'SendMail', 'Webhook', 'LaunchEvolver'])
+save_action_parser.add_argument('-t', '--type', help='The type of the action', choices=sorted(ActionType.all()))
 
 save_action_parser.add_argument('-c', '--run_command', help='The command to run, only applicable to Command Actions')
 save_action_parser.add_argument('-j', '--job_config', help='Configuration file for a LaunchEvolver action')

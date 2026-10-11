@@ -33,7 +33,7 @@ class Action:
 
         :param config: A dict containing the configuration settings
                        - config['created']     : A timestamp when the action was created
-                       - config['action_type'] : The type of action ['Command', 'SpawnProcess', 'RevealSecret', 'SendMail', 'SendTransaction', 'Webhook']
+                       - config['action_type'] : The type of action (one of the valid ActionType values)
         """
         self.created = datetime.fromtimestamp(config['created'], tz=timezone.utc) if 'created' in config else datetime.now(tz=timezone.utc)
 
