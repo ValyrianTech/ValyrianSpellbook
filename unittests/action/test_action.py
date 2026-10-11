@@ -32,6 +32,28 @@ class TestActionType:
         assert ActionType.FOLLOW_ON_TWITTER == 'Follow on twitter'
         assert ActionType.UNFOLLOW_ON_TWITTER == 'Unfollow on twitter'
 
+    def test_action_type_all(self):
+        assert ActionType.all() == {
+            'Command',
+            'SpawnProcess',
+            'RevealSecret',
+            'SendMail',
+            'Webhook',
+            'SendTransaction',
+            'DeleteTrigger',
+            'LaunchEvolver',
+            'Like tweet',
+            'Unlike tweet',
+            'Retweet',
+            'Unretweet',
+            'Create tweet',
+            'Delete tweet',
+            'Send direct message on twitter',
+            'Follow on twitter',
+            'Unfollow on twitter',
+        }
+        assert len(ActionType.all()) == 17
+
 
 class TestTransactionType:
     """Tests for TransactionType constants"""
