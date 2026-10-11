@@ -34,6 +34,13 @@ def make_args(**kwargs):
     return argparse.Namespace(**kwargs)
 
 
+def make_temp_file_mock(name='/tmp/tmpabc123'):
+    """Create a mock file object for a NamedTemporaryFile context manager."""
+    tmp_file = mock.Mock()
+    tmp_file.name = name
+    return tmp_file
+
+
 class TestGetWalletPassword:
 
     @mock.patch.dict(os.environ, {'SPELLBOOK_WALLET_PASSWORD': 'envpass'})
@@ -132,25 +139,46 @@ class TestSaveWallet:
 
     @mock.patch.dict(os.environ, {'SPELLBOOK_WALLET_PASSWORD': 'mypassword'})
     @mock.patch('hot_wallet.getpass.getpass')
-    @mock.patch('builtins.open', new_callable=mock.mock_open)
+    @mock.patch('hot_wallet.os.replace')
+    @mock.patch('hot_wallet.os.chmod')
+    @mock.patch('hot_wallet.os.fsync')
+    @mock.patch('hot_wallet.tempfile.NamedTemporaryFile')
     @mock.patch('hot_wallet.AESCipher')
     @mock.patch('hot_wallet.simplejson.dumps', return_value='{"addr": "key"}')
-    def test_save_with_password(self, mock_dumps, mock_aes, mock_open, mock_getpass):
+    def test_save_with_password(self, mock_dumps, mock_aes, mock_tempfile, mock_fsync, mock_chmod, mock_replace, mock_getpass):
         mock_cipher = mock_aes.return_value
         mock_cipher.encrypt.return_value = b'encrypted_data'
+        tmp_file = make_temp_file_mock('/tmp/tmpabc123')
+        mock_tempfile.return_value.__enter__.return_value = tmp_file
+
         hot_wallet.save_wallet({'addr': 'key'})
+
         mock_aes.assert_called_once_with(key='mypassword')
         mock_cipher.encrypt.assert_called_once()
         mock_getpass.assert_not_called()
+        mock_tempfile.assert_called_once_with(mode='w', dir=hot_wallet.WALLET_DIR, delete=False)
+        tmp_file.write.assert_called_once_with('encrypted_data')
+        tmp_file.flush.assert_called_once()
+        mock_fsync.assert_called_once_with(tmp_file.fileno())
+        mock_chmod.assert_called_once_with('/tmp/tmpabc123', 0o600)
+        expected_path = os.path.join(hot_wallet.WALLET_DIR, f'{hot_wallet.WALLET_ID}.enc')
+        mock_replace.assert_called_once_with('/tmp/tmpabc123', expected_path)
 
     @mock.patch.dict(os.environ, {}, clear=True)
-    @mock.patch('builtins.open', new_callable=mock.mock_open)
+    @mock.patch('hot_wallet.os.replace')
+    @mock.patch('hot_wallet.os.chmod')
+    @mock.patch('hot_wallet.os.fsync')
+    @mock.patch('hot_wallet.tempfile.NamedTemporaryFile')
     @mock.patch('hot_wallet.AESCipher')
     @mock.patch('hot_wallet.simplejson.dumps', return_value='{"addr": "key"}')
     @mock.patch('hot_wallet.getpass.getpass', side_effect=['pass1', 'pass1'])
-    def test_save_interactive_password_match(self, mock_getpass, mock_dumps, mock_aes, mock_open):
+    def test_save_interactive_password_match(self, mock_getpass, mock_dumps, mock_aes, mock_tempfile, mock_fsync, mock_chmod, mock_replace):
         mock_aes.return_value.encrypt.return_value = b'encrypted'
+        tmp_file = make_temp_file_mock('/tmp/tmpabc123')
+        mock_tempfile.return_value.__enter__.return_value = tmp_file
+
         hot_wallet.save_wallet({'addr': 'key'})
+
         assert mock_getpass.call_count == 2
         mock_aes.assert_called_once_with(key='pass1')
         mock_aes.return_value.encrypt.assert_called_once()
@@ -166,15 +194,73 @@ class TestSaveWallet:
 
     @mock.patch.dict(os.environ, {'SPELLBOOK_WALLET_PASSWORD': ''})
     @mock.patch('hot_wallet.getpass.getpass')
-    @mock.patch('builtins.open', new_callable=mock.mock_open)
+    @mock.patch('hot_wallet.os.replace')
+    @mock.patch('hot_wallet.os.chmod')
+    @mock.patch('hot_wallet.os.fsync')
+    @mock.patch('hot_wallet.tempfile.NamedTemporaryFile')
     @mock.patch('hot_wallet.AESCipher')
     @mock.patch('hot_wallet.simplejson.dumps', return_value='{}')
-    def test_save_empty_password(self, mock_dumps, mock_aes, mock_open, mock_getpass):
+    def test_save_empty_password(self, mock_dumps, mock_aes, mock_tempfile, mock_fsync, mock_chmod, mock_replace, mock_getpass):
         mock_cipher = mock_aes.return_value
         mock_cipher.encrypt.return_value = b'enc'
+        tmp_file = make_temp_file_mock('/tmp/tmpabc123')
+        mock_tempfile.return_value.__enter__.return_value = tmp_file
+
         hot_wallet.save_wallet({})
+
         mock_aes.assert_called_once_with(key='')
         mock_getpass.assert_not_called()
+
+    @mock.patch.dict(os.environ, {'SPELLBOOK_WALLET_PASSWORD': 'mypassword'})
+    @mock.patch('hot_wallet.getpass.getpass')
+    @mock.patch('hot_wallet.tempfile.NamedTemporaryFile', side_effect=OSError('temp file error'))
+    @mock.patch('hot_wallet.AESCipher')
+    @mock.patch('hot_wallet.simplejson.dumps', return_value='{}')
+    def test_save_tempfile_error_propagates(self, mock_dumps, mock_aes, mock_tempfile, mock_getpass):
+        mock_aes.return_value.encrypt.return_value = b'enc'
+
+        with pytest.raises(OSError):
+            hot_wallet.save_wallet({})
+
+    @mock.patch.dict(os.environ, {'SPELLBOOK_WALLET_PASSWORD': 'mypassword'})
+    @mock.patch('hot_wallet.getpass.getpass')
+    @mock.patch('hot_wallet.os.remove')
+    @mock.patch('hot_wallet.os.path.exists', return_value=True)
+    @mock.patch('hot_wallet.os.replace', side_effect=OSError('replace failed'))
+    @mock.patch('hot_wallet.os.chmod')
+    @mock.patch('hot_wallet.os.fsync')
+    @mock.patch('hot_wallet.tempfile.NamedTemporaryFile')
+    @mock.patch('hot_wallet.AESCipher')
+    @mock.patch('hot_wallet.simplejson.dumps', return_value='{}')
+    def test_save_cleanup_on_replace_error(self, mock_dumps, mock_aes, mock_tempfile, mock_fsync, mock_chmod, mock_replace, mock_exists, mock_remove, mock_getpass):
+        mock_aes.return_value.encrypt.return_value = b'enc'
+        tmp_file = make_temp_file_mock('/tmp/tmpabc123')
+        mock_tempfile.return_value.__enter__.return_value = tmp_file
+
+        with pytest.raises(OSError):
+            hot_wallet.save_wallet({})
+
+        mock_remove.assert_called_once_with('/tmp/tmpabc123')
+
+    @mock.patch.dict(os.environ, {'SPELLBOOK_WALLET_PASSWORD': 'mypassword'})
+    @mock.patch('hot_wallet.getpass.getpass')
+    @mock.patch('hot_wallet.os.remove')
+    @mock.patch('hot_wallet.os.path.exists', return_value=False)
+    @mock.patch('hot_wallet.os.replace', side_effect=OSError('replace failed'))
+    @mock.patch('hot_wallet.os.chmod')
+    @mock.patch('hot_wallet.os.fsync')
+    @mock.patch('hot_wallet.tempfile.NamedTemporaryFile')
+    @mock.patch('hot_wallet.AESCipher')
+    @mock.patch('hot_wallet.simplejson.dumps', return_value='{}')
+    def test_save_cleanup_exists_false(self, mock_dumps, mock_aes, mock_tempfile, mock_fsync, mock_chmod, mock_replace, mock_exists, mock_remove, mock_getpass):
+        mock_aes.return_value.encrypt.return_value = b'enc'
+        tmp_file = make_temp_file_mock('/tmp/tmpabc123')
+        mock_tempfile.return_value.__enter__.return_value = tmp_file
+
+        with pytest.raises(OSError):
+            hot_wallet.save_wallet({})
+
+        mock_remove.assert_not_called()
 
 
 class TestAddKey:

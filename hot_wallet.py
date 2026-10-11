@@ -5,6 +5,7 @@ import argparse
 import getpass
 import os
 import sys
+import tempfile
 from configparser import ConfigParser
 from pprint import pprint
 
@@ -179,8 +180,21 @@ def save_wallet(wallet):
     cipher = AESCipher(key=password1)
     unencrypted_data = bytes(simplejson.dumps(wallet, sort_keys=True, indent=4), 'utf-8')
 
-    with open(os.path.join(WALLET_DIR, f'{WALLET_ID}.enc'), 'w') as output_file:
-        output_file.write(str(cipher.encrypt(unencrypted_data), 'utf-8'))
+    path = os.path.join(WALLET_DIR, f'{WALLET_ID}.enc')
+    payload = str(cipher.encrypt(unencrypted_data), 'utf-8')
+    tmp_path = None
+    try:
+        with tempfile.NamedTemporaryFile(mode='w', dir=WALLET_DIR, delete=False) as tmp_file:
+            tmp_path = tmp_file.name
+            tmp_file.write(payload)
+            tmp_file.flush()
+            os.fsync(tmp_file.fileno())
+        os.chmod(tmp_path, 0o600)
+        os.replace(tmp_path, path)
+    except OSError:
+        if tmp_path is not None and os.path.exists(tmp_path):
+            os.remove(tmp_path)
+        raise
 
 
 def add_key():
