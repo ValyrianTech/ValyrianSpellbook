@@ -164,6 +164,13 @@ class TestTriggerHelpers:
             get_trigger('test_trigger')
 
     @mock.patch('helpers.triggerhelpers.load_from_json_file')
+    def test_get_trigger_unknown_id_falls_back_to_manual(self, mock_load):
+        """Test that an unknown trigger id (missing config) returns a ManualTrigger instead of raising KeyError"""
+        mock_load.side_effect = OSError('File not found')
+        trigger = get_trigger('unknown-id')
+        assert trigger.trigger_type == TriggerType.MANUAL
+
+    @mock.patch('helpers.triggerhelpers.load_from_json_file')
     def test_get_trigger_with_type_override(self, mock_load):
         """Test getting a trigger with type override"""
         mock_load.return_value = {'trigger_type': TriggerType.MANUAL}
