@@ -34,9 +34,9 @@ The legacy retry is only attempted when the payload is structurally legacy-shape
 import base64
 import hashlib
 
-from Crypto.Cipher import AES
-from Crypto.Protocol.KDF import scrypt
-from Crypto.Random import get_random_bytes
+from Crypto.Cipher import AES  # nosec B413 # pycryptodome, not the deprecated pyCrypto
+from Crypto.Protocol.KDF import scrypt  # nosec B413 # pycryptodome, not the deprecated pyCrypto
+from Crypto.Random import get_random_bytes  # nosec B413 # pycryptodome, not the deprecated pyCrypto
 
 # v2 format constants.
 VERSION = b'\x02'  # Version marker identifying the authenticated (GCM) format.

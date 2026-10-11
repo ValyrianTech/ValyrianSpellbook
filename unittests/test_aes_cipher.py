@@ -5,7 +5,7 @@ import base64
 import hashlib
 
 import pytest
-from Crypto.Cipher import AES
+from Crypto.Cipher import AES  # nosec B413 # pycryptodome, not the deprecated pyCrypto
 
 from AESCipher import AESCipher
 
