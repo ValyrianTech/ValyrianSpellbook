@@ -24,3 +24,8 @@ class ActionType:
     SEND_DM_TWITTER = 'Send direct message on twitter'
     FOLLOW_ON_TWITTER = 'Follow on twitter'
     UNFOLLOW_ON_TWITTER = 'Unfollow on twitter'
+
+    @classmethod
+    def all(cls) -> set:
+        """Return the set of all valid action type string values."""
+        return {value for name, value in vars(cls).items() if not name.startswith('_') and isinstance(value, str)}

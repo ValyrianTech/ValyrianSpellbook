@@ -6,6 +6,7 @@ from unittest import mock
 import pytest
 
 import helpers.configurationhelpers
+from action.actiontype import ActionType
 from validators import validators
 
 
@@ -405,11 +406,8 @@ class TestValidators:
         assert validators.valid_trigger_type(trigger_type) == expected
 
     @pytest.mark.parametrize('action_type, expected, description', [
-        ['Command', True, 'valid action type: Command'],
-        ['SendTransaction', True, 'valid action type: SendTransaction'],
-        ['RevealSecret', True, 'valid action type: RevealSecret'],
-        ['SendMail', True, 'valid action type: SendMail'],
-        ['Webhook', True, 'valid action type: Webhook'],
+        [value, True, f'valid action type: {value}'] for value in ActionType.all()
+    ] + [
         ['Invalid', False, 'invalid action type'],
         ['command', False, 'lowercase command'],
         ['', False, 'empty string'],
