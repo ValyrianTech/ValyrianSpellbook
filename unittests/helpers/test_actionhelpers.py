@@ -4,6 +4,7 @@ from unittest import mock
 import pytest
 
 from action.actiontype import ActionType
+from action.commandaction import CommandAction
 from helpers.actionhelpers import (
     delete_action,
     get_action,
@@ -47,6 +48,15 @@ class TestActionHelpers:
         """Test getting config for a path-traversal action id returns empty dict"""
         result = get_action_config('../evil')
         assert result == {}
+
+    @mock.patch('helpers.actionhelpers.load_from_json_file')
+    def test_get_action_unknown_id_returns_command_action(self, mock_load):
+        """Test getting an action with an unknown id returns a CommandAction"""
+        mock_load.side_effect = OSError('File not found')
+        action = get_action('does_not_exist')
+        assert isinstance(action, CommandAction)
+        assert action.action_type == ActionType.COMMAND
+        assert action.id == 'does_not_exist'
 
     @mock.patch('helpers.actionhelpers.load_from_json_file')
     def test_get_action_command(self, mock_load):
