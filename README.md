@@ -89,7 +89,7 @@ Triggers invoke actions based on specific conditions:
 - **Block Height**: Triggers once the blockchain reaches a specified height.
 - **Timestamp and Recurring**: Schedule triggers based on time.
 - **HTTP Requests**: Activates upon HTTP GET, POST, or DELETE requests.
-- **Manual Activation**: Trigger manually via a specific API endpoint.
+- **Manual Activation**: Trigger manually via a specific API endpoint (POST).
 - **Dead Man's Switch**: A time-based trigger that sends notifications if not reset periodically.
 
 ---
