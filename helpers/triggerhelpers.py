@@ -125,7 +125,7 @@ def get_trigger(trigger_id, trigger_type=None):
     elif trigger_type == TriggerType.HTTPDELETEREQUEST:
         trigger = HTTPDeleteRequestTrigger(trigger_id)
     else:
-        raise NotImplementedError('Unknown trigger type: {}'.format(trigger_type))
+        raise NotImplementedError(f'Unknown trigger type: {trigger_type}')
 
     trigger.configure(**trigger_config)
 
