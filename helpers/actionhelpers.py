@@ -65,7 +65,8 @@ def get_action(action_id, action_type=None):
     - WebhookAction
     - DeleteTriggerAction
 
-    If no config is known for the given action id then a CommandAction is returned
+    If no config is known for the given action id, or the config lacks an
+    'action_type' key, then a CommandAction is returned by default
 
     :param action_id: The id of the action
     :param action_type: The type of action (optional)
@@ -77,24 +78,26 @@ def get_action(action_id, action_type=None):
     if action_type is not None:
         action_config['action_type'] = action_type
 
-    if action_config['action_type'] == ActionType.COMMAND:
+    action_type = action_config.get('action_type', ActionType.COMMAND)
+
+    if action_type == ActionType.COMMAND:
         action = CommandAction(action_id)
-    elif action_config['action_type'] == ActionType.SPAWNPROCESS:
+    elif action_type == ActionType.SPAWNPROCESS:
         action = SpawnProcessAction(action_id)
-    elif action_config['action_type'] == ActionType.SENDTRANSACTION:
+    elif action_type == ActionType.SENDTRANSACTION:
         action = SendTransactionAction(action_id)
-    elif action_config['action_type'] == ActionType.REVEALSECRET:
+    elif action_type == ActionType.REVEALSECRET:
         action = RevealSecretAction(action_id)
-    elif action_config['action_type'] == ActionType.SENDMAIL:
+    elif action_type == ActionType.SENDMAIL:
         action = SendMailAction(action_id)
-    elif action_config['action_type'] == ActionType.WEBHOOK:
+    elif action_type == ActionType.WEBHOOK:
         action = WebhookAction(action_id)
-    elif action_config['action_type'] == ActionType.DELETETRIGGER:
+    elif action_type == ActionType.DELETETRIGGER:
         action = DeleteTriggerAction(action_id)
-    elif action_config['action_type'] == ActionType.LAUNCHEVOLVER:
+    elif action_type == ActionType.LAUNCHEVOLVER:
         action = LaunchEvolverAction(action_id)
     else:
-        raise NotImplementedError('Unknown action type: {}'.format(action_config['action_type']))
+        raise NotImplementedError('Unknown action type: {}'.format(action_type))
 
     action.configure(**action_config)
 
