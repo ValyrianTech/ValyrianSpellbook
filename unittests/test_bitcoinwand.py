@@ -46,8 +46,11 @@ def _import_bitcoinwand(message='hello', valid_addr=True, find_wallet=(0, 0), is
         mock.patch('helpers.messagehelpers.sign_message', return_value='signature'),
     ]
 
+    add_json_patch = None
+    add_json_mock = None
     if message_hash is not None:
-        patches.append(mock.patch('helpers.ipfshelpers.add_json', return_value=message_hash))
+        add_json_patch = mock.patch('helpers.ipfshelpers.add_json', return_value=message_hash)
+        add_json_mock = add_json_patch.start()
 
     post_mock = post_patch.start()
 
@@ -60,9 +63,13 @@ def _import_bitcoinwand(message='hello', valid_addr=True, find_wallet=(0, 0), is
         spec.loader.exec_module(mod)
         sys.modules['bitcoinwand'] = mod
         mod._requests_post_mock = post_mock
+        if add_json_mock is not None:
+            mod._add_json_mock = add_json_mock
         return mod
     finally:
         post_patch.stop()
+        if add_json_patch is not None:
+            add_json_patch.stop()
         for p in patches:
             p.stop()
 
@@ -134,6 +141,11 @@ class TestBitcoinwandLongMessage:
         long_message = 'A' * 300
         mod = _import_bitcoinwand(message=long_message, message_hash='QmHash123')
         assert mod.data['signature'] == 'signature'
+
+    def test_long_message_add_json_receives_mapping(self):
+        long_message = 'A' * 300
+        mod = _import_bitcoinwand(message=long_message, message_hash='QmHash123')
+        mod._add_json_mock.assert_called_once_with({'message': long_message})
 
 
 class TestBitcoinwandFileMessage:
