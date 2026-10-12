@@ -10,6 +10,7 @@ import logging
 import os
 import re
 import sys
+from typing import ClassVar
 from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
@@ -2193,7 +2194,7 @@ class TestStateChangingRoutesArePost:
     (CSRF) triggering via <img>/<link>/redirect.
     """
 
-    STATE_CHANGING_RULES = [
+    STATE_CHANGING_RULES: ClassVar[list[str]] = [
         '/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\\-.]+>/activate',
         '/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\\-.]+>/check',
         '/spellbook/check_triggers',
