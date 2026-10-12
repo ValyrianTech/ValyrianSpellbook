@@ -851,7 +851,7 @@ def delete_trigger():
 def activate_trigger():
     """Activate a specified manual trigger by its id."""
     url = f'{get_spellbook_uri()}/spellbook/triggers/{args.trigger_id}/activate'
-    do_get_request(url=url, authenticate=True)
+    do_post_request(url=url, authenticate=True)
 
 
 def send_signed_message():
@@ -903,7 +903,7 @@ def check_triggers():
     else:
         url = f'{get_spellbook_uri()}/spellbook/check_triggers'
 
-    do_get_request(url=url, authenticate=True)
+    do_post_request(url=url, authenticate=True)
 
 
 # ----------------------------------------------------------------------------------------------------------------
@@ -1032,13 +1032,13 @@ def delete_action():
 def run_action():
     """Run a specified action by its id."""
     url = f'{get_spellbook_uri()}/spellbook/actions/{args.action_id}/run'
-    do_get_request(url=url, authenticate=True)
+    do_post_request(url=url, authenticate=True)
 
 
 def get_reveal():
     """Retrieve and display the reveal text or link from a RevealSecret action."""
     url = f'{get_spellbook_uri()}/spellbook/actions/{args.action_id}/reveal'
-    do_get_request(url=url, authenticate=True)
+    do_post_request(url=url, authenticate=True)
 
 
 def get_logs():
