@@ -14,7 +14,7 @@ from typing import ClassVar
 from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
-from bottle import WSGIHeaderDict
+from bottle import WSGIHeaderDict, response
 
 # --- Module loading -----------------------------------------------------------
 # spellbookserver.py imports heavy dependencies at module level (faster_whisper,
@@ -40,6 +40,7 @@ from spellbookserver import (
     convert_aac_to_opus,
     enable_cors,
 )
+from authentication import AuthenticationStatus
 
 # Re-enable for individual tests if needed
 _transcribe_patcher.stop()
@@ -2235,12 +2236,15 @@ class TestStateChangingRoutesArePost:
 class TestGetRevealNoStore:
     """The reveal endpoint returns a decrypted secret and must not be cached."""
 
-    @patch('spellbookserver.response')
     @patch('spellbookserver.get_reveal')
-    def test_get_reveal_sets_no_store_cache_control(self, mock_reveal, mock_resp):
-        mock_resp.headers = {}
-        with patch('decorators.check_authentication') as mock_dec:
-            mock_dec.return_value = 'OK'
-            mock_reveal.return_value = {'secret': 's3cr3t'}
-            SpellbookRESTAPI.get_reveal('act1')
-        assert mock_resp.headers['Cache-Control'] == 'no-store'
+    def test_get_reveal_sets_no_store_cache_control(self, mock_reveal):
+        response.headers.pop('Cache-Control', None)
+        try:
+            with patch('decorators.check_authentication') as mock_dec:
+                mock_dec.return_value = AuthenticationStatus.OK
+                mock_reveal.return_value = {'secret': 's3cr3t'}
+                result = SpellbookRESTAPI.get_reveal('act1')
+            assert result == {'secret': 's3cr3t'}
+            assert response.headers.get('Cache-Control') == 'no-store'
+        finally:
+            response.headers.pop('Cache-Control', None)
