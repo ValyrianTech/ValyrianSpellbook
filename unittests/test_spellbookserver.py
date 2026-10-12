@@ -2182,3 +2182,64 @@ class TestMainBlock:
             sys.argv = original_argv
 
         mock_config.set.assert_not_called()
+
+
+class TestStateChangingRoutesArePost:
+    """Regression tests: state-changing endpoints must NOT be reachable via GET.
+
+    GET must be safe/idempotent.  These endpoints run actions (spawn processes,
+    send mail, broadcast transactions) or activate/check triggers and reveal
+    secrets, so they must only be registered for POST to prevent cross-site
+    (CSRF) triggering via <img>/<link>/redirect.
+    """
+
+    STATE_CHANGING_RULES = [
+        '/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\\-.]+>/activate',
+        '/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\\-.]+>/check',
+        '/spellbook/check_triggers',
+        '/spellbook/actions/<action_id:re:[a-zA-Z0-9_\\-.]+>/run',
+        '/spellbook/actions/<action_id:re:[a-zA-Z0-9_\\-.]+>/reveal',
+    ]
+
+    def _build_app(self):
+        with patch('spellbookserver.get_enable_ssl', return_value=False), \
+             patch('spellbookserver.get_enable_wallet', return_value=False), \
+             patch('spellbookserver.get_explorers', return_value={'blockstream': {}}), \
+             patch('spellbookserver.get_host', return_value='localhost'), \
+             patch('spellbookserver.get_port', return_value=8080), \
+             patch('spellbookserver.os.path.isfile', return_value=True), \
+             patch('bottle.Bottle.run'), \
+             patch('spellbookserver.LOG'):
+            return SpellbookRESTAPI()
+
+    def test_state_changing_rules_registered_as_post(self):
+        app = self._build_app()
+        registered = {}
+        for route in app.routes:
+            if route.rule in self.STATE_CHANGING_RULES:
+                registered.setdefault(route.rule, set()).add(route.method)
+
+        # Every state-changing rule must be registered and expose POST.
+        for rule in self.STATE_CHANGING_RULES:
+            assert rule in registered, f'{rule} is not registered'
+            assert 'POST' in registered[rule], f'{rule} is not reachable via POST'
+
+    def test_state_changing_rules_not_reachable_via_get(self):
+        app = self._build_app()
+        for route in app.routes:
+            if route.rule in self.STATE_CHANGING_RULES:
+                assert route.method != 'GET', f'{route.rule} must not be a GET route'
+
+
+class TestGetRevealNoStore:
+    """The reveal endpoint returns a decrypted secret and must not be cached."""
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.get_reveal')
+    def test_get_reveal_sets_no_store_cache_control(self, mock_reveal, mock_resp):
+        mock_resp.headers = {}
+        with patch('decorators.check_authentication') as mock_dec:
+            mock_dec.return_value = 'OK'
+            mock_reveal.return_value = {'secret': 's3cr3t'}
+            SpellbookRESTAPI.get_reveal('act1')
+        assert mock_resp.headers['Cache-Control'] == 'no-store'

@@ -209,17 +209,17 @@ class TestAPIMethods:
     @patch.object(SpellbookAPIClient, "_request")
     def test_activate_trigger(self, mock_req):
         self.client.activate_trigger("test-trigger")
-        mock_req.assert_called_once_with("GET", "/spellbook/triggers/test-trigger/activate", authenticate=True)
+        mock_req.assert_called_once_with("POST", "/spellbook/triggers/test-trigger/activate", authenticate=True)
 
     @patch.object(SpellbookAPIClient, "_request")
     def test_check_trigger(self, mock_req):
         self.client.check_trigger("test-trigger")
-        mock_req.assert_called_once_with("GET", "/spellbook/triggers/test-trigger/check", authenticate=True)
+        mock_req.assert_called_once_with("POST", "/spellbook/triggers/test-trigger/check", authenticate=True)
 
     @patch.object(SpellbookAPIClient, "_request")
     def test_check_all_triggers(self, mock_req):
         self.client.check_all_triggers()
-        mock_req.assert_called_once_with("GET", "/spellbook/check_triggers", authenticate=True)
+        mock_req.assert_called_once_with("POST", "/spellbook/check_triggers", authenticate=True)
 
     @patch.object(SpellbookAPIClient, "_request")
     def test_get_actions(self, mock_req):
@@ -245,12 +245,12 @@ class TestAPIMethods:
     @patch.object(SpellbookAPIClient, "_request")
     def test_run_action(self, mock_req):
         self.client.run_action("test-action")
-        mock_req.assert_called_once_with("GET", "/spellbook/actions/test-action/run", authenticate=True)
+        mock_req.assert_called_once_with("POST", "/spellbook/actions/test-action/run", authenticate=True)
 
     @patch.object(SpellbookAPIClient, "_request")
     def test_get_reveal(self, mock_req):
         self.client.get_reveal("test-action")
-        mock_req.assert_called_once_with("GET", "/spellbook/actions/test-action/reveal", authenticate=True)
+        mock_req.assert_called_once_with("POST", "/spellbook/actions/test-action/reveal", authenticate=True)
 
     @patch.object(SpellbookAPIClient, "_request")
     def test_get_latest_block(self, mock_req):

@@ -325,13 +325,13 @@ class SpellbookRESTAPI(Bottle):
         self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.get_trigger)
         self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.save_trigger)
         self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.delete_trigger)
-        self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/activate', method='GET', callback=self.activate_trigger)
+        self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/activate', method='POST', callback=self.activate_trigger)
         self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/message', method='POST', callback=self.verify_signed_message)
         self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/get', method='GET', callback=self.http_get_request)
         self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/post', method='POST', callback=self.http_post_request)
         self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/delete', method='DELETE', callback=self.http_delete_request)
-        self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/check', method='GET', callback=self.check_trigger)
-        self.route('/spellbook/check_triggers', method='GET', callback=self.check_all_triggers)
+        self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/check', method='POST', callback=self.check_trigger)
+        self.route('/spellbook/check_triggers', method='POST', callback=self.check_all_triggers)
 
         # Additional routes for Rest API endpoints
         self.route(r'/api/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.http_get_request)
@@ -355,13 +355,13 @@ class SpellbookRESTAPI(Bottle):
         self.route(r'/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.get_action)
         self.route(r'/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>', method='POST', callback=self.save_action)
         self.route(r'/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.delete_action)
-        self.route(r'/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>/run', method='GET', callback=self.run_action)
+        self.route(r'/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>/run', method='POST', callback=self.run_action)
 
         # Routes for retrieving log messages
         self.route('/spellbook/logs/<filter_string>', method='GET', callback=self.get_logs)
 
         # Routes for RevealSecret actions
-        self.route(r'/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>/reveal', method='GET', callback=self.get_reveal)
+        self.route(r'/spellbook/actions/<action_id:re:[a-zA-Z0-9_\-.]+>/reveal', method='POST', callback=self.get_reveal)
 
         # Routes for uploading files
         self.route('/spellbook/upload', method='POST', callback=self.upload_file)
@@ -948,6 +948,7 @@ class SpellbookRESTAPI(Bottle):
     def get_reveal(action_id):
         """Return the reveal secret for a RevealSecretAction."""
         response.content_type = 'application/json'
+        response.headers['Cache-Control'] = 'no-store'
         return get_reveal(action_id)
 
     @staticmethod
