@@ -97,7 +97,7 @@ def get_action(action_id, action_type=None):
     elif action_type == ActionType.LAUNCHEVOLVER:
         action = LaunchEvolverAction(action_id)
     else:
-        raise NotImplementedError('Unknown action type: {}'.format(action_type))
+        raise NotImplementedError(f'Unknown action type: {action_type}')
 
     action.configure(**action_config)
 
