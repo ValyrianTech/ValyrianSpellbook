@@ -121,15 +121,15 @@ class SpellbookAPIClient:
     
     def activate_trigger(self, trigger_id: str) -> dict:
         """Manually activate a trigger"""
-        return self._request('GET', f'/spellbook/triggers/{trigger_id}/activate', authenticate=True)
+        return self._request('POST', f'/spellbook/triggers/{trigger_id}/activate', authenticate=True)
     
     def check_trigger(self, trigger_id: str) -> dict:
         """Check a specific trigger"""
-        return self._request('GET', f'/spellbook/triggers/{trigger_id}/check', authenticate=True)
+        return self._request('POST', f'/spellbook/triggers/{trigger_id}/check', authenticate=True)
     
     def check_all_triggers(self) -> dict:
         """Check all triggers"""
-        return self._request('GET', '/spellbook/check_triggers', authenticate=True)
+        return self._request('POST', '/spellbook/check_triggers', authenticate=True)
     
     # ==================== Actions ====================
     
@@ -151,11 +151,11 @@ class SpellbookAPIClient:
     
     def run_action(self, action_id: str) -> dict:
         """Run a specific action"""
-        return self._request('GET', f'/spellbook/actions/{action_id}/run', authenticate=True)
+        return self._request('POST', f'/spellbook/actions/{action_id}/run', authenticate=True)
     
     def get_reveal(self, action_id: str) -> dict:
         """Get revealed secret from a RevealSecret action"""
-        return self._request('GET', f'/spellbook/actions/{action_id}/reveal', authenticate=True)
+        return self._request('POST', f'/spellbook/actions/{action_id}/reveal', authenticate=True)
     
     # ==================== Blockchain ====================
     

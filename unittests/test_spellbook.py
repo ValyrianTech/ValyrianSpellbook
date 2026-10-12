@@ -97,6 +97,12 @@ def get_call_data(mock_call):
     return kwargs.get('data', {})
 
 
+def get_call_authenticate(mock_call):
+    """Extract the 'authenticate' kwarg from a mock call, defaulting to False."""
+    _args, kwargs = mock_call.call_args
+    return kwargs.get('authenticate', False)
+
+
 class TestAddAuthenticationHeaders:
 
     def test_with_default_headers(self):
@@ -602,12 +608,14 @@ class TestDeleteTrigger:
 
 class TestActivateTrigger:
 
-    @mock.patch('spellbook.do_get_request')
-    def test_activate_trigger(self, mock_get):
+    @mock.patch('spellbook.do_post_request')
+    def test_activate_trigger(self, mock_post):
         spellbook.args = make_args(trigger_id='trig1', explorer=None, api_key='k', api_secret='s')
         activate_trigger()
-        url = get_call_url(mock_get)
+        url = get_call_url(mock_post)
         assert '/spellbook/triggers/trig1/activate' in url
+        mock_post.assert_called_once()
+        assert get_call_authenticate(mock_post) is True
 
 
 class TestSendSignedMessage:
@@ -677,19 +685,23 @@ class TestSignMessage:
 
 class TestCheckTriggers:
 
-    @mock.patch('spellbook.do_get_request')
-    def test_check_specific_trigger(self, mock_get):
+    @mock.patch('spellbook.do_post_request')
+    def test_check_specific_trigger(self, mock_post):
         spellbook.args = make_args(trigger_id='trig1', explorer=None, api_key='k', api_secret='s')
         check_triggers()
-        url = get_call_url(mock_get)
+        url = get_call_url(mock_post)
         assert '/spellbook/triggers/trig1/check' in url
+        mock_post.assert_called_once()
+        assert get_call_authenticate(mock_post) is True
 
-    @mock.patch('spellbook.do_get_request')
-    def test_check_all_triggers(self, mock_get):
+    @mock.patch('spellbook.do_post_request')
+    def test_check_all_triggers(self, mock_post):
         spellbook.args = make_args(trigger_id=None, explorer=None, api_key='k', api_secret='s')
         check_triggers()
-        url = get_call_url(mock_get)
+        url = get_call_url(mock_post)
         assert '/spellbook/check_triggers' in url
+        mock_post.assert_called_once()
+        assert get_call_authenticate(mock_post) is True
 
 
 # --------------------------------------------------------------------------------------------------
@@ -854,22 +866,26 @@ class TestDeleteAction:
 
 class TestRunAction:
 
-    @mock.patch('spellbook.do_get_request')
-    def test_run_action(self, mock_get):
+    @mock.patch('spellbook.do_post_request')
+    def test_run_action(self, mock_post):
         spellbook.args = make_args(action_id='act1', explorer=None, api_key='k', api_secret='s')
         run_action()
-        url = get_call_url(mock_get)
+        url = get_call_url(mock_post)
         assert '/spellbook/actions/act1/run' in url
+        mock_post.assert_called_once()
+        assert get_call_authenticate(mock_post) is True
 
 
 class TestGetReveal:
 
-    @mock.patch('spellbook.do_get_request')
-    def test_get_reveal(self, mock_get):
+    @mock.patch('spellbook.do_post_request')
+    def test_get_reveal(self, mock_post):
         spellbook.args = make_args(action_id='act1', explorer=None)
         get_reveal()
-        url = get_call_url(mock_get)
+        url = get_call_url(mock_post)
         assert '/spellbook/actions/act1/reveal' in url
+        mock_post.assert_called_once()
+        assert get_call_authenticate(mock_post) is True
 
 
 class TestGetLogs:
@@ -988,24 +1004,24 @@ class TestCommandDispatch:
         mock_get.assert_called_once()
 
     def test_dispatch_activate_trigger(self):
-        mock_get, _, _ = self._reload_with_command('activate_trigger', ['trig1'])
-        mock_get.assert_called_once()
+        _, mock_post, _ = self._reload_with_command('activate_trigger', ['trig1'])
+        mock_post.assert_called_once()
 
     def test_dispatch_check_triggers(self):
-        mock_get, _, _ = self._reload_with_command('check_triggers')
-        mock_get.assert_called_once()
+        _, mock_post, _ = self._reload_with_command('check_triggers')
+        mock_post.assert_called_once()
 
     def test_dispatch_get_action_config(self):
         mock_get, _, _ = self._reload_with_command('get_action_config', ['act1'])
         mock_get.assert_called_once()
 
     def test_dispatch_run_action(self):
-        mock_get, _, _ = self._reload_with_command('run_action', ['act1'])
-        mock_get.assert_called_once()
+        _, mock_post, _ = self._reload_with_command('run_action', ['act1'])
+        mock_post.assert_called_once()
 
     def test_dispatch_get_reveal(self):
-        mock_get, _, _ = self._reload_with_command('get_reveal', ['act1'])
-        mock_get.assert_called_once()
+        _, mock_post, _ = self._reload_with_command('get_reveal', ['act1'])
+        mock_post.assert_called_once()
 
     def test_dispatch_get_logs(self):
         mock_get, _, _ = self._reload_with_command('get_logs', ['error'])
