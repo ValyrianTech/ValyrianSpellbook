@@ -29,6 +29,7 @@ _wallet_patcher = patch('spellbookserver.get_enable_wallet', return_value=False)
 _wallet_patcher.start()
 
 import spellbookserver as srv
+from authentication import AuthenticationStatus
 from spellbookserver import (
     REDACTED_VALUE,
     SpellbookRESTAPI,
@@ -40,7 +41,6 @@ from spellbookserver import (
     convert_aac_to_opus,
     enable_cors,
 )
-from authentication import AuthenticationStatus
 
 # Re-enable for individual tests if needed
 _transcribe_patcher.stop()
