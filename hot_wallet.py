@@ -38,6 +38,15 @@ if not config.has_option('Wallet', 'default_wallet'):  # pragma: no cover
         f"Configuration file {spellbook_configuration_file} does not have an option 'default_wallet' in the [Wallet] section")
 WALLET_ID = config.get('Wallet', 'default_wallet')
 
+ALLOW_EMPTY_PASSWORD_ENV_VAR = 'SPELLBOOK_ALLOW_EMPTY_WALLET_PASSWORD'
+MIN_WALLET_PASSWORD_LENGTH = 12
+
+
+def _empty_password_allowed():
+    """Return True when the explicit empty-password opt-in env var is set to a truthy value."""
+    return os.environ.get(ALLOW_EMPTY_PASSWORD_ENV_VAR, '').strip().lower() in ('1', 'true', 'yes', 'on')
+
+
 # ----------------------------------------------------------------------------------------------------------------
 
 # Create main parser
@@ -176,6 +185,23 @@ def save_wallet(wallet):
     if password1 != password2:
         print('Passwords do not match!', file=sys.stderr)
         sys.exit(1)
+
+    if len(password1) == 0:
+        if _empty_password_allowed():
+            print('WARNING: saving the hot wallet with an EMPTY password! This is insecure.', file=sys.stderr)
+        else:
+            print('Refusing to save the hot wallet with an empty password! '
+                  'Set SPELLBOOK_ALLOW_EMPTY_WALLET_PASSWORD=1 to override (NOT recommended).', file=sys.stderr)
+            sys.exit(1)
+    elif len(password1) < MIN_WALLET_PASSWORD_LENGTH:
+        if _empty_password_allowed():
+            print(f'WARNING: saving the hot wallet with a short password '
+                  f'({len(password1)} characters, minimum {MIN_WALLET_PASSWORD_LENGTH})! This is insecure.',
+                  file=sys.stderr)
+        else:
+            print(f'Wallet password must be at least {MIN_WALLET_PASSWORD_LENGTH} characters long! '
+                  'Set SPELLBOOK_ALLOW_EMPTY_WALLET_PASSWORD=1 to override (NOT recommended).', file=sys.stderr)
+            sys.exit(1)
 
     cipher = AESCipher(key=password1)
     unencrypted_data = bytes(simplejson.dumps(wallet, sort_keys=True, indent=4), 'utf-8')
