@@ -14,8 +14,8 @@ import simplejson
 from AESCipher import AESCipher
 from helpers.configurationhelpers import get_use_testnet
 from helpers.hotwallethelpers import (
-    ALLOW_EMPTY_PASSWORD_ENV_VAR,
-    _empty_password_allowed,
+    ALLOW_INSECURE_PASSWORD_ENV_VAR,
+    _insecure_password_allowed,
 )
 from helpers.privatekeyhelpers import privkey_to_address
 
@@ -185,20 +185,20 @@ def save_wallet(wallet):
         sys.exit(1)
 
     if len(password1) == 0:
-        if _empty_password_allowed():
+        if _insecure_password_allowed():
             print('WARNING: saving the hot wallet with an EMPTY password! This is insecure.', file=sys.stderr)
         else:
             print('Refusing to save the hot wallet with an empty password! '
-                  f'Set {ALLOW_EMPTY_PASSWORD_ENV_VAR}=1 to override (NOT recommended).', file=sys.stderr)
+                  f'Set {ALLOW_INSECURE_PASSWORD_ENV_VAR}=1 to override (NOT recommended).', file=sys.stderr)
             sys.exit(1)
     elif len(password1) < MIN_WALLET_PASSWORD_LENGTH:
-        if _empty_password_allowed():
+        if _insecure_password_allowed():
             print(f'WARNING: saving the hot wallet with a short password '
                   f'({len(password1)} characters, minimum {MIN_WALLET_PASSWORD_LENGTH})! This is insecure.',
                   file=sys.stderr)
         else:
             print(f'Wallet password must be at least {MIN_WALLET_PASSWORD_LENGTH} characters long! '
-                  f'Set {ALLOW_EMPTY_PASSWORD_ENV_VAR}=1 to override (NOT recommended).', file=sys.stderr)
+                  f'Set {ALLOW_INSECURE_PASSWORD_ENV_VAR}=1 to allow a short or empty password (NOT recommended).', file=sys.stderr)
             sys.exit(1)
 
     cipher = AESCipher(key=password1)
