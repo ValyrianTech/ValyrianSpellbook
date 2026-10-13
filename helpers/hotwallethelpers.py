@@ -16,8 +16,15 @@ from bips.bip44 import (
     get_xpub_key,
 )
 from helpers.configurationhelpers import get_default_wallet, get_wallet_dir
+from helpers.loghelpers import LOG
 
 HOT_WALLET_PASSWORD = None
+ALLOW_EMPTY_PASSWORD_ENV_VAR = 'SPELLBOOK_ALLOW_EMPTY_WALLET_PASSWORD'
+
+
+def _empty_password_allowed():
+    """Return True when the explicit empty-password opt-in env var is set to a truthy value."""
+    return os.environ.get(ALLOW_EMPTY_PASSWORD_ENV_VAR, '').strip().lower() in ('1', 'true', 'yes', 'on')
 
 
 def get_hot_wallet():
@@ -25,15 +32,19 @@ def get_hot_wallet():
     wallet_dir, wallet_id = get_wallet_dir(), get_default_wallet()
 
     if HOT_WALLET_PASSWORD is None:
-        # Try empty password first (Reminder: in production there should always be a decryption password for the hot wallet)
-        try:
-            cipher = AESCipher(key='')
-            with open(os.path.join(wallet_dir, f'{wallet_id}.enc'), 'r') as input_file:
-                encrypted_data = input_file.read()
-                return simplejson.loads(cipher.decrypt(encrypted_data))
+        if _empty_password_allowed():
+            try:
+                cipher = AESCipher(key='')
+                with open(os.path.join(wallet_dir, f'{wallet_id}.enc'), 'r') as input_file:
+                    encrypted_data = input_file.read()
+                    data = simplejson.loads(cipher.decrypt(encrypted_data))
+                LOG.critical('Hot wallet decrypted with an EMPTY password! This is insecure. '
+                             'Set a strong password to protect the hot wallet.')
+                return data
+            except (ValueError, KeyError, TypeError, OSError):
+                pass
 
-        except (ValueError, KeyError, TypeError, OSError):
-            prompt_decryption_password()
+        prompt_decryption_password()
 
     try:
         cipher = AESCipher(key=HOT_WALLET_PASSWORD)
