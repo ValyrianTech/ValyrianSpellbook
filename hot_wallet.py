@@ -13,6 +13,10 @@ import simplejson
 
 from AESCipher import AESCipher
 from helpers.configurationhelpers import get_use_testnet
+from helpers.hotwallethelpers import (
+    ALLOW_EMPTY_PASSWORD_ENV_VAR,
+    _empty_password_allowed,
+)
 from helpers.privatekeyhelpers import privkey_to_address
 
 # Make sure we are in the correct working directory
@@ -38,13 +42,7 @@ if not config.has_option('Wallet', 'default_wallet'):  # pragma: no cover
         f"Configuration file {spellbook_configuration_file} does not have an option 'default_wallet' in the [Wallet] section")
 WALLET_ID = config.get('Wallet', 'default_wallet')
 
-ALLOW_EMPTY_PASSWORD_ENV_VAR = 'SPELLBOOK_ALLOW_EMPTY_WALLET_PASSWORD'
 MIN_WALLET_PASSWORD_LENGTH = 12
-
-
-def _empty_password_allowed():
-    """Return True when the explicit empty-password opt-in env var is set to a truthy value."""
-    return os.environ.get(ALLOW_EMPTY_PASSWORD_ENV_VAR, '').strip().lower() in ('1', 'true', 'yes', 'on')
 
 
 # ----------------------------------------------------------------------------------------------------------------
@@ -191,7 +189,7 @@ def save_wallet(wallet):
             print('WARNING: saving the hot wallet with an EMPTY password! This is insecure.', file=sys.stderr)
         else:
             print('Refusing to save the hot wallet with an empty password! '
-                  'Set SPELLBOOK_ALLOW_EMPTY_WALLET_PASSWORD=1 to override (NOT recommended).', file=sys.stderr)
+                  f'Set {ALLOW_EMPTY_PASSWORD_ENV_VAR}=1 to override (NOT recommended).', file=sys.stderr)
             sys.exit(1)
     elif len(password1) < MIN_WALLET_PASSWORD_LENGTH:
         if _empty_password_allowed():
@@ -200,7 +198,7 @@ def save_wallet(wallet):
                   file=sys.stderr)
         else:
             print(f'Wallet password must be at least {MIN_WALLET_PASSWORD_LENGTH} characters long! '
-                  'Set SPELLBOOK_ALLOW_EMPTY_WALLET_PASSWORD=1 to override (NOT recommended).', file=sys.stderr)
+                  f'Set {ALLOW_EMPTY_PASSWORD_ENV_VAR}=1 to override (NOT recommended).', file=sys.stderr)
             sys.exit(1)
 
     cipher = AESCipher(key=password1)
