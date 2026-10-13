@@ -65,8 +65,8 @@ examples:
     -> add a private key to the default hot wallet
   - hot_wallet.py add_key 5myprivatekey54989 -w=mywallet
     -> add a private key to the hot wallet named 'mywallet'
-  - SPELLBOOK_WALLET_PASSWORD=mypassword hot_wallet.py add_key 5myprivatekey54989 -w=mywallet
-    -> add a private key to the hot wallet named 'mywallet' with password 'mypassword'
+  - SPELLBOOK_WALLET_PASSWORD=mysecurepassword hot_wallet.py add_key 5myprivatekey54989 -w=mywallet
+    -> add a private key to the hot wallet named 'mywallet' with password 'mysecurepassword'
                                        ''')
 
 add_key_parser.add_argument('private_key', help='The private key')
@@ -85,8 +85,8 @@ examples:
     -> delete the private key belonging to address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 from the default hot wallet
   - hot_wallet.py delete_key 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 -w=mywallet
     -> delete the private key belonging to address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 from the hot wallet named 'mywallet'
-  - SPELLBOOK_WALLET_PASSWORD=mypassword hot_wallet.py delete_key 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 -w=mywallet
-    -> delete the private key belonging to address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 from the hot wallet named 'mywallet' with password 'mypassword'
+  - SPELLBOOK_WALLET_PASSWORD=mysecurepassword hot_wallet.py delete_key 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 -w=mywallet
+    -> delete the private key belonging to address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 from the hot wallet named 'mywallet' with password 'mysecurepassword'
                                           ''')
 
 delete_key_parser.add_argument('address', help='The address')
@@ -110,8 +110,8 @@ examples:
   - hot_wallet.py set_bip44 bench cabin ... -w=mywallet
     -> set the 12 or 24 mnemonic words for the hot wallet with id 'mywallet'
 
-  - SPELLBOOK_WALLET_PASSWORD=mypassword hot_wallet.py set_bip44 bench cabin ... -w=mywallet
-    -> set the 12 or 24 mnemonic words for the hot wallet with id 'mywallet' with password 'mypassword'
+  - SPELLBOOK_WALLET_PASSWORD=mysecurepassword hot_wallet.py set_bip44 bench cabin ... -w=mywallet
+    -> set the 12 or 24 mnemonic words for the hot wallet with id 'mywallet' with password 'mysecurepassword'
                                          ''')
 
 set_bip44_parser.add_argument('mnemonic', help='The mnemonic of the BIP44 wallet (12 or 24 words)', nargs='+')
@@ -129,8 +129,8 @@ Show the private keys and/or mnemonic of a hot wallet
 examples:
   - hot_wallet.py show -w=mywallet
     -> show the private keys and/or mnemonic for the hot wallet with id 'mywallet'
-  - SPELLBOOK_WALLET_PASSWORD=mypassword hot_wallet.py show -w=mywallet
-    -> show the private keys and/or mnemonic for the hot wallet with id 'mywallet' with password 'mypassword'
+  - SPELLBOOK_WALLET_PASSWORD=mysecurepassword hot_wallet.py show -w=mywallet
+    -> show the private keys and/or mnemonic for the hot wallet with id 'mywallet' with password 'mysecurepassword'
                                      ''')
 
 show_parser.add_argument('-w', '--wallet', help='name of the hot wallet')
