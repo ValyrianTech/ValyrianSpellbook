@@ -11,6 +11,7 @@ from helpers.actionhelpers import (
     get_action_config,
     get_actions,
     get_reveal,
+    redact_action_config,
     run_action,
     save_action,
 )
@@ -48,6 +49,50 @@ class TestActionHelpers:
         """Test getting config for a path-traversal action id returns empty dict"""
         result = get_action_config('../evil')
         assert result == {}
+
+    def test_redact_action_config_revealsecret_not_allowed(self):
+        """Test redacting a RevealSecret config when reveal is not allowed"""
+        config = {
+            'id': 'secret_action',
+            'action_type': ActionType.REVEALSECRET,
+            'reveal_text': 'secret text',
+            'reveal_link': 'http://example.com',
+            'allow_reveal': False,
+        }
+        result = redact_action_config(config)
+        assert 'reveal_text' not in result
+        assert 'reveal_link' not in result
+        assert result['id'] == 'secret_action'
+        assert result['action_type'] == ActionType.REVEALSECRET
+        assert result['allow_reveal'] is False
+
+    def test_redact_action_config_revealsecret_allowed(self):
+        """Test redacting a RevealSecret config when reveal is allowed"""
+        config = {
+            'id': 'secret_action',
+            'action_type': ActionType.REVEALSECRET,
+            'reveal_text': 'secret text',
+            'reveal_link': 'http://example.com',
+            'allow_reveal': True,
+        }
+        result = redact_action_config(config)
+        assert result['reveal_text'] == 'secret text'
+        assert result['reveal_link'] == 'http://example.com'
+
+    def test_redact_action_config_non_dict(self):
+        """Test redacting a non-dict input returns it unchanged"""
+        assert redact_action_config(None) is None
+        assert redact_action_config(['reveal_text']) == ['reveal_text']
+
+    def test_redact_action_config_non_revealsecret(self):
+        """Test redacting a non-RevealSecret config returns it unchanged"""
+        config = {
+            'id': 'command_action',
+            'action_type': ActionType.COMMAND,
+            'run_command': 'echo test',
+        }
+        result = redact_action_config(config)
+        assert result == config
 
     @mock.patch('helpers.actionhelpers.load_from_json_file')
     def test_get_action_unknown_id_returns_command_action(self, mock_load):

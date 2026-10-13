@@ -1324,6 +1324,40 @@ class TestActionEndpoints:
 
     @patch('spellbookserver.response')
     @patch('spellbookserver.get_action_config')
+    def test_get_action_redacts_secret_before_activation(self, mock_get, mock_resp):
+        with patch('decorators.check_authentication') as mock_dec:
+            mock_dec.return_value = 'OK'
+            mock_get.return_value = {
+                'id': 'secret_action',
+                'action_type': 'RevealSecret',
+                'reveal_text': 'secret text',
+                'reveal_link': 'http://example.com',
+                'allow_reveal': False,
+            }
+            result = SpellbookRESTAPI.get_action('secret_action')
+            assert 'reveal_text' not in result
+            assert 'reveal_link' not in result
+            assert result['allow_reveal'] is False
+            assert result['action_type'] == 'RevealSecret'
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.get_action_config')
+    def test_get_action_reveals_after_activation(self, mock_get, mock_resp):
+        with patch('decorators.check_authentication') as mock_dec:
+            mock_dec.return_value = 'OK'
+            mock_get.return_value = {
+                'id': 'secret_action',
+                'action_type': 'RevealSecret',
+                'reveal_text': 'secret text',
+                'reveal_link': 'http://example.com',
+                'allow_reveal': True,
+            }
+            result = SpellbookRESTAPI.get_action('secret_action')
+            assert result['reveal_text'] == 'secret text'
+            assert result['reveal_link'] == 'http://example.com'
+
+    @patch('spellbookserver.response')
+    @patch('spellbookserver.get_action_config')
     def test_get_action_not_found(self, mock_get, mock_resp):
         with patch('decorators.check_authentication') as mock_dec:
             mock_dec.return_value = 'OK'

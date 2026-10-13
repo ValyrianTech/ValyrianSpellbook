@@ -53,6 +53,25 @@ def get_action_config(action_id):
     return action_config
 
 
+def redact_action_config(action_config):
+    """
+    Remove secret reveal fields from an action config that is returned to API consumers.
+
+    For a RevealSecret action the reveal_text and reveal_link fields are secrets that
+    must only be exposed after the action has been activated (allow_reveal is True).
+    This strips those fields from the config dict unless allow_reveal is True.
+
+    :param action_config: A dict containing the configuration of an action
+    :return: A dict containing the configuration, with secrets removed when not yet revealed
+    """
+    if not isinstance(action_config, dict):
+        return action_config
+    if action_config.get('action_type') == ActionType.REVEALSECRET and not action_config.get('allow_reveal', False):
+        action_config = {key: value for key, value in action_config.items()
+                         if key not in ('reveal_text', 'reveal_link')}
+    return action_config
+
+
 def get_action(action_id, action_type=None):
     """
     Get the specified action, which is a subclass of Action

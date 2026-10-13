@@ -48,6 +48,7 @@ from helpers.actionhelpers import (
     get_action_config,
     get_actions,
     get_reveal,
+    redact_action_config,
     run_action,
     save_action,
 )
@@ -914,6 +915,7 @@ class SpellbookRESTAPI(Bottle):
         response.content_type = 'application/json'
         action_config = get_action_config(action_id)
         if action_config is not None:
+            action_config = redact_action_config(action_config)
             return action_config
         else:
             return {'error': f'No action with id {action_id} found'}
