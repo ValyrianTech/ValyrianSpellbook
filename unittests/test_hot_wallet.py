@@ -203,7 +203,7 @@ class TestSaveWallet:
         mock_exit.assert_called_once_with(1)
         mock_aes.assert_not_called()
 
-    @mock.patch.dict(os.environ, {'SPELLBOOK_WALLET_PASSWORD': '', 'SPELLBOOK_ALLOW_EMPTY_WALLET_PASSWORD': '1'})
+    @mock.patch.dict(os.environ, {'SPELLBOOK_WALLET_PASSWORD': '', 'SPELLBOOK_ALLOW_INSECURE_WALLET_PASSWORD': '1'})
     @mock.patch('hot_wallet.os.replace')
     @mock.patch('hot_wallet.os.chmod')
     @mock.patch('hot_wallet.os.fsync')
@@ -235,7 +235,7 @@ class TestSaveWallet:
         mock_exit.assert_called_once_with(1)
         mock_aes.assert_not_called()
 
-    @mock.patch.dict(os.environ, {'SPELLBOOK_WALLET_PASSWORD': 'short', 'SPELLBOOK_ALLOW_EMPTY_WALLET_PASSWORD': '1'})
+    @mock.patch.dict(os.environ, {'SPELLBOOK_WALLET_PASSWORD': 'short', 'SPELLBOOK_ALLOW_INSECURE_WALLET_PASSWORD': '1'})
     @mock.patch('hot_wallet.os.replace')
     @mock.patch('hot_wallet.os.chmod')
     @mock.patch('hot_wallet.os.fsync')
@@ -308,20 +308,20 @@ class TestSaveWallet:
         mock_remove.assert_not_called()
 
 
-class TestEmptyPasswordAllowed:
+class TestInsecurePasswordAllowed:
 
-    def test_empty_password_allowed_truthy(self):
+    def test_insecure_password_allowed_truthy(self):
         for value in ('1', 'true', 'on'):
-            with mock.patch.dict(os.environ, {'SPELLBOOK_ALLOW_EMPTY_WALLET_PASSWORD': value}, clear=True):
-                assert hot_wallet._empty_password_allowed() is True
+            with mock.patch.dict(os.environ, {'SPELLBOOK_ALLOW_INSECURE_WALLET_PASSWORD': value}, clear=True):
+                assert hot_wallet._insecure_password_allowed() is True
 
-    def test_empty_password_allowed_falsy(self):
+    def test_insecure_password_allowed_falsy(self):
         with mock.patch.dict(os.environ, {}, clear=True):
-            assert hot_wallet._empty_password_allowed() is False
+            assert hot_wallet._insecure_password_allowed() is False
 
         for value in ('0', 'false'):
-            with mock.patch.dict(os.environ, {'SPELLBOOK_ALLOW_EMPTY_WALLET_PASSWORD': value}, clear=True):
-                assert hot_wallet._empty_password_allowed() is False
+            with mock.patch.dict(os.environ, {'SPELLBOOK_ALLOW_INSECURE_WALLET_PASSWORD': value}, clear=True):
+                assert hot_wallet._insecure_password_allowed() is False
 
 
 class TestAddKey:

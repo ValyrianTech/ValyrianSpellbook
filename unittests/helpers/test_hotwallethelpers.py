@@ -43,7 +43,7 @@ class TestGetHotWallet(unittest.TestCase):
         
         hw_module.HOT_WALLET_PASSWORD = None
         
-        with patch.dict('os.environ', {'SPELLBOOK_ALLOW_EMPTY_WALLET_PASSWORD': '1'}):
+        with patch.dict('os.environ', {'SPELLBOOK_ALLOW_INSECURE_WALLET_PASSWORD': '1'}):
             mock_dir.return_value = '/tmp/wallets'
             mock_wallet.return_value = 'test_wallet'
             
@@ -103,7 +103,7 @@ class TestGetHotWallet(unittest.TestCase):
 
         hw_module.HOT_WALLET_PASSWORD = None
 
-        with patch.dict('os.environ', {'SPELLBOOK_ALLOW_EMPTY_WALLET_PASSWORD': '1'}):
+        with patch.dict('os.environ', {'SPELLBOOK_ALLOW_INSECURE_WALLET_PASSWORD': '1'}):
             mock_dir.return_value = '/tmp/wallets'
             mock_wallet.return_value = 'test_wallet'
 
@@ -218,27 +218,27 @@ class TestPromptDecryptionPassword(unittest.TestCase):
         self.assertEqual(hw_module.HOT_WALLET_PASSWORD, 'user_password')
 
 
-class TestEmptyPasswordAllowed(unittest.TestCase):
-    """Test cases for the _empty_password_allowed helper"""
+class TestInsecurePasswordAllowed(unittest.TestCase):
+    """Test cases for the _insecure_password_allowed helper"""
 
-    def test_empty_password_allowed_truthy(self):
-        """_empty_password_allowed returns True for truthy opt-in values"""
-        from helpers.hotwallethelpers import _empty_password_allowed
+    def test_insecure_password_allowed_truthy(self):
+        """_insecure_password_allowed returns True for truthy opt-in values"""
+        from helpers.hotwallethelpers import _insecure_password_allowed
 
         for value in ('1', 'true', 'YES', 'on'):
-            with patch.dict('os.environ', {'SPELLBOOK_ALLOW_EMPTY_WALLET_PASSWORD': value}, clear=True):
-                self.assertTrue(_empty_password_allowed())
+            with patch.dict('os.environ', {'SPELLBOOK_ALLOW_INSECURE_WALLET_PASSWORD': value}, clear=True):
+                self.assertTrue(_insecure_password_allowed())
 
-    def test_empty_password_allowed_falsy(self):
-        """_empty_password_allowed returns False when the opt-in is missing or non-truthy"""
-        from helpers.hotwallethelpers import _empty_password_allowed
+    def test_insecure_password_allowed_falsy(self):
+        """_insecure_password_allowed returns False when the opt-in is missing or non-truthy"""
+        from helpers.hotwallethelpers import _insecure_password_allowed
 
         with patch.dict('os.environ', {}, clear=True):
-            self.assertFalse(_empty_password_allowed())
+            self.assertFalse(_insecure_password_allowed())
 
         for value in ('0', 'false'):
-            with patch.dict('os.environ', {'SPELLBOOK_ALLOW_EMPTY_WALLET_PASSWORD': value}, clear=True):
-                self.assertFalse(_empty_password_allowed())
+            with patch.dict('os.environ', {'SPELLBOOK_ALLOW_INSECURE_WALLET_PASSWORD': value}, clear=True):
+                self.assertFalse(_insecure_password_allowed())
 
 
 class TestGetAddressFromWallet(unittest.TestCase):

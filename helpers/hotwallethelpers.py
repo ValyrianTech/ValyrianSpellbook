@@ -19,12 +19,12 @@ from helpers.configurationhelpers import get_default_wallet, get_wallet_dir
 from helpers.loghelpers import LOG
 
 HOT_WALLET_PASSWORD = None
-ALLOW_EMPTY_PASSWORD_ENV_VAR = 'SPELLBOOK_ALLOW_EMPTY_WALLET_PASSWORD'
+ALLOW_INSECURE_PASSWORD_ENV_VAR = 'SPELLBOOK_ALLOW_INSECURE_WALLET_PASSWORD'
 
 
-def _empty_password_allowed():
-    """Return True when the explicit empty-password opt-in env var is set to a truthy value."""
-    return os.environ.get(ALLOW_EMPTY_PASSWORD_ENV_VAR, '').strip().lower() in ('1', 'true', 'yes', 'on')
+def _insecure_password_allowed():
+    """Return True when the explicit insecure-password opt-in env var is set (covers empty AND short passwords)."""
+    return os.environ.get(ALLOW_INSECURE_PASSWORD_ENV_VAR, '').strip().lower() in ('1', 'true', 'yes', 'on')
 
 
 def get_hot_wallet():
@@ -32,7 +32,7 @@ def get_hot_wallet():
     wallet_dir, wallet_id = get_wallet_dir(), get_default_wallet()
 
     if HOT_WALLET_PASSWORD is None:
-        if _empty_password_allowed():
+        if _insecure_password_allowed():
             try:
                 cipher = AESCipher(key='')
                 with open(os.path.join(wallet_dir, f'{wallet_id}.enc'), 'r') as input_file:
