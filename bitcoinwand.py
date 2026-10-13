@@ -54,7 +54,7 @@ if len(data['message']) >= 256:
     #     print('IPFS node is not running: %s' % ex)
     #     sys.exit(1)
 
-    message_hash = add_json(data['message'])
+    message_hash = add_json({'message': data['message']})
     data['message'] = f'/ipfs/{message_hash}'
 
 
