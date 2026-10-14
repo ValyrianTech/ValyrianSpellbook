@@ -267,6 +267,54 @@ class TestGetHotWallet(unittest.TestCase):
             self.assertIn('corrupt', mock_log.warning.call_args[0][0])
             self.assertIn('tampered', mock_log.warning.call_args[0][0])
 
+    @patch('helpers.hotwallethelpers.LOG')
+    @patch('helpers.hotwallethelpers.get_wallet_dir')
+    @patch('helpers.hotwallethelpers.get_default_wallet')
+    @patch('helpers.hotwallethelpers.prompt_decryption_password')
+    @patch('builtins.open', create=True)
+    def test_get_hot_wallet_corrupt_file_with_real_cipher(self, mock_open, mock_prompt, mock_wallet, mock_dir, mock_log):
+        """A genuinely corrupt wallet file through the real AESCipher logs the branch-distinguishing warning and raises 'Invalid password' after prompting"""
+        import helpers.hotwallethelpers as hw_module
+        from helpers.hotwallethelpers import get_hot_wallet
+
+        cases = [
+            ('!!!not-base64!!!', ('non-empty', 'corrupt', 'tampered'), ()),
+            ('', ('Empty-password decryption attempt failed',), ('non-empty', 'corrupt')),
+        ]
+
+        for file_content, expected_fragments, unexpected_fragments in cases:
+            with self.subTest(file_content=file_content):
+                hw_module.HOT_WALLET_PASSWORD = None
+                mock_open.reset_mock()
+                mock_prompt.reset_mock()
+                mock_log.reset_mock()
+
+                with patch.dict('os.environ', {'SPELLBOOK_ALLOW_INSECURE_WALLET_PASSWORD': '1'}):
+                    mock_dir.return_value = '/tmp/wallets'
+                    mock_wallet.return_value = 'test_wallet'
+
+                    mock_file = MagicMock()
+                    mock_file.read.return_value = file_content
+                    mock_file.__enter__ = MagicMock(return_value=mock_file)
+                    mock_file.__exit__ = MagicMock(return_value=False)
+                    mock_open.return_value = mock_file
+
+                    def set_password():
+                        hw_module.HOT_WALLET_PASSWORD = 'prompted_password'
+                    mock_prompt.side_effect = set_password
+
+                    with self.assertRaises(ValueError) as context:
+                        get_hot_wallet()
+
+                    self.assertIn('Invalid password', str(context.exception))
+                    mock_prompt.assert_called_once()
+                    mock_log.warning.assert_called_once()
+                    warning_message = mock_log.warning.call_args[0][0]
+                    for fragment in expected_fragments:
+                        self.assertIn(fragment, warning_message)
+                    for fragment in unexpected_fragments:
+                        self.assertNotIn(fragment, warning_message)
+
     @patch('helpers.hotwallethelpers.get_wallet_dir')
     @patch('helpers.hotwallethelpers.get_default_wallet')
     @patch('helpers.hotwallethelpers.AESCipher')
@@ -324,6 +372,10 @@ class TestGetHotWallet(unittest.TestCase):
             mock_prompt.assert_called_once()
             self.assertEqual(result['mnemonic'], ['word1'])
             mock_log.warning.assert_called_once()
+            warning_message = mock_log.warning.call_args[0][0]
+            self.assertIn('Empty-password decryption attempt failed', warning_message)
+            self.assertNotIn('non-empty', warning_message)
+            self.assertNotIn('corrupt', warning_message)
 
     @patch('helpers.hotwallethelpers.LOG')
     @patch('helpers.hotwallethelpers.get_wallet_dir')
