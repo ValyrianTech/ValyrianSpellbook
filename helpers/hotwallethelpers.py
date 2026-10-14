@@ -30,30 +30,40 @@ def _insecure_password_allowed():
 def get_hot_wallet():
     """Decrypt and return the hot wallet data, prompting for password if needed."""
     wallet_dir, wallet_id = get_wallet_dir(), get_default_wallet()
+    wallet_path = os.path.join(wallet_dir, f'{wallet_id}.enc')
 
     if HOT_WALLET_PASSWORD is None:
         if _insecure_password_allowed():
+            with open(wallet_path, 'r') as input_file:
+                encrypted_data = input_file.read()
+
             try:
                 cipher = AESCipher(key='')
-                with open(os.path.join(wallet_dir, f'{wallet_id}.enc'), 'r') as input_file:
-                    encrypted_data = input_file.read()
-                    data = simplejson.loads(cipher.decrypt(encrypted_data))
+                data = simplejson.loads(cipher.decrypt(encrypted_data))
+            except ValueError as ex:
+                if len(encrypted_data) > 0:
+                    LOG.warning('Empty-password decryption attempt failed with a non-empty wallet file, '
+                                f'indicating the wallet may be corrupt or tampered with: {ex}')
+                else:
+                    LOG.warning(f'Empty-password decryption attempt failed: {ex}')
+            except (KeyError, TypeError) as ex:
+                LOG.error(f'Empty-password decryption attempt failed with an unexpected error: {ex}')
+                raise
+            else:
                 LOG.critical('Hot wallet decrypted with an EMPTY password! This is insecure. '
                              'Set a strong password to protect the hot wallet.')
                 return data
-            except (ValueError, KeyError, TypeError, OSError):
-                pass
 
         prompt_decryption_password()
 
     try:
         cipher = AESCipher(key=HOT_WALLET_PASSWORD)
-        with open(os.path.join(wallet_dir, f'{wallet_id}.enc'), 'r') as input_file:
+        with open(wallet_path, 'r') as input_file:
             encrypted_data = input_file.read()
             return simplejson.loads(cipher.decrypt(encrypted_data))
 
-    except (ValueError, KeyError, TypeError, OSError):
-        raise ValueError('Invalid password to decrypt hot wallet!')
+    except (ValueError, KeyError, TypeError, OSError) as ex:
+        raise ValueError('Invalid password to decrypt hot wallet!') from ex
 
 
 def prompt_decryption_password():
