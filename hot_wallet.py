@@ -13,6 +13,10 @@ import simplejson
 
 from AESCipher import AESCipher
 from helpers.configurationhelpers import get_use_testnet
+from helpers.hotwallethelpers import (
+    ALLOW_INSECURE_PASSWORD_ENV_VAR,
+    _insecure_password_allowed,
+)
 from helpers.privatekeyhelpers import privkey_to_address
 
 # Make sure we are in the correct working directory
@@ -38,6 +42,9 @@ if not config.has_option('Wallet', 'default_wallet'):  # pragma: no cover
         f"Configuration file {spellbook_configuration_file} does not have an option 'default_wallet' in the [Wallet] section")
 WALLET_ID = config.get('Wallet', 'default_wallet')
 
+MIN_WALLET_PASSWORD_LENGTH = 12
+
+
 # ----------------------------------------------------------------------------------------------------------------
 
 # Create main parser
@@ -58,8 +65,8 @@ examples:
     -> add a private key to the default hot wallet
   - hot_wallet.py add_key 5myprivatekey54989 -w=mywallet
     -> add a private key to the hot wallet named 'mywallet'
-  - SPELLBOOK_WALLET_PASSWORD=mypassword hot_wallet.py add_key 5myprivatekey54989 -w=mywallet
-    -> add a private key to the hot wallet named 'mywallet' with password 'mypassword'
+  - SPELLBOOK_WALLET_PASSWORD=mysecurepassword hot_wallet.py add_key 5myprivatekey54989 -w=mywallet
+    -> add a private key to the hot wallet named 'mywallet' with password 'mysecurepassword'
                                        ''')
 
 add_key_parser.add_argument('private_key', help='The private key')
@@ -78,8 +85,8 @@ examples:
     -> delete the private key belonging to address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 from the default hot wallet
   - hot_wallet.py delete_key 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 -w=mywallet
     -> delete the private key belonging to address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 from the hot wallet named 'mywallet'
-  - SPELLBOOK_WALLET_PASSWORD=mypassword hot_wallet.py delete_key 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 -w=mywallet
-    -> delete the private key belonging to address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 from the hot wallet named 'mywallet' with password 'mypassword'
+  - SPELLBOOK_WALLET_PASSWORD=mysecurepassword hot_wallet.py delete_key 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 -w=mywallet
+    -> delete the private key belonging to address 1BAZ9hiAsMdSyw8CMeUoH4LeBnj7u6D7o8 from the hot wallet named 'mywallet' with password 'mysecurepassword'
                                           ''')
 
 delete_key_parser.add_argument('address', help='The address')
@@ -103,8 +110,8 @@ examples:
   - hot_wallet.py set_bip44 bench cabin ... -w=mywallet
     -> set the 12 or 24 mnemonic words for the hot wallet with id 'mywallet'
 
-  - SPELLBOOK_WALLET_PASSWORD=mypassword hot_wallet.py set_bip44 bench cabin ... -w=mywallet
-    -> set the 12 or 24 mnemonic words for the hot wallet with id 'mywallet' with password 'mypassword'
+  - SPELLBOOK_WALLET_PASSWORD=mysecurepassword hot_wallet.py set_bip44 bench cabin ... -w=mywallet
+    -> set the 12 or 24 mnemonic words for the hot wallet with id 'mywallet' with password 'mysecurepassword'
                                          ''')
 
 set_bip44_parser.add_argument('mnemonic', help='The mnemonic of the BIP44 wallet (12 or 24 words)', nargs='+')
@@ -122,8 +129,8 @@ Show the private keys and/or mnemonic of a hot wallet
 examples:
   - hot_wallet.py show -w=mywallet
     -> show the private keys and/or mnemonic for the hot wallet with id 'mywallet'
-  - SPELLBOOK_WALLET_PASSWORD=mypassword hot_wallet.py show -w=mywallet
-    -> show the private keys and/or mnemonic for the hot wallet with id 'mywallet' with password 'mypassword'
+  - SPELLBOOK_WALLET_PASSWORD=mysecurepassword hot_wallet.py show -w=mywallet
+    -> show the private keys and/or mnemonic for the hot wallet with id 'mywallet' with password 'mysecurepassword'
                                      ''')
 
 show_parser.add_argument('-w', '--wallet', help='name of the hot wallet')
@@ -176,6 +183,23 @@ def save_wallet(wallet):
     if password1 != password2:
         print('Passwords do not match!', file=sys.stderr)
         sys.exit(1)
+
+    if len(password1) == 0:
+        if _insecure_password_allowed():
+            print('WARNING: saving the hot wallet with an EMPTY password! This is insecure.', file=sys.stderr)
+        else:
+            print('Refusing to save the hot wallet with an empty password! '
+                  f'Set {ALLOW_INSECURE_PASSWORD_ENV_VAR}=1 to override (NOT recommended).', file=sys.stderr)
+            sys.exit(1)
+    elif len(password1) < MIN_WALLET_PASSWORD_LENGTH:
+        if _insecure_password_allowed():
+            print(f'WARNING: saving the hot wallet with a short password '
+                  f'({len(password1)} characters, minimum {MIN_WALLET_PASSWORD_LENGTH})! This is insecure.',
+                  file=sys.stderr)
+        else:
+            print(f'Wallet password must be at least {MIN_WALLET_PASSWORD_LENGTH} characters long! '
+                  f'Set {ALLOW_INSECURE_PASSWORD_ENV_VAR}=1 to allow a short or empty password (NOT recommended).', file=sys.stderr)
+            sys.exit(1)
 
     cipher = AESCipher(key=password1)
     unencrypted_data = bytes(simplejson.dumps(wallet, sort_keys=True, indent=4), 'utf-8')

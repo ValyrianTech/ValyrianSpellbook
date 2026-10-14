@@ -31,33 +31,36 @@ class TestGetHotWallet(unittest.TestCase):
         import helpers.hotwallethelpers as hw_module
         hw_module.HOT_WALLET_PASSWORD = self._saved_password
 
+    @patch('helpers.hotwallethelpers.LOG')
     @patch('helpers.hotwallethelpers.get_wallet_dir')
     @patch('helpers.hotwallethelpers.get_default_wallet')
     @patch('helpers.hotwallethelpers.AESCipher')
     @patch('builtins.open', create=True)
-    def test_get_hot_wallet_empty_password(self, mock_open, mock_cipher_class, mock_wallet, mock_dir):
-        """Test get_hot_wallet with empty password"""
+    def test_get_hot_wallet_empty_password(self, mock_open, mock_cipher_class, mock_wallet, mock_dir, mock_log):
+        """Test get_hot_wallet with empty password when the opt-in env var is set"""
         import helpers.hotwallethelpers as hw_module
         from helpers.hotwallethelpers import get_hot_wallet
         
         hw_module.HOT_WALLET_PASSWORD = None
         
-        mock_dir.return_value = '/tmp/wallets'
-        mock_wallet.return_value = 'test_wallet'
-        
-        mock_cipher = MagicMock()
-        mock_cipher.decrypt.return_value = '{"mnemonic": ["word1", "word2"], "passphrase": ""}'
-        mock_cipher_class.return_value = mock_cipher
-        
-        mock_file = MagicMock()
-        mock_file.read.return_value = 'encrypted_data'
-        mock_file.__enter__ = MagicMock(return_value=mock_file)
-        mock_file.__exit__ = MagicMock(return_value=False)
-        mock_open.return_value = mock_file
-        
-        result = get_hot_wallet()
-        
-        self.assertEqual(result['mnemonic'], ['word1', 'word2'])
+        with patch.dict('os.environ', {'SPELLBOOK_ALLOW_INSECURE_WALLET_PASSWORD': '1'}):
+            mock_dir.return_value = '/tmp/wallets'
+            mock_wallet.return_value = 'test_wallet'
+            
+            mock_cipher = MagicMock()
+            mock_cipher.decrypt.return_value = '{"mnemonic": ["word1", "word2"], "passphrase": ""}'
+            mock_cipher_class.return_value = mock_cipher
+            
+            mock_file = MagicMock()
+            mock_file.read.return_value = 'encrypted_data'
+            mock_file.__enter__ = MagicMock(return_value=mock_file)
+            mock_file.__exit__ = MagicMock(return_value=False)
+            mock_open.return_value = mock_file
+            
+            result = get_hot_wallet()
+            
+            mock_log.critical.assert_called_once()
+            self.assertEqual(result['mnemonic'], ['word1', 'word2'])
 
     @patch('helpers.hotwallethelpers.get_wallet_dir')
     @patch('helpers.hotwallethelpers.get_default_wallet')
@@ -100,29 +103,66 @@ class TestGetHotWallet(unittest.TestCase):
 
         hw_module.HOT_WALLET_PASSWORD = None
 
-        mock_dir.return_value = '/tmp/wallets'
-        mock_wallet.return_value = 'test_wallet'
+        with patch.dict('os.environ', {'SPELLBOOK_ALLOW_INSECURE_WALLET_PASSWORD': '1'}):
+            mock_dir.return_value = '/tmp/wallets'
+            mock_wallet.return_value = 'test_wallet'
 
-        mock_cipher = MagicMock()
-        # First call (empty password) fails, second call (prompted password) succeeds
-        mock_cipher.decrypt.side_effect = [ValueError('Decryption failed'), '{"mnemonic": ["word1"], "passphrase": ""}']
-        mock_cipher_class.return_value = mock_cipher
+            mock_cipher = MagicMock()
+            # First call (empty password) fails, second call (prompted password) succeeds
+            mock_cipher.decrypt.side_effect = [ValueError('Decryption failed'), '{"mnemonic": ["word1"], "passphrase": ""}']
+            mock_cipher_class.return_value = mock_cipher
 
-        mock_file = MagicMock()
-        mock_file.read.return_value = 'encrypted_data'
-        mock_file.__enter__ = MagicMock(return_value=mock_file)
-        mock_file.__exit__ = MagicMock(return_value=False)
-        mock_open.return_value = mock_file
+            mock_file = MagicMock()
+            mock_file.read.return_value = 'encrypted_data'
+            mock_file.__enter__ = MagicMock(return_value=mock_file)
+            mock_file.__exit__ = MagicMock(return_value=False)
+            mock_open.return_value = mock_file
 
-        # prompt_decryption_password sets the global password
-        def set_password():
-            hw_module.HOT_WALLET_PASSWORD = 'prompted_password'
-        mock_prompt.side_effect = set_password
+            # prompt_decryption_password sets the global password
+            def set_password():
+                hw_module.HOT_WALLET_PASSWORD = 'prompted_password'
+            mock_prompt.side_effect = set_password
 
-        result = get_hot_wallet()
+            result = get_hot_wallet()
 
-        mock_prompt.assert_called_once()
-        self.assertEqual(result['mnemonic'], ['word1'])
+            mock_prompt.assert_called_once()
+            self.assertEqual(result['mnemonic'], ['word1'])
+
+    @patch('helpers.hotwallethelpers.get_wallet_dir')
+    @patch('helpers.hotwallethelpers.get_default_wallet')
+    @patch('helpers.hotwallethelpers.AESCipher')
+    @patch('helpers.hotwallethelpers.prompt_decryption_password')
+    @patch('builtins.open', create=True)
+    def test_get_hot_wallet_no_opt_in_prompts_first(self, mock_open, mock_prompt, mock_cipher_class, mock_wallet, mock_dir):
+        """Test get_hot_wallet prompts for a password when the opt-in env var is not set"""
+        import helpers.hotwallethelpers as hw_module
+        from helpers.hotwallethelpers import get_hot_wallet
+
+        hw_module.HOT_WALLET_PASSWORD = None
+
+        with patch.dict('os.environ', {}, clear=True):
+            mock_dir.return_value = '/tmp/wallets'
+            mock_wallet.return_value = 'test_wallet'
+
+            mock_cipher = MagicMock()
+            mock_cipher.decrypt.return_value = '{"mnemonic": ["word1"], "passphrase": ""}'
+            mock_cipher_class.return_value = mock_cipher
+
+            mock_file = MagicMock()
+            mock_file.read.return_value = 'encrypted_data'
+            mock_file.__enter__ = MagicMock(return_value=mock_file)
+            mock_file.__exit__ = MagicMock(return_value=False)
+            mock_open.return_value = mock_file
+
+            def set_password():
+                hw_module.HOT_WALLET_PASSWORD = 'prompted_password'
+            mock_prompt.side_effect = set_password
+
+            result = get_hot_wallet()
+
+            mock_prompt.assert_called_once()
+            self.assertEqual(result['mnemonic'], ['word1'])
+            mock_cipher_class.assert_called_once_with(key='prompted_password')
 
     @patch('helpers.hotwallethelpers.get_wallet_dir')
     @patch('helpers.hotwallethelpers.get_default_wallet')
@@ -176,6 +216,29 @@ class TestPromptDecryptionPassword(unittest.TestCase):
         prompt_decryption_password()
         
         self.assertEqual(hw_module.HOT_WALLET_PASSWORD, 'user_password')
+
+
+class TestInsecurePasswordAllowed(unittest.TestCase):
+    """Test cases for the _insecure_password_allowed helper"""
+
+    def test_insecure_password_allowed_truthy(self):
+        """_insecure_password_allowed returns True for truthy opt-in values"""
+        from helpers.hotwallethelpers import _insecure_password_allowed
+
+        for value in ('1', 'true', 'YES', 'on'):
+            with patch.dict('os.environ', {'SPELLBOOK_ALLOW_INSECURE_WALLET_PASSWORD': value}, clear=True):
+                self.assertTrue(_insecure_password_allowed())
+
+    def test_insecure_password_allowed_falsy(self):
+        """_insecure_password_allowed returns False when the opt-in is missing or non-truthy"""
+        from helpers.hotwallethelpers import _insecure_password_allowed
+
+        with patch.dict('os.environ', {}, clear=True):
+            self.assertFalse(_insecure_password_allowed())
+
+        for value in ('0', 'false'):
+            with patch.dict('os.environ', {'SPELLBOOK_ALLOW_INSECURE_WALLET_PASSWORD': value}, clear=True):
+                self.assertFalse(_insecure_password_allowed())
 
 
 class TestGetAddressFromWallet(unittest.TestCase):
