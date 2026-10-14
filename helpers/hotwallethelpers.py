@@ -42,8 +42,9 @@ def get_hot_wallet():
                 data = simplejson.loads(cipher.decrypt(encrypted_data))
             except ValueError as ex:
                 if len(encrypted_data) > 0:
-                    LOG.warning('Empty-password decryption attempt failed with a non-empty wallet file, '
-                                f'indicating the wallet may be corrupt or tampered with: {ex}')
+                    LOG.warning('Empty-password decryption attempt failed for a non-empty wallet file; '
+                                'the wallet is most likely protected by a non-empty password, or it may be corrupt or tampered with: '
+                                f'{ex}')
                 else:
                     LOG.warning(f'Empty-password decryption attempt failed: {ex}')
             except (KeyError, TypeError) as ex:

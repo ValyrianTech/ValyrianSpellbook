@@ -263,7 +263,9 @@ class TestGetHotWallet(unittest.TestCase):
             mock_prompt.assert_called_once()
             self.assertEqual(result['mnemonic'], ['word1'])
             mock_log.warning.assert_called_once()
+            self.assertIn('password', mock_log.warning.call_args[0][0])
             self.assertIn('corrupt', mock_log.warning.call_args[0][0])
+            self.assertIn('tampered', mock_log.warning.call_args[0][0])
 
     @patch('helpers.hotwallethelpers.get_wallet_dir')
     @patch('helpers.hotwallethelpers.get_default_wallet')
