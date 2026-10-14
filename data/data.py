@@ -89,7 +89,7 @@ def get_explorer_config(explorer_id):
     """
     explorers = load_from_json_file(EXPLORERS_JSON_FILE)
 
-    if explorer_id in explorers:
+    if explorers is not None and explorer_id in explorers:
         return explorers[explorer_id]
 
 
@@ -101,6 +101,9 @@ def save_explorer(explorer_id, explorer_config):
     :param explorer_config: A dict containing the configuration for the explorer
     """
     explorers = load_from_json_file(EXPLORERS_JSON_FILE)
+
+    if explorers is None:
+        explorers = {}
 
     # Prevent masked api_key to override existing api_key
     if explorer_config.get('api_key', None) == '********':
@@ -131,7 +134,7 @@ def delete_explorer(explorer_id):
     """
     explorers = load_from_json_file(EXPLORERS_JSON_FILE)
 
-    if explorer_id in explorers:
+    if explorers is not None and explorer_id in explorers:
         del explorers[explorer_id]
         save_to_json_file(EXPLORERS_JSON_FILE, explorers)
 
@@ -145,7 +148,7 @@ def get_explorer_api(name):
     """
     explorers = load_from_json_file(EXPLORERS_JSON_FILE)
 
-    if name in explorers:
+    if explorers is not None and name in explorers:
         explorer = explorers[name]
         if explorer['type'] == ExplorerType.BLOCKCHAIN_INFO:
             return BlockchainInfoAPI(testnet=explorer['testnet'])
