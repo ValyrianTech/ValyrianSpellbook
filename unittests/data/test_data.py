@@ -73,6 +73,12 @@ class TestGetExplorerConfig:
         result = data.get_explorer_config('myexplorer')
         assert result is None
 
+    @mock.patch('data.data.load_from_json_file')
+    def test_get_explorer_config_none(self, mock_load):
+        mock_load.return_value = None
+        result = data.get_explorer_config('myexplorer')
+        assert result is None
+
 
 class TestSaveExplorer:
     """Tests for save_explorer function"""
@@ -130,6 +136,19 @@ class TestSaveExplorer:
         saved = mock_save.call_args[0][1]
         assert saved['myexplorer']['api_key'] == 'new_key'
 
+    @mock.patch('data.data.save_to_json_file')
+    @mock.patch('data.data.load_from_json_file')
+    def test_save_explorer_none_creates_new(self, mock_load, mock_save):
+        mock_load.return_value = None
+        config = {'type': 'Blockstream.info', 'url': 'https://example.com', 'priority': '1', 'api_key': 'key123', 'testnet': True}
+        data.save_explorer('myexplorer', config)
+        saved = mock_save.call_args[0][1]
+        assert saved['myexplorer']['type'] == 'Blockstream.info'
+        assert saved['myexplorer']['url'] == 'https://example.com'
+        assert saved['myexplorer']['priority'] == 1
+        assert saved['myexplorer']['api_key'] == 'key123'
+        assert saved['myexplorer']['testnet'] is True
+
 
 class TestDeleteExplorer:
     """Tests for delete_explorer function"""
@@ -148,6 +167,13 @@ class TestDeleteExplorer:
     def test_delete_explorer_not_exists(self, mock_load, mock_save):
         mock_load.return_value = {'other': {'type': 'BTC.com'}}
         data.delete_explorer('nonexistent')
+        mock_save.assert_not_called()
+
+    @mock.patch('data.data.save_to_json_file')
+    @mock.patch('data.data.load_from_json_file')
+    def test_delete_explorer_none(self, mock_load, mock_save):
+        mock_load.return_value = None
+        data.delete_explorer('myexplorer')
         mock_save.assert_not_called()
 
 
@@ -200,6 +226,12 @@ class TestGetExplorerAPI:
     def test_get_explorer_api_not_found(self, mock_load):
         mock_load.return_value = {'other': {'type': ExplorerType.BLOCKSTREAM, 'url': '', 'testnet': False}}
         result = data.get_explorer_api('nonexistent')
+        assert result is None
+
+    @mock.patch('data.data.load_from_json_file')
+    def test_get_explorer_api_none(self, mock_load):
+        mock_load.return_value = None
+        result = data.get_explorer_api('test')
         assert result is None
 
 
