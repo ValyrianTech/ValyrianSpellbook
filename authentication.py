@@ -16,9 +16,9 @@ import simplejson
 from helpers.jsonhelpers import load_from_json_file, save_to_json_file
 from helpers.loghelpers import LOG
 
-API_KEYS_FILE = 'json/private/api_keys.json'
-LAST_NONCES_FILE = 'json/private/last_nonces.json'
 PROGRAM_DIR = os.path.abspath(os.path.dirname(__file__))
+API_KEYS_FILE = os.path.join(PROGRAM_DIR, 'json', 'private', 'api_keys.json')
+LAST_NONCES_FILE = os.path.join(PROGRAM_DIR, 'json', 'private', 'last_nonces.json')
 CONFIGURATION_FILE = os.path.join(PROGRAM_DIR, 'configuration', 'spellbook.conf')
 _API_KEY_ALPHABET = string.ascii_letters + string.digits
 LAST_NONCES: dict[str, int] = {}
@@ -42,8 +42,9 @@ def initialize_api_keys_file():
     Initialize the api_keys.json file with a new random api key and secret for the admin
     """
     # Check to make sure the directory exists
-    if not os.path.isdir('json/private/'):
-        os.makedirs('json/private')
+    api_keys_dir = os.path.dirname(API_KEYS_FILE)
+    if not os.path.isdir(api_keys_dir):
+        os.makedirs(api_keys_dir)
 
     # Create a cryptographically secure random 32-character string of letters and digits for the api_key and api_secret pair
     api_key = ''.join(secrets.choice(_API_KEY_ALPHABET) for _ in range(32))

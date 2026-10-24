@@ -143,8 +143,9 @@ class TestInitializeApiKeysFile:
     @mock.patch('os.path.isdir', return_value=False)
     def test_initialize_api_keys_file_dir_not_exists(self, mock_isdir, mock_makedirs, mock_save, mock_config_cls, mock_open):
         authentication.initialize_api_keys_file()
-        mock_isdir.assert_called_once_with('json/private/')
-        mock_makedirs.assert_called_once_with('json/private')
+        expected_dir = os.path.dirname(authentication.API_KEYS_FILE)
+        mock_isdir.assert_called_once_with(expected_dir)
+        mock_makedirs.assert_called_once_with(expected_dir)
         mock_save.assert_called_once()
         mock_config_cls.assert_called_once()
 
@@ -155,7 +156,7 @@ class TestInitializeApiKeysFile:
     @mock.patch('os.path.isdir', return_value=True)
     def test_initialize_api_keys_file_dir_exists(self, mock_isdir, mock_makedirs, mock_save, mock_config_cls, mock_open):
         authentication.initialize_api_keys_file()
-        mock_isdir.assert_called_once_with('json/private/')
+        mock_isdir.assert_called_once_with(os.path.dirname(authentication.API_KEYS_FILE))
         mock_makedirs.assert_not_called()
         mock_save.assert_called_once()
         mock_config_cls.assert_called_once()
