@@ -157,7 +157,7 @@ def get_explorer_api(name):
         elif explorer['type'] == ExplorerType.BLOCKTRAIL_COM:
             return BlocktrailComAPI(key=explorer['api_key'], testnet=explorer['testnet'])
         elif explorer['type'] == ExplorerType.CHAIN_SO:
-            return ChainSoAPI(url=explorer['url'], testnet=explorer['testnet'])
+            return ChainSoAPI(url=explorer['url'], key=explorer.get('api_key', ''), testnet=explorer['testnet'])
         elif explorer['type'] == ExplorerType.BTC_COM:
             return BTCComAPI(url=explorer['url'], testnet=explorer['testnet'])
         elif explorer['type'] == ExplorerType.BLOCKSTREAM:

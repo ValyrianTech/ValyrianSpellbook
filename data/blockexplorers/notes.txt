@@ -27,12 +27,8 @@ Blockchain.info:
 - The inputs of a transaction do not contain the corresponding txid for some fucked up reason, they only return their internal tx_index, resolving this would take too many requests!
 
 
-Chain.so
-- transaction outputs do not return if output has been spent or not
-- scripts are not hex format or are missing the first few characters
-- transaction inputs do not contain the sequence
-- might temporarily block access when too many requests
-- when requesting transactions of an address, the inputs don't include the value of each input individually, only the sum of the inputs (WTF???)
-- GET_TRANSACTIONS DOES NOT WORK BECAUSE CHAIN.SO DOESN'T GIVE THE INFO THAT I NEED (seriously wtf are these guys thinking, the only way to get some result is to request each tx individually
-wich will cause rate limits to be hit very soon)
-
+Chain.so (SoChain API v3, https://sochain.com/api/v3)
+- mainnet only: its Bitcoin testnet is testnet4, not testnet3
+- no pushtx
+- the transactions of an address are listed by txid, so each transaction is requested individually for its inputs and outputs
+- without an API key, lookups are limited per day
