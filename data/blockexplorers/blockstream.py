@@ -219,12 +219,18 @@ class BlockstreamAPI(ExplorerAPI):
 
         utxos = []
         for output in data:
-            confirmations = latest_block_height - int(output['status']['block_height']) + 1 if output['status']['confirmed'] is True else 0
-            utxo = {'confirmations': confirmations,
-                    'output_hash': output['txid'],
-                    'output_n': output['vout'],
-                    'value': output['value'],
-                    'script': None}  # Blockstream.info does not provide the script for utxos
+            tx_confirmations = (
+                latest_block_height - int(output['status']['block_height']) + 1
+                if output['status']['confirmed'] is True
+                else 0
+            )
+            utxo = {
+                'confirmations': tx_confirmations,
+                'output_hash': output['txid'],
+                'output_n': output['vout'],
+                'value': output['value'],
+                'script': None,
+            }
 
             if utxo['confirmations'] >= confirmations:
                 utxos.append(utxo)

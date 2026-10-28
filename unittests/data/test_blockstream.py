@@ -332,8 +332,6 @@ class TestGetUtxos:
 
     @mock.patch('data.blockexplorers.blockstream.requests.get')
     def test_unconfirmed_utxo(self, mock_get):
-        # Note: blockstream code reassigns local 'confirmations' variable,
-        # so the filter always passes. This test verifies actual behavior.
         mock_get.side_effect = [
             make_mock_response(text_data='200'),
             make_mock_response(json_data=[{
@@ -343,8 +341,34 @@ class TestGetUtxos:
         ]
         api = BlockstreamAPI()
         result = api.get_utxos('addr')
+        assert result['utxos'] == []
+
+    @mock.patch('data.blockexplorers.blockstream.requests.get')
+    def test_utxo_below_requested_confirmations_filtered(self, mock_get):
+        mock_get.side_effect = [
+            make_mock_response(text_data='200'),
+            make_mock_response(json_data=[{
+                'txid': 'tx1', 'vout': 0, 'value': 100,
+                'status': {'confirmed': True, 'block_height': 199}
+            }])
+        ]
+        api = BlockstreamAPI()
+        result = api.get_utxos('addr', confirmations=3)
+        assert result['utxos'] == []
+
+    @mock.patch('data.blockexplorers.blockstream.requests.get')
+    def test_utxo_meeting_requested_confirmations_included(self, mock_get):
+        mock_get.side_effect = [
+            make_mock_response(text_data='200'),
+            make_mock_response(json_data=[{
+                'txid': 'tx1', 'vout': 0, 'value': 100,
+                'status': {'confirmed': True, 'block_height': 198}
+            }])
+        ]
+        api = BlockstreamAPI()
+        result = api.get_utxos('addr', confirmations=3)
         assert len(result['utxos']) == 1
-        assert result['utxos'][0]['confirmations'] == 0
+        assert result['utxos'][0]['confirmations'] == 3
 
 
 class TestPushTx:
