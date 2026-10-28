@@ -78,6 +78,11 @@ from helpers.llmhelpers import delete_llm, get_llm_config, load_llms, save_llm_c
 from helpers.loghelpers import LOG, REQUESTS_LOG, get_logs
 from helpers.mailhelpers import sendmail
 from helpers.qrhelpers import generate_qr
+# SENSITIVE_KEYS and REDACTED_VALUE are re-exported here for backwards
+# compatibility (and so tests can import them from this module). They live in
+# helpers.redaction so that spellbookserver and helpers.actionhelpers share a
+# single, non-drifting sensitive-key list.
+from helpers.redaction import REDACTED_VALUE, SENSITIVE_KEYS, redact as _redact  # noqa: F401
 from helpers.triggerhelpers import (
     activate_trigger,
     check_triggers,
@@ -118,9 +123,7 @@ if get_enable_transcribe() is True:
     LOG.info(f'Loading WhisperModel with model_size_or_path: {model_size_or_path}')
     WHISPER_MODEL = WhisperModel(model_size_or_path=model_size_or_path, device="cpu", compute_type="int8")
 
-SENSITIVE_KEYS = {'api_key', 'api_secret', 'secret', 'private_key', 'privkey', 'mnemonic', 'xpriv', 'password', 'passphrase', 'seed', 'API_Sign', 'API_Key'}
 REDACTED_HEADERS = {'api-key', 'api-sign', 'api-nonce', 'authorization', 'cookie'}
-REDACTED_VALUE = '********'
 
 
 def _is_redacted_header(name):
@@ -130,14 +133,6 @@ def _is_redacted_header(name):
     hyphens and names are title-cased), so matching must normalize both sides.
     """
     return name.lower().replace('_', '-') in REDACTED_HEADERS
-
-
-def _redact(mapping):
-    """Return a copy of mapping with sensitive values redacted."""
-    return {
-        key: REDACTED_VALUE if key.lower() in SENSITIVE_KEYS or key in SENSITIVE_KEYS else value
-        for key, value in mapping.items()
-    }
 
 
 def _redact_explorers(explorers):

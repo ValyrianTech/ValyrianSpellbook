@@ -115,6 +115,46 @@ class TestActionHelpers:
         assert 'private_key' not in result
         assert result == {'foo': 'bar'}
 
+    def test_redact_action_config_strips_mixed_case_private_key(self):
+        """Test redacting a config removes a mixed-case private key"""
+        config = {'Private_Key': 'L1234567890abcdef', 'foo': 'bar'}
+        result = redact_action_config(config)
+        assert 'Private_Key' not in result
+        assert result == {'foo': 'bar'}
+
+    def test_redact_action_config_strips_upper_case_private_key(self):
+        """Test redacting a config removes an upper-case private key"""
+        config = {'PRIVATE_KEY': 'L1234567890abcdef', 'foo': 'bar'}
+        result = redact_action_config(config)
+        assert 'PRIVATE_KEY' not in result
+        assert result == {'foo': 'bar'}
+
+    def test_redact_action_config_strips_other_sensitive_keys(self):
+        """Test redacting a config removes other sensitive keys case-insensitively"""
+        config = {
+            'api_secret': 'api-secret-value',
+            'Mnemonic': 'mnemonic-words',
+            'foo': 'bar',
+        }
+        result = redact_action_config(config)
+        assert 'api_secret' not in result
+        assert 'Mnemonic' not in result
+        assert result == {'foo': 'bar'}
+
+    def test_redact_action_config_strips_secret_values(self):
+        """Test redacted secret values are absent from the output"""
+        config = {
+            'private_key': 'L1234567890abcdef',
+            'api_key': 'sk-1234567890',
+            'mnemonic': 'abandon ability able',
+            'foo': 'bar',
+        }
+        result = redact_action_config(config)
+        assert result == {'foo': 'bar'}
+        assert 'L1234567890abcdef' not in str(result)
+        assert 'sk-1234567890' not in str(result)
+        assert 'abandon ability able' not in str(result)
+
     @mock.patch('helpers.actionhelpers.load_from_json_file')
     def test_get_action_unknown_id_returns_command_action(self, mock_load):
         """Test getting an action with an unknown id returns a CommandAction"""

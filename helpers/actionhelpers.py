@@ -15,6 +15,7 @@ from action.spawnprocessaction import SpawnProcessAction
 from action.webhookaction import WebhookAction
 from helpers.jsonhelpers import load_from_json_file
 from helpers.pathhelpers import safe_path
+from helpers.redaction import is_sensitive_key
 
 ACTIONS_DIR = 'json/public/actions'
 
@@ -61,15 +62,18 @@ def redact_action_config(action_config):
     must only be exposed after the action has been activated (allow_reveal is True).
     This strips those fields from the config dict unless allow_reveal is True.
 
-    A private_key (used by SendTransactionAction) is always stripped from any action
-    config, regardless of action type, so a configured private key is never exposed.
+    Any key in the shared sensitive-key set (e.g. private_key, Private_Key,
+    PRIVATE_KEY, api_key, mnemonic, ...) is always stripped from any action
+    config, regardless of action type, so a configured secret is never exposed.
+    This reuses helpers.redaction.is_sensitive_key (the same mechanism used by the
+    REST API server) so the sensitive-key list cannot drift.
 
     :param action_config: A dict containing the configuration of an action
     :return: A dict containing the configuration, with secrets removed when not yet revealed
     """
     if not isinstance(action_config, dict):
         return action_config
-    action_config = {key: value for key, value in action_config.items() if key != 'private_key'}
+    action_config = {key: value for key, value in action_config.items() if not is_sensitive_key(key)}
     if action_config.get('action_type') == ActionType.REVEALSECRET and not action_config.get('allow_reveal', False):
         action_config = {key: value for key, value in action_config.items()
                          if key not in ('reveal_text', 'reveal_link')}
