@@ -27,7 +27,6 @@ from validators.validators import (
     valid_distribution,
     valid_op_return,
     valid_percentage,
-    valid_private_key,
     valid_transaction_type,
     valid_xpub,
 )
@@ -97,7 +96,11 @@ class SendTransactionAction(Action):
                        - config['registration_block_height'] : An block height used for the registration of a SIL
                        - config['registration_xpub']         : An xpub key used for the registration of a LBL, LRL or LSL
                        - config['distribution']              : A dict containing a distribution (each address should be a key in the dict with the value being the share)
+                       - config['private_key']               : Not supported: supplying it raises ValueError; use the encrypted hot wallet instead
         """
+        if 'private_key' in config:
+            raise ValueError('Configuring a private key directly on a SendTransaction action is no longer supported and has been removed: a private key would be persisted in plaintext to the public action config (json/public/actions/<id>.json). Use the encrypted hot wallet instead (get_hot_wallet() / the hot_wallet.py CLI) so the key is looked up by sending_address at run time.')
+
         super().configure(**config)
         if 'fee_address' in config and valid_address(config['fee_address']):
             self.fee_address = config['fee_address']
@@ -162,9 +165,6 @@ class SendTransactionAction(Action):
         if 'utxo_confirmations' in config and valid_amount(config['utxo_confirmations']):
             self.utxo_confirmations = config['utxo_confirmations']
 
-        if 'private_key' in config and valid_private_key(private_key=config['private_key']):
-            self.private_key = config['private_key']
-
         # fill in the address in case of a BIP44 hot wallet
         if self.wallet_type == 'BIP44':
             self.sending_address = get_address_from_wallet(self.bip44_account, self.bip44_index)
@@ -199,6 +199,9 @@ class SendTransactionAction(Action):
                     'distribution': self.distribution})
         # The private key is intentionally not serialized: it must never be
         # written to json/public/actions/<id>.json nor returned in API output.
+        # It is also intentionally not round-tripped: a configured private key
+        # does not survive save/reload, and configure() raises a ValueError if
+        # a private_key is supplied instead of silently dropping it.
         return ret
 
     def run(self):
