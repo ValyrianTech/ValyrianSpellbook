@@ -61,11 +61,15 @@ def redact_action_config(action_config):
     must only be exposed after the action has been activated (allow_reveal is True).
     This strips those fields from the config dict unless allow_reveal is True.
 
+    A private_key (used by SendTransactionAction) is always stripped from any action
+    config, regardless of action type, so a configured private key is never exposed.
+
     :param action_config: A dict containing the configuration of an action
     :return: A dict containing the configuration, with secrets removed when not yet revealed
     """
     if not isinstance(action_config, dict):
         return action_config
+    action_config = {key: value for key, value in action_config.items() if key != 'private_key'}
     if action_config.get('action_type') == ActionType.REVEALSECRET and not action_config.get('allow_reveal', False):
         action_config = {key: value for key, value in action_config.items()
                          if key not in ('reveal_text', 'reveal_link')}
