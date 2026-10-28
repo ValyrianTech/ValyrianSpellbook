@@ -50,6 +50,51 @@ class TestActionHelpers:
         result = get_action_config('../evil')
         assert result == {}
 
+    @mock.patch('helpers.actionhelpers.load_from_json_file')
+    def test_get_action_config_drops_legacy_private_key(self, mock_load):
+        """Test loading a SendTransaction config drops a persisted private_key"""
+        mock_load.return_value = {
+            'action_type': ActionType.SENDTRANSACTION,
+            'private_key': 'L1234567890abcdef',
+            'sending_address': 'send_addr',
+        }
+        result = get_action_config('send_tx_action')
+        assert 'private_key' not in result
+        assert 'L1234567890abcdef' not in str(result)
+        assert result['action_type'] == ActionType.SENDTRANSACTION
+        assert result['sending_address'] == 'send_addr'
+
+    @mock.patch('helpers.actionhelpers.load_from_json_file')
+    def test_get_action_config_drops_case_variant_private_keys(self, mock_load):
+        """Test loading a config drops case-variant private key keys"""
+        mock_load.return_value = {
+            'action_type': ActionType.SENDTRANSACTION,
+            'Private_Key': 'secret-PK',
+            'PRIVATE_KEY': 'secret-PK',
+            'privkey': 'secret-pk',
+            'sending_address': 'send_addr',
+        }
+        result = get_action_config('send_tx_action')
+        assert 'Private_Key' not in result
+        assert 'PRIVATE_KEY' not in result
+        assert 'privkey' not in result
+        assert result['action_type'] == ActionType.SENDTRANSACTION
+        assert result['sending_address'] == 'send_addr'
+
+    @mock.patch('helpers.actionhelpers.load_from_json_file')
+    def test_get_action_config_preserves_other_sensitive_keys(self, mock_load):
+        """Test loading a config keeps non-private-key sensitive keys intact"""
+        mock_load.return_value = {
+            'action_type': ActionType.COMMAND,
+            'api_key': 'sk-123',
+            'mnemonic': 'abandon ability able',
+            'private_key': 'L1234567890abcdef',
+        }
+        result = get_action_config('cmd_action')
+        assert 'private_key' not in result
+        assert result['api_key'] == 'sk-123'
+        assert result['mnemonic'] == 'abandon ability able'
+
     def test_redact_action_config_revealsecret_not_allowed(self):
         """Test redacting a RevealSecret config when reveal is not allowed"""
         config = {
@@ -219,6 +264,18 @@ class TestActionHelpers:
         mock_load.return_value = {'action_type': ActionType.SENDTRANSACTION}
         action = get_action('test_action')
         assert action.action_type == ActionType.SENDTRANSACTION
+
+    @mock.patch('helpers.actionhelpers.load_from_json_file')
+    def test_get_action_sendtransaction_legacy_private_key(self, mock_load):
+        """Test a SendTransaction action with a legacy private_key loads without raising"""
+        mock_load.return_value = {
+            'action_type': ActionType.SENDTRANSACTION,
+            'private_key': 'L1234567890abcdef',
+            'sending_address': 'send_addr',
+        }
+        action = get_action('test_action')
+        assert action.action_type == ActionType.SENDTRANSACTION
+        assert action.private_key is None
 
     @mock.patch('helpers.actionhelpers.load_from_json_file')
     def test_get_action_revealsecret(self, mock_load):
