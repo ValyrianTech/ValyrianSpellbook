@@ -391,19 +391,33 @@ class TestLogToLogger:
     def test_redact_helper(self):
         """Test the _redact helper redacts sensitive keys directly."""
         result = _redact({
-            'API_Key': 'x',
-            'api_secret': 'y',
-            'secret': 'z',
-            'private_key': 'p',
-            'privkey': 'q',
-            'mnemonic': 'm',
-            'xpriv': 'xr',
-            'password': 'pw',
-            'passphrase': 'pp',
-            'seed': 's',
-            'API_Sign': 'as',
+            'API_Key': 'sekret-api-key',
+            'api_secret': 'sekret-api-secret',
+            'secret': 'sekret-secret',
+            'private_key': 'sekret-private-key',
+            'privkey': 'sekret-privkey',
+            'mnemonic': 'sekret-mnemonic',
+            'xpriv': 'sekret-xpriv',
+            'password': 'sekret-password',
+            'passphrase': 'sekret-passphrase',
+            'seed': 'sekret-seed',
+            'API_Sign': 'sekret-api-sign',
             'safe': 'visible',
         })
+
+        secrets = (
+            'sekret-api-key',
+            'sekret-secret',
+            'sekret-private-key',
+            'sekret-privkey',
+            'sekret-mnemonic',
+            'sekret-xpriv',
+            'sekret-password',
+            'sekret-passphrase',
+            'sekret-seed',
+            'sekret-api-sign',
+            'sekret-api-secret',
+        )
 
         for key in ('API_Key', 'api_secret', 'secret', 'private_key', 'privkey',
                     'mnemonic', 'xpriv', 'password', 'passphrase', 'seed', 'API_Sign'):
@@ -411,7 +425,13 @@ class TestLogToLogger:
 
         assert result['safe'] == 'visible'
 
+        serialized = str(result)
+        for secret in secrets:
+            assert secret not in serialized
+
         assert _redact({'Api_Key': 'mixed'})['Api_Key'] == REDACTED_VALUE
+        assert 'sekret-mixed-case' not in str(_redact({'Api_Key': 'sekret-mixed-case'}))
+        assert _redact({'Api_Key': 'sekret-mixed-case'})['Api_Key'] == REDACTED_VALUE
 
 
 # --- Static endpoint tests ----------------------------------------------------
@@ -569,19 +589,24 @@ class TestGetExplorerConfig:
 
 class TestRedactExplorers:
     def test_redact_explorers_dict(self):
-        result = _redact_explorers({'api_key': 'secret', 'name': 'blockstream'})
+        result = _redact_explorers({'api_key': 'explorer-api-key-sekret', 'name': 'blockstream'})
         assert result['api_key'] == REDACTED_VALUE
         assert result['name'] == 'blockstream'
+        assert 'explorer-api-key-sekret' not in str(result)
+        assert 'blockstream' in str(result)
 
     def test_redact_explorers_list_of_ids(self):
         result = _redact_explorers(['blockstream.info', 'btc.com'])
         assert result == ['blockstream.info', 'btc.com']
 
     def test_redact_explorers_list_with_dict(self):
-        result = _redact_explorers(['blockstream.info', {'api_key': 'secret'}, 'btc.com'])
+        result = _redact_explorers(['blockstream.info', {'api_key': 'explorer-api-key-sekret'}, 'btc.com'])
         assert result[0] == 'blockstream.info'
         assert result[1]['api_key'] == REDACTED_VALUE
         assert result[2] == 'btc.com'
+        assert 'explorer-api-key-sekret' not in str(result)
+        assert 'blockstream.info' in str(result)
+        assert 'btc.com' in str(result)
 
     def test_redact_explorers_non_dict_non_list(self):
         assert _redact_explorers(None) is None

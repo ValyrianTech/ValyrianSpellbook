@@ -51,13 +51,22 @@ class TestRedaction:
 
     def test_redact_sensitive_keys(self):
         """Test redact replaces sensitive values with REDACTED_VALUE"""
-        result = redact({'api_key': 'secret', 'private_key': 'priv', 'seed': 'seed'})
+        result = redact({
+            'api_key': 'sekret-api-key',
+            'private_key': 'sekret-private-key',
+            'seed': 'sekret-seed',
+        })
         assert result == {'api_key': REDACTED_VALUE, 'private_key': REDACTED_VALUE, 'seed': REDACTED_VALUE}
+        assert 'sekret-api-key' not in str(result)
+        assert 'sekret-private-key' not in str(result)
+        assert 'sekret-seed' not in str(result)
 
     def test_redact_case_insensitive(self):
         """Test redact matches sensitive keys case-insensitively"""
-        assert redact({'Api_Key': 'x'})['Api_Key'] == REDACTED_VALUE
-        assert redact({'API_Sign': 'y'})['API_Sign'] == REDACTED_VALUE
+        assert redact({'Api_Key': 'sekret-api-key'})['Api_Key'] == REDACTED_VALUE
+        assert 'sekret-api-key' not in str(redact({'Api_Key': 'sekret-api-key'}))
+        assert redact({'API_Sign': 'sekret-api-sign'})['API_Sign'] == REDACTED_VALUE
+        assert 'sekret-api-sign' not in str(redact({'API_Sign': 'sekret-api-sign'}))
 
     def test_redact_preserves_non_sensitive(self):
         """Test redact preserves non-sensitive values"""
