@@ -155,6 +155,41 @@ class TestActionHelpers:
         assert 'sk-1234567890' not in str(result)
         assert 'abandon ability able' not in str(result)
 
+    def test_redact_action_config_sendtransaction_secret_value_absent(self):
+        """Test redacting a SendTransaction config removes the secret value"""
+        config = {
+            'id': 'send_tx_action',
+            'action_type': ActionType.SENDTRANSACTION,
+            'private_key': 'L1234567890abcdef-SEKRET',
+            'sending_address': 'send_addr',
+            'recipient_address': 'recv_addr',
+        }
+        result = redact_action_config(config)
+        assert 'private_key' not in result
+        assert 'L1234567890abcdef-SEKRET' not in str(result)
+        assert result['action_type'] == ActionType.SENDTRANSACTION
+        assert result['sending_address'] == 'send_addr'
+        assert result['recipient_address'] == 'recv_addr'
+        assert result != config
+
+    def test_redact_action_config_sendtransaction_multiple_secrets_absent(self):
+        """Test redacting a SendTransaction config removes multiple secret values"""
+        config = {
+            'id': 'send_tx_action',
+            'action_type': ActionType.SENDTRANSACTION,
+            'private_key': 'L1234567890abcdef-SEKRET',
+            'Mnemonic': 'send-tx-mnemonic-SEKRET',
+            'sending_address': 'send_addr',
+            'recipient_address': 'recv_addr',
+        }
+        result = redact_action_config(config)
+        assert 'private_key' not in result
+        assert 'Mnemonic' not in result
+        assert 'L1234567890abcdef-SEKRET' not in str(result)
+        assert 'send-tx-mnemonic-SEKRET' not in str(result)
+        assert result['sending_address'] == 'send_addr'
+        assert result['recipient_address'] == 'recv_addr'
+
     @mock.patch('helpers.actionhelpers.load_from_json_file')
     def test_get_action_unknown_id_returns_command_action(self, mock_load):
         """Test getting an action with an unknown id returns a CommandAction"""
