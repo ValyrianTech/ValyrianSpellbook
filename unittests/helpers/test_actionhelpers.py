@@ -94,6 +94,27 @@ class TestActionHelpers:
         result = redact_action_config(config)
         assert result == config
 
+    def test_redact_action_config_strips_private_key(self):
+        """Test redacting a SendTransaction config removes its private key"""
+        config = {
+            'id': 'send_tx_action',
+            'action_type': ActionType.SENDTRANSACTION,
+            'private_key': 'L1234567890abcdef',
+            'sending_address': 'send_addr',
+        }
+        result = redact_action_config(config)
+        assert 'private_key' not in result
+        assert result['id'] == 'send_tx_action'
+        assert result['action_type'] == ActionType.SENDTRANSACTION
+        assert result['sending_address'] == 'send_addr'
+
+    def test_redact_action_config_strips_private_key_generic_dict(self):
+        """Test redacting a generic dict removes its private key"""
+        config = {'private_key': 'L1234567890abcdef', 'foo': 'bar'}
+        result = redact_action_config(config)
+        assert 'private_key' not in result
+        assert result == {'foo': 'bar'}
+
     @mock.patch('helpers.actionhelpers.load_from_json_file')
     def test_get_action_unknown_id_returns_command_action(self, mock_load):
         """Test getting an action with an unknown id returns a CommandAction"""

@@ -196,8 +196,9 @@ class SendTransactionAction(Action):
                     'tx_fee_type': self.tx_fee_type,
                     'tx_fee': self.tx_fee,
                     'utxo_confirmations': self.utxo_confirmations,
-                    'distribution': self.distribution,
-                    'private_key': self.private_key})
+                    'distribution': self.distribution})
+        # The private key is intentionally not serialized: it must never be
+        # written to json/public/actions/<id>.json nor returned in API output.
         return ret
 
     def run(self):

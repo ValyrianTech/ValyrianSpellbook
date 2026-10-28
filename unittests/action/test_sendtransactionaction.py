@@ -191,7 +191,9 @@ class TestSendTransactionAction:
         assert action.sending_address == '1BIP44Address'
         mock_get_address.assert_called_once_with(0, 0)
 
-    def test_sendtransactionaction_json_encodable(self):
+    @mock.patch('action.sendtransactionaction.valid_private_key')
+    def test_sendtransactionaction_json_encodable(self, mock_valid_private_key):
+        mock_valid_private_key.return_value = True
         action = SendTransactionAction('test_send_tx')
         action.configure(created=1609459200)
         action.fee_address = 'fee_addr'
@@ -201,6 +203,7 @@ class TestSendTransactionAction:
         action.receiving_address = 'recv_addr'
         action.amount = 50000
         action.transaction_type = 'Send2Single'
+        action.private_key = 'L1234567890abcdef'
         
         result = action.json_encodable()
         assert result['id'] == 'test_send_tx'
@@ -212,6 +215,15 @@ class TestSendTransactionAction:
         assert result['receiving_address'] == 'recv_addr'
         assert result['amount'] == 50000
         assert result['transaction_type'] == 'Send2Single'
+
+    @mock.patch('action.sendtransactionaction.valid_private_key')
+    def test_sendtransactionaction_json_encodable_no_private_key(self, mock_valid_private_key):
+        mock_valid_private_key.return_value = True
+        action = SendTransactionAction('test_send_tx')
+        action.configure(private_key='L1234567890abcdef')
+        result = action.json_encodable()
+        assert 'private_key' not in result
+        assert 'L1234567890abcdef' not in str(result)
 
     def test_sendtransactionaction_run_no_sending_address(self):
         action = SendTransactionAction('test_send_tx')
