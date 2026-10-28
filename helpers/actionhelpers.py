@@ -51,6 +51,25 @@ def get_action_config(action_id):
         # Action does not exist yet, return empty dict
         action_config = {}
 
+    if isinstance(action_config, dict):
+        # Drop any legacy persisted plaintext private key so that old on-disk
+        # SendTransactionAction configs that still contain a persisted
+        # private_key hydrate successfully via SendTransactionAction.configure()
+        # (which raises ValueError on an explicitly supplied private_key) and
+        # instead load with private_key = None.
+        #
+        # Only private-key variants are dropped (case-insensitive: private_key,
+        # Private_Key, PRIVATE_KEY, and privkey). Other sensitive keys such as
+        # api_key/mnemonic/password are left intact because other action types
+        # may legitimately need them when loaded. The hard ValueError in
+        # SendTransactionAction.configure() is intentionally kept for
+        # explicitly user-supplied private keys via save_action / the API.
+        action_config = {
+            key: value
+            for key, value in action_config.items()
+            if not (isinstance(key, str) and key.lower() in ('private_key', 'privkey'))
+        }
+
     return action_config
 
 
