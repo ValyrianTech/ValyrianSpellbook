@@ -50,6 +50,51 @@ class TestActionHelpers:
         result = get_action_config('../evil')
         assert result == {}
 
+    @mock.patch('helpers.actionhelpers.load_from_json_file')
+    def test_get_action_config_drops_legacy_private_key(self, mock_load):
+        """Test loading a SendTransaction config drops a persisted private_key"""
+        mock_load.return_value = {
+            'action_type': ActionType.SENDTRANSACTION,
+            'private_key': 'L1234567890abcdef',
+            'sending_address': 'send_addr',
+        }
+        result = get_action_config('send_tx_action')
+        assert 'private_key' not in result
+        assert 'L1234567890abcdef' not in str(result)
+        assert result['action_type'] == ActionType.SENDTRANSACTION
+        assert result['sending_address'] == 'send_addr'
+
+    @mock.patch('helpers.actionhelpers.load_from_json_file')
+    def test_get_action_config_drops_case_variant_private_keys(self, mock_load):
+        """Test loading a config drops case-variant private key keys"""
+        mock_load.return_value = {
+            'action_type': ActionType.SENDTRANSACTION,
+            'Private_Key': 'secret-PK',
+            'PRIVATE_KEY': 'secret-PK',
+            'privkey': 'secret-pk',
+            'sending_address': 'send_addr',
+        }
+        result = get_action_config('send_tx_action')
+        assert 'Private_Key' not in result
+        assert 'PRIVATE_KEY' not in result
+        assert 'privkey' not in result
+        assert result['action_type'] == ActionType.SENDTRANSACTION
+        assert result['sending_address'] == 'send_addr'
+
+    @mock.patch('helpers.actionhelpers.load_from_json_file')
+    def test_get_action_config_preserves_other_sensitive_keys(self, mock_load):
+        """Test loading a config keeps non-private-key sensitive keys intact"""
+        mock_load.return_value = {
+            'action_type': ActionType.COMMAND,
+            'api_key': 'sk-123',
+            'mnemonic': 'abandon ability able',
+            'private_key': 'L1234567890abcdef',
+        }
+        result = get_action_config('cmd_action')
+        assert 'private_key' not in result
+        assert result['api_key'] == 'sk-123'
+        assert result['mnemonic'] == 'abandon ability able'
+
     def test_redact_action_config_revealsecret_not_allowed(self):
         """Test redacting a RevealSecret config when reveal is not allowed"""
         config = {
@@ -94,6 +139,102 @@ class TestActionHelpers:
         result = redact_action_config(config)
         assert result == config
 
+    def test_redact_action_config_strips_private_key(self):
+        """Test redacting a SendTransaction config removes its private key"""
+        config = {
+            'id': 'send_tx_action',
+            'action_type': ActionType.SENDTRANSACTION,
+            'private_key': 'L1234567890abcdef',
+            'sending_address': 'send_addr',
+        }
+        result = redact_action_config(config)
+        assert 'private_key' not in result
+        assert result['id'] == 'send_tx_action'
+        assert result['action_type'] == ActionType.SENDTRANSACTION
+        assert result['sending_address'] == 'send_addr'
+
+    def test_redact_action_config_strips_private_key_generic_dict(self):
+        """Test redacting a generic dict removes its private key"""
+        config = {'private_key': 'L1234567890abcdef', 'foo': 'bar'}
+        result = redact_action_config(config)
+        assert 'private_key' not in result
+        assert result == {'foo': 'bar'}
+
+    def test_redact_action_config_strips_mixed_case_private_key(self):
+        """Test redacting a config removes a mixed-case private key"""
+        config = {'Private_Key': 'L1234567890abcdef', 'foo': 'bar'}
+        result = redact_action_config(config)
+        assert 'Private_Key' not in result
+        assert result == {'foo': 'bar'}
+
+    def test_redact_action_config_strips_upper_case_private_key(self):
+        """Test redacting a config removes an upper-case private key"""
+        config = {'PRIVATE_KEY': 'L1234567890abcdef', 'foo': 'bar'}
+        result = redact_action_config(config)
+        assert 'PRIVATE_KEY' not in result
+        assert result == {'foo': 'bar'}
+
+    def test_redact_action_config_strips_other_sensitive_keys(self):
+        """Test redacting a config removes other sensitive keys case-insensitively"""
+        config = {
+            'api_secret': 'api-secret-value',
+            'Mnemonic': 'mnemonic-words',
+            'foo': 'bar',
+        }
+        result = redact_action_config(config)
+        assert 'api_secret' not in result
+        assert 'Mnemonic' not in result
+        assert result == {'foo': 'bar'}
+
+    def test_redact_action_config_strips_secret_values(self):
+        """Test redacted secret values are absent from the output"""
+        config = {
+            'private_key': 'L1234567890abcdef',
+            'api_key': 'sk-1234567890',
+            'mnemonic': 'abandon ability able',
+            'foo': 'bar',
+        }
+        result = redact_action_config(config)
+        assert result == {'foo': 'bar'}
+        assert 'L1234567890abcdef' not in str(result)
+        assert 'sk-1234567890' not in str(result)
+        assert 'abandon ability able' not in str(result)
+
+    def test_redact_action_config_sendtransaction_secret_value_absent(self):
+        """Test redacting a SendTransaction config removes the secret value"""
+        config = {
+            'id': 'send_tx_action',
+            'action_type': ActionType.SENDTRANSACTION,
+            'private_key': 'L1234567890abcdef-SEKRET',
+            'sending_address': 'send_addr',
+            'recipient_address': 'recv_addr',
+        }
+        result = redact_action_config(config)
+        assert 'private_key' not in result
+        assert 'L1234567890abcdef-SEKRET' not in str(result)
+        assert result['action_type'] == ActionType.SENDTRANSACTION
+        assert result['sending_address'] == 'send_addr'
+        assert result['recipient_address'] == 'recv_addr'
+        assert result != config
+
+    def test_redact_action_config_sendtransaction_multiple_secrets_absent(self):
+        """Test redacting a SendTransaction config removes multiple secret values"""
+        config = {
+            'id': 'send_tx_action',
+            'action_type': ActionType.SENDTRANSACTION,
+            'private_key': 'L1234567890abcdef-SEKRET',
+            'Mnemonic': 'send-tx-mnemonic-SEKRET',
+            'sending_address': 'send_addr',
+            'recipient_address': 'recv_addr',
+        }
+        result = redact_action_config(config)
+        assert 'private_key' not in result
+        assert 'Mnemonic' not in result
+        assert 'L1234567890abcdef-SEKRET' not in str(result)
+        assert 'send-tx-mnemonic-SEKRET' not in str(result)
+        assert result['sending_address'] == 'send_addr'
+        assert result['recipient_address'] == 'recv_addr'
+
     @mock.patch('helpers.actionhelpers.load_from_json_file')
     def test_get_action_unknown_id_returns_command_action(self, mock_load):
         """Test getting an action with an unknown id returns a CommandAction"""
@@ -123,6 +264,18 @@ class TestActionHelpers:
         mock_load.return_value = {'action_type': ActionType.SENDTRANSACTION}
         action = get_action('test_action')
         assert action.action_type == ActionType.SENDTRANSACTION
+
+    @mock.patch('helpers.actionhelpers.load_from_json_file')
+    def test_get_action_sendtransaction_legacy_private_key(self, mock_load):
+        """Test a SendTransaction action with a legacy private_key loads without raising"""
+        mock_load.return_value = {
+            'action_type': ActionType.SENDTRANSACTION,
+            'private_key': 'L1234567890abcdef',
+            'sending_address': 'send_addr',
+        }
+        action = get_action('test_action')
+        assert action.action_type == ActionType.SENDTRANSACTION
+        assert action.private_key is None
 
     @mock.patch('helpers.actionhelpers.load_from_json_file')
     def test_get_action_revealsecret(self, mock_load):

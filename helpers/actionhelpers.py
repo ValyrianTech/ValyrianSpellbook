@@ -15,6 +15,7 @@ from action.spawnprocessaction import SpawnProcessAction
 from action.webhookaction import WebhookAction
 from helpers.jsonhelpers import load_from_json_file
 from helpers.pathhelpers import safe_path
+from helpers.redaction import is_sensitive_key
 
 ACTIONS_DIR = 'json/public/actions'
 
@@ -50,6 +51,25 @@ def get_action_config(action_id):
         # Action does not exist yet, return empty dict
         action_config = {}
 
+    if isinstance(action_config, dict):
+        # Drop any legacy persisted plaintext private key so that old on-disk
+        # SendTransactionAction configs that still contain a persisted
+        # private_key hydrate successfully via SendTransactionAction.configure()
+        # (which raises ValueError on an explicitly supplied private_key) and
+        # instead load with private_key = None.
+        #
+        # Only private-key variants are dropped (case-insensitive: private_key,
+        # Private_Key, PRIVATE_KEY, and privkey). Other sensitive keys such as
+        # api_key/mnemonic/password are left intact because other action types
+        # may legitimately need them when loaded. The hard ValueError in
+        # SendTransactionAction.configure() is intentionally kept for
+        # explicitly user-supplied private keys via save_action / the API.
+        action_config = {
+            key: value
+            for key, value in action_config.items()
+            if not (isinstance(key, str) and key.lower() in ('private_key', 'privkey'))
+        }
+
     return action_config
 
 
@@ -61,11 +81,18 @@ def redact_action_config(action_config):
     must only be exposed after the action has been activated (allow_reveal is True).
     This strips those fields from the config dict unless allow_reveal is True.
 
+    Any key in the shared sensitive-key set (e.g. private_key, Private_Key,
+    PRIVATE_KEY, api_key, mnemonic, ...) is always stripped from any action
+    config, regardless of action type, so a configured secret is never exposed.
+    This reuses helpers.redaction.is_sensitive_key (the same mechanism used by the
+    REST API server) so the sensitive-key list cannot drift.
+
     :param action_config: A dict containing the configuration of an action
     :return: A dict containing the configuration, with secrets removed when not yet revealed
     """
     if not isinstance(action_config, dict):
         return action_config
+    action_config = {key: value for key, value in action_config.items() if not is_sensitive_key(key)}
     if action_config.get('action_type') == ActionType.REVEALSECRET and not action_config.get('allow_reveal', False):
         action_config = {key: value for key, value in action_config.items()
                          if key not in ('reveal_text', 'reveal_link')}

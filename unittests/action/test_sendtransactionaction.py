@@ -175,12 +175,11 @@ class TestSendTransactionAction:
         action.configure(utxo_confirmations=6)
         assert action.utxo_confirmations == 6
 
-    @mock.patch('action.sendtransactionaction.valid_private_key')
-    def test_sendtransactionaction_configure_private_key(self, mock_valid_private_key):
-        mock_valid_private_key.return_value = True
+    def test_sendtransactionaction_configure_private_key(self):
         action = SendTransactionAction('test_send_tx')
-        action.configure(private_key='L1234567890abcdef')
-        assert action.private_key == 'L1234567890abcdef'
+        with pytest.raises(ValueError) as exc_info:
+            action.configure(private_key='L1234567890abcdef')
+        assert 'L1234567890abcdef' not in str(exc_info.value)
 
     @mock.patch('action.sendtransactionaction.get_address_from_wallet')
     def test_sendtransactionaction_configure_bip44_wallet(self, mock_get_address):
@@ -201,6 +200,7 @@ class TestSendTransactionAction:
         action.receiving_address = 'recv_addr'
         action.amount = 50000
         action.transaction_type = 'Send2Single'
+        action.private_key = 'L1234567890abcdef'
         
         result = action.json_encodable()
         assert result['id'] == 'test_send_tx'
@@ -212,6 +212,43 @@ class TestSendTransactionAction:
         assert result['receiving_address'] == 'recv_addr'
         assert result['amount'] == 50000
         assert result['transaction_type'] == 'Send2Single'
+
+    def test_sendtransactionaction_json_encodable_no_private_key(self):
+        action = SendTransactionAction('test_send_tx')
+        action.private_key = 'L1234567890abcdef'
+        result = action.json_encodable()
+        assert 'private_key' not in result
+        assert 'L1234567890abcdef' not in str(result)
+
+    @mock.patch('action.sendtransactionaction.valid_address')
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    def test_sendtransactionaction_save_reload_round_trip_drops_private_key(self, mock_valid_amount, mock_valid_address, tmp_path):
+        """A private key is not persisted: save->reload drops it and the JSON never contains it."""
+        import os
+
+        from helpers.actionhelpers import get_action
+
+        mock_valid_address.return_value = True
+        mock_valid_amount.return_value = True
+
+        actions_dir = str(tmp_path)
+        with mock.patch('helpers.actionhelpers.ACTIONS_DIR', actions_dir), \
+                mock.patch('action.action.ACTIONS_DIR', actions_dir):
+            action = SendTransactionAction('round_trip_action')
+            action.configure(sending_address='1SendingAddress', amount=50000)
+            action.private_key = 'L1234567890abcdef'
+            action.save()
+
+            reloaded = get_action('round_trip_action')
+
+            assert reloaded.sending_address == '1SendingAddress'
+            assert reloaded.amount == 50000
+            assert reloaded.private_key is None
+
+            with open(os.path.join(actions_dir, 'round_trip_action.json')) as action_file:
+                persisted = action_file.read()
+            assert 'private_key' not in persisted
+            assert 'L1234567890abcdef' not in persisted
 
     def test_sendtransactionaction_run_no_sending_address(self):
         action = SendTransactionAction('test_send_tx')

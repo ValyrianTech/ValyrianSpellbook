@@ -98,7 +98,7 @@ Triggers invoke actions based on specific conditions:
 
 Actions perform tasks when triggered. Here are a few example actions:
 
-- **Send Transaction**: Automates Bitcoin transactions.
+- **Send Transaction**: Automates Bitcoin transactions. A configured private key is never exposed via the REST API action-config output (the private key is omitted from the serialized action config and stripped from any returned config), parallel to the Reveal Secret action's secret protection.
 - **Send Email**: Configures and sends emails automatically. Email templates, referenced images, and attachments are confined to the `email_templates/` and `apps/` directories (paths escaping those directories are rejected), and recipient addresses are validated before sending.
 - **Command and SpawnProcess**: Executes system commands or spawns new processes.
 - **Reveal Secret**: Reveals a pre-configured secret upon trigger activation; the secret (`reveal_text`/`reveal_link`) is not exposed via the REST API action-config endpoint until the action has been activated (`allow_reveal` is True).
