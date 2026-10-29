@@ -5,6 +5,7 @@ import pytest
 
 from action.actiontype import ActionType
 from action.commandaction import CommandAction
+from action.revealsecretaction import RevealSecretAction
 from helpers.actionhelpers import (
     delete_action,
     get_action,
@@ -123,6 +124,23 @@ class TestActionHelpers:
         result = redact_action_config(config)
         assert result['reveal_text'] == 'secret text'
         assert result['reveal_link'] == 'http://example.com'
+
+    def test_redact_action_config_revealsecret_non_boolean_allow_reveal(self):
+        """Test redacting a RevealSecret config with a non-boolean allow_reveal value"""
+        for allow_reveal in ('false', 'False', 1):
+            config = {
+                'id': 'secret_action',
+                'action_type': ActionType.REVEALSECRET,
+                'reveal_text': 'secret text',
+                'reveal_link': 'http://example.com',
+                'allow_reveal': allow_reveal,
+            }
+            result = redact_action_config(config)
+            assert 'reveal_text' not in result
+            assert 'reveal_link' not in result
+            assert result['id'] == 'secret_action'
+            assert result['action_type'] == ActionType.REVEALSECRET
+            assert result['allow_reveal'] == allow_reveal
 
     def test_redact_action_config_non_dict(self):
         """Test redacting a non-dict input returns it unchanged"""
@@ -399,5 +417,41 @@ class TestActionHelpers:
         mock_get_action.return_value = mock_action
         
         result = get_reveal('test_action')
+        assert result['reveal_text'] == 'secret text'
+        assert result['reveal_link'] == 'http://example.com'
+
+    @mock.patch('helpers.actionhelpers.get_action')
+    def test_get_reveal_non_boolean_truthy_allow_reveal(self, mock_get_action):
+        """Test get_reveal returns None for an odd truthy non-boolean allow_reveal value"""
+        mock_action = mock.MagicMock()
+        mock_action.allow_reveal = 'yes'
+        mock_get_action.return_value = mock_action
+
+        result = get_reveal('test_action')
+        assert result is None
+
+    @mock.patch('helpers.actionhelpers.load_from_json_file')
+    @mock.patch.object(RevealSecretAction, 'save')
+    def test_get_reveal_non_boolean_allow_reveal_not_revealed(self, mock_save, mock_load):
+        """Test get_reveal does not reveal for a non-boolean allow_reveal value"""
+        mock_load.return_value = {
+            'action_type': ActionType.REVEALSECRET,
+            'reveal_text': 'secret text',
+            'reveal_link': 'http://example.com',
+            'allow_reveal': 'false',
+        }
+        save_action('some_action_id', action_type=ActionType.REVEALSECRET,
+                    reveal_text='secret text', reveal_link='http://example.com',
+                    allow_reveal='false')
+        result = get_reveal('some_action_id')
+        assert result is None
+
+        mock_load.return_value = {
+            'action_type': ActionType.REVEALSECRET,
+            'reveal_text': 'secret text',
+            'reveal_link': 'http://example.com',
+            'allow_reveal': True,
+        }
+        result = get_reveal('some_action_id')
         assert result['reveal_text'] == 'secret text'
         assert result['reveal_link'] == 'http://example.com'

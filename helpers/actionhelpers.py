@@ -93,7 +93,7 @@ def redact_action_config(action_config):
     if not isinstance(action_config, dict):
         return action_config
     action_config = {key: value for key, value in action_config.items() if not is_sensitive_key(key)}
-    if action_config.get('action_type') == ActionType.REVEALSECRET and not action_config.get('allow_reveal', False):
+    if action_config.get('action_type') == ActionType.REVEALSECRET and action_config.get('allow_reveal') is not True:
         action_config = {key: value for key, value in action_config.items()
                          if key not in ('reveal_text', 'reveal_link')}
     return action_config
@@ -202,7 +202,7 @@ def get_reveal(action_id):
     :param action_id: The id of the action
     """
     action = get_action(action_id)
-    if action.allow_reveal is False:
+    if action.allow_reveal is not True:
         return None
 
     response = {'reveal_text': action.reveal_text, 'reveal_link': action.reveal_link}
