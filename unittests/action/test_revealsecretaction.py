@@ -27,6 +27,18 @@ class TestRevealSecretAction:
         assert action.reveal_link == 'http://secret.link'
         assert action.allow_reveal
 
+    def test_revealsecretaction_configure_coerces_non_boolean_allow_reveal(self):
+        """Test that a non-boolean allow_reveal value is coerced to a real bool"""
+        action = RevealSecretAction('test_reveal_action')
+        action.configure(allow_reveal='False')
+        assert action.allow_reveal is False
+        action.configure(allow_reveal='false')
+        assert action.allow_reveal is False
+        action.configure(allow_reveal=1)
+        assert action.allow_reveal is False
+        action.configure(allow_reveal=True)
+        assert action.allow_reveal is True
+
     def test_revealsecretaction_configure_partial(self):
         action = RevealSecretAction('test_reveal_action')
         action.configure(reveal_text='only text')

@@ -46,7 +46,7 @@ class RevealSecretAction(Action):
             self.reveal_link = config['reveal_link']
 
         if 'allow_reveal' in config:
-            self.allow_reveal = config['allow_reveal']
+            self.allow_reveal = config['allow_reveal'] is True
 
     def json_encodable(self):
         """
