@@ -5,6 +5,7 @@ API Client for communicating with the Valyrian Spellbook REST API (Bottle server
 
 import os
 import sys
+import threading
 import time
 from typing import Any
 
@@ -19,18 +20,34 @@ from authentication import signature
 
 class SpellbookAPIClient:
     """Client for the Spellbook REST API"""
-    
+
+    _nonce_lock = threading.Lock()
+    _last_nonce = 0
+
     def __init__(self, api_key: str | None = None, api_secret: str | None = None):
         self.base_url = settings.SPELLBOOK_API_URL
         self.api_key = api_key
         self.api_secret = api_secret
-    
+
+    @classmethod
+    def _next_nonce(cls) -> int:
+        """Return a nonce that is strictly greater than any previously returned nonce.
+
+        Combines a wall-clock nanosecond value with a per-process monotonic counter so
+        that concurrent or rapid successive calls never collide or go backwards, which
+        the server-side check_authentication enforces per API key.
+        """
+        with cls._nonce_lock:
+            n = time.time_ns()
+            cls._last_nonce = max(cls._last_nonce + 1, n)
+            return cls._last_nonce
+
     def _get_auth_headers(self, data: dict | None = None) -> dict[str, str]:
         """Generate authentication headers"""
         if not self.api_key or not self.api_secret:
             return {}
         
-        nonce = round(time.time() * 1000)
+        nonce = self._next_nonce()
         return {
             'Content-Type': 'application/json',
             'API_Key': self.api_key,

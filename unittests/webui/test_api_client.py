@@ -7,6 +7,45 @@ import requests
 from api_client import SpellbookAPIClient
 
 
+class TestNextNonce:
+    def test_next_nonce_is_strictly_increasing(self):
+        SpellbookAPIClient._last_nonce = 0
+        try:
+            previous = SpellbookAPIClient._next_nonce()
+            for _ in range(10):
+                current = SpellbookAPIClient._next_nonce()
+                assert current > previous
+                previous = current
+        finally:
+            SpellbookAPIClient._last_nonce = 0
+
+    def test_next_nonce_uses_time_ns_when_ahead(self):
+        SpellbookAPIClient._last_nonce = 0
+        try:
+            with patch("api_client.time.time_ns", return_value=10_000_000):
+                assert SpellbookAPIClient._next_nonce() == 10_000_000
+        finally:
+            SpellbookAPIClient._last_nonce = 0
+
+    def test_next_nonce_increments_when_time_regresses(self):
+        SpellbookAPIClient._last_nonce = 500
+        try:
+            with patch("api_client.time.time_ns", return_value=100):
+                assert SpellbookAPIClient._next_nonce() == 501
+        finally:
+            SpellbookAPIClient._last_nonce = 0
+
+    def test_next_nonce_same_time_ns_twice_is_increasing(self):
+        SpellbookAPIClient._last_nonce = 0
+        try:
+            with patch("api_client.time.time_ns", return_value=1000):
+                first = SpellbookAPIClient._next_nonce()
+                second = SpellbookAPIClient._next_nonce()
+                assert [first, second] == [1000, 1001]
+        finally:
+            SpellbookAPIClient._last_nonce = 0
+
+
 class TestSpellbookAPIClientInit:
     def test_default_init(self):
         with patch("api_client.settings") as mock_settings:
@@ -41,6 +80,22 @@ class TestGetAuthHeaders:
             assert "API_Sign" in headers
             assert "API_Nonce" in headers
             assert headers["Content-Type"] == "application/json"
+
+    def test_auth_headers_nonce_is_int_string_and_increments(self):
+        SpellbookAPIClient._last_nonce = 0
+        try:
+            with patch("api_client.settings") as mock_settings:
+                mock_settings.SPELLBOOK_API_URL = "http://localhost:8080"
+                c = SpellbookAPIClient(api_key="key123", api_secret="dGVzdA==")
+                first = c._get_auth_headers()
+                second = c._get_auth_headers()
+                assert first["API_Nonce"].isdigit()
+                assert second["API_Nonce"].isdigit()
+                assert int(second["API_Nonce"]) > int(first["API_Nonce"])
+                assert "API_Sign" in first
+                assert "API_Sign" in second
+        finally:
+            SpellbookAPIClient._last_nonce = 0
 
 
 class TestRequest:
