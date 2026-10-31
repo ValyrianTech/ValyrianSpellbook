@@ -2,6 +2,7 @@
 """Tests for AESCipher.py — authenticated AES-GCM encryption for the hot wallet."""
 
 import base64
+import binascii
 import hashlib
 
 import pytest
@@ -72,12 +73,14 @@ class TestAESCipher:
         with pytest.raises(ValueError) as exc_info:
             cipher.decrypt(b'not valid base64!!!')
         assert 'malformed base64 payload' in str(exc_info.value)
+        assert isinstance(exc_info.value.__cause__, binascii.Error)
 
     def test_decrypt_rejects_malformed_base64_str_payload(self):
         cipher = AESCipher(key='pw')
         with pytest.raises(ValueError) as exc_info:
             cipher.decrypt('not valid base64!!!')
         assert 'malformed base64 payload' in str(exc_info.value)
+        assert isinstance(exc_info.value.__cause__, binascii.Error)
 
     def test_tampered_ciphertext_raises(self):
         cipher = AESCipher(key='test_password')
