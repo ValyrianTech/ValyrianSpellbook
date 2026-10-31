@@ -119,7 +119,7 @@ class AESCipher:
         try:
             data = base64.b64decode(enc, validate=True)
         except binascii.Error as ex:
-            raise ValueError(f'malformed base64 payload: {ex}')
+            raise ValueError(f'malformed base64 payload: {ex}') from ex
 
         if data[:1] == VERSION:
             try:
