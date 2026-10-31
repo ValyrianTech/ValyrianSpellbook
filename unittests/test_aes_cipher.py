@@ -46,6 +46,17 @@ class TestAESCipher:
         encrypted = cipher.encrypt(b'secret data')
         assert cipher.decrypt(encrypted.decode('utf-8')) == 'secret data'
 
+    def test_decrypt_rejects_malformed_base64(self):
+        cipher = AESCipher(key='pw')
+        with pytest.raises(ValueError) as exc_info:
+            cipher.decrypt(b'not valid base64!!!')
+        assert 'malformed base64 payload' in str(exc_info.value)
+
+    def test_decrypt_rejects_malformed_base64_str_payload(self):
+        cipher = AESCipher(key='pw')
+        with pytest.raises(ValueError):
+            cipher.decrypt('not valid base64!!!')
+
     def test_tampered_ciphertext_raises(self):
         cipher = AESCipher(key='test_password')
         encrypted = cipher.encrypt(b'secret data')
