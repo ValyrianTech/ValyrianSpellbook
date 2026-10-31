@@ -439,6 +439,33 @@ class TestGetHotWallet(unittest.TestCase):
 
             mock_log.error.assert_called_once()
 
+    def test_get_hot_wallet_real_round_trip_tolerates_trailing_newline(self):
+        """Round-trip a real AESCipher payload with a trailing newline through get_hot_wallet."""
+        import os
+        import tempfile
+        from AESCipher import AESCipher
+        import helpers.hotwallethelpers as hw_module
+        from helpers.hotwallethelpers import get_hot_wallet
+
+        original = {'mnemonic': ['word1', 'word2'], 'passphrase': 'pass'}
+        password = 'mypassword12345678'
+        hw_module.HOT_WALLET_PASSWORD = password
+
+        cipher = AESCipher(key=password)
+        encrypted = cipher.encrypt(bytes(hw_module.simplejson.dumps(original), 'utf-8'))
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            wallet_id = 'roundtrip'
+            wallet_path = os.path.join(tmp_dir, f'{wallet_id}.enc')
+            with open(wallet_path, 'w') as wallet_file:
+                wallet_file.write(encrypted.decode('utf-8') + '\n')
+
+            with patch('helpers.hotwallethelpers.get_wallet_dir', return_value=tmp_dir), \
+                    patch('helpers.hotwallethelpers.get_default_wallet', return_value=wallet_id):
+                result = get_hot_wallet()
+
+        self.assertEqual(result, original)
+
 
 class TestPromptDecryptionPassword(unittest.TestCase):
     """Test cases for prompt_decryption_password function"""

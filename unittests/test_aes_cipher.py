@@ -46,6 +46,21 @@ class TestAESCipher:
         encrypted = cipher.encrypt(b'secret data')
         assert cipher.decrypt(encrypted.decode('utf-8')) == 'secret data'
 
+    def test_decrypt_tolerates_trailing_newline_bytes(self):
+        cipher = AESCipher(key='test_password')
+        encrypted = cipher.encrypt(b'secret data')
+        assert cipher.decrypt(encrypted + b'\n') == 'secret data'
+
+    def test_decrypt_tolerates_trailing_newline_str(self):
+        cipher = AESCipher(key='test_password')
+        encrypted = cipher.encrypt(b'secret data')
+        assert cipher.decrypt(encrypted.decode('utf-8') + '\n') == 'secret data'
+
+    def test_decrypt_tolerates_leading_and_trailing_whitespace(self):
+        cipher = AESCipher(key='test_password')
+        encrypted = cipher.encrypt(b'secret data')
+        assert cipher.decrypt(b'  \n' + encrypted + b'\n\t ') == 'secret data'
+
     def test_decrypt_rejects_malformed_base64(self):
         cipher = AESCipher(key='pw')
         with pytest.raises(ValueError) as exc_info:

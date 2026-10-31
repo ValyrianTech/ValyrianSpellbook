@@ -134,6 +134,26 @@ class TestLoadWallet:
         hot_wallet.load_wallet()
         mock_exit.assert_called_once_with(1)
 
+    @mock.patch.dict(os.environ, {'SPELLBOOK_WALLET_PASSWORD': 'mypassword12345678'})
+    @mock.patch('hot_wallet.os.path.isfile', return_value=True)
+    def test_load_real_round_trip_tolerates_trailing_newline(self, mock_isfile, tmp_path):
+        from AESCipher import AESCipher
+
+        original = {'mnemonic': ['word1', 'word2'], 'passphrase': 'pass'}
+        cipher = AESCipher(key='mypassword12345678')
+        encrypted = cipher.encrypt(bytes(hot_wallet.simplejson.dumps(original), 'utf-8'))
+
+        wallet_id = 'roundtrip'
+        wallet_file = tmp_path / f'{wallet_id}.enc'
+        wallet_file.write_text(encrypted.decode('utf-8') + '\n')
+
+        with mock.patch('hot_wallet.WALLET_DIR', str(tmp_path)), \
+                mock.patch('hot_wallet.WALLET_ID', wallet_id):
+            hot_wallet.args = make_args(wallet=None)
+            result = hot_wallet.load_wallet()
+
+        assert result == original
+
 
 class TestSaveWallet:
 

@@ -114,6 +114,8 @@ class AESCipher:
         if isinstance(enc, str):
             enc = enc.encode('utf-8')
 
+        enc = enc.strip()
+
         try:
             data = base64.b64decode(enc, validate=True)
         except binascii.Error as ex:
