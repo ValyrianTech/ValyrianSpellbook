@@ -5,6 +5,7 @@
 import argparse
 import logging
 import os
+import shlex
 import sys
 import time
 from logging.handlers import RotatingFileHandler
@@ -16,6 +17,7 @@ PROGRAM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, PROGRAM_DIR)
 
 from helpers.runcommandprocess import RunCommandProcess
+from validators.validators import valid_txid
 
 # import mysql.connector  # TODO re-enable mysql functionality
 
@@ -45,6 +47,18 @@ EXIT_ON_EVENT = False
 EXIT_ON_TIMEOUT = None
 
 
+def _build_command(command_template, txid):
+    """Return the watchlist command with #txid# substituted by a validated, shell-quoted txid.
+
+    Returns None (and logs an error) if the txid is invalid.
+    Placeholders must occupy whole tokens.
+    """
+    if not valid_txid(txid):
+        LISTENER_LOG.error(f'Received invalid txid from websocket: {txid!r}; skipping')
+        return None
+    return command_template.replace('#txid#', shlex.quote(txid))
+
+
 def on_message(ws, message):
     """Process incoming transaction messages, match against the watchlist, and execute commands."""
     event_found = False
@@ -65,9 +79,10 @@ def on_message(ws, message):
         LISTENER_LOG.info('\t\t{} -> {}'.format(input_address, tx_input['amount']))
         if input_address in WATCHLIST and 'SEND' in WATCHLIST[input_address]:
 
+            command = _build_command(WATCHLIST[input_address]['SEND'], transaction['data']['txid'])
+            if command is None:
+                continue
             event_found = True
-            command = WATCHLIST[input_address]['SEND']
-            command = command.replace('#txid#', transaction['data']['txid'])
             LISTENER_LOG.info(f'Executing command: {command}')
             run_command_process = RunCommandProcess(command=command)
             run_command_process.start()
@@ -84,9 +99,10 @@ def on_message(ws, message):
         LISTENER_LOG.info('\t\t{} -> {}'.format(output_address, tx_output['amount']))
         if output_address in WATCHLIST and 'RECEIVE' in WATCHLIST[output_address]:
 
+            command = _build_command(WATCHLIST[output_address]['RECEIVE'], transaction['data']['txid'])
+            if command is None:
+                continue
             event_found = True
-            command = WATCHLIST[output_address]['RECEIVE']
-            command = command.replace('#txid#', transaction['data']['txid'])
             LISTENER_LOG.info(f'Executing command: {command}')
             run_command_process = RunCommandProcess(command=command)
             run_command_process.start()
