@@ -2,6 +2,7 @@
 """Tests for AESCipher.py — authenticated AES-GCM encryption for the hot wallet."""
 
 import base64
+import binascii
 import hashlib
 
 import pytest
@@ -45,6 +46,41 @@ class TestAESCipher:
         cipher = AESCipher(key='test_password')
         encrypted = cipher.encrypt(b'secret data')
         assert cipher.decrypt(encrypted.decode('utf-8')) == 'secret data'
+
+    def test_decrypt_tolerates_trailing_newline_bytes(self):
+        cipher = AESCipher(key='test_password')
+        encrypted = cipher.encrypt(b'secret data')
+        assert cipher.decrypt(encrypted + b'\n') == 'secret data'
+
+    def test_decrypt_tolerates_trailing_newline_str(self):
+        cipher = AESCipher(key='test_password')
+        encrypted = cipher.encrypt(b'secret data')
+        assert cipher.decrypt(encrypted.decode('utf-8') + '\n') == 'secret data'
+
+    def test_decrypt_tolerates_leading_and_trailing_whitespace(self):
+        cipher = AESCipher(key='test_password')
+        encrypted = cipher.encrypt(b'secret data')
+        assert cipher.decrypt(b'  \n' + encrypted + b'\n\t ') == 'secret data'
+
+    def test_decrypt_accepts_whitespace_padded_payload(self):
+        cipher = AESCipher(key='test_password')
+        encrypted = cipher.encrypt(b'secret data')
+        padded = '  \n' + encrypted.decode('utf-8') + '\n\t '
+        assert cipher.decrypt(padded) == 'secret data'
+
+    def test_decrypt_rejects_malformed_base64(self):
+        cipher = AESCipher(key='pw')
+        with pytest.raises(ValueError) as exc_info:
+            cipher.decrypt(b'not valid base64!!!')
+        assert 'malformed base64 payload' in str(exc_info.value)
+        assert isinstance(exc_info.value.__cause__, binascii.Error)
+
+    def test_decrypt_rejects_malformed_base64_str_payload(self):
+        cipher = AESCipher(key='pw')
+        with pytest.raises(ValueError) as exc_info:
+            cipher.decrypt('not valid base64!!!')
+        assert 'malformed base64 payload' in str(exc_info.value)
+        assert isinstance(exc_info.value.__cause__, binascii.Error)
 
     def test_tampered_ciphertext_raises(self):
         cipher = AESCipher(key='test_password')

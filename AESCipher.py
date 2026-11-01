@@ -32,6 +32,7 @@ The legacy retry is only attempted when the payload is structurally legacy-shape
 """
 
 import base64
+import binascii
 import hashlib
 
 from Crypto.Cipher import AES  # nosec B413 # pycryptodome, not the deprecated pyCrypto
@@ -113,7 +114,12 @@ class AESCipher:
         if isinstance(enc, str):
             enc = enc.encode('utf-8')
 
-        data = base64.b64decode(enc)
+        enc = enc.strip()
+
+        try:
+            data = base64.b64decode(enc, validate=True)
+        except binascii.Error as ex:
+            raise ValueError(f'malformed base64 payload: {ex}') from ex
 
         if data[:1] == VERSION:
             try:
