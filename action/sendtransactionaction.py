@@ -600,7 +600,7 @@ class SendTransactionAction(Action):
 
         Important: the total of the output values must be the same as the sending_amount,
                    sometimes rounding errors can occur because of the distribution, if this happens
-                   then the first output absorbs the remaining amount (which may be positive or negative)
+                   then the first output absorbs the remaining amount (the remainder is always >= 0, never negative)
 
         :param sending_amount: The total amount to send in satoshis (integer)
         :return: A list of TransactionOutputs

@@ -1247,7 +1247,7 @@ class TestGetReceivingOutputsRemaining:
     @mock.patch('action.sendtransactionaction.valid_amount')
     @mock.patch('action.sendtransactionaction.valid_distribution')
     def test_get_receiving_outputs_remaining_absorbed_by_first_output(self, mock_valid_distribution, mock_valid_amount):
-        """A non-zero remainder (positive or negative) is absorbed into the first output so the sum is exact."""
+        """A non-zero remainder (always >= 0, never negative) is absorbed into the first output so the sum is exact."""
         mock_valid_amount.return_value = True
         mock_valid_distribution.return_value = True
 
