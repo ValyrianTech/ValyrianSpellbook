@@ -218,6 +218,33 @@ class TestCommandActionTimeoutValidation:
         assert action.command_timeout == 2.5
         assert isinstance(action.command_timeout, float)
 
+    def test_run_sanitizes_direct_invalid_string_timeout(self, caplog):
+        action = CommandAction('test_command_action')
+        action.run_command = 'echo hi'
+        action.command_timeout = 'abc'
+        result = action.run()
+        assert result.success is True
+        assert action.command_timeout == 'abc'
+        assert 'not a number' in caplog.text
+
+    def test_run_sanitizes_direct_none_timeout(self, caplog):
+        action = CommandAction('test_command_action')
+        action.run_command = 'echo hi'
+        action.command_timeout = None
+        result = action.run()
+        assert result.success is True
+        assert action.command_timeout is None
+        assert 'expected a number' in caplog.text
+
+    def test_run_coerces_direct_numeric_string_timeout_and_times_out(self):
+        action = CommandAction('test_command_action')
+        action.run_command = 'sleep 1'
+        action.command_timeout = '0.1'
+        result = action.run()
+        assert result.success is False
+        assert result.stderr == b'timeout'
+        assert action.command_timeout == '0.1'
+
 
 class TestCommandActionSecurity:
     """Security-focused tests for CommandAction"""
