@@ -1226,6 +1226,40 @@ class TestGetReceivingOutputsRemaining:
         total = sum(o.value for o in outputs)
         assert total == 101
 
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_distribution')
+    def test_get_receiving_outputs_excluded_low_share_not_inflated(self, mock_valid_distribution, mock_valid_amount):
+        """Regression: excluding a below-minimum recipient must not inflate the remaining outputs."""
+        mock_valid_amount.return_value = True
+        mock_valid_distribution.return_value = True
+
+        action = SendTransactionAction('test_send_tx')
+        action.distribution = {'addr_large': 9898, 'addr_high': 102, 'addr_low': 100}
+        action.transaction_type = 'Send2Many'
+        action.minimum_output_value = 10_000
+
+        outputs = action.get_receiving_outputs(1_000_000)
+
+        assert sum(o.value for o in outputs) == 1_000_000
+        by_address = {o.address: o.value for o in outputs}
+        assert by_address['addr_high'] == 10099
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_distribution')
+    def test_get_receiving_outputs_remaining_absorbed_by_first_output(self, mock_valid_distribution, mock_valid_amount):
+        """A non-zero remainder (positive or negative) is absorbed into the first output so the sum is exact."""
+        mock_valid_amount.return_value = True
+        mock_valid_distribution.return_value = True
+
+        action = SendTransactionAction('test_send_tx')
+        action.distribution = {'addr_high': 3, 'addr_low': 1}
+        action.transaction_type = 'Send2Many'
+        action.minimum_output_value = 251
+
+        outputs = action.get_receiving_outputs(1_000)
+
+        assert sum(o.value for o in outputs) == 1_000
+
 
 class TestConfigureChangeAddress:
     """Tests for change_address configuration"""
