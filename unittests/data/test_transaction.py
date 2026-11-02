@@ -90,6 +90,37 @@ class TestTX:
         result = tx.prime_input_address()
         assert result == 'A_address'  # Alphabetically first
 
+    def test_tx_prime_input_address_no_inputs(self):
+        tx = TX()
+        tx.inputs = []
+
+        result = tx.prime_input_address()
+        assert result is None
+
+    def test_tx_prime_input_address_all_none_addresses(self):
+        tx = TX()
+        input1 = TxInput()
+        input1.address = None
+        input2 = TxInput()
+        input2.address = None
+        tx.inputs = [input1, input2]
+
+        result = tx.prime_input_address()
+        assert result is None
+
+    def test_tx_prime_input_address_skips_none(self):
+        tx = TX()
+        input1 = TxInput()
+        input1.address = None
+        input2 = TxInput()
+        input2.address = 'B_address'
+        input3 = TxInput()
+        input3.address = 'A_address'
+        tx.inputs = [input1, input2, input3]
+
+        result = tx.prime_input_address()
+        assert result == 'A_address'
+
     def test_tx_received_value(self):
         tx = TX()
         output1 = TxOutput()
