@@ -46,6 +46,13 @@ class CommandAction(Action):
         launch detached processes and are therefore not subject to this timeout,
         the command here runs to completion (or timeout) before returning.
 
+        The timeout is validated/coerced defensively at run time via
+        ``_validate_command_timeout`` so a misconfigured ``command_timeout``
+        (e.g. a non-numeric string, ``None``, a bool, a negative number, NaN or
+        inf) cannot raise an uncaught ``TypeError`` out of ``run()``; such values
+        fall back to ``DEFAULT_COMMAND_TIMEOUT`` without mutating
+        ``self.command_timeout``.
+
         :return: An ActionResult indicating success or failure, along with the
                  stdout and stderr produced by the command
         """
@@ -63,10 +70,11 @@ class CommandAction(Action):
             LOG.info(f'Working dir: {self.working_dir}')
 
         argv = shlex.split(command)
+        timeout = self._validate_command_timeout(self.command_timeout)
         try:
-            result = subprocess.run(argv, shell=False, capture_output=True, cwd=self.working_dir, check=False, timeout=self.command_timeout)
+            result = subprocess.run(argv, shell=False, capture_output=True, cwd=self.working_dir, check=False, timeout=timeout)
         except subprocess.TimeoutExpired as e:
-            LOG.error(f'Command timed out after {self.command_timeout}s: {command}')
+            LOG.error(f'Command timed out after {timeout}s: {command}')
             return ActionResult(success=False, stdout=e.stdout or b'', stderr=b'timeout')
         except OSError as e:
             LOG.error(f'Command failed to run: {e}')
