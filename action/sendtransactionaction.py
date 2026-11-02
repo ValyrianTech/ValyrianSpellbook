@@ -615,7 +615,7 @@ class SendTransactionAction(Action):
         # Calculate the total shares once, before any filtering, so the shares of the remaining items are not inflated
         original_total_shares = float(sum(share for address, share in distribution.items()))
 
-        # Iterate over a copy of the sorted distribution (the list itself is never mutated)
+        # Iterate over the sorted distribution without mutating it
         for address, share in sorted_distribution:
             share = share / original_total_shares if original_total_shares > 0 else 0  # Calculate the share, this must be a float between 0 and 1
 
