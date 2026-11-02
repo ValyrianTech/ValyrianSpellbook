@@ -600,7 +600,7 @@ class SendTransactionAction(Action):
 
         Important: the total of the output values must be the same as the sending_amount,
                    sometimes rounding errors can occur because of the distribution, if this happens
-                   then the first output gets the remaining amount
+                   then the first output absorbs the remaining amount (the remainder is always >= 0, never negative)
 
         :param sending_amount: The total amount to send in satoshis (integer)
         :return: A list of TransactionOutputs
@@ -612,27 +612,25 @@ class SendTransactionAction(Action):
         # Sort the distribution from highest share to lowest share
         sorted_distribution = sorted(distribution.items(), key=operator.itemgetter(1), reverse=True)
 
-        # Now iterate over the sorted distribution starting at the end, so we can safely delete the items with the
-        # lowest value until the receiving value is at least the minimum output value
-        for i in range(len(sorted_distribution)-1, -1, -1):
-            # We need to re-calculate the total shares at each step because an item could have been deleted in the previous step
-            total_shares = float(sum([share for address, share in sorted_distribution]))
+        # Calculate the total shares once, before any filtering, so the shares of the remaining items are not inflated
+        original_total_shares = float(sum(share for address, share in distribution.items()))
 
-            address = sorted_distribution[i][0]
-            share = sorted_distribution[i][1]/float(total_shares) if total_shares > 0 else 0  # Calculate the share, this must be a float between 0 and 1
+        # Iterate over the sorted distribution without mutating it
+        for address, share in sorted_distribution:
+            share = share / original_total_shares if original_total_shares > 0 else 0  # Calculate the share, this must be a float between 0 and 1
 
             receiving_value = int(share * sending_amount)
 
             if receiving_value < self.minimum_output_value:
                 LOG.info(f'Excluding {address} from distribution because output value is less than minimum output value: {receiving_value} < {self.minimum_output_value}')
-                del sorted_distribution[i]
-            else:
-                remaining_amount -= receiving_value
-                receiving_outputs.append(TransactionOutput(address, receiving_value))
-                LOG.info(f'receiving output: {receiving_value} -> {address}')
+                continue
 
-        # If rounding errors are causing a few satoshis remaining, the first output gets them
-        if remaining_amount > 0 and len(receiving_outputs) > 0:
+            remaining_amount -= receiving_value
+            receiving_outputs.append(TransactionOutput(address, receiving_value))
+            LOG.info(f'receiving output: {receiving_value} -> {address}')
+
+        # If rounding errors are causing a few satoshis remaining, the first output absorbs them
+        if remaining_amount != 0 and len(receiving_outputs) > 0:
             LOG.info(f'Remaining {remaining_amount} Satoshi(s) go to address {receiving_outputs[0].address}')
             receiving_outputs[0].value += remaining_amount
 
