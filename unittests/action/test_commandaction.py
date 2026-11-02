@@ -135,6 +135,90 @@ class TestCommandAction:
         assert result.stderr == b'timeout'
 
 
+class TestCommandActionTimeoutValidation:
+    """Tests for CommandAction command_timeout validation/coercion"""
+
+    def test_command_timeout_none_falls_back_to_default(self):
+        action = CommandAction('test_command_action')
+        with patch('action.commandaction.LOG') as mock_log:
+            action.configure(command_timeout=None)
+        assert action.command_timeout == DEFAULT_COMMAND_TIMEOUT
+        assert mock_log.error.called
+
+    def test_command_timeout_non_numeric_string_falls_back(self):
+        action = CommandAction('test_command_action')
+        with patch('action.commandaction.LOG') as mock_log:
+            action.configure(command_timeout='abc')
+        assert action.command_timeout == DEFAULT_COMMAND_TIMEOUT
+        assert mock_log.error.called
+
+    def test_command_timeout_bool_falls_back(self):
+        action = CommandAction('test_command_action')
+        with patch('action.commandaction.LOG') as mock_log:
+            action.configure(command_timeout=True)
+        assert action.command_timeout == DEFAULT_COMMAND_TIMEOUT
+        assert mock_log.error.called
+
+    def test_command_timeout_list_falls_back(self):
+        action = CommandAction('test_command_action')
+        with patch('action.commandaction.LOG') as mock_log:
+            action.configure(command_timeout=[1, 2])
+        assert action.command_timeout == DEFAULT_COMMAND_TIMEOUT
+        assert mock_log.error.called
+
+    def test_command_timeout_zero_falls_back(self):
+        action = CommandAction('test_command_action')
+        with patch('action.commandaction.LOG') as mock_log:
+            action.configure(command_timeout=0)
+        assert action.command_timeout == DEFAULT_COMMAND_TIMEOUT
+        assert mock_log.error.called
+
+    def test_command_timeout_negative_falls_back(self):
+        action = CommandAction('test_command_action')
+        with patch('action.commandaction.LOG') as mock_log:
+            action.configure(command_timeout=-5)
+        assert action.command_timeout == DEFAULT_COMMAND_TIMEOUT
+        assert mock_log.error.called
+
+    def test_command_timeout_nan_falls_back(self):
+        action = CommandAction('test_command_action')
+        with patch('action.commandaction.LOG') as mock_log:
+            action.configure(command_timeout=float('nan'))
+        assert action.command_timeout == DEFAULT_COMMAND_TIMEOUT
+        assert mock_log.error.called
+
+    def test_command_timeout_inf_falls_back(self):
+        action = CommandAction('test_command_action')
+        with patch('action.commandaction.LOG') as mock_log:
+            action.configure(command_timeout=float('inf'))
+        assert action.command_timeout == DEFAULT_COMMAND_TIMEOUT
+        assert mock_log.error.called
+
+    def test_command_timeout_int_is_preserved(self):
+        action = CommandAction('test_command_action')
+        action.configure(command_timeout=5)
+        assert action.command_timeout == 5
+        assert isinstance(action.command_timeout, int)
+
+    def test_command_timeout_float_is_preserved(self):
+        action = CommandAction('test_command_action')
+        action.configure(command_timeout=2.5)
+        assert action.command_timeout == 2.5
+        assert isinstance(action.command_timeout, float)
+
+    def test_command_timeout_numeric_string_int_is_coerced(self):
+        action = CommandAction('test_command_action')
+        action.configure(command_timeout='5')
+        assert action.command_timeout == 5
+        assert isinstance(action.command_timeout, int)
+
+    def test_command_timeout_numeric_string_float_is_coerced(self):
+        action = CommandAction('test_command_action')
+        action.configure(command_timeout='2.5')
+        assert action.command_timeout == 2.5
+        assert isinstance(action.command_timeout, float)
+
+
 class TestCommandActionSecurity:
     """Security-focused tests for CommandAction"""
 

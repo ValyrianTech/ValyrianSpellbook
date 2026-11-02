@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """Action that executes a system command."""
 
+import math
 import shlex
 import subprocess
 
@@ -82,6 +83,44 @@ class CommandAction(Action):
         else:
             return ActionResult(success=False, stdout=stripped_output, stderr=stripped_error)
 
+    def _validate_command_timeout(self, value):
+        """
+        Validate and coerce a configured ``command_timeout`` value.
+
+        Accepts a positive ``int`` or ``float`` (or a numeric string such as
+        ``'5'`` or ``'2.5'``) and returns it as a number (numeric strings are
+        coerced to ``int``/``float``). ``None``, booleans, non-numeric strings,
+        other non-numeric types, non-positive numbers and NaN/inf floats are
+        rejected and fall back to ``DEFAULT_COMMAND_TIMEOUT``, logging an error.
+
+        :param value: The configured timeout value
+        :return: The coerced positive numeric timeout, or
+                 ``DEFAULT_COMMAND_TIMEOUT`` if the value is invalid
+        """
+        if isinstance(value, bool):
+            LOG.error(f'Invalid command_timeout {value!r}: booleans are not allowed; using default {DEFAULT_COMMAND_TIMEOUT}s')
+            return DEFAULT_COMMAND_TIMEOUT
+
+        timeout = value
+        if isinstance(value, str):
+            try:
+                timeout = float(value)
+            except ValueError:
+                LOG.error(f'Invalid command_timeout {value!r}: not a number; using default {DEFAULT_COMMAND_TIMEOUT}s')
+                return DEFAULT_COMMAND_TIMEOUT
+            if timeout.is_integer():
+                timeout = int(timeout)
+
+        if not isinstance(timeout, (int, float)):
+            LOG.error(f'Invalid command_timeout {value!r}: expected a number; using default {DEFAULT_COMMAND_TIMEOUT}s')
+            return DEFAULT_COMMAND_TIMEOUT
+
+        if timeout <= 0 or math.isnan(timeout) or math.isinf(timeout):
+            LOG.error(f'Invalid command_timeout {value!r}: must be a positive finite number; using default {DEFAULT_COMMAND_TIMEOUT}s')
+            return DEFAULT_COMMAND_TIMEOUT
+
+        return timeout
+
     def configure(self, **config):
         """
         Configure the action with given config settings
@@ -90,7 +129,10 @@ class CommandAction(Action):
                        - config['run_command']      : The command to run
                        - config['working_dir']      : The working directory to run the command in
                        - config['command_timeout']  : Positive number of seconds to bound command
-                                                      execution (default DEFAULT_COMMAND_TIMEOUT)
+                                                      execution (default DEFAULT_COMMAND_TIMEOUT).
+                                                      Invalid values (None, booleans, non-numeric
+                                                      types, non-positive numbers and NaN/inf) fall
+                                                      back to DEFAULT_COMMAND_TIMEOUT.
         """
         super().configure(**config)
         if 'run_command' in config:
@@ -98,7 +140,7 @@ class CommandAction(Action):
         if 'working_dir' in config:
             self.working_dir = config['working_dir']
         if 'command_timeout' in config:
-            self.command_timeout = config['command_timeout']
+            self.command_timeout = self._validate_command_timeout(config['command_timeout'])
 
     def json_encodable(self):
         """
