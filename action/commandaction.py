@@ -46,6 +46,13 @@ class CommandAction(Action):
         launch detached processes and are therefore not subject to this timeout,
         the command here runs to completion (or timeout) before returning.
 
+        On a real timeout, no partial stdout is preserved: the returned failure
+        ``ActionResult``'s ``stdout`` is empty (``b''``) in practice because
+        ``subprocess.TimeoutExpired.stdout`` is normally ``None`` when
+        ``capture_output`` is used via ``subprocess.run``; the
+        ``e.stdout or b''`` fallback in ``run()`` is defensive only and does not
+        reliably capture output produced before the timeout.
+
         The timeout is validated/coerced defensively at run time via
         ``_validate_command_timeout`` so a misconfigured ``command_timeout``
         (e.g. a non-numeric string, ``None``, a bool, a negative number, NaN or
