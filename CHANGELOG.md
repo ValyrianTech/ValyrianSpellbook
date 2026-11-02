@@ -55,6 +55,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `RunCommandProcess.run()` now drains `stdout` and `stderr` concurrently using a separate thread per stream (each joined before the process is awaited), instead of reading `stdout` fully and then `stderr` sequentially. This prevents the child process from deadlocking when it produces enough `stderr` output to fill the pipe buffer while `stdout` is still being read.
 
+- `CommandAction.run()` (`action/commandaction.py`) now bounds synchronous command execution with a `command_timeout` (default `DEFAULT_COMMAND_TIMEOUT = 60` seconds), passed as `timeout=self.command_timeout` to `subprocess.run`. On `subprocess.TimeoutExpired` it logs an error and returns a failure `ActionResult` with `stderr == b'timeout'` (and `stdout` set to `e.stdout or b''`) instead of blocking indefinitely. A new `command_timeout` config option is accepted by `configure()` and included in `json_encodable()`. `SpawnProcessAction` launches detached processes and is intentionally not subject to this timeout. Previously there was no timeout at all, so a hung synchronous command could block the trigger/action processing loop (worker) indefinitely.
+
 - Resolved all remaining ruff lint errors; the repository is now lint-clean.
 - Resolved all remaining mypy type-check errors; the repository is now type-check clean.
 - Nonces are no longer lost on server restart, and concurrent requests can no longer bypass replay protection.
