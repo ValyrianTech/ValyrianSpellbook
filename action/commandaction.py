@@ -13,7 +13,7 @@ from .actiontype import ActionType
 
 # Bounds synchronous command execution so a hung command fails the action
 # instead of blocking the trigger/action processing loop.
-DEFAULT_COMMAND_TIMEOUT = 60
+DEFAULT_COMMAND_TIMEOUT = 600
 
 
 class CommandAction(Action):
