@@ -34,12 +34,11 @@ class TX:
         Get the prime input address of a transaction
         This is the input address that comes first alphabetically
 
-        :return: The prime input address
+        :return: The prime input address or None if the transaction has no input with an address
         """
-        addresses = []
-        for tx_input in self.inputs:
-            addresses.append(tx_input.address)
-
+        addresses = [tx_input.address for tx_input in self.inputs if tx_input.address]
+        if not addresses:
+            return None
         return min(addresses)
 
     def received_value(self, address):
