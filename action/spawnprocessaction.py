@@ -28,6 +28,10 @@ class SpawnProcessAction(Action):
         completed successfully. Callers should not interpret success=True as
         evidence of the spawned process's outcome.
 
+        Note: spawned processes run detached and are intentionally not bounded
+        by ``CommandAction``'s timeout; use ``CommandAction`` for synchronous
+        execution that runs a command to completion (or timeout) before returning.
+
         :return: An ActionResult indicating success or failure
         """
         if self.run_command is None or self.run_command == '':

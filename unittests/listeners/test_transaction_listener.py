@@ -10,7 +10,6 @@ import simplejson
 
 import listeners.transaction_listener as tx_listener
 
-
 VALID_TXID = "0" * 63 + "1"
 
 
