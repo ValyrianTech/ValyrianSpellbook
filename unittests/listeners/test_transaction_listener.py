@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import logging
 import os
 import time
 from argparse import Namespace
@@ -8,6 +9,9 @@ import pytest
 import simplejson
 
 import listeners.transaction_listener as tx_listener
+
+
+VALID_TXID = "0" * 63 + "1"
 
 
 @pytest.fixture
@@ -32,7 +36,7 @@ def reset_globals():
         del tx_listener.args
 
 
-def make_tx_message(txid="abc123", inputs=None, outputs=None):
+def make_tx_message(txid=VALID_TXID, inputs=None, outputs=None):
     """Build a fake new-transactions websocket message."""
     if inputs is None:
         inputs = [{"address": "1AddrIn", "amount": 50000}]
@@ -79,7 +83,8 @@ class TestOnMessage:
 
             mock_proc.assert_called_once()
             call_kwargs = mock_proc.call_args
-            assert "echo abc123" in str(call_kwargs)
+            assert f"echo {VALID_TXID}" in str(call_kwargs)
+            assert "#txid#" not in str(call_kwargs)
 
     def test_receive_watchlist_match_triggers_command(self, reset_globals):
         tx_listener.args.receive = True
@@ -92,7 +97,30 @@ class TestOnMessage:
 
             mock_proc.assert_called_once()
             call_kwargs = mock_proc.call_args
-            assert "echo abc123" in str(call_kwargs)
+            assert f"echo {VALID_TXID}" in str(call_kwargs)
+            assert "#txid#" not in str(call_kwargs)
+
+    def test_send_watchlist_match_invalid_txid_skips(self, reset_globals):
+        tx_listener.args.send = True
+        tx_listener.WATCHLIST = {"1AddrIn": {"SEND": "echo #txid#"}}
+        ws = MagicMock()
+        message = make_tx_message(txid="abc123", inputs=[{"address": "1AddrIn", "amount": 50000}])
+
+        with patch("listeners.transaction_listener.RunCommandProcess") as mock_proc:
+            tx_listener.on_message(ws, message)
+
+            mock_proc.assert_not_called()
+
+    def test_receive_watchlist_match_invalid_txid_skips(self, reset_globals):
+        tx_listener.args.receive = True
+        tx_listener.WATCHLIST = {"1AddrOut": {"RECEIVE": "echo #txid#"}}
+        ws = MagicMock()
+        message = make_tx_message(txid="abc123", outputs=[{"address": "1AddrOut", "amount": 40000}])
+
+        with patch("listeners.transaction_listener.RunCommandProcess") as mock_proc:
+            tx_listener.on_message(ws, message)
+
+            mock_proc.assert_not_called()
 
     def test_exit_on_event_with_match(self, reset_globals):
         tx_listener.args.send = True
@@ -154,6 +182,23 @@ class TestOnMessage:
         tx_listener.on_message(ws, message)
 
         ws.send.assert_not_called()
+
+
+class TestBuildCommand:
+    """Tests for transaction_listener._build_command"""
+
+    def test_invalid_txid_returns_none(self, caplog):
+        with caplog.at_level(logging.ERROR, logger="transaction_listener_log"):
+            result = tx_listener._build_command("echo #txid#", "abc123")
+
+        assert result is None
+        assert "invalid txid" in caplog.text
+
+    def test_valid_txid_is_quoted_and_substituted(self):
+        result = tx_listener._build_command("echo #txid#", VALID_TXID)
+
+        assert result == f"echo {VALID_TXID}"
+        assert "#txid#" not in result
 
 
 class TestOnError:

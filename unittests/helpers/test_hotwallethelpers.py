@@ -443,8 +443,9 @@ class TestGetHotWallet(unittest.TestCase):
         """Round-trip a real AESCipher payload with a trailing newline through get_hot_wallet."""
         import os
         import tempfile
-        from AESCipher import AESCipher
+
         import helpers.hotwallethelpers as hw_module
+        from AESCipher import AESCipher
         from helpers.hotwallethelpers import get_hot_wallet
 
         original = {'mnemonic': ['word1', 'word2'], 'passphrase': 'pass'}
