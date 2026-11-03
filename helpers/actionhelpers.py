@@ -147,6 +147,9 @@ def get_action(action_id, action_type=None):
 
     action.configure(**action_config)
 
+    if isinstance(action, RevealSecretAction):
+        action.load_secret()
+
     return action
 
 

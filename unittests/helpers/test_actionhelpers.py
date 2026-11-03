@@ -96,6 +96,18 @@ class TestActionHelpers:
         assert result['api_key'] == 'sk-123'
         assert result['mnemonic'] == 'abandon ability able'
 
+    @mock.patch('helpers.actionhelpers.load_from_json_file')
+    def test_get_action_config_preserves_secret_id_and_allow_reveal(self, mock_load):
+        """Test loading a RevealSecret config keeps secret_id and allow_reveal intact"""
+        mock_load.return_value = {
+            'action_type': ActionType.REVEALSECRET,
+            'secret_id': 'secret_1',
+            'allow_reveal': True,
+        }
+        result = get_action_config('secret_action')
+        assert result['secret_id'] == 'secret_1'
+        assert result['allow_reveal'] is True
+
     def test_redact_action_config_revealsecret_not_allowed(self):
         """Test redacting a RevealSecret config when reveal is not allowed"""
         config = {
@@ -301,6 +313,15 @@ class TestActionHelpers:
         mock_load.return_value = {'action_type': ActionType.REVEALSECRET}
         action = get_action('test_action')
         assert action.action_type == ActionType.REVEALSECRET
+
+    @mock.patch('helpers.actionhelpers.load_from_json_file')
+    @mock.patch.object(RevealSecretAction, 'load_secret')
+    def test_get_action_revealsecret_loads_secret(self, mock_load_secret, mock_load):
+        """Test getting a RevealSecret action triggers loading of its secret"""
+        mock_load.return_value = {'action_type': ActionType.REVEALSECRET, 'secret_id': 'secret_1'}
+        action = get_action('test_action')
+        assert isinstance(action, RevealSecretAction)
+        mock_load_secret.assert_called_once()
 
     @mock.patch('helpers.actionhelpers.load_from_json_file')
     def test_get_action_sendmail(self, mock_load):
