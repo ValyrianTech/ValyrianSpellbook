@@ -315,3 +315,45 @@ class TestSecretPersistence:
         verify.load_secret()
         assert verify.reveal_text == 'new secret'
         assert verify.reveal_link == 'http://new.link'
+
+
+class TestDeleteSecret:
+    """Tests for RevealSecretAction.delete_secret"""
+
+    def test_delete_secret_removes_file(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(revealsecretaction, 'SECRETS_DIR', str(tmp_path / 'secrets'))
+        monkeypatch.setattr(revealsecretaction, 'SECRET_STORE_KEY_FILE', str(tmp_path / 'secret_store.key'))
+
+        action = RevealSecretAction('test_reveal_action')
+        action.configure(reveal_text='secret message', reveal_link='http://secret.link')
+        action.save_secret()
+
+        secret_file = tmp_path / 'secrets' / 'test_reveal_action.json'
+        assert secret_file.exists()
+
+        action.delete_secret()
+
+        assert not secret_file.exists()
+
+    def test_delete_secret_missing_file_does_not_raise(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(revealsecretaction, 'SECRETS_DIR', str(tmp_path / 'secrets'))
+        monkeypatch.setattr(revealsecretaction, 'SECRET_STORE_KEY_FILE', str(tmp_path / 'secret_store.key'))
+
+        action = RevealSecretAction('test_reveal_action')
+        action.secret_id = 'test_reveal_action'
+
+        action.delete_secret()
+
+        assert not (tmp_path / 'secrets' / 'test_reveal_action.json').exists()
+
+    @mock.patch.object(revealsecretaction.LOG, 'warning')
+    def test_delete_secret_invalid_id_logs_warning(self, mock_warning, tmp_path, monkeypatch):
+        monkeypatch.setattr(revealsecretaction, 'SECRETS_DIR', str(tmp_path / 'secrets'))
+        monkeypatch.setattr(revealsecretaction, 'SECRET_STORE_KEY_FILE', str(tmp_path / 'secret_store.key'))
+
+        action = RevealSecretAction('test_reveal_action')
+        action.secret_id = '../evil'
+
+        action.delete_secret()
+
+        mock_warning.assert_called_once()

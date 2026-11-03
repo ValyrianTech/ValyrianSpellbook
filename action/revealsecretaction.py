@@ -139,6 +139,23 @@ class RevealSecretAction(Action):
             LOG.warning(f'Unable to decrypt secret for RevealSecret action {self.id}: {ex}')
             return
 
+    def delete_secret(self):
+        """Delete this action's encrypted secret file from the private secrets store.
+
+        The secret file is named after ``secret_id`` when set, otherwise the
+        action id. A missing file is tolerated (no error), and an invalid
+        secret id that fails ``safe_path`` validation only logs a warning.
+        """
+        secret_id = self.secret_id or self.id
+        try:
+            secret_file = safe_path(SECRETS_DIR, f'{secret_id}.json')
+        except ValueError:
+            LOG.warning(f'Unable to delete secret for RevealSecret action {self.id}: invalid secret id {secret_id!r}')
+            return
+
+        if os.path.isfile(secret_file):
+            os.remove(secret_file)
+
     def save(self):
         """Save the action config and its encrypted secret, then restrict file permissions."""
         self.save_secret()
