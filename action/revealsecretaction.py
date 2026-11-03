@@ -11,7 +11,7 @@ from helpers.jsonhelpers import load_from_json_file, save_to_json_file
 from helpers.loghelpers import LOG
 from helpers.pathhelpers import safe_path
 
-from .action import ACTIONS_DIR, Action
+from .action import Action
 from .actionresult import ActionResult
 from .actiontype import ActionType
 
@@ -112,6 +112,11 @@ class RevealSecretAction(Action):
         secret_file = safe_path(SECRETS_DIR, f'{self.secret_id}.json')
         save_to_json_file(secret_file, {'secret_id': self.secret_id, 'data': ciphertext.decode('utf-8')})
         os.chmod(secret_file, 0o600)
+        secrets_dir = os.path.dirname(secret_file)
+        if os.path.isdir(secrets_dir):
+            # The secret store must be private like json/private, regardless of the
+            # default permissions applied by save_to_json_file's os.makedirs.
+            os.chmod(secrets_dir, 0o700)
         self.secret_load_failed = False
 
     def load_secret(self):
@@ -157,9 +162,10 @@ class RevealSecretAction(Action):
             os.remove(secret_file)
 
     def save(self):
-        """Save the action config and its encrypted secret, then restrict file permissions."""
+        """Save the action config and its encrypted secret.
+
+        The public action file is written and chmodded to ``0o600`` by
+        ``Action.save()``, so only the secret needs extra handling here.
+        """
         self.save_secret()
         super().save()
-        action_file = safe_path(ACTIONS_DIR, f'{self.id}.json')
-        if os.path.isfile(action_file):
-            os.chmod(action_file, 0o600)
