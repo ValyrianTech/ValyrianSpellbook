@@ -441,6 +441,7 @@ class SpellbookRESTAPI(Bottle):
             try:
                 actual_response = fn(*args, **kwargs)
             except (ValueError, KeyError, TypeError, OSError) as ex:
+                response.status = 500
                 response_status = '500 ' + str(ex)
                 LOG.error(f'{request.url} caused an exception: {ex}')
                 error_traceback = traceback.format_exc()
@@ -455,6 +456,8 @@ class SpellbookRESTAPI(Bottle):
                              subject=f'Exception occurred @ {get_host()}',
                              body_template=body_template,
                              variables=variables)
+
+                actual_response = {'error': 'Internal server error'}
 
             else:
                 response_status = response.status
