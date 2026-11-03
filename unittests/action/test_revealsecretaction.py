@@ -242,3 +242,76 @@ class TestSecretPersistence:
         mock_super_save.assert_called_once()
         assert (tmp_path / 'secrets' / 'test_reveal_action.json').exists()
         assert not (tmp_path / 'actions' / 'test_reveal_action.json').exists()
+
+    def test_secret_load_failed_flag_default_and_reset(self, tmp_path, monkeypatch):
+        action = RevealSecretAction('test_reveal_action')
+        assert action.secret_load_failed is False
+
+        monkeypatch.setattr(revealsecretaction, 'SECRETS_DIR', str(tmp_path / 'secrets'))
+        monkeypatch.setattr(revealsecretaction, 'SECRET_STORE_KEY_FILE', str(tmp_path / 'secret_store.key'))
+
+        action.configure(reveal_text='secret message', reveal_link='http://secret.link')
+        action.save_secret()
+
+        loaded = RevealSecretAction('test_reveal_action')
+        loaded.secret_id = 'test_reveal_action'
+        loaded.load_secret()
+        assert loaded.secret_load_failed is False
+        assert loaded.reveal_text == 'secret message'
+
+        missing = RevealSecretAction('missing_action')
+        missing.secret_id = 'missing_action'
+        missing.load_secret()
+        assert missing.secret_load_failed is False
+
+    def test_save_secret_does_not_overwrite_when_load_failed(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(revealsecretaction, 'SECRETS_DIR', str(tmp_path / 'secrets'))
+        monkeypatch.setattr(revealsecretaction, 'SECRET_STORE_KEY_FILE', str(tmp_path / 'secret_store.key'))
+
+        action = RevealSecretAction('test_reveal_action')
+        action.configure(reveal_text='original secret', reveal_link='http://original.link')
+        action.save_secret()
+
+        secret_file = tmp_path / 'secrets' / 'test_reveal_action.json'
+        original_data = secret_file.read_text()
+
+        (tmp_path / 'secret_store.key').write_text('f' * 64)
+
+        new_action = RevealSecretAction('test_reveal_action')
+        new_action.secret_id = 'test_reveal_action'
+        new_action.load_secret()
+        assert new_action.secret_load_failed is True
+        assert new_action.reveal_text is None
+        assert new_action.reveal_link is None
+
+        with mock.patch.object(revealsecretaction.LOG, 'warning') as mock_warning:
+            new_action.save_secret()
+
+        assert secret_file.read_text() == original_data
+        mock_warning.assert_called_once()
+
+    def test_save_secret_overwrites_with_new_values_after_failed_load(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(revealsecretaction, 'SECRETS_DIR', str(tmp_path / 'secrets'))
+        monkeypatch.setattr(revealsecretaction, 'SECRET_STORE_KEY_FILE', str(tmp_path / 'secret_store.key'))
+
+        action = RevealSecretAction('test_reveal_action')
+        action.configure(reveal_text='original secret', reveal_link='http://original.link')
+        action.save_secret()
+
+        (tmp_path / 'secret_store.key').write_text('f' * 64)
+
+        new_action = RevealSecretAction('test_reveal_action')
+        new_action.secret_id = 'test_reveal_action'
+        new_action.load_secret()
+        assert new_action.secret_load_failed is True
+
+        new_action.configure(reveal_text='new secret', reveal_link='http://new.link')
+        new_action.save_secret()
+
+        assert new_action.secret_load_failed is False
+
+        verify = RevealSecretAction('test_reveal_action')
+        verify.secret_id = 'test_reveal_action'
+        verify.load_secret()
+        assert verify.reveal_text == 'new secret'
+        assert verify.reveal_link == 'http://new.link'
