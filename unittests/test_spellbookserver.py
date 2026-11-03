@@ -246,8 +246,10 @@ class TestLogToLogger:
             api = MagicMock(spec=SpellbookRESTAPI)
             wrapper = SpellbookRESTAPI.log_to_logger(api, boom)
             result = wrapper()
-            # Should return the default response object, not raise
-            assert result is mock_resp
+            # The exception path now sets an error status and returns a
+            # parseable JSON error body instead of the raw response object.
+            assert mock_resp.status == 500
+            assert result == {'error': 'Internal server error'}
             mock_log.error.assert_called()
 
     def test_log_to_logger_exception_with_mail(self):
@@ -269,8 +271,10 @@ class TestLogToLogger:
 
             api = MagicMock(spec=SpellbookRESTAPI)
             wrapper = SpellbookRESTAPI.log_to_logger(api, lambda: (_ for _ in ()).throw(ValueError('boom')))
-            wrapper()
+            result = wrapper()
             mock_send.assert_called_once()
+            assert mock_resp.status == 500
+            assert result == {'error': 'Internal server error'}
 
     def test_log_to_logger_redacts_sensitive_headers(self):
         """Test log_to_logger redacts sensitive header values."""
