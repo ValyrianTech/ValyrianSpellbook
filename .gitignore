@@ -108,6 +108,8 @@ logs/
 
 # json files
 *.json
+# private json state and secret store keys (e.g. json/private/secret_store.key)
+json/private/
 
 # csv files
 *.csv
