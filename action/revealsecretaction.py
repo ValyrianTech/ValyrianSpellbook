@@ -54,6 +54,7 @@ class RevealSecretAction(Action):
         self.reveal_link = None
         self.secret_id = None
         self.allow_reveal = False
+        self.secret_load_failed = False
 
     def run(self):
         """
@@ -103,21 +104,28 @@ class RevealSecretAction(Action):
     def save_secret(self):
         """Encrypt and persist this action's secret fields to the private secrets store."""
         self.secret_id = self.secret_id or self.id
+        if self.secret_load_failed and self.reveal_text is None and self.reveal_link is None:
+            LOG.warning(f'Refusing to overwrite stored secret for RevealSecret action {self.id}: could not be decrypted')
+            return
         payload = {'reveal_text': self.reveal_text, 'reveal_link': self.reveal_link}
         ciphertext = AESCipher(key=_get_secret_store_key()).encrypt(simplejson.dumps(payload).encode('utf-8'))
         secret_file = safe_path(SECRETS_DIR, f'{self.secret_id}.json')
         save_to_json_file(secret_file, {'secret_id': self.secret_id, 'data': ciphertext.decode('utf-8')})
         os.chmod(secret_file, 0o600)
+        self.secret_load_failed = False
 
     def load_secret(self):
         """Load and decrypt this action's secret fields from the private secrets store."""
         if self.secret_id is None:
             return
 
+        self.secret_load_failed = False
+
         try:
             secret_file = safe_path(SECRETS_DIR, f'{self.secret_id}.json')
             data = load_from_json_file(secret_file)
         except (FileNotFoundError, OSError, ValueError, TypeError, KeyError):
+            self.secret_load_failed = False
             LOG.warning(f'Unable to load secret for RevealSecret action {self.id}: missing or unreadable secret file')
             return
 
@@ -127,6 +135,7 @@ class RevealSecretAction(Action):
             self.reveal_text = payload['reveal_text']
             self.reveal_link = payload['reveal_link']
         except (ValueError, KeyError, TypeError) as ex:
+            self.secret_load_failed = True
             LOG.warning(f'Unable to decrypt secret for RevealSecret action {self.id}: {ex}')
             return
 
