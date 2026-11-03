@@ -139,6 +139,35 @@ class TestSecretPersistence:
         assert new_action.reveal_text == 'secret message'
         assert new_action.reveal_link == 'http://secret.link'
 
+    def test_save_secret_chmods_new_secrets_dir_to_0700(self, tmp_path, monkeypatch):
+        secrets_dir = tmp_path / 'secrets'
+        monkeypatch.setattr(revealsecretaction, 'SECRETS_DIR', str(secrets_dir))
+        monkeypatch.setattr(revealsecretaction, 'SECRET_STORE_KEY_FILE', str(tmp_path / 'secret_store.key'))
+
+        assert not secrets_dir.exists()
+
+        action = RevealSecretAction('test_reveal_action')
+        action.configure(reveal_text='secret message')
+        action.save_secret()
+
+        assert secrets_dir.is_dir()
+        assert oct(secrets_dir.stat().st_mode & 0o777) == '0o700'
+
+    def test_save_secret_tightens_existing_secrets_dir_to_0700(self, tmp_path, monkeypatch):
+        secrets_dir = tmp_path / 'secrets'
+        secrets_dir.mkdir()
+        secrets_dir.chmod(0o755)
+        monkeypatch.setattr(revealsecretaction, 'SECRETS_DIR', str(secrets_dir))
+        monkeypatch.setattr(revealsecretaction, 'SECRET_STORE_KEY_FILE', str(tmp_path / 'secret_store.key'))
+
+        assert oct(secrets_dir.stat().st_mode & 0o777) == '0o755'
+
+        action = RevealSecretAction('test_reveal_action')
+        action.configure(reveal_text='secret message')
+        action.save_secret()
+
+        assert oct(secrets_dir.stat().st_mode & 0o777) == '0o700'
+
     def test_load_secret_no_secret_id(self):
         action = RevealSecretAction('test_reveal_action')
         action.load_secret()
@@ -211,7 +240,6 @@ class TestSecretPersistence:
     def test_save_persists_secret_not_public_plaintext(self, tmp_path, monkeypatch):
         monkeypatch.setattr(revealsecretaction, 'SECRETS_DIR', str(tmp_path / 'secrets'))
         monkeypatch.setattr(revealsecretaction, 'SECRET_STORE_KEY_FILE', str(tmp_path / 'secret_store.key'))
-        monkeypatch.setattr(revealsecretaction, 'ACTIONS_DIR', str(tmp_path / 'actions'))
         monkeypatch.setattr(action_module, 'ACTIONS_DIR', str(tmp_path / 'actions'))
 
         action = RevealSecretAction('test_reveal_action')
@@ -233,7 +261,6 @@ class TestSecretPersistence:
     def test_save_when_public_action_file_missing(self, mock_super_save, tmp_path, monkeypatch):
         monkeypatch.setattr(revealsecretaction, 'SECRETS_DIR', str(tmp_path / 'secrets'))
         monkeypatch.setattr(revealsecretaction, 'SECRET_STORE_KEY_FILE', str(tmp_path / 'secret_store.key'))
-        monkeypatch.setattr(revealsecretaction, 'ACTIONS_DIR', str(tmp_path / 'actions'))
 
         action = RevealSecretAction('test_reveal_action')
         action.configure(reveal_text='secret text')
