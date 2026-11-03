@@ -133,6 +133,15 @@ class TestAction:
         call_args = mock_save.call_args
         assert 'test_action_id.json' in call_args[0][0]
 
+    def test_action_save_chmods_file(self, tmp_path, monkeypatch):
+        monkeypatch.setattr('action.action.ACTIONS_DIR', str(tmp_path / 'actions'))
+        action = ConcreteAction('test_action_id')
+        action.configure(action_type='Command', created=1609459200)
+        action.save()
+        filename = tmp_path / 'actions' / 'test_action_id.json'
+        assert filename.exists()
+        assert oct(filename.stat().st_mode & 0o777) == '0o600'
+
     def test_action_run(self):
         action = ConcreteAction('test_action_id')
         assert action.run()

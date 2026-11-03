@@ -147,6 +147,9 @@ def get_action(action_id, action_type=None):
 
     action.configure(**action_config)
 
+    if isinstance(action, RevealSecretAction):
+        action.load_secret()
+
     return action
 
 
@@ -178,7 +181,12 @@ def delete_action(action_id):
         return {'error': f'Unknown action id: {action_id}'}
 
     if os.path.isfile(filename):
+        config = get_action_config(action_id)
         os.remove(filename)
+        if config.get('action_type') == ActionType.REVEALSECRET:
+            action = RevealSecretAction(action_id)
+            action.secret_id = config.get('secret_id')
+            action.delete_secret()
     else:
         return {'error': f'Unknown action id: {action_id}'}
 

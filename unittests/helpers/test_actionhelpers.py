@@ -3,9 +3,11 @@ from unittest import mock
 
 import pytest
 
+from action import revealsecretaction
 from action.actiontype import ActionType
 from action.commandaction import CommandAction
 from action.revealsecretaction import RevealSecretAction
+from helpers import actionhelpers
 from helpers.actionhelpers import (
     delete_action,
     get_action,
@@ -16,6 +18,7 @@ from helpers.actionhelpers import (
     run_action,
     save_action,
 )
+from helpers.jsonhelpers import save_to_json_file
 
 
 class TestActionHelpers:
@@ -95,6 +98,18 @@ class TestActionHelpers:
         assert 'private_key' not in result
         assert result['api_key'] == 'sk-123'
         assert result['mnemonic'] == 'abandon ability able'
+
+    @mock.patch('helpers.actionhelpers.load_from_json_file')
+    def test_get_action_config_preserves_secret_id_and_allow_reveal(self, mock_load):
+        """Test loading a RevealSecret config keeps secret_id and allow_reveal intact"""
+        mock_load.return_value = {
+            'action_type': ActionType.REVEALSECRET,
+            'secret_id': 'secret_1',
+            'allow_reveal': True,
+        }
+        result = get_action_config('secret_action')
+        assert result['secret_id'] == 'secret_1'
+        assert result['allow_reveal'] is True
 
     def test_redact_action_config_revealsecret_not_allowed(self):
         """Test redacting a RevealSecret config when reveal is not allowed"""
@@ -303,6 +318,15 @@ class TestActionHelpers:
         assert action.action_type == ActionType.REVEALSECRET
 
     @mock.patch('helpers.actionhelpers.load_from_json_file')
+    @mock.patch.object(RevealSecretAction, 'load_secret')
+    def test_get_action_revealsecret_loads_secret(self, mock_load_secret, mock_load):
+        """Test getting a RevealSecret action triggers loading of its secret"""
+        mock_load.return_value = {'action_type': ActionType.REVEALSECRET, 'secret_id': 'secret_1'}
+        action = get_action('test_action')
+        assert isinstance(action, RevealSecretAction)
+        mock_load_secret.assert_called_once()
+
+    @mock.patch('helpers.actionhelpers.load_from_json_file')
     def test_get_action_sendmail(self, mock_load):
         """Test getting a SendMail action"""
         mock_load.return_value = {'action_type': ActionType.SENDMAIL}
@@ -384,6 +408,55 @@ class TestActionHelpers:
         """Test deleting a path-traversal action id returns an error"""
         result = delete_action('../evil')
         assert 'error' in result
+
+    def test_delete_action_revealsecret_removes_secret_file(self, tmp_path, monkeypatch):
+        """Test deleting a RevealSecret action removes both the action and secret files"""
+        monkeypatch.setattr(actionhelpers, 'ACTIONS_DIR', str(tmp_path / 'actions'))
+        monkeypatch.setattr(revealsecretaction, 'SECRETS_DIR', str(tmp_path / 'secrets'))
+        monkeypatch.setattr(revealsecretaction, 'SECRET_STORE_KEY_FILE', str(tmp_path / 'secret_store.key'))
+
+        action_file = tmp_path / 'actions' / 'secret_action.json'
+        save_to_json_file(str(action_file), {'action_type': ActionType.REVEALSECRET, 'secret_id': 'secret_1'})
+
+        secret_file = tmp_path / 'secrets' / 'secret_1.json'
+        save_to_json_file(str(secret_file), {'secret_id': 'secret_1', 'data': 'ciphertext'})
+
+        result = delete_action('secret_action')
+
+        assert result is None
+        assert not action_file.exists()
+        assert not secret_file.exists()
+
+    def test_delete_action_revealsecret_uses_secret_id(self, tmp_path, monkeypatch):
+        """Test deleting a RevealSecret action uses config secret_id for the secret filename"""
+        monkeypatch.setattr(actionhelpers, 'ACTIONS_DIR', str(tmp_path / 'actions'))
+        monkeypatch.setattr(revealsecretaction, 'SECRETS_DIR', str(tmp_path / 'secrets'))
+        monkeypatch.setattr(revealsecretaction, 'SECRET_STORE_KEY_FILE', str(tmp_path / 'secret_store.key'))
+
+        action_file = tmp_path / 'actions' / 'secret_action.json'
+        save_to_json_file(str(action_file), {'action_type': ActionType.REVEALSECRET, 'secret_id': 'custom_secret'})
+
+        secret_file = tmp_path / 'secrets' / 'custom_secret.json'
+        save_to_json_file(str(secret_file), {'secret_id': 'custom_secret', 'data': 'ciphertext'})
+
+        delete_action('secret_action')
+
+        assert not action_file.exists()
+        assert not secret_file.exists()
+
+    @mock.patch.object(RevealSecretAction, 'delete_secret')
+    def test_delete_action_non_revealsecret_does_not_delete_secret(self, mock_delete_secret, tmp_path, monkeypatch):
+        """Test deleting a non-RevealSecret action does not attempt secret deletion"""
+        monkeypatch.setattr(actionhelpers, 'ACTIONS_DIR', str(tmp_path / 'actions'))
+
+        action_file = tmp_path / 'actions' / 'command_action.json'
+        save_to_json_file(str(action_file), {'action_type': ActionType.COMMAND, 'run_command': 'echo hi'})
+
+        result = delete_action('command_action')
+
+        assert result is None
+        assert not action_file.exists()
+        mock_delete_secret.assert_not_called()
 
     @mock.patch('helpers.actionhelpers.get_action')
     def test_run_action(self, mock_get_action):
