@@ -183,6 +183,13 @@ class TestEnableCors:
             allow_headers = mock_resp.headers['Access-Control-Allow-Headers']
             assert 'Authorization' in allow_headers
 
+    def test_preserves_name(self):
+        """enable_cors preserves the wrapped function's __name__."""
+        def my_named_fn():
+            return 'result'
+
+        assert enable_cors(my_named_fn).__name__ == 'my_named_fn'
+
 
 # --- log_to_logger tests ------------------------------------------------------
 class TestLogToLogger:
