@@ -193,6 +193,15 @@ class TestOutputJson:
         result = test_func()
         assert result == simplejson.dumps([True, 'out', 'err'], indent=4, sort_keys=True)
 
+    def test_output_json_preserves_name(self):
+        @output_json
+        def my_func():
+            """A docstring."""
+            return {'key': 'value'}
+
+        assert my_func.__name__ == 'my_func'
+        assert my_func.__doc__ == 'A docstring.'
+
 
 class TestVerifyConfig:
     """Tests for verify_config decorator"""
@@ -255,6 +264,14 @@ class TestLogRuntime:
         mock_log.info.assert_called_once()
         call_args = mock_log.info.call_args[0][0]
         assert 'Script runtime' in call_args
+
+    @mock.patch('decorators.LOG')
+    def test_log_runtime_preserves_name(self, mock_log):
+        @log_runtime
+        def my_func():
+            return 'result'
+
+        assert my_func.__name__ == 'my_func'
 
 
 class TestRetry:

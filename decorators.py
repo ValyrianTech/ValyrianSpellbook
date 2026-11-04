@@ -72,6 +72,7 @@ def output_json(f):
     :return: The result of the function as a JSON string
     """
 
+    @functools.wraps(f)
     def decorated_function(*args, **kwargs):
         """Execute function and return its output as a JSON string."""
         output = f(*args, **kwargs)
@@ -122,6 +123,7 @@ def log_runtime(f):
     Decorator that logs the runtime of a script
     """
 
+    @functools.wraps(f)
     def decorated_function(*args, **kwargs):
         """Execute function and log its runtime."""
         start_time = time.time()
