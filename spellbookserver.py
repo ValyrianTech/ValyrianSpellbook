@@ -183,6 +183,7 @@ def _require_xpub_field():
 
 def enable_cors(fn):
     """Decorator that adds CORS headers to a route's response."""
+    @wraps(fn)
     def _enable_cors(*args, **kwargs):
         """ enable cors endpoint."""
         headers = getattr(request, 'headers', None)
