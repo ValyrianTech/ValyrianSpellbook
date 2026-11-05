@@ -7,6 +7,7 @@ import getpass
 import os
 
 import simplejson
+from Crypto.Cipher import AES  # nosec B413 # pycryptodome, not the deprecated pyCrypto
 
 from AESCipher import V2_PREFIX, VERSION, AESCipher
 from bips.bip39 import get_seed
@@ -45,7 +46,11 @@ def is_legacy_encrypted_payload(encrypted_data):
     except (binascii.Error, ValueError, TypeError):
         return False
 
-    return not data.startswith(V2_PREFIX) and data[:1] != VERSION and AESCipher._looks_like_legacy(data)
+    if not isinstance(data, bytes) or len(data) < 2 * AES.block_size:
+        return False
+
+    return not data.startswith(V2_PREFIX) and data[:1] != VERSION \
+        and (len(data) - AES.block_size) % AES.block_size == 0
 
 
 def decrypt_legacy_wallet_data(encrypted_data, password):
