@@ -7,40 +7,54 @@ The current (v2) format uses AES-GCM for authenticated encryption and a slow,
 salted ``scrypt`` key-derivation function, which together provide:
 
 - **Confidentiality** — the plaintext cannot be read without the password.
-- **Integrity/authenticity** — any tampering with the ciphertext, tag, salt or
-  version byte causes decryption to fail with a :class:`ValueError`.
+- **Integrity/authenticity** — any tampering with the ciphertext, tag, salt,
+  version byte or magic prefix causes decryption to fail with a
+  :class:`ValueError`.
 - **Brute-force resistance** — ``scrypt`` (rather than a single SHA-256 round)
   makes offline password guessing expensive.
 
 Ciphertext layout (v2, after base64 decoding)::
 
-    <version byte (1)> | <salt (16)> | <nonce (16)> | <tag (16)> | <ciphertext>
+    <magic (2, b'SB')> | <version byte (1)> | <salt (16)> | <nonce (16)> | <tag (16)> | <ciphertext>
 
-The version byte and salt are fed into the GCM authenticator so an attacker
-cannot swap them without invalidating the tag.
+The magic prefix makes the v2 format unambiguous: a v2 payload can never be
+confused with a legacy (v1) AES-CBC ciphertext whose random IV happens to begin
+with the version byte. The magic, version byte and salt are all fed into the
+GCM authenticator (AAD) so an attacker cannot swap any of them without
+invalidating the tag.
 
-For backward compatibility, the class can still *read* legacy (v1) ciphertexts
-produced by the old implementation (AES-CBC with PKCS7 padding and a single
-SHA-256 key round). The legacy format carries no version byte, so any payload
-whose first byte is not the v2 marker is treated as legacy. Because a legacy
-IV may randomly begin with the v2 marker, a payload that starts with the v2
-marker is tried as v2 first and, if authentication fails, retried as legacy —
-this keeps the ~1/256 of legacy wallets whose IV starts with 0x02 decryptable.
-The legacy retry is only attempted when the payload is structurally legacy-shaped
-(its length is ``16 + 16*k`` bytes, i.e. an IV plus a positive multiple of
-``AES.block_size`` ciphertext).
+For backward compatibility, the class can still *read* two older formats, but
+only through explicit opt-in:
+
+- Old v2 payloads (single ``VERSION`` byte, no magic) written by earlier
+  releases are still decrypted transparently, and are authenticated exactly as
+  they were before. Authentication failure raises :class:`ValueError`; there is
+  no fallback.
+- Legacy (v1) AES-CBC ciphertexts (with PKCS7 padding and a single SHA-256 key
+  round) are no longer read by :meth:`decrypt` by default. They can be read by
+  constructing the cipher with ``allow_legacy=True`` or by calling
+  :meth:`decrypt_legacy`, both of which log a warning. The intended migration
+  is to call :meth:`decrypt_legacy` once and then re-:meth:`encrypt` the
+  plaintext into the authenticated v2 format.
+
+There is no GCM->CBC downgrade: a payload that authenticates as v2 is never
+retried as unauthenticated legacy, so tampered v2 data cannot be silently
+decrypted and no padding/UTF-8 oracle is exposed.
 """
 
 import base64
 import binascii
 import hashlib
+import logging
 
 from Crypto.Cipher import AES  # nosec B413 # pycryptodome, not the deprecated pyCrypto
 from Crypto.Protocol.KDF import scrypt  # nosec B413 # pycryptodome, not the deprecated pyCrypto
 from Crypto.Random import get_random_bytes  # nosec B413 # pycryptodome, not the deprecated pyCrypto
 
 # v2 format constants.
+MAGIC = b'SB'  # Unambiguous magic prefix so v2 can never be confused with a legacy IV.
 VERSION = b'\x02'  # Version marker identifying the authenticated (GCM) format.
+V2_PREFIX = MAGIC + VERSION
 SALT_SIZE = 16
 NONCE_SIZE = 16
 TAG_SIZE = 16
@@ -56,9 +70,11 @@ LEGACY_BLOCK_SIZE = 32
 
 
 class AESCipher:
-    """AES-GCM cipher with scrypt key derivation and legacy CBC decryption."""
+    """AES-GCM cipher with scrypt key derivation and opt-in legacy CBC decryption."""
 
-    def __init__(self, key, salt=None, nonce=None):
+    LOG = logging.getLogger('Spellbook')
+
+    def __init__(self, key, salt=None, nonce=None, *, allow_legacy=False):
         """Initialise the cipher with a password.
 
         :param key: The password/secret used to derive the encryption key.
@@ -66,14 +82,24 @@ class AESCipher:
             omitted, a fresh random salt is generated for every encryption.
         :param nonce: Optional fixed nonce for deterministic testing. When
             omitted, a fresh random nonce is generated for every encryption.
+        :param allow_legacy: When ``True``, :meth:`decrypt` may fall back to the
+            unauthenticated legacy AES-CBC format for payloads that are not
+            v2-prefixed. Defaults to ``False``; legacy wallets should be read
+            via :meth:`decrypt_legacy` and re-encrypted instead.
         """
         self._password = key
         self._salt = salt
         self._nonce = nonce
+        self._allow_legacy = allow_legacy
         self.bs = LEGACY_BLOCK_SIZE
 
     def encrypt(self, raw):
         """Encrypt ``raw`` bytes and return a base64-encoded ``bytes`` payload.
+
+        Produces the v2 wire format ``MAGIC + VERSION + salt + nonce + tag +
+        ciphertext`` (after base64 decoding), with ``MAGIC``, ``VERSION`` and
+        the salt fed into the GCM AAD so a magic/version/salt swap invalidates
+        the tag.
 
         :param raw: The plaintext to encrypt. Must be ``bytes``.
         :returns: The base64-encoded authenticated ciphertext as ``bytes``.
@@ -89,27 +115,77 @@ class AESCipher:
                      N=SCRYPT_N, r=SCRYPT_R, p=SCRYPT_P)
 
         cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
+        cipher.update(MAGIC)
         cipher.update(VERSION)
         cipher.update(salt)
         ciphertext, tag = cipher.encrypt_and_digest(raw)
 
-        return base64.b64encode(VERSION + salt + nonce + tag + ciphertext)
+        return base64.b64encode(MAGIC + VERSION + salt + nonce + tag + ciphertext)
 
     def decrypt(self, enc):
         """Decrypt a base64 payload and return the plaintext as a ``str``.
 
-        Accepts the payload either as ``bytes`` or as a ``str`` (UTF-8). Payloads
-        whose first decoded byte is the v2 version marker are tried as AES-GCM
-        first; if GCM authentication fails they are retried as legacy AES-CBC
-        ciphertexts, but only when the payload is structurally legacy-shaped
-        (length ``16 + 16*k`` bytes) because a legacy IV may coincidentally begin
-        with the marker. All other payloads are treated as legacy AES-CBC
-        ciphertexts.
+        Payloads whose first decoded bytes are ``V2_PREFIX`` (magic + version)
+        are decrypted as v2 only. Payloads whose first decoded byte is the old
+        v2 ``VERSION`` marker (no magic) are decrypted as the old v2 layout
+        only. In both cases GCM authentication failure raises
+        :class:`ValueError`; there is no legacy fallback.
+
+        A payload that is not v2-prefixed is only read as legacy AES-CBC when
+        the cipher was constructed with ``allow_legacy=True`` (which logs a
+        warning); otherwise :class:`ValueError` is raised explaining that
+        legacy wallets must be migrated via :meth:`decrypt_legacy` /
+        ``allow_legacy=True`` and re-encrypted.
 
         :param enc: The base64-encoded ciphertext (``bytes`` or ``str``).
         :returns: The decrypted plaintext as a ``str``.
+        :raises ValueError: If the payload is malformed, tampered with, the
+            password is wrong, or it is a legacy payload and legacy decryption
+            is not enabled.
+        """
+        data = self._decode(enc)
+
+        if data.startswith(V2_PREFIX):
+            return self._decrypt_v2(data)
+
+        if data[:1] == VERSION:
+            return self._decrypt_v2(data)
+
+        if self._allow_legacy:
+            self.LOG.warning('Decrypting a legacy (unauthenticated AES-CBC) payload; '
+                             'this fallback is deprecated and the wallet should be re-encrypted to v2')
+            return self._decrypt_legacy(data)
+
+        raise ValueError(
+            'Unsupported ciphertext format: the payload is not a v2 (authenticated) '
+            'ciphertext. Legacy (AES-CBC) wallets must be migrated before they can '
+            'be read with the default cipher: construct AESCipher(key=..., '
+            'allow_legacy=True) or call decrypt_legacy() to read it, then re-encrypt '
+            'with encrypt().'
+        )
+
+    def decrypt_legacy(self, enc):
+        """Decrypt a legacy (v1) AES-CBC payload and return the plaintext as a ``str``.
+
+        This always uses the unauthenticated legacy path and logs a warning. It
+        is intended for a one-time migration of known-legacy wallets: decrypt
+        the payload here, then re-:meth:`encrypt` the plaintext into the
+        authenticated v2 format.
+
+        :param enc: The base64-encoded legacy ciphertext (``bytes`` or ``str``).
+        :returns: The decrypted plaintext as a ``str``.
         :raises ValueError: If the payload is malformed, tampered with, or the
             password is wrong.
+        """
+        self.LOG.warning('Decrypting a legacy (unauthenticated AES-CBC) payload via '
+                         'the explicit legacy path; re-encrypt with encrypt() to migrate to v2')
+        return self._decrypt_legacy(self._decode(enc))
+
+    @staticmethod
+    def _decode(enc):
+        """Validate and base64-decode ``enc`` (``bytes`` or ``str``) to raw bytes.
+
+        :raises ValueError: If the payload is not strict base64.
         """
         if isinstance(enc, str):
             enc = enc.encode('utf-8')
@@ -117,22 +193,9 @@ class AESCipher:
         enc = enc.strip()
 
         try:
-            data = base64.b64decode(enc, validate=True)
+            return base64.b64decode(enc, validate=True)
         except binascii.Error as ex:
             raise ValueError(f'malformed base64 payload: {ex}') from ex
-
-        if data[:1] == VERSION:
-            try:
-                return self._decrypt_v2(data)
-            except ValueError as v2_error:
-                if not self._looks_like_legacy(data):
-                    raise
-                try:
-                    return self._decrypt_legacy(data)
-                except Exception:  # noqa: BLE001
-                    raise v2_error
-
-        return self._decrypt_legacy(data)
 
     @staticmethod
     def _looks_like_legacy(data):
@@ -142,22 +205,39 @@ class AESCipher:
         return (len(data) - AES.block_size) % AES.block_size == 0
 
     def _decrypt_v2(self, data):
-        """Decrypt an authenticated (v2) payload and return the UTF-8 string."""
-        version = data[:1]
-        salt = data[1:1 + SALT_SIZE]
-        nonce = data[1 + SALT_SIZE:1 + SALT_SIZE + NONCE_SIZE]
-        tag = data[1 + SALT_SIZE + NONCE_SIZE:1 + SALT_SIZE + NONCE_SIZE + TAG_SIZE]
-        ciphertext = data[1 + SALT_SIZE + NONCE_SIZE + TAG_SIZE:]
+        """Decrypt an authenticated (v2) payload and return the UTF-8 string.
+
+        Parses both the new magic-prefixed layout (``MAGIC + VERSION + salt +
+        nonce + tag + ciphertext``) and the old v2 layout (``VERSION + salt +
+        nonce + tag + ciphertext``). GCM authentication failures propagate as
+        :class:`ValueError`, and a plaintext that is not valid UTF-8 is also
+        converted to :class:`ValueError`.
+        """
+        if data.startswith(V2_PREFIX):
+            offset = len(V2_PREFIX)
+            aad_parts = (MAGIC, VERSION)
+        else:
+            offset = len(VERSION)
+            aad_parts = (VERSION,)
+
+        salt = data[offset:offset + SALT_SIZE]
+        nonce = data[offset + SALT_SIZE:offset + SALT_SIZE + NONCE_SIZE]
+        tag = data[offset + SALT_SIZE + NONCE_SIZE:offset + SALT_SIZE + NONCE_SIZE + TAG_SIZE]
+        ciphertext = data[offset + SALT_SIZE + NONCE_SIZE + TAG_SIZE:]
 
         key = scrypt(self._password.encode('utf-8'), salt, KEY_SIZE,
                      N=SCRYPT_N, r=SCRYPT_R, p=SCRYPT_P)
 
         cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
-        cipher.update(version)
+        for part in aad_parts:
+            cipher.update(part)
         cipher.update(salt)
 
         plaintext = cipher.decrypt_and_verify(ciphertext, tag)
-        return plaintext.decode('utf-8')
+        try:
+            return plaintext.decode('utf-8')
+        except UnicodeDecodeError as ex:
+            raise ValueError('decrypted plaintext is not valid UTF-8') from ex
 
     def _decrypt_legacy(self, data):
         """Decrypt a legacy (v1) AES-CBC payload and return the UTF-8 string."""
