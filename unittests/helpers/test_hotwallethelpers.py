@@ -598,9 +598,9 @@ class TestDecryptLegacyWalletData(unittest.TestCase):
         from helpers.hotwallethelpers import decrypt_legacy_wallet_data
 
         legacy = _legacy_encrypt('pw', b'{}')
-        with patch.dict('os.environ', {}, clear=True):
-            with self.assertRaises(ValueError) as ctx:
-                decrypt_legacy_wallet_data(legacy, 'pw')
+        with patch.dict('os.environ', {}, clear=True), \
+                self.assertRaises(ValueError) as ctx:
+            decrypt_legacy_wallet_data(legacy, 'pw')
 
         self.assertIn('SPELLBOOK_ALLOW_LEGACY_WALLET_DECRYPT', str(ctx.exception))
 
@@ -679,9 +679,9 @@ class TestGetHotWalletLegacy(unittest.TestCase):
 
             with patch.dict('os.environ', {}, clear=True), \
                     patch('helpers.hotwallethelpers.get_wallet_dir', return_value=tmp_dir), \
-                    patch('helpers.hotwallethelpers.get_default_wallet', return_value=wallet_id):
-                with self.assertRaises(ValueError) as ctx:
-                    get_hot_wallet()
+                    patch('helpers.hotwallethelpers.get_default_wallet', return_value=wallet_id), \
+                    self.assertRaises(ValueError) as ctx:
+                get_hot_wallet()
 
         self.assertIn('Invalid password', str(ctx.exception))
         self.assertIsNotNone(ctx.exception.__cause__)
