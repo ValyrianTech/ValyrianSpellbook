@@ -687,6 +687,117 @@ class TestGetHotWalletLegacy(unittest.TestCase):
         self.assertIsNotNone(ctx.exception.__cause__)
 
 
+class TestGetHotWalletConsumerLegacyRoundTrip(unittest.TestCase):
+    """Consumer-level round-trip coverage of get_hot_wallet() through the real legacy (v1) CBC path."""
+
+    def setUp(self):
+        """Save original password before each test"""
+        import helpers.hotwallethelpers as hw_module
+        self._saved_password = hw_module.HOT_WALLET_PASSWORD
+
+    def tearDown(self):
+        """Restore original password after each test"""
+        import helpers.hotwallethelpers as hw_module
+        hw_module.HOT_WALLET_PASSWORD = self._saved_password
+
+    def test_get_hot_wallet_reads_real_legacy_with_opt_in(self):
+        """get_hot_wallet() returns the wallet dict from a real legacy file and leaves the file bytes unchanged."""
+        import os
+        import tempfile
+
+        import helpers.hotwallethelpers as hw_module
+        from helpers.hotwallethelpers import get_hot_wallet
+
+        original = {'mnemonic': ['word1', 'word2'], 'passphrase': 'pass'}
+        password = 'legacypassword123'
+        hw_module.HOT_WALLET_PASSWORD = password
+        legacy = _legacy_encrypt(password, bytes(hw_module.simplejson.dumps(original), 'utf-8'))
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            wallet_id = 'consumer_legacy'
+            wallet_path = os.path.join(tmp_dir, f'{wallet_id}.enc')
+            with open(wallet_path, 'w') as wallet_file:
+                wallet_file.write(legacy.decode('utf-8'))
+
+            with patch.dict('os.environ', {'SPELLBOOK_ALLOW_LEGACY_WALLET_DECRYPT': '1'}, clear=True), \
+                    patch('helpers.hotwallethelpers.get_wallet_dir', return_value=tmp_dir), \
+                    patch('helpers.hotwallethelpers.get_default_wallet', return_value=wallet_id):
+                result = get_hot_wallet()
+
+            with open(wallet_path, 'rb') as wallet_file:
+                on_disk = wallet_file.read()
+
+        self.assertEqual(result, original)
+        self.assertEqual(on_disk, legacy)
+
+    def test_get_hot_wallet_legacy_rejected_without_opt_in(self):
+        """get_hot_wallet() raises 'Invalid password' (with a cause) for a real legacy file when the opt-in is unset."""
+        import os
+        import tempfile
+
+        import helpers.hotwallethelpers as hw_module
+        from helpers.hotwallethelpers import get_hot_wallet
+
+        original = {'mnemonic': ['word1', 'word2'], 'passphrase': 'pass'}
+        password = 'legacypassword123'
+        hw_module.HOT_WALLET_PASSWORD = password
+        legacy = _legacy_encrypt(password, bytes(hw_module.simplejson.dumps(original), 'utf-8'))
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            wallet_id = 'consumer_legacy'
+            wallet_path = os.path.join(tmp_dir, f'{wallet_id}.enc')
+            with open(wallet_path, 'w') as wallet_file:
+                wallet_file.write(legacy.decode('utf-8'))
+
+            with patch.dict('os.environ', {}, clear=True), \
+                    patch('helpers.hotwallethelpers.get_wallet_dir', return_value=tmp_dir), \
+                    patch('helpers.hotwallethelpers.get_default_wallet', return_value=wallet_id), \
+                    self.assertRaises(ValueError) as ctx:
+                get_hot_wallet()
+
+        self.assertIn('Invalid password', str(ctx.exception))
+        self.assertIsNotNone(ctx.exception.__cause__)
+
+    def test_get_hot_wallet_legacy_then_resaved_v2_reads_with_default_cipher(self):
+        """A legacy wallet read with the opt-in is re-readable via the default v2 cipher once re-encrypted."""
+        import os
+        import tempfile
+
+        import helpers.hotwallethelpers as hw_module
+        from AESCipher import AESCipher
+        from helpers.hotwallethelpers import get_hot_wallet
+
+        original = {'mnemonic': ['word1', 'word2'], 'passphrase': 'pass'}
+        password = 'legacypassword123'
+        hw_module.HOT_WALLET_PASSWORD = password
+        legacy = _legacy_encrypt(password, bytes(hw_module.simplejson.dumps(original), 'utf-8'))
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            wallet_id = 'consumer_legacy'
+            wallet_path = os.path.join(tmp_dir, f'{wallet_id}.enc')
+            with open(wallet_path, 'w') as wallet_file:
+                wallet_file.write(legacy.decode('utf-8'))
+
+            with patch.dict('os.environ', {'SPELLBOOK_ALLOW_LEGACY_WALLET_DECRYPT': '1'}, clear=True), \
+                    patch('helpers.hotwallethelpers.get_wallet_dir', return_value=tmp_dir), \
+                    patch('helpers.hotwallethelpers.get_default_wallet', return_value=wallet_id):
+                result = get_hot_wallet()
+
+            self.assertEqual(result, original)
+
+            cipher = AESCipher(key=password)
+            v2_payload = cipher.encrypt(bytes(hw_module.simplejson.dumps(result, sort_keys=True, indent=4), 'utf-8'))
+            with open(wallet_path, 'wb') as wallet_file:
+                wallet_file.write(v2_payload)
+
+            with patch.dict('os.environ', {}, clear=True), \
+                    patch('helpers.hotwallethelpers.get_wallet_dir', return_value=tmp_dir), \
+                    patch('helpers.hotwallethelpers.get_default_wallet', return_value=wallet_id):
+                result_v2 = get_hot_wallet()
+
+        self.assertEqual(result_v2, original)
+
+
 class TestGetAddressFromWallet(unittest.TestCase):
     """Test cases for get_address_from_wallet function"""
 
