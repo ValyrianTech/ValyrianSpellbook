@@ -1,7 +1,11 @@
 #!/usr/bin/env python
+import base64
 import binascii
+import hashlib
 import unittest
 from unittest.mock import MagicMock, patch
+
+from Crypto.Cipher import AES  # nosec B413 # pycryptodome, not the deprecated pyCrypto
 
 # Store original password at module load time
 import helpers.hotwallethelpers as _hw_module
@@ -17,6 +21,16 @@ def tearDownModule():
     """Called once after all tests in this module - restore global state"""
     import helpers.hotwallethelpers as hw_module
     hw_module.HOT_WALLET_PASSWORD = _ORIGINAL_HOT_WALLET_PASSWORD
+
+
+def _legacy_encrypt(password, plaintext, iv=b'0123456789abcdef'):
+    """Produce a legacy (v1) CBC ciphertext using the original algorithm (32-byte block PKCS7)."""
+    key = hashlib.sha256(password.encode()).digest()
+    block_size = 32
+    pad_len = block_size - (len(plaintext) % block_size)
+    padded = plaintext + bytes([pad_len]) * pad_len
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+    return base64.b64encode(iv + cipher.encrypt(padded))
 
 
 class TestGetHotWallet(unittest.TestCase):
@@ -513,6 +527,164 @@ class TestInsecurePasswordAllowed(unittest.TestCase):
         for value in ('0', 'false'):
             with patch.dict('os.environ', {'SPELLBOOK_ALLOW_INSECURE_WALLET_PASSWORD': value}, clear=True):
                 self.assertFalse(_insecure_password_allowed())
+
+
+class TestLegacyDecryptAllowed(unittest.TestCase):
+    """Test cases for the _legacy_decrypt_allowed helper"""
+
+    def test_legacy_decrypt_allowed_truthy(self):
+        """_legacy_decrypt_allowed returns True for truthy opt-in values"""
+        from helpers.hotwallethelpers import _legacy_decrypt_allowed
+
+        for value in ('1', 'true', 'YES', 'on'):
+            with patch.dict('os.environ', {'SPELLBOOK_ALLOW_LEGACY_WALLET_DECRYPT': value}, clear=True):
+                self.assertTrue(_legacy_decrypt_allowed())
+
+    def test_legacy_decrypt_allowed_falsy(self):
+        """_legacy_decrypt_allowed returns False when the opt-in is missing or non-truthy"""
+        from helpers.hotwallethelpers import _legacy_decrypt_allowed
+
+        with patch.dict('os.environ', {}, clear=True):
+            self.assertFalse(_legacy_decrypt_allowed())
+
+        for value in ('0', 'false'):
+            with patch.dict('os.environ', {'SPELLBOOK_ALLOW_LEGACY_WALLET_DECRYPT': value}, clear=True):
+                self.assertFalse(_legacy_decrypt_allowed())
+
+
+class TestIsLegacyEncryptedPayload(unittest.TestCase):
+    """Test cases for is_legacy_encrypted_payload"""
+
+    def test_real_legacy_payload(self):
+        """A real legacy CBC payload is recognised"""
+        from helpers.hotwallethelpers import is_legacy_encrypted_payload
+
+        legacy = _legacy_encrypt('pw', b'wallet data')
+        self.assertTrue(is_legacy_encrypted_payload(legacy))
+
+    def test_real_v2_payload(self):
+        """A real v2 payload is not recognised as legacy"""
+        from AESCipher import AESCipher
+        from helpers.hotwallethelpers import is_legacy_encrypted_payload
+
+        v2 = AESCipher(key='pw').encrypt(b'wallet data')
+        self.assertFalse(is_legacy_encrypted_payload(v2))
+
+    def test_non_base64(self):
+        """A non-base64 payload is not recognised as legacy"""
+        from helpers.hotwallethelpers import is_legacy_encrypted_payload
+
+        self.assertFalse(is_legacy_encrypted_payload('!!!not-base64!!!'))
+
+    def test_str_input(self):
+        """A valid legacy payload supplied as str is recognised"""
+        from helpers.hotwallethelpers import is_legacy_encrypted_payload
+
+        legacy = _legacy_encrypt('pw', b'wallet data')
+        self.assertTrue(is_legacy_encrypted_payload(legacy.decode('utf-8')))
+
+    def test_too_short_payload(self):
+        """A decoded payload too short to be legacy is not recognised"""
+        from helpers.hotwallethelpers import is_legacy_encrypted_payload
+
+        self.assertFalse(is_legacy_encrypted_payload(base64.b64encode(b'\x00' * 8)))
+
+
+class TestDecryptLegacyWalletData(unittest.TestCase):
+    """Test cases for decrypt_legacy_wallet_data"""
+
+    def test_raises_when_not_allowed(self):
+        """decrypt_legacy_wallet_data raises ValueError naming the env var when the opt-in is not set"""
+        from helpers.hotwallethelpers import decrypt_legacy_wallet_data
+
+        legacy = _legacy_encrypt('pw', b'{}')
+        with patch.dict('os.environ', {}, clear=True):
+            with self.assertRaises(ValueError) as ctx:
+                decrypt_legacy_wallet_data(legacy, 'pw')
+
+        self.assertIn('SPELLBOOK_ALLOW_LEGACY_WALLET_DECRYPT', str(ctx.exception))
+
+    @patch('helpers.hotwallethelpers.LOG')
+    def test_returns_dict_and_logs_warning_when_allowed(self, mock_log):
+        """decrypt_legacy_wallet_data returns the parsed dict and logs a warning when the opt-in is set"""
+        import helpers.hotwallethelpers as hw_module
+        from helpers.hotwallethelpers import decrypt_legacy_wallet_data
+
+        payload = {'mnemonic': ['word1', 'word2'], 'passphrase': ''}
+        legacy = _legacy_encrypt('pw', bytes(hw_module.simplejson.dumps(payload), 'utf-8'))
+        with patch.dict('os.environ', {'SPELLBOOK_ALLOW_LEGACY_WALLET_DECRYPT': '1'}, clear=True):
+            result = decrypt_legacy_wallet_data(legacy, 'pw')
+
+        self.assertEqual(result, payload)
+        mock_log.warning.assert_called_once()
+
+
+class TestGetHotWalletLegacy(unittest.TestCase):
+    """Test get_hot_wallet's legacy (v1) CBC wallet migration path"""
+
+    def setUp(self):
+        """Save original password before each test"""
+        import helpers.hotwallethelpers as hw_module
+        self._saved_password = hw_module.HOT_WALLET_PASSWORD
+
+    def tearDown(self):
+        """Restore original password after each test"""
+        import helpers.hotwallethelpers as hw_module
+        hw_module.HOT_WALLET_PASSWORD = self._saved_password
+
+    def test_get_hot_wallet_real_legacy_with_env_var(self):
+        """A real legacy wallet decrypts when the opt-in env var is set"""
+        import os
+        import tempfile
+
+        import helpers.hotwallethelpers as hw_module
+        from helpers.hotwallethelpers import get_hot_wallet
+
+        original = {'mnemonic': ['word1', 'word2'], 'passphrase': 'pass'}
+        password = 'legacypassword123'
+        hw_module.HOT_WALLET_PASSWORD = password
+        legacy = _legacy_encrypt(password, bytes(hw_module.simplejson.dumps(original), 'utf-8'))
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            wallet_id = 'legacy'
+            wallet_path = os.path.join(tmp_dir, f'{wallet_id}.enc')
+            with open(wallet_path, 'w') as wallet_file:
+                wallet_file.write(legacy.decode('utf-8'))
+
+            with patch.dict('os.environ', {'SPELLBOOK_ALLOW_LEGACY_WALLET_DECRYPT': '1'}, clear=True), \
+                    patch('helpers.hotwallethelpers.get_wallet_dir', return_value=tmp_dir), \
+                    patch('helpers.hotwallethelpers.get_default_wallet', return_value=wallet_id):
+                result = get_hot_wallet()
+
+        self.assertEqual(result, original)
+
+    def test_get_hot_wallet_real_legacy_without_env_var_raises(self):
+        """A real legacy wallet raises 'Invalid password' (with a cause) when the opt-in env var is unset"""
+        import os
+        import tempfile
+
+        import helpers.hotwallethelpers as hw_module
+        from helpers.hotwallethelpers import get_hot_wallet
+
+        original = {'mnemonic': ['word1', 'word2'], 'passphrase': 'pass'}
+        password = 'legacypassword123'
+        hw_module.HOT_WALLET_PASSWORD = password
+        legacy = _legacy_encrypt(password, bytes(hw_module.simplejson.dumps(original), 'utf-8'))
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            wallet_id = 'legacy'
+            wallet_path = os.path.join(tmp_dir, f'{wallet_id}.enc')
+            with open(wallet_path, 'w') as wallet_file:
+                wallet_file.write(legacy.decode('utf-8'))
+
+            with patch.dict('os.environ', {}, clear=True), \
+                    patch('helpers.hotwallethelpers.get_wallet_dir', return_value=tmp_dir), \
+                    patch('helpers.hotwallethelpers.get_default_wallet', return_value=wallet_id):
+                with self.assertRaises(ValueError) as ctx:
+                    get_hot_wallet()
+
+        self.assertIn('Invalid password', str(ctx.exception))
+        self.assertIsNotNone(ctx.exception.__cause__)
 
 
 class TestGetAddressFromWallet(unittest.TestCase):

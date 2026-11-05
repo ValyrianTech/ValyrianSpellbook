@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 """Helper functions for managing the encrypted hot wallet (keys, addresses, seeds)."""
 
+import base64
+import binascii
 import getpass
 import os
 
 import simplejson
 
-from AESCipher import AESCipher
+from AESCipher import V2_PREFIX, VERSION, AESCipher
 from bips.bip39 import get_seed
 from bips.bip44 import (
     get_address_from_xpub,
@@ -20,11 +22,41 @@ from helpers.loghelpers import LOG
 
 HOT_WALLET_PASSWORD = None
 ALLOW_INSECURE_PASSWORD_ENV_VAR = 'SPELLBOOK_ALLOW_INSECURE_WALLET_PASSWORD'
+ALLOW_LEGACY_DECRYPT_ENV_VAR = 'SPELLBOOK_ALLOW_LEGACY_WALLET_DECRYPT'
 
 
 def _insecure_password_allowed():
     """Return True when the explicit insecure-password opt-in env var is set (covers empty AND short passwords)."""
     return os.environ.get(ALLOW_INSECURE_PASSWORD_ENV_VAR, '').strip().lower() in ('1', 'true', 'yes', 'on')
+
+
+def _legacy_decrypt_allowed():
+    """Return True when the explicit legacy-wallet-decrypt opt-in env var is set."""
+    return os.environ.get(ALLOW_LEGACY_DECRYPT_ENV_VAR, '').strip().lower() in ('1', 'true', 'yes', 'on')
+
+
+def is_legacy_encrypted_payload(encrypted_data):
+    """Return True only when the payload is not a v2 payload but is structurally a legacy (v1) AES-CBC payload."""
+    if isinstance(encrypted_data, str):
+        encrypted_data = encrypted_data.encode('utf-8')
+
+    try:
+        data = base64.b64decode(encrypted_data, validate=True)
+    except (binascii.Error, ValueError, TypeError):
+        return False
+
+    return not data.startswith(V2_PREFIX) and data[:1] != VERSION and AESCipher._looks_like_legacy(data)
+
+
+def decrypt_legacy_wallet_data(encrypted_data, password):
+    """Decrypt a legacy (v1) AES-CBC wallet payload into a dict, gated by the explicit opt-in env var."""
+    if not _legacy_decrypt_allowed():
+        raise ValueError(
+            f'Legacy (unauthenticated AES-CBC) hot wallets are not decrypted by default. '
+            f'Set {ALLOW_LEGACY_DECRYPT_ENV_VAR}=1 to opt in to decrypting them.'
+        )
+    LOG.warning('Decrypted an unauthenticated legacy (AES-CBC) hot wallet; re-saving the wallet re-encrypts it in the authenticated v2 format.')
+    return simplejson.loads(AESCipher(key=password).decrypt_legacy(encrypted_data))
 
 
 def get_hot_wallet():
@@ -58,10 +90,15 @@ def get_hot_wallet():
         prompt_decryption_password()
 
     try:
-        cipher = AESCipher(key=HOT_WALLET_PASSWORD)
         with open(wallet_path, 'r') as input_file:
             encrypted_data = input_file.read()
+        try:
+            cipher = AESCipher(key=HOT_WALLET_PASSWORD)
             return simplejson.loads(cipher.decrypt(encrypted_data))
+        except ValueError:
+            if is_legacy_encrypted_payload(encrypted_data):
+                return decrypt_legacy_wallet_data(encrypted_data, HOT_WALLET_PASSWORD)
+            raise
 
     except (ValueError, KeyError, TypeError, OSError) as ex:
         raise ValueError('Invalid password to decrypt hot wallet!') from ex
