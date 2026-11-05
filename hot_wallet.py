@@ -15,7 +15,11 @@ from AESCipher import AESCipher
 from helpers.configurationhelpers import get_use_testnet
 from helpers.hotwallethelpers import (
     ALLOW_INSECURE_PASSWORD_ENV_VAR,
+    ALLOW_LEGACY_DECRYPT_ENV_VAR,
     _insecure_password_allowed,
+    _legacy_decrypt_allowed,
+    decrypt_legacy_wallet_data,
+    is_legacy_encrypted_payload,
 )
 from helpers.privatekeyhelpers import privkey_to_address
 
@@ -152,15 +156,30 @@ def load_wallet():
     if args.wallet is not None:
         WALLET_ID = args.wallet
 
-    if not os.path.isfile(os.path.join(WALLET_DIR, f'{WALLET_ID}.enc')):
+    wallet_path = os.path.join(WALLET_DIR, f'{WALLET_ID}.enc')
+    if not os.path.isfile(wallet_path):
         return {}
 
-    cipher = AESCipher(key=_get_wallet_password('Enter the password to decrypt the hot wallet: '))
+    password = _get_wallet_password('Enter the password to decrypt the hot wallet: ')
+    cipher = AESCipher(key=password)
 
     try:
-        with open(os.path.join(WALLET_DIR, f'{WALLET_ID}.enc'), 'r') as input_file:
+        with open(wallet_path, 'r') as input_file:
             encrypted_data = input_file.read()
-            return simplejson.loads(cipher.decrypt(encrypted_data))
+        try:
+            decrypted = cipher.decrypt(encrypted_data)
+        except ValueError:
+            if is_legacy_encrypted_payload(encrypted_data):
+                if not _legacy_decrypt_allowed():
+                    print(f'This looks like a legacy hot wallet. Set {ALLOW_LEGACY_DECRYPT_ENV_VAR}=1 to migrate it to the authenticated v2 format.', file=sys.stderr)
+                    sys.exit(1)
+                    return
+                wallet = decrypt_legacy_wallet_data(encrypted_data, password)
+                _write_encrypted_wallet(wallet_path, password, wallet)
+                print(f'Migrated legacy hot wallet {wallet_path} to the authenticated v2 format.', file=sys.stderr)
+                return wallet
+            raise
+        return simplejson.loads(decrypted)
 
     except OSError as ex:
         print(f'Unable to load encrypted wallet: {ex}', file=sys.stderr)
@@ -201,10 +220,14 @@ def save_wallet(wallet):
                   f'Set {ALLOW_INSECURE_PASSWORD_ENV_VAR}=1 to allow a short or empty password (NOT recommended).', file=sys.stderr)
             sys.exit(1)
 
-    cipher = AESCipher(key=password1)
-    unencrypted_data = bytes(simplejson.dumps(wallet, sort_keys=True, indent=4), 'utf-8')
-
     path = os.path.join(WALLET_DIR, f'{WALLET_ID}.enc')
+    _write_encrypted_wallet(path, password1, wallet)
+
+
+def _write_encrypted_wallet(path, password, wallet):
+    """Encrypt the wallet dict and atomically write it to ``path``."""
+    cipher = AESCipher(key=password)
+    unencrypted_data = bytes(simplejson.dumps(wallet, sort_keys=True, indent=4), 'utf-8')
     payload = str(cipher.encrypt(unencrypted_data), 'utf-8')
     tmp_path = None
     try:
