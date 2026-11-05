@@ -205,22 +205,6 @@ class TestAESCipher:
         with pytest.raises(ValueError):
             cipher.decrypt(encrypted)
 
-    def test_looks_like_legacy_true_for_real_legacy_payload(self):
-        legacy = _legacy_encrypt('old_password', b'legacy secret')
-        data = base64.b64decode(legacy)
-        assert AESCipher._looks_like_legacy(data)
-
-    def test_looks_like_legacy_false_for_too_short(self):
-        assert not AESCipher._looks_like_legacy(b'\x02' * 8)
-
-    def test_looks_like_legacy_false_for_non_legacy_shaped_length(self):
-        assert not AESCipher._looks_like_legacy(b'\x00' * 20)
-        assert not AESCipher._looks_like_legacy(b'\x00' * 60)
-
-    def test_looks_like_legacy_false_for_non_bytes(self):
-        assert not AESCipher._looks_like_legacy('abc')
-        assert not AESCipher._looks_like_legacy(None)
-
     def test_v2_marker_legacy_shaped_but_legacy_fails_raises(self):
         payload = b'\x02' + b'\x00' * 47
         b64 = base64.b64encode(payload)

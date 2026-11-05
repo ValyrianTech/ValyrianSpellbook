@@ -197,13 +197,6 @@ class AESCipher:
         except binascii.Error as ex:
             raise ValueError(f'malformed base64 payload: {ex}') from ex
 
-    @staticmethod
-    def _looks_like_legacy(data):
-        """Return True if ``data`` is structurally a legacy CBC payload."""
-        if not isinstance(data, bytes) or len(data) < 2 * AES.block_size:
-            return False
-        return (len(data) - AES.block_size) % AES.block_size == 0
-
     def _decrypt_v2(self, data):
         """Decrypt an authenticated (v2) payload and return the UTF-8 string.
 
