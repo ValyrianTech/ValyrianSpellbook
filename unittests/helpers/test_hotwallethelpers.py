@@ -659,7 +659,7 @@ class TestGetHotWalletLegacy(unittest.TestCase):
         self.assertEqual(result, original)
 
     def test_get_hot_wallet_real_legacy_without_env_var_raises(self):
-        """A real legacy wallet raises 'Invalid password' (with a cause) when the opt-in env var is unset"""
+        """A real legacy wallet surfaces the migration guidance when the opt-in env var is unset"""
         import os
         import tempfile
 
@@ -683,8 +683,35 @@ class TestGetHotWalletLegacy(unittest.TestCase):
                     self.assertRaises(ValueError) as ctx:
                 get_hot_wallet()
 
-        self.assertIn('Invalid password', str(ctx.exception))
-        self.assertIsNotNone(ctx.exception.__cause__)
+        self.assertIn('SPELLBOOK_ALLOW_LEGACY_WALLET_DECRYPT', str(ctx.exception))
+        self.assertNotIn('Invalid password', str(ctx.exception))
+
+    def test_get_hot_wallet_legacy_refusal_is_a_value_error(self):
+        """The legacy-refusal exception subclasses ValueError so existing callers keep catching it"""
+        import os
+        import tempfile
+
+        import helpers.hotwallethelpers as hw_module
+        from helpers.hotwallethelpers import LegacyWalletDecryptDisabled, get_hot_wallet
+
+        password = 'legacypassword123'
+        hw_module.HOT_WALLET_PASSWORD = password
+        legacy = _legacy_encrypt(password, b'{"mnemonic": ["word1"]}')
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            wallet_id = 'legacy_type'
+            wallet_path = os.path.join(tmp_dir, f'{wallet_id}.enc')
+            with open(wallet_path, 'w') as wallet_file:
+                wallet_file.write(legacy.decode('utf-8'))
+
+            with patch.dict('os.environ', {}, clear=True), \
+                    patch('helpers.hotwallethelpers.get_wallet_dir', return_value=tmp_dir), \
+                    patch('helpers.hotwallethelpers.get_default_wallet', return_value=wallet_id), \
+                    self.assertRaises(LegacyWalletDecryptDisabled) as ctx:
+                get_hot_wallet()
+
+        self.assertIsInstance(ctx.exception, ValueError)
+        self.assertIsNone(ctx.exception.__cause__)
 
 
 class TestGetHotWalletConsumerLegacyRoundTrip(unittest.TestCase):
@@ -731,7 +758,7 @@ class TestGetHotWalletConsumerLegacyRoundTrip(unittest.TestCase):
         self.assertEqual(on_disk, legacy)
 
     def test_get_hot_wallet_legacy_rejected_without_opt_in(self):
-        """get_hot_wallet() raises 'Invalid password' (with a cause) for a real legacy file when the opt-in is unset."""
+        """get_hot_wallet() surfaces the migration guidance for a real legacy file when the opt-in is unset."""
         import os
         import tempfile
 
@@ -755,8 +782,8 @@ class TestGetHotWalletConsumerLegacyRoundTrip(unittest.TestCase):
                     self.assertRaises(ValueError) as ctx:
                 get_hot_wallet()
 
-        self.assertIn('Invalid password', str(ctx.exception))
-        self.assertIsNotNone(ctx.exception.__cause__)
+        self.assertIn('SPELLBOOK_ALLOW_LEGACY_WALLET_DECRYPT', str(ctx.exception))
+        self.assertNotIn('Invalid password', str(ctx.exception))
 
     def test_get_hot_wallet_legacy_then_resaved_v2_reads_with_default_cipher(self):
         """A legacy wallet read with the opt-in is re-readable via the default v2 cipher once re-encrypted."""

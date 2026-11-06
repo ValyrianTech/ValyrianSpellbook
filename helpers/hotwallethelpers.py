@@ -26,6 +26,15 @@ ALLOW_INSECURE_PASSWORD_ENV_VAR = 'SPELLBOOK_ALLOW_INSECURE_WALLET_PASSWORD'
 ALLOW_LEGACY_DECRYPT_ENV_VAR = 'SPELLBOOK_ALLOW_LEGACY_WALLET_DECRYPT'
 
 
+class LegacyWalletDecryptDisabled(ValueError):
+    """Raised when a legacy (v1) hot wallet is found but the explicit opt-in env var is not set.
+
+    Subclasses ``ValueError`` so existing ``except ValueError`` handlers keep working, but
+    :func:`get_hot_wallet` re-raises it verbatim so the operator sees the actionable migration
+    guidance instead of the generic 'Invalid password to decrypt hot wallet!' message.
+    """
+
+
 def _insecure_password_allowed():
     """Return True when the explicit insecure-password opt-in env var is set (covers empty AND short passwords)."""
     return os.environ.get(ALLOW_INSECURE_PASSWORD_ENV_VAR, '').strip().lower() in ('1', 'true', 'yes', 'on')
@@ -54,9 +63,13 @@ def is_legacy_encrypted_payload(encrypted_data):
 
 
 def decrypt_legacy_wallet_data(encrypted_data, password):
-    """Decrypt a legacy (v1) AES-CBC wallet payload into a dict, gated by the explicit opt-in env var."""
+    """Decrypt a legacy (v1) AES-CBC wallet payload into a dict, gated by the explicit opt-in env var.
+
+    :raises LegacyWalletDecryptDisabled: If the opt-in env var is not set (carries the migration guidance).
+    :raises ValueError: If the payload is malformed, tampered with, or the password is wrong.
+    """
     if not _legacy_decrypt_allowed():
-        raise ValueError(
+        raise LegacyWalletDecryptDisabled(
             f'Legacy (unauthenticated AES-CBC) hot wallets are not decrypted by default. '
             f'Set {ALLOW_LEGACY_DECRYPT_ENV_VAR}=1 to opt in to decrypting them.'
         )
@@ -105,6 +118,9 @@ def get_hot_wallet():
                 return decrypt_legacy_wallet_data(encrypted_data, HOT_WALLET_PASSWORD)
             raise
 
+    except LegacyWalletDecryptDisabled:
+        # Re-raise verbatim: the operator needs the migration guidance, not a bogus 'invalid password'.
+        raise
     except (ValueError, KeyError, TypeError, OSError) as ex:
         raise ValueError('Invalid password to decrypt hot wallet!') from ex
 
