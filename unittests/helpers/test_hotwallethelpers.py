@@ -658,6 +658,61 @@ class TestGetHotWalletLegacy(unittest.TestCase):
 
         self.assertEqual(result, original)
 
+    def test_get_hot_wallet_real_legacy_with_empty_password(self):
+        """A real legacy wallet with an empty password decrypts without prompting when both opt-ins are set"""
+        import os
+        import tempfile
+
+        import helpers.hotwallethelpers as hw_module
+        from helpers.hotwallethelpers import get_hot_wallet
+
+        original = {'mnemonic': ['word1', 'word2'], 'passphrase': ''}
+        hw_module.HOT_WALLET_PASSWORD = None
+        legacy = _legacy_encrypt('', bytes(hw_module.simplejson.dumps(original), 'utf-8'))
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            wallet_id = 'legacy_empty'
+            wallet_path = os.path.join(tmp_dir, f'{wallet_id}.enc')
+            with open(wallet_path, 'w') as wallet_file:
+                wallet_file.write(legacy.decode('utf-8'))
+
+            with patch.dict('os.environ', {'SPELLBOOK_ALLOW_INSECURE_WALLET_PASSWORD': '1',
+                                           'SPELLBOOK_ALLOW_LEGACY_WALLET_DECRYPT': '1'}, clear=True), \
+                    patch('helpers.hotwallethelpers.get_wallet_dir', return_value=tmp_dir), \
+                    patch('helpers.hotwallethelpers.get_default_wallet', return_value=wallet_id), \
+                    patch('helpers.hotwallethelpers.prompt_decryption_password') as mock_prompt:
+                result = get_hot_wallet()
+
+        mock_prompt.assert_not_called()
+        self.assertEqual(result, original)
+
+    def test_get_hot_wallet_real_legacy_with_empty_password_without_legacy_opt_in_prompts(self):
+        """An empty-password legacy wallet still prompts when the legacy opt-in env var is unset"""
+        import os
+        import tempfile
+
+        import helpers.hotwallethelpers as hw_module
+        from helpers.hotwallethelpers import LegacyWalletDecryptDisabled, get_hot_wallet
+
+        original = {'mnemonic': ['word1', 'word2'], 'passphrase': ''}
+        hw_module.HOT_WALLET_PASSWORD = None
+        legacy = _legacy_encrypt('', bytes(hw_module.simplejson.dumps(original), 'utf-8'))
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            wallet_id = 'legacy_empty'
+            wallet_path = os.path.join(tmp_dir, f'{wallet_id}.enc')
+            with open(wallet_path, 'w') as wallet_file:
+                wallet_file.write(legacy.decode('utf-8'))
+
+            with patch.dict('os.environ', {'SPELLBOOK_ALLOW_INSECURE_WALLET_PASSWORD': '1'}, clear=True), \
+                    patch('helpers.hotwallethelpers.get_wallet_dir', return_value=tmp_dir), \
+                    patch('helpers.hotwallethelpers.get_default_wallet', return_value=wallet_id), \
+                    patch('helpers.hotwallethelpers.prompt_decryption_password') as mock_prompt, \
+                    self.assertRaises(LegacyWalletDecryptDisabled):
+                get_hot_wallet()
+
+        mock_prompt.assert_called_once()
+
     def test_get_hot_wallet_real_legacy_without_env_var_raises(self):
         """A real legacy wallet surfaces the migration guidance when the opt-in env var is unset"""
         import os

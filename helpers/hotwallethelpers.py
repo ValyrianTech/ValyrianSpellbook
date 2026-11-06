@@ -77,6 +77,43 @@ def decrypt_legacy_wallet_data(encrypted_data, password):
     return simplejson.loads(AESCipher(key=password).decrypt_legacy(encrypted_data))
 
 
+def _decrypt_with_empty_password(encrypted_data):
+    """Decrypt the hot wallet with an empty password, falling back to the legacy path when applicable.
+
+    Legacy (v1) AES-CBC payloads are read through :func:`decrypt_legacy_wallet_data`, which stays
+    gated by the explicit legacy opt-in env var, so empty-password legacy wallets keep working
+    without prompting.
+
+    :returns: The decrypted wallet dict, or ``None`` when the empty password does not open the
+        wallet (the caller then prompts for a password).
+    :raises KeyError: If decryption fails with an unexpected error.
+    :raises TypeError: If decryption fails with an unexpected error.
+    """
+    try:
+        return simplejson.loads(AESCipher(key='').decrypt(encrypted_data))
+    except (KeyError, TypeError) as ex:
+        LOG.error(f'Empty-password decryption attempt failed with an unexpected error: {ex}')
+        raise
+    except ValueError as ex:
+        if not is_legacy_encrypted_payload(encrypted_data):
+            if len(encrypted_data) > 0:
+                LOG.warning('Empty-password decryption attempt failed for a non-empty wallet file; '
+                            'the wallet is most likely protected by a non-empty password, or it may be corrupt or tampered with: '
+                            f'{ex}')
+            else:
+                LOG.warning(f'Empty-password decryption attempt failed: {ex}')
+            return None
+
+    try:
+        return decrypt_legacy_wallet_data(encrypted_data, '')
+    except LegacyWalletDecryptDisabled as ex:
+        LOG.warning(f'Empty-password decryption of a legacy hot wallet is disabled: {ex}')
+    except (ValueError, KeyError, TypeError) as ex:
+        LOG.warning(f'Empty-password decryption of a legacy hot wallet failed: {ex}')
+
+    return None
+
+
 def get_hot_wallet():
     """Decrypt and return the hot wallet data, prompting for password if needed."""
     wallet_dir, wallet_id = get_wallet_dir(), get_default_wallet()
@@ -87,20 +124,8 @@ def get_hot_wallet():
             with open(wallet_path, 'r') as input_file:
                 encrypted_data = input_file.read()
 
-            try:
-                cipher = AESCipher(key='')
-                data = simplejson.loads(cipher.decrypt(encrypted_data))
-            except ValueError as ex:
-                if len(encrypted_data) > 0:
-                    LOG.warning('Empty-password decryption attempt failed for a non-empty wallet file; '
-                                'the wallet is most likely protected by a non-empty password, or it may be corrupt or tampered with: '
-                                f'{ex}')
-                else:
-                    LOG.warning(f'Empty-password decryption attempt failed: {ex}')
-            except (KeyError, TypeError) as ex:
-                LOG.error(f'Empty-password decryption attempt failed with an unexpected error: {ex}')
-                raise
-            else:
+            data = _decrypt_with_empty_password(encrypted_data)
+            if data is not None:
                 LOG.critical('Hot wallet decrypted with an EMPTY password! This is insecure. '
                              'Set a strong password to protect the hot wallet.')
                 return data
