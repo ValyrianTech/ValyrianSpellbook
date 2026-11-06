@@ -4,11 +4,23 @@
 import base64
 import binascii
 import hashlib
+from unittest import mock
 
 import pytest
 from Crypto.Cipher import AES  # nosec B413 # pycryptodome, not the deprecated pyCrypto
+from Crypto.Protocol.KDF import scrypt  # nosec B413 # pycryptodome, not the deprecated pyCrypto
+from Crypto.Random import get_random_bytes  # nosec B413 # pycryptodome, not the deprecated pyCrypto
 
-from AESCipher import AESCipher
+from AESCipher import (
+    KEY_SIZE,
+    NONCE_SIZE,
+    SALT_SIZE,
+    SCRYPT_N,
+    SCRYPT_P,
+    SCRYPT_R,
+    VERSION,
+    AESCipher,
+)
 
 # Legacy v1 (CBC) format carries no version byte. Use a fixed IV whose first
 # byte is not the v2 marker (0x02) so the new decrypt reliably detects legacy.
@@ -23,6 +35,19 @@ def _legacy_encrypt(password, plaintext, iv=_LEGACY_IV):
     padded = plaintext + bytes([pad_len]) * pad_len
     cipher = AES.new(key, AES.MODE_CBC, iv)
     return base64.b64encode(iv + cipher.encrypt(padded))
+
+
+def _old_v2_encrypt(password, plaintext, salt=None, nonce=None):
+    """Produce an old-v2 (no magic) GCM ciphertext using the original AAD."""
+    salt = salt if salt is not None else get_random_bytes(SALT_SIZE)
+    nonce = nonce if nonce is not None else get_random_bytes(NONCE_SIZE)
+    key = scrypt(password.encode('utf-8'), salt, KEY_SIZE,
+                 N=SCRYPT_N, r=SCRYPT_R, p=SCRYPT_P)
+    cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
+    cipher.update(VERSION)
+    cipher.update(salt)
+    ciphertext, tag = cipher.encrypt_and_digest(plaintext)
+    return base64.b64encode(VERSION + salt + nonce + tag + ciphertext)
 
 
 class TestAESCipher:
@@ -97,35 +122,88 @@ class TestAESCipher:
 
     def test_legacy_cbc_decryption(self):
         legacy = _legacy_encrypt('old_password', b'legacy secret')
-        cipher = AESCipher(key='old_password')
+        cipher = AESCipher(key='old_password', allow_legacy=True)
         assert cipher.decrypt(legacy) == 'legacy secret'
 
     def test_legacy_cbc_decryption_empty(self):
         legacy = _legacy_encrypt('old_password', b'')
-        cipher = AESCipher(key='old_password')
+        cipher = AESCipher(key='old_password', allow_legacy=True)
         assert cipher.decrypt(legacy) == ''
 
     def test_legacy_cbc_decryption_with_v2_marker_iv(self):
         iv = b'\x02' + b'\x00' * 15
         legacy = _legacy_encrypt('old_password', b'legacy secret', iv=iv)
         cipher = AESCipher(key='old_password')
-        assert cipher.decrypt(legacy) == 'legacy secret'
+        assert cipher.decrypt_legacy(legacy) == 'legacy secret'
 
-    def test_looks_like_legacy_true_for_real_legacy_payload(self):
+    def test_decrypt_legacy_explicit(self):
         legacy = _legacy_encrypt('old_password', b'legacy secret')
-        data = base64.b64decode(legacy)
-        assert AESCipher._looks_like_legacy(data)
+        assert AESCipher(key='old_password').decrypt_legacy(legacy) == 'legacy secret'
 
-    def test_looks_like_legacy_false_for_too_short(self):
-        assert not AESCipher._looks_like_legacy(b'\x02' * 8)
+    def test_decrypt_legacy_refuses_by_default(self):
+        legacy = _legacy_encrypt('old_password', b'legacy secret')
+        with pytest.raises(ValueError) as exc_info:
+            AESCipher(key='old_password').decrypt(legacy)
+        assert 'migrat' in str(exc_info.value)
+        assert 'allow_legacy' in str(exc_info.value)
+        assert 'decrypt_legacy' in str(exc_info.value)
 
-    def test_looks_like_legacy_false_for_non_legacy_shaped_length(self):
-        assert not AESCipher._looks_like_legacy(b'\x00' * 20)
-        assert not AESCipher._looks_like_legacy(b'\x00' * 60)
+    def test_decrypt_legacy_refuses_by_default_v2_marker_iv(self):
+        iv = b'\x02' + b'\x00' * 15
+        legacy = _legacy_encrypt('old_password', b'legacy secret', iv=iv)
+        with pytest.raises(ValueError):
+            AESCipher(key='old_password').decrypt(legacy)
 
-    def test_looks_like_legacy_false_for_non_bytes(self):
-        assert not AESCipher._looks_like_legacy('abc')
-        assert not AESCipher._looks_like_legacy(None)
+    def test_decrypt_legacy_path_logs_warning(self):
+        legacy = _legacy_encrypt('old_password', b'legacy secret')
+        with mock.patch.object(AESCipher, 'LOG') as mock_log:
+            AESCipher(key='old_password', allow_legacy=True).decrypt(legacy)
+        mock_log.warning.assert_called_once()
+
+    def test_decrypt_legacy_method_logs_warning(self):
+        legacy = _legacy_encrypt('old_password', b'legacy secret')
+        with mock.patch.object(AESCipher, 'LOG') as mock_log:
+            AESCipher(key='old_password').decrypt_legacy(legacy)
+        mock_log.warning.assert_called_once()
+
+    def test_old_v2_layout_decrypts(self):
+        payload = _old_v2_encrypt('old_password', b'old v2 secret')
+        assert AESCipher(key='old_password').decrypt(payload) == 'old v2 secret'
+
+    def test_old_v2_layout_wrong_password_raises(self):
+        payload = _old_v2_encrypt('correct', b'old v2 secret')
+        with pytest.raises(ValueError):
+            AESCipher(key='wrong').decrypt(payload)
+
+    def test_tampered_magic_rejected(self):
+        cipher = AESCipher(key='test_password')
+        encrypted = cipher.encrypt(b'secret data')
+        data = bytearray(base64.b64decode(encrypted))
+        data[0] ^= 0x01
+        with pytest.raises(ValueError):
+            cipher.decrypt(base64.b64encode(bytes(data)))
+
+    def test_tampered_version_rejected(self):
+        cipher = AESCipher(key='test_password')
+        encrypted = cipher.encrypt(b'secret data')
+        data = bytearray(base64.b64decode(encrypted))
+        data[2] ^= 0x01
+        with pytest.raises(ValueError):
+            cipher.decrypt(base64.b64encode(bytes(data)))
+
+    def test_tampered_salt_rejected(self):
+        cipher = AESCipher(key='test_password')
+        encrypted = cipher.encrypt(b'secret data')
+        data = bytearray(base64.b64decode(encrypted))
+        data[3] ^= 0x01
+        with pytest.raises(ValueError):
+            cipher.decrypt(base64.b64encode(bytes(data)))
+
+    def test_non_utf8_plaintext_raises(self):
+        cipher = AESCipher(key='test_password')
+        encrypted = cipher.encrypt(b'\xff\xfe')
+        with pytest.raises(ValueError):
+            cipher.decrypt(encrypted)
 
     def test_v2_marker_legacy_shaped_but_legacy_fails_raises(self):
         payload = b'\x02' + b'\x00' * 47

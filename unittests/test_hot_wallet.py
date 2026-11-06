@@ -6,12 +6,15 @@ hot_wallet.py reads configuration and runs argparse at module level, so we
 patch sys.argv before importing to prevent it from consuming pytest arguments.
 """
 import argparse
+import base64
+import hashlib
 import importlib.util
 import os
 import sys
 from unittest import mock
 
 import pytest
+from Crypto.Cipher import AES  # nosec B413 # pycryptodome, not the deprecated pyCrypto
 
 # hot_wallet.py runs argparse and command dispatch at module level.
 # Load the file directly via importlib to avoid package shadowing.
@@ -39,6 +42,16 @@ def make_temp_file_mock(name='/tmp/tmpabc123'):
     tmp_file = mock.Mock()
     tmp_file.name = name
     return tmp_file
+
+
+def _legacy_encrypt(password, plaintext, iv=b'0123456789abcdef'):
+    """Produce a legacy (v1) CBC ciphertext using the original algorithm (32-byte block PKCS7)."""
+    key = hashlib.sha256(password.encode()).digest()
+    block_size = 32
+    pad_len = block_size - (len(plaintext) % block_size)
+    padded = plaintext + bytes([pad_len]) * pad_len
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+    return base64.b64encode(iv + cipher.encrypt(padded))
 
 
 class TestGetWalletPassword:
@@ -134,6 +147,19 @@ class TestLoadWallet:
         hot_wallet.load_wallet()
         mock_exit.assert_called_once_with(1)
 
+    @mock.patch.dict(os.environ, {'SPELLBOOK_WALLET_PASSWORD': 'mypassword12345678'}, clear=True)
+    @mock.patch('hot_wallet.sys.exit')
+    @mock.patch('builtins.print')
+    @mock.patch('hot_wallet.AESCipher')
+    @mock.patch('builtins.open', new_callable=mock.mock_open, read_data='!!!not-legacy!!!')
+    @mock.patch('hot_wallet.os.path.isfile', return_value=True)
+    def test_load_decrypt_value_error_non_legacy(self, mock_isfile, mock_open, mock_aes, mock_print, mock_exit):
+        hot_wallet.args = make_args(wallet=None)
+        mock_cipher = mock_aes.return_value
+        mock_cipher.decrypt.side_effect = ValueError('wrong password')
+        hot_wallet.load_wallet()
+        mock_exit.assert_called_once_with(1)
+
     @mock.patch.dict(os.environ, {'SPELLBOOK_WALLET_PASSWORD': 'mypassword12345678'})
     @mock.patch('hot_wallet.os.path.isfile', return_value=True)
     def test_load_real_round_trip_tolerates_trailing_newline(self, mock_isfile, tmp_path):
@@ -153,6 +179,123 @@ class TestLoadWallet:
             result = hot_wallet.load_wallet()
 
         assert result == original
+
+
+class TestLoadWalletLegacyMigration:
+
+    @mock.patch.dict(os.environ, {'SPELLBOOK_WALLET_PASSWORD': 'mypassword12345678',
+                                  'SPELLBOOK_ALLOW_LEGACY_WALLET_DECRYPT': '1'}, clear=True)
+    def test_load_legacy_migrates_to_v2(self, tmp_path):
+        """A real legacy wallet with the opt-in set returns the dict and rewrites the file as v2."""
+        from AESCipher import AESCipher
+
+        original = {'mnemonic': ['word1', 'word2'], 'passphrase': 'pass'}
+        password = 'mypassword12345678'
+        legacy = _legacy_encrypt(password, bytes(hot_wallet.simplejson.dumps(original), 'utf-8'))
+
+        wallet_id = 'legacy'
+        wallet_file = tmp_path / f'{wallet_id}.enc'
+        wallet_file.write_text(legacy.decode('utf-8'))
+
+        with mock.patch('hot_wallet.WALLET_DIR', str(tmp_path)), \
+                mock.patch('hot_wallet.WALLET_ID', wallet_id), \
+                mock.patch('hot_wallet.os.path.isfile', return_value=True):
+            hot_wallet.args = make_args(wallet=None)
+            result = hot_wallet.load_wallet()
+
+        assert result == original
+
+        encrypted = wallet_file.read_text()
+        assert AESCipher(key=password).decrypt(encrypted) == hot_wallet.simplejson.dumps(original, sort_keys=True, indent=4)
+
+    @mock.patch.dict(os.environ, {'SPELLBOOK_WALLET_PASSWORD': 'mypassword12345678'}, clear=True)
+    def test_load_legacy_without_env_var_exits(self, tmp_path):
+        """A real legacy wallet without the opt-in prints an error and exits."""
+        original = {'mnemonic': ['word1', 'word2'], 'passphrase': 'pass'}
+        password = 'mypassword12345678'
+        legacy = _legacy_encrypt(password, bytes(hot_wallet.simplejson.dumps(original), 'utf-8'))
+
+        wallet_id = 'legacy'
+        wallet_file = tmp_path / f'{wallet_id}.enc'
+        wallet_file.write_text(legacy.decode('utf-8'))
+
+        with mock.patch('hot_wallet.WALLET_DIR', str(tmp_path)), \
+                mock.patch('hot_wallet.WALLET_ID', wallet_id), \
+                mock.patch('hot_wallet.os.path.isfile', return_value=True), \
+                mock.patch('hot_wallet.sys.exit') as mock_exit, \
+                mock.patch('builtins.print') as mock_print:
+            hot_wallet.args = make_args(wallet=None)
+            hot_wallet.load_wallet()
+
+        mock_exit.assert_called_once_with(1)
+        mock_print.assert_called_once()
+
+
+class TestConsumerLegacyThroughLoadWalletAndAddKey:
+    """Consumer-level coverage of the legacy (v1) CBC migration path through load_wallet() and add_key()."""
+
+    def test_load_wallet_real_legacy_migrates_and_is_readable_again(self, tmp_path):
+        """load_wallet() migrates a real legacy wallet to v2 on first read and serves it via the v2 path on the next."""
+        from AESCipher import AESCipher
+
+        original = {
+            'mnemonic': ['word1', 'word2'],
+            'passphrase': 'pass',
+            '1LegacyAddress': '5legacyprivkey',
+        }
+        password = 'mypassword12345678'
+        legacy = _legacy_encrypt(password, bytes(hot_wallet.simplejson.dumps(original), 'utf-8'))
+
+        wallet_id = 'consumer_legacy'
+        wallet_file = tmp_path / f'{wallet_id}.enc'
+        wallet_file.write_text(legacy.decode('utf-8'))
+
+        with mock.patch('hot_wallet.WALLET_DIR', str(tmp_path)), \
+                mock.patch('hot_wallet.WALLET_ID', wallet_id), \
+                mock.patch.dict(os.environ, {'SPELLBOOK_WALLET_PASSWORD': password,
+                                             'SPELLBOOK_ALLOW_LEGACY_WALLET_DECRYPT': '1'}, clear=True):
+            hot_wallet.args = make_args(wallet=None)
+            result = hot_wallet.load_wallet()
+
+        assert result == original
+
+        encrypted = wallet_file.read_text()
+        assert AESCipher(key=password).decrypt(encrypted) == hot_wallet.simplejson.dumps(original, sort_keys=True, indent=4)
+
+        with mock.patch('hot_wallet.WALLET_DIR', str(tmp_path)), \
+                mock.patch('hot_wallet.WALLET_ID', wallet_id), \
+                mock.patch.dict(os.environ, {'SPELLBOOK_WALLET_PASSWORD': password}, clear=True):
+            hot_wallet.args = make_args(wallet=None)
+            result_again = hot_wallet.load_wallet()
+
+        assert result_again == original
+
+    def test_add_key_consumer_loads_real_legacy_then_saves_v2(self, tmp_path):
+        """add_key() reads a real legacy wallet through load_wallet() and persists the combined result as v2."""
+        from AESCipher import AESCipher
+
+        original = {'mnemonic': ['word1', 'word2']}
+        password = 'mypassword12345678'
+        legacy = _legacy_encrypt(password, bytes(hot_wallet.simplejson.dumps(original), 'utf-8'))
+
+        wallet_id = 'consumer_add_key'
+        wallet_file = tmp_path / f'{wallet_id}.enc'
+        wallet_file.write_text(legacy.decode('utf-8'))
+
+        with mock.patch('hot_wallet.WALLET_DIR', str(tmp_path)), \
+                mock.patch('hot_wallet.WALLET_ID', wallet_id), \
+                mock.patch('hot_wallet.get_use_testnet', return_value=False), \
+                mock.patch('hot_wallet.privkey_to_address', return_value='1LegacyAddr'), \
+                mock.patch.dict(os.environ, {'SPELLBOOK_WALLET_PASSWORD': password,
+                                             'SPELLBOOK_ALLOW_LEGACY_WALLET_DECRYPT': '1'}, clear=True):
+            hot_wallet.args = make_args(private_key='5legacykey', wallet=None)
+            hot_wallet.add_key()
+
+        encrypted = wallet_file.read_text()
+        decrypted = AESCipher(key=password).decrypt(encrypted)
+        data = hot_wallet.simplejson.loads(decrypted)
+
+        assert data == {'mnemonic': ['word1', 'word2'], '1LegacyAddr': '5legacykey'}
 
 
 class TestSaveWallet:
@@ -342,6 +485,22 @@ class TestInsecurePasswordAllowed:
         for value in ('0', 'false'):
             with mock.patch.dict(os.environ, {'SPELLBOOK_ALLOW_INSECURE_WALLET_PASSWORD': value}, clear=True):
                 assert hot_wallet._insecure_password_allowed() is False
+
+
+class TestLegacyDecryptAllowed:
+
+    def test_legacy_decrypt_allowed_truthy(self):
+        for value in ('1', 'true', 'on'):
+            with mock.patch.dict(os.environ, {'SPELLBOOK_ALLOW_LEGACY_WALLET_DECRYPT': value}, clear=True):
+                assert hot_wallet._legacy_decrypt_allowed() is True
+
+    def test_legacy_decrypt_allowed_falsy(self):
+        with mock.patch.dict(os.environ, {}, clear=True):
+            assert hot_wallet._legacy_decrypt_allowed() is False
+
+        for value in ('0', 'false'):
+            with mock.patch.dict(os.environ, {'SPELLBOOK_ALLOW_LEGACY_WALLET_DECRYPT': value}, clear=True):
+                assert hot_wallet._legacy_decrypt_allowed() is False
 
 
 class TestAddKey:
