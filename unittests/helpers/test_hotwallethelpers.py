@@ -454,7 +454,7 @@ class TestGetHotWallet(unittest.TestCase):
             mock_log.error.assert_called_once()
 
     def test_get_hot_wallet_empty_password_legacy_decrypt_failure_warns(self):
-        """A legacy wallet with a non-empty password, both opt-ins set: the legacy decrypt fails, is logged as a warning, and we fall through to prompting (lines 111-112)."""
+        """A legacy wallet with a non-empty password, both opt-ins set: the empty-password legacy decrypt attempt fails, is logged as a warning, and execution falls through to prompting for a password."""
         import os
         import tempfile
 
