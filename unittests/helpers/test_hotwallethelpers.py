@@ -453,6 +453,42 @@ class TestGetHotWallet(unittest.TestCase):
 
             mock_log.error.assert_called_once()
 
+    def test_get_hot_wallet_empty_password_legacy_decrypt_failure_warns(self):
+        """A legacy wallet with a non-empty password, both opt-ins set: the empty-password legacy decrypt attempt fails, is logged as a warning, and execution falls through to prompting for a password."""
+        import os
+        import tempfile
+
+        import helpers.hotwallethelpers as hw_module
+        from helpers.hotwallethelpers import get_hot_wallet
+
+        original = {'mnemonic': ['word1', 'word2'], 'passphrase': ''}
+        hw_module.HOT_WALLET_PASSWORD = None
+        legacy = _legacy_encrypt('nonemptypw', bytes(hw_module.simplejson.dumps(original), 'utf-8'))
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            wallet_id = 'legacy_wrong_pw'
+            wallet_path = os.path.join(tmp_dir, f'{wallet_id}.enc')
+            with open(wallet_path, 'w') as wallet_file:
+                wallet_file.write(legacy.decode('utf-8'))
+
+            with patch.dict('os.environ', {'SPELLBOOK_ALLOW_INSECURE_WALLET_PASSWORD': '1',
+                                           'SPELLBOOK_ALLOW_LEGACY_WALLET_DECRYPT': '1'}, clear=True), \
+                    patch('helpers.hotwallethelpers.get_wallet_dir', return_value=tmp_dir), \
+                    patch('helpers.hotwallethelpers.get_default_wallet', return_value=wallet_id), \
+                    patch('helpers.hotwallethelpers.LOG') as mock_log, \
+                    patch('helpers.hotwallethelpers.prompt_decryption_password') as mock_prompt:
+                def set_password():
+                    hw_module.HOT_WALLET_PASSWORD = 'nonemptypw'
+                mock_prompt.side_effect = set_password
+
+                result = get_hot_wallet()
+
+        mock_prompt.assert_called_once()
+        self.assertEqual(result, original)
+        warn_messages = [c[0][0] for c in mock_log.warning.call_args_list]
+        self.assertTrue(any('Empty-password decryption of a legacy hot wallet failed' in m for m in warn_messages),
+                        f'expected the legacy-decrypt failure warning, got {warn_messages}')
+
     def test_get_hot_wallet_real_round_trip_tolerates_trailing_newline(self):
         """Round-trip a real AESCipher payload with a trailing newline through get_hot_wallet."""
         import os
