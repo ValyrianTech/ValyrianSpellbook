@@ -434,7 +434,7 @@ class Evolver:
             print('Maximum time for evolution has been reached, stopping now')
             return True
 
-        if 0 < self.target_fitness <= self.highest_fitness:
+        if self.highest_fitness is not None and 0 < self.target_fitness <= self.highest_fitness:
             print('Target fitness has been reached, stopping now')
             return True
 
