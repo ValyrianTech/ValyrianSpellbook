@@ -166,6 +166,13 @@ class TestTermination:
         evolver.target_fitness = 0
         assert evolver.termination() is False
 
+    def test_fresh_evolver_default_settings_no_typeerror(self, tmp_path):
+        evolver = Evolver()
+        evolver.dir = str(tmp_path)
+        # highest_fitness is None on a fresh Evolver and target_fitness defaults to 10000.
+        # This must not raise TypeError and must not report termination.
+        assert evolver.termination() is False
+
     def test_max_generations_reached(self):
         evolver = Evolver()
         evolver.max_generations = 10
