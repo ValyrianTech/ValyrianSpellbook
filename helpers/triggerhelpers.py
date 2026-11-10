@@ -200,7 +200,8 @@ def activate_trigger(trigger_id):
 def check_triggers(trigger_id=None):
     """Check all active triggers and activate those whose conditions are fulfilled.
 
-    Also handles self-destruct logic for triggers that have reached their expiry time.
+    Also handles self-destruct logic for triggers that have reached their expiry time,
+    including triggers with an unknown trigger type (using their raw stored config).
 
     :param trigger_id: If given, only check the specified trigger (optional)
     """
@@ -218,6 +219,21 @@ def check_triggers(trigger_id=None):
             trigger = get_trigger(trigger_id=tid)
         except UnknownTriggerTypeError as ex:
             LOG.error(f'Skipping trigger {tid}: {ex}')
+
+            trigger_config = get_trigger_config(tid)
+            self_destruct = trigger_config.get('self_destruct')
+
+            if self_destruct is not None and self_destruct <= int(time.time()):
+                LOG.info(f'Trigger {tid} has reached its self-destruct time')
+
+                if trigger_config.get('destruct_actions') is True:
+                    for action_id in trigger_config.get('actions') or []:
+                        LOG.info(f'Deleting action {action_id}')
+                        delete_action(action_id=action_id)
+
+                LOG.info(f'Deleting trigger {tid}')
+                delete_trigger(trigger_id=tid)
+
             continue
 
         if trigger.status == 'Active':
