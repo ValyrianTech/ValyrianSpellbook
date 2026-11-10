@@ -138,10 +138,14 @@ def save_trigger(trigger_id, **trigger_config):
     :param trigger_id: The id of the trigger
     :param trigger_config: A dict containing the configuration for the trigger
     """
-    if 'trigger_type' in trigger_config:
-        trigger = get_trigger(trigger_id, trigger_type=trigger_config['trigger_type'])
-    else:
-        trigger = get_trigger(trigger_id)
+    try:
+        if 'trigger_type' in trigger_config:
+            trigger = get_trigger(trigger_id, trigger_type=trigger_config['trigger_type'])
+        else:
+            trigger = get_trigger(trigger_id)
+    except UnknownTriggerTypeError as ex:
+        LOG.error(f'Trigger {trigger_id} has an unknown trigger type: {ex}')
+        return {'error': f'Trigger {trigger_id} has an unknown trigger type: {ex}'}
 
     trigger.configure(**trigger_config)
     trigger.save()

@@ -215,6 +215,24 @@ class TestTriggerHelpers:
         mock_trigger.configure.assert_called()
         mock_trigger.save.assert_called_once()
 
+    @mock.patch('helpers.triggerhelpers.LOG')
+    @mock.patch('helpers.triggerhelpers.get_trigger', side_effect=UnknownTriggerTypeError('Unknown trigger type: MadeUpType'))
+    def test_save_trigger_unknown_type(self, mock_get_trigger, mock_log):
+        """Test saving a trigger with an unknown type returns an error dict"""
+        result = save_trigger('test_trigger', trigger_type=TriggerType.MANUAL)
+        assert isinstance(result, dict)
+        assert 'error' in result
+        assert mock_log.error.called
+
+    @mock.patch('helpers.triggerhelpers.LOG')
+    @mock.patch('helpers.triggerhelpers.get_trigger', side_effect=UnknownTriggerTypeError('Unknown trigger type: MadeUpType'))
+    def test_save_trigger_unknown_type_without_type(self, mock_get_trigger, mock_log):
+        """Test saving a trigger without type and with unknown stored type returns an error dict"""
+        result = save_trigger('test_trigger')
+        assert isinstance(result, dict)
+        assert 'error' in result
+        assert mock_log.error.called
+
     @mock.patch('os.path.isfile', return_value=True)
     @mock.patch('os.remove')
     def test_delete_trigger(self, mock_remove, mock_isfile):
