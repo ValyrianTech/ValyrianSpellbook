@@ -92,6 +92,8 @@ Triggers invoke actions based on specific conditions:
 - **Manual Activation**: Trigger manually via a specific API endpoint (POST).
 - **Dead Man's Switch**: A time-based trigger that sends notifications if not reset periodically.
 
+A stored trigger whose `trigger_type` is not recognized is skipped during bulk trigger checks (`check_triggers`) and reported as an error by single-trigger operations, rather than crashing the check/activate/run flow.
+
 ---
 
 ## Actions
