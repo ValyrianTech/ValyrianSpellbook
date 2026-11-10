@@ -35,6 +35,31 @@ from validators.validators import valid_address
 TRIGGERS_DIR = 'json/public/triggers'
 
 
+class UnknownTriggerTypeError(ValueError):
+    """Raised when a stored trigger_type is not a recognised TriggerType constant."""
+
+
+_TRIGGER_CLASSES = {
+    TriggerType.BALANCE: BalanceTrigger,
+    TriggerType.RECEIVED: ReceivedTrigger,
+    TriggerType.SENT: SentTrigger,
+    TriggerType.BLOCK_HEIGHT: BlockHeightTrigger,
+    TriggerType.TX_CONFIRMATION: TxConfirmationTrigger,
+    TriggerType.TIMESTAMP: TimestampTrigger,
+    TriggerType.RECURRING: RecurringTrigger,
+    TriggerType.TRIGGERSTATUS: TriggerStatusTrigger,
+    TriggerType.DEADMANSSWITCH: DeadMansSwitchTrigger,
+    TriggerType.SIGNEDMESSAGE: SignedMessageTrigger,
+    TriggerType.MANUAL: ManualTrigger,
+    TriggerType.HTTPGETREQUEST: HTTPGetRequestTrigger,
+    TriggerType.HTTPPOSTREQUEST: HTTPPostRequestTrigger,
+    TriggerType.HTTPDELETEREQUEST: HTTPDeleteRequestTrigger,
+    # TriggerType.HTTPOPTIONSREQUEST is intentionally omitted: no
+    # HTTPOptionsRequestTrigger subclass exists yet, so get_trigger() raises
+    # UnknownTriggerTypeError for OPTIONS triggers by design.
+}
+
+
 def get_triggers():
     """
     Get the list of triggers_ids
@@ -83,7 +108,9 @@ def get_trigger(trigger_id, trigger_type=None):
     - RecurringTrigger
     - TriggerStatusTrigger
 
-    If no config is known for the given trigger id then a ManualTrigger is returned
+    If no config is known for the given trigger id then a ManualTrigger is returned.
+    If the stored trigger_type is not a recognised TriggerType constant then
+    UnknownTriggerTypeError is raised.
 
     :param trigger_id: The id of the trigger
     :param trigger_type: The type of the trigger (optional)
@@ -96,36 +123,11 @@ def get_trigger(trigger_id, trigger_type=None):
 
     trigger_type = trigger_config.get('trigger_type', TriggerType.MANUAL)
 
-    if trigger_type == TriggerType.BALANCE:
-        trigger = BalanceTrigger(trigger_id)
-    elif trigger_type == TriggerType.RECEIVED:
-        trigger = ReceivedTrigger(trigger_id)
-    elif trigger_type == TriggerType.SENT:
-        trigger = SentTrigger(trigger_id)
-    elif trigger_type == TriggerType.BLOCK_HEIGHT:
-        trigger = BlockHeightTrigger(trigger_id)
-    elif trigger_type == TriggerType.TX_CONFIRMATION:
-        trigger = TxConfirmationTrigger(trigger_id)
-    elif trigger_type == TriggerType.TIMESTAMP:
-        trigger = TimestampTrigger(trigger_id)
-    elif trigger_type == TriggerType.RECURRING:
-        trigger = RecurringTrigger(trigger_id)
-    elif trigger_type == TriggerType.TRIGGERSTATUS:
-        trigger = TriggerStatusTrigger(trigger_id)
-    elif trigger_type == TriggerType.DEADMANSSWITCH:
-        trigger = DeadMansSwitchTrigger(trigger_id)
-    elif trigger_type == TriggerType.SIGNEDMESSAGE:
-        trigger = SignedMessageTrigger(trigger_id)
-    elif trigger_type == TriggerType.MANUAL:
-        trigger = ManualTrigger(trigger_id)
-    elif trigger_type == TriggerType.HTTPGETREQUEST:
-        trigger = HTTPGetRequestTrigger(trigger_id)
-    elif trigger_type == TriggerType.HTTPPOSTREQUEST:
-        trigger = HTTPPostRequestTrigger(trigger_id)
-    elif trigger_type == TriggerType.HTTPDELETEREQUEST:
-        trigger = HTTPDeleteRequestTrigger(trigger_id)
-    else:
-        raise NotImplementedError(f'Unknown trigger type: {trigger_type}')
+    trigger_class = _TRIGGER_CLASSES.get(trigger_type)
+    if trigger_class is None:
+        raise UnknownTriggerTypeError(f'Unknown trigger type: {trigger_type}')
+
+    trigger = trigger_class(trigger_id)
 
     trigger.configure(**trigger_config)
 
@@ -139,10 +141,14 @@ def save_trigger(trigger_id, **trigger_config):
     :param trigger_id: The id of the trigger
     :param trigger_config: A dict containing the configuration for the trigger
     """
-    if 'trigger_type' in trigger_config:
-        trigger = get_trigger(trigger_id, trigger_type=trigger_config['trigger_type'])
-    else:
-        trigger = get_trigger(trigger_id)
+    try:
+        if 'trigger_type' in trigger_config:
+            trigger = get_trigger(trigger_id, trigger_type=trigger_config['trigger_type'])
+        else:
+            trigger = get_trigger(trigger_id)
+    except UnknownTriggerTypeError as ex:
+        LOG.error(f'Trigger {trigger_id} has an unknown trigger type: {ex}')
+        return {'error': f'Trigger {trigger_id} has an unknown trigger type: {ex}'}
 
     trigger.configure(**trigger_config)
     trigger.save()
@@ -180,7 +186,12 @@ def activate_trigger(trigger_id):
     if not os.path.isfile(filename):
         return {'error': f'Unknown trigger id: {trigger_id}'}
 
-    trigger = get_trigger(trigger_id)
+    try:
+        trigger = get_trigger(trigger_id)
+    except UnknownTriggerTypeError as ex:
+        LOG.error(f'Trigger {trigger_id} has an unknown trigger type: {ex}')
+        return {'error': f'Trigger {trigger_id} has an unknown trigger type: {ex}'}
+
     if trigger.trigger_type == TriggerType.MANUAL:
         return trigger.activate()
     elif trigger.trigger_type == TriggerType.DEADMANSSWITCH:
@@ -192,7 +203,8 @@ def activate_trigger(trigger_id):
 def check_triggers(trigger_id=None):
     """Check all active triggers and activate those whose conditions are fulfilled.
 
-    Also handles self-destruct logic for triggers that have reached their expiry time.
+    Also handles self-destruct logic for triggers that have reached their expiry time,
+    including triggers with an unknown trigger type (using their raw stored config).
 
     :param trigger_id: If given, only check the specified trigger (optional)
     """
@@ -206,7 +218,27 @@ def check_triggers(trigger_id=None):
         return {'error': f'Unknown trigger id: {trigger_id}'}
 
     for tid in triggers:
-        trigger = get_trigger(trigger_id=tid)
+        try:
+            trigger = get_trigger(trigger_id=tid)
+        except UnknownTriggerTypeError as ex:
+            LOG.error(f'Skipping trigger {tid}: {ex}')
+
+            trigger_config = get_trigger_config(tid)
+            self_destruct = trigger_config.get('self_destruct')
+
+            if self_destruct is not None and self_destruct <= int(time.time()):
+                LOG.info(f'Trigger {tid} has reached its self-destruct time')
+
+                if trigger_config.get('destruct_actions') is True:
+                    for action_id in trigger_config.get('actions') or []:
+                        LOG.info(f'Deleting action {action_id}')
+                        delete_action(action_id=action_id)
+
+                LOG.info(f'Deleting trigger {tid}')
+                delete_trigger(trigger_id=tid)
+
+            continue
+
         if trigger.status == 'Active':
             LOG.info(f'Checking conditions of trigger {tid}')
             if trigger.conditions_fulfilled() is True:
@@ -240,7 +272,12 @@ def verify_signed_message(trigger_id, **data):
     if trigger_id not in triggers:
         return {'error': f'Unknown trigger id: {trigger_id}'}
 
-    trigger = get_trigger(trigger_id)
+    try:
+        trigger = get_trigger(trigger_id)
+    except UnknownTriggerTypeError as ex:
+        LOG.error(f'Trigger {trigger_id} has an unknown trigger type: {ex}')
+        return {'error': f'Trigger {trigger_id} has an unknown trigger type'}
+
     if trigger.trigger_type != TriggerType.SIGNEDMESSAGE:
         return {'error': f'Trigger {trigger.trigger_type} is not a Signedmessage trigger'}
 
@@ -313,7 +350,12 @@ def http_options_request(trigger_id, **data):
     if trigger_id not in triggers:
         return {'error': f'Unknown trigger id: {trigger_id}'}
 
-    trigger = get_trigger(trigger_id)
+    try:
+        trigger = get_trigger(trigger_id)
+    except UnknownTriggerTypeError as ex:
+        LOG.error(f'Trigger {trigger_id} has an unknown trigger type: {ex}')
+        return {'error': f'Trigger {trigger_id} has an unknown trigger type'}
+
     if trigger.trigger_type != TriggerType.HTTPOPTIONSREQUEST:
         return {'error': f'Trigger {trigger_id} is not a HTTP OPTIONS request trigger but a {trigger.trigger_type} trigger'}
 
@@ -335,7 +377,12 @@ def http_get_request(trigger_id, **data):
     if trigger_id not in triggers:
         return {'error': f'Unknown trigger id: {trigger_id}'}
 
-    trigger = get_trigger(trigger_id)
+    try:
+        trigger = get_trigger(trigger_id)
+    except UnknownTriggerTypeError as ex:
+        LOG.error(f'Trigger {trigger_id} has an unknown trigger type: {ex}')
+        return {'error': f'Trigger {trigger_id} has an unknown trigger type'}
+
     if trigger.trigger_type != TriggerType.HTTPGETREQUEST:
         return {'error': f'Trigger {trigger_id} is not a HTTP GET request trigger but a {trigger.trigger_type} trigger'}
 
@@ -357,7 +404,12 @@ def http_post_request(trigger_id, **data):
     if trigger_id not in triggers:
         return {'error': f'Unknown trigger id: {trigger_id}'}
 
-    trigger = get_trigger(trigger_id)
+    try:
+        trigger = get_trigger(trigger_id)
+    except UnknownTriggerTypeError as ex:
+        LOG.error(f'Trigger {trigger_id} has an unknown trigger type: {ex}')
+        return {'error': f'Trigger {trigger_id} has an unknown trigger type'}
+
     if trigger.trigger_type != TriggerType.HTTPPOSTREQUEST:
         return {'error': f'Trigger {trigger_id} is not a HTTP POST request trigger but a {trigger.trigger_type} trigger'}
 
@@ -379,7 +431,12 @@ def http_delete_request(trigger_id, **data):
     if trigger_id not in triggers:
         return {'error': f'Unknown trigger id: {trigger_id}'}
 
-    trigger = get_trigger(trigger_id)
+    try:
+        trigger = get_trigger(trigger_id)
+    except UnknownTriggerTypeError as ex:
+        LOG.error(f'Trigger {trigger_id} has an unknown trigger type: {ex}')
+        return {'error': f'Trigger {trigger_id} has an unknown trigger type'}
+
     if trigger.trigger_type != TriggerType.HTTPDELETEREQUEST:
         return {'error': f'Trigger {trigger_id} is not a HTTP DELETE request trigger but a {trigger.trigger_type} trigger'}
 
@@ -401,7 +458,12 @@ def signed_message_request(trigger_id, **data):
     if trigger_id not in triggers:
         return {'error': f'Unknown trigger id: {trigger_id}'}
 
-    trigger = get_trigger(trigger_id)
+    try:
+        trigger = get_trigger(trigger_id)
+    except UnknownTriggerTypeError as ex:
+        LOG.error(f'Trigger {trigger_id} has an unknown trigger type: {ex}')
+        return {'error': f'Trigger {trigger_id} has an unknown trigger type'}
+
     if trigger.trigger_type != TriggerType.SIGNEDMESSAGE:
         return {'error': f'Trigger {trigger_id} is not a SignedMessage request trigger but a {trigger.trigger_type} trigger'}
 
@@ -431,7 +493,12 @@ def file_download(trigger_id, **data):
     if trigger_id not in triggers:
         return {'error': f'Unknown trigger id: {trigger_id}'}
 
-    trigger = get_trigger(trigger_id)
+    try:
+        trigger = get_trigger(trigger_id)
+    except UnknownTriggerTypeError as ex:
+        LOG.error(f'Trigger {trigger_id} has an unknown trigger type: {ex}')
+        return {'error': f'Trigger {trigger_id} has an unknown trigger type'}
+
     if trigger.trigger_type != TriggerType.HTTPGETREQUEST:
         return {'error': f'Trigger {trigger_id} is not a HTTP GET request trigger but a {trigger.trigger_type} trigger'}
 

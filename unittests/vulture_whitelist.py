@@ -4,3 +4,6 @@
 
 # Pytest autouse fixtures.
 _mock_valid_webhook_url
+
+# mock.patch-injected arguments (decorator side effects are required).
+mock_get_trigger_config

@@ -3,7 +3,10 @@ from unittest import mock
 
 import pytest
 
+import helpers.triggerhelpers
 from helpers.triggerhelpers import (
+    _TRIGGER_CLASSES,
+    UnknownTriggerTypeError,
     activate_trigger,
     check_triggers,
     delete_trigger,
@@ -22,6 +25,7 @@ from helpers.triggerhelpers import (
 )
 from trigger.deadmansswitchtrigger import DeadMansSwitchTrigger
 from trigger.manualtrigger import ManualTrigger
+from trigger.trigger import Trigger
 from trigger.triggertype import TriggerType
 
 
@@ -160,7 +164,7 @@ class TestTriggerHelpers:
     def test_get_trigger_unknown_type(self, mock_load):
         """Test getting a trigger with unknown type raises error"""
         mock_load.return_value = {'trigger_type': 'UnknownType'}
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(UnknownTriggerTypeError):
             get_trigger('test_trigger')
 
     @mock.patch('helpers.triggerhelpers.load_from_json_file')
@@ -176,6 +180,18 @@ class TestTriggerHelpers:
         mock_load.return_value = {'trigger_type': TriggerType.MANUAL}
         trigger = get_trigger('test_trigger', trigger_type=TriggerType.BALANCE)
         assert trigger.trigger_type == TriggerType.BALANCE
+
+    def test_trigger_classes_mapping(self):
+        """Test that every supported trigger type maps to a Trigger subclass"""
+        for attr in dir(TriggerType):
+            if attr.startswith('_'):
+                continue
+            value = getattr(TriggerType, attr)
+            # HTTPOptionsRequest has no trigger class in this repo and is intentionally unmapped
+            if value == TriggerType.HTTPOPTIONSREQUEST:
+                continue
+            assert value in _TRIGGER_CLASSES
+            assert issubclass(_TRIGGER_CLASSES[value], Trigger)
 
     @mock.patch('helpers.triggerhelpers.get_trigger')
     def test_save_trigger(self, mock_get_trigger):
@@ -198,6 +214,24 @@ class TestTriggerHelpers:
         
         mock_trigger.configure.assert_called()
         mock_trigger.save.assert_called_once()
+
+    @mock.patch('helpers.triggerhelpers.LOG')
+    @mock.patch('helpers.triggerhelpers.get_trigger', side_effect=UnknownTriggerTypeError('Unknown trigger type: MadeUpType'))
+    def test_save_trigger_unknown_type(self, mock_get_trigger, mock_log):
+        """Test saving a trigger with an unknown type returns an error dict"""
+        result = save_trigger('test_trigger', trigger_type=TriggerType.MANUAL)
+        assert isinstance(result, dict)
+        assert 'error' in result
+        assert mock_log.error.called
+
+    @mock.patch('helpers.triggerhelpers.LOG')
+    @mock.patch('helpers.triggerhelpers.get_trigger', side_effect=UnknownTriggerTypeError('Unknown trigger type: MadeUpType'))
+    def test_save_trigger_unknown_type_without_type(self, mock_get_trigger, mock_log):
+        """Test saving a trigger without type and with unknown stored type returns an error dict"""
+        result = save_trigger('test_trigger')
+        assert isinstance(result, dict)
+        assert 'error' in result
+        assert mock_log.error.called
 
     @mock.patch('os.path.isfile', return_value=True)
     @mock.patch('os.remove')
@@ -267,6 +301,16 @@ class TestTriggerHelpers:
         assert 'error' in result
 
     @mock.patch('os.path.isfile', return_value=True)
+    @mock.patch('helpers.triggerhelpers.LOG')
+    @mock.patch('helpers.triggerhelpers.get_trigger', side_effect=UnknownTriggerTypeError('Unknown trigger type: MadeUpType'))
+    def test_activate_trigger_unknown_type(self, mock_get_trigger, mock_log, mock_isfile):
+        """Test activating a trigger with an unknown type returns an error dict"""
+        result = activate_trigger('test_trigger')
+        assert isinstance(result, dict)
+        assert 'error' in result
+        assert mock_log.error.called
+
+    @mock.patch('os.path.isfile', return_value=True)
     @mock.patch('helpers.triggerhelpers.get_trigger')
     def test_activate_trigger_manual_real(self, mock_get_trigger, mock_isfile):
         """Test activating a real Manual trigger returns a non-None dict"""
@@ -333,6 +377,38 @@ class TestTriggerHelpers:
         """Test checking an unknown trigger"""
         result = check_triggers(trigger_id='unknown')
         assert 'error' in result
+
+    @mock.patch('helpers.triggerhelpers.LOG')
+    @mock.patch('helpers.triggerhelpers.get_triggers', return_value=['good_trigger', 'bad_trigger'])
+    @mock.patch('helpers.triggerhelpers.get_trigger')
+    def test_check_triggers_skips_unknown_type(self, mock_get_trigger, mock_get_triggers, mock_log):
+        """Test that an unknown trigger type is skipped and the good trigger is still processed"""
+        good_trigger = mock.MagicMock()
+        good_trigger.status = 'Active'
+        good_trigger.conditions_fulfilled.return_value = True
+        good_trigger.self_destruct = None
+        mock_get_trigger.side_effect = [
+            good_trigger,
+            UnknownTriggerTypeError('Unknown trigger type: MadeUpType'),
+        ]
+
+        check_triggers()
+
+        good_trigger.conditions_fulfilled.assert_called_once()
+        good_trigger.activate.assert_called_once()
+        assert mock_log.error.called
+
+    def test_check_triggers_skips_bad_file(self, tmp_path, monkeypatch):
+        """Test that a real JSON file with an unknown trigger_type is skipped and logged"""
+        triggers_dir = tmp_path / 'triggers'
+        triggers_dir.mkdir()
+        (triggers_dir / 'badtrigger.json').write_text('{"trigger_type": "MadeUpType"}')
+        monkeypatch.setattr(helpers.triggerhelpers, 'TRIGGERS_DIR', str(triggers_dir))
+
+        with mock.patch('helpers.triggerhelpers.LOG') as mock_log:
+            check_triggers()
+
+        assert mock_log.error.called
 
     @mock.patch('helpers.triggerhelpers.get_triggers', return_value=['trigger1'])
     @mock.patch('helpers.triggerhelpers.get_trigger')
@@ -624,6 +700,63 @@ class TestCheckTriggersAdvanced:
         assert mock_delete_action.call_count == 2
         mock_delete_trigger.assert_called_once()
 
+    @mock.patch('helpers.triggerhelpers.LOG')
+    @mock.patch('helpers.triggerhelpers.delete_trigger')
+    @mock.patch('helpers.triggerhelpers.delete_action')
+    @mock.patch('helpers.triggerhelpers.get_triggers', return_value=['bad_trigger'])
+    @mock.patch('helpers.triggerhelpers.get_trigger_config', return_value={'trigger_type': 'MadeUpType', 'self_destruct': 500})
+    @mock.patch('helpers.triggerhelpers.get_trigger', side_effect=UnknownTriggerTypeError('Unknown trigger type: MadeUpType'))
+    @mock.patch('time.time', return_value=1000)
+    def test_check_triggers_unknown_type_self_destruct(self, mock_time, mock_get_trigger, mock_get_trigger_config, mock_get_triggers, mock_delete_action, mock_delete_trigger, mock_log):
+        """Test unknown-type trigger still gets self-destruct cleanup without action destruction"""
+        check_triggers()
+        mock_delete_trigger.assert_called_once_with(trigger_id='bad_trigger')
+        mock_delete_action.assert_not_called()
+        assert mock_log.error.called
+
+    @mock.patch('helpers.triggerhelpers.LOG')
+    @mock.patch('helpers.triggerhelpers.delete_trigger')
+    @mock.patch('helpers.triggerhelpers.delete_action')
+    @mock.patch('helpers.triggerhelpers.get_triggers', return_value=['bad_trigger'])
+    @mock.patch('helpers.triggerhelpers.get_trigger_config', return_value={'trigger_type': 'MadeUpType', 'self_destruct': 500, 'destruct_actions': True, 'actions': ['action1', 'action2']})
+    @mock.patch('helpers.triggerhelpers.get_trigger', side_effect=UnknownTriggerTypeError('Unknown trigger type: MadeUpType'))
+    @mock.patch('time.time', return_value=1000)
+    def test_check_triggers_unknown_type_self_destruct_with_actions(self, mock_time, mock_get_trigger, mock_get_trigger_config, mock_get_triggers, mock_delete_action, mock_delete_trigger, mock_log):
+        """Test unknown-type trigger self-destruct also deletes attached actions"""
+        check_triggers()
+        assert mock_delete_action.call_count == 2
+        mock_delete_action.assert_has_calls([
+            mock.call(action_id='action1'),
+            mock.call(action_id='action2'),
+        ])
+        mock_delete_trigger.assert_called_once_with(trigger_id='bad_trigger')
+
+    @mock.patch('helpers.triggerhelpers.LOG')
+    @mock.patch('helpers.triggerhelpers.delete_trigger')
+    @mock.patch('helpers.triggerhelpers.delete_action')
+    @mock.patch('helpers.triggerhelpers.get_triggers', return_value=['bad_trigger'])
+    @mock.patch('helpers.triggerhelpers.get_trigger_config', return_value={'trigger_type': 'MadeUpType', 'self_destruct': 2000})
+    @mock.patch('helpers.triggerhelpers.get_trigger', side_effect=UnknownTriggerTypeError('Unknown trigger type: MadeUpType'))
+    @mock.patch('time.time', return_value=1000)
+    def test_check_triggers_unknown_type_self_destruct_future(self, mock_time, mock_get_trigger, mock_get_trigger_config, mock_get_triggers, mock_delete_action, mock_delete_trigger, mock_log):
+        """Test unknown-type trigger with future self_destruct is not deleted"""
+        check_triggers()
+        mock_delete_trigger.assert_not_called()
+        mock_delete_action.assert_not_called()
+
+    @mock.patch('helpers.triggerhelpers.LOG')
+    @mock.patch('helpers.triggerhelpers.delete_trigger')
+    @mock.patch('helpers.triggerhelpers.delete_action')
+    @mock.patch('helpers.triggerhelpers.get_triggers', return_value=['bad_trigger'])
+    @mock.patch('helpers.triggerhelpers.get_trigger_config', return_value={'trigger_type': 'MadeUpType'})
+    @mock.patch('helpers.triggerhelpers.get_trigger', side_effect=UnknownTriggerTypeError('Unknown trigger type: MadeUpType'))
+    @mock.patch('time.time', return_value=1000)
+    def test_check_triggers_unknown_type_no_self_destruct(self, mock_time, mock_get_trigger, mock_get_trigger_config, mock_get_triggers, mock_delete_action, mock_delete_trigger, mock_log):
+        """Test unknown-type trigger with no self_destruct is not deleted"""
+        check_triggers()
+        mock_delete_trigger.assert_not_called()
+        mock_delete_action.assert_not_called()
+
 
 class TestVerifySignedMessageAdvanced:
     """Advanced tests for verify_signed_message function"""
@@ -722,3 +855,77 @@ class TestHttpOptionsRequest:
         http_options_request('trigger1')
         mock_trigger.set_json_data.assert_not_called()
         mock_trigger.activate.assert_called_once()
+
+
+class TestUnknownTriggerTypeHandling:
+    """Tests for unknown trigger type handling in HTTP entry points"""
+
+    @mock.patch('helpers.triggerhelpers.LOG')
+    @mock.patch('helpers.triggerhelpers.get_triggers', return_value=['trigger1'])
+    @mock.patch('helpers.triggerhelpers.get_trigger', side_effect=UnknownTriggerTypeError('Unknown trigger type: MadeUpType'))
+    def test_http_get_request_unknown_type(self, mock_get_trigger, mock_get_triggers, mock_log):
+        """Test HTTP GET request with an unknown trigger type returns an error dict"""
+        result = http_get_request('trigger1')
+        assert isinstance(result, dict)
+        assert 'error' in result
+        assert mock_log.error.called
+
+    @mock.patch('helpers.triggerhelpers.LOG')
+    @mock.patch('helpers.triggerhelpers.get_triggers', return_value=['trigger1'])
+    @mock.patch('helpers.triggerhelpers.get_trigger', side_effect=UnknownTriggerTypeError('Unknown trigger type: MadeUpType'))
+    def test_http_post_request_unknown_type(self, mock_get_trigger, mock_get_triggers, mock_log):
+        """Test HTTP POST request with an unknown trigger type returns an error dict"""
+        result = http_post_request('trigger1')
+        assert isinstance(result, dict)
+        assert 'error' in result
+        assert mock_log.error.called
+
+    @mock.patch('helpers.triggerhelpers.LOG')
+    @mock.patch('helpers.triggerhelpers.get_triggers', return_value=['trigger1'])
+    @mock.patch('helpers.triggerhelpers.get_trigger', side_effect=UnknownTriggerTypeError('Unknown trigger type: MadeUpType'))
+    def test_http_delete_request_unknown_type(self, mock_get_trigger, mock_get_triggers, mock_log):
+        """Test HTTP DELETE request with an unknown trigger type returns an error dict"""
+        result = http_delete_request('trigger1')
+        assert isinstance(result, dict)
+        assert 'error' in result
+        assert mock_log.error.called
+
+    @mock.patch('helpers.triggerhelpers.LOG')
+    @mock.patch('helpers.triggerhelpers.get_triggers', return_value=['trigger1'])
+    @mock.patch('helpers.triggerhelpers.get_trigger', side_effect=UnknownTriggerTypeError('Unknown trigger type: MadeUpType'))
+    def test_http_options_request_unknown_type(self, mock_get_trigger, mock_get_triggers, mock_log):
+        """Test HTTP OPTIONS request with an unknown trigger type returns an error dict"""
+        result = http_options_request('trigger1')
+        assert isinstance(result, dict)
+        assert 'error' in result
+        assert mock_log.error.called
+
+    @mock.patch('helpers.triggerhelpers.LOG')
+    @mock.patch('helpers.triggerhelpers.get_triggers', return_value=['trigger1'])
+    @mock.patch('helpers.triggerhelpers.get_trigger', side_effect=UnknownTriggerTypeError('Unknown trigger type: MadeUpType'))
+    def test_signed_message_request_unknown_type(self, mock_get_trigger, mock_get_triggers, mock_log):
+        """Test SignedMessage request with an unknown trigger type returns an error dict"""
+        result = signed_message_request('trigger1')
+        assert isinstance(result, dict)
+        assert 'error' in result
+        assert mock_log.error.called
+
+    @mock.patch('helpers.triggerhelpers.LOG')
+    @mock.patch('helpers.triggerhelpers.get_triggers', return_value=['trigger1'])
+    @mock.patch('helpers.triggerhelpers.get_trigger', side_effect=UnknownTriggerTypeError('Unknown trigger type: MadeUpType'))
+    def test_file_download_unknown_type(self, mock_get_trigger, mock_get_triggers, mock_log):
+        """Test file download with an unknown trigger type returns an error dict"""
+        result = file_download('trigger1')
+        assert isinstance(result, dict)
+        assert 'error' in result
+        assert mock_log.error.called
+
+    @mock.patch('helpers.triggerhelpers.LOG')
+    @mock.patch('helpers.triggerhelpers.get_triggers', return_value=['trigger1'])
+    @mock.patch('helpers.triggerhelpers.get_trigger', side_effect=UnknownTriggerTypeError('Unknown trigger type: MadeUpType'))
+    def test_verify_signed_message_unknown_type(self, mock_get_trigger, mock_get_triggers, mock_log):
+        """Test verify_signed_message with an unknown trigger type returns an error dict"""
+        result = verify_signed_message('trigger1', address='addr', message='msg', signature='sig')
+        assert isinstance(result, dict)
+        assert 'error' in result
+        assert mock_log.error.called

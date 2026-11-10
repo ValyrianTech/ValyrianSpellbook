@@ -111,6 +111,7 @@ mock_getenv
 mock_get_host
 mock_get_nsec
 mock_get_token
+mock_get_trigger_config
 mock_get_wallet
 mock_host
 mock_id
