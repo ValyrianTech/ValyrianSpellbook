@@ -54,6 +54,9 @@ _TRIGGER_CLASSES = {
     TriggerType.HTTPGETREQUEST: HTTPGetRequestTrigger,
     TriggerType.HTTPPOSTREQUEST: HTTPPostRequestTrigger,
     TriggerType.HTTPDELETEREQUEST: HTTPDeleteRequestTrigger,
+    # TriggerType.HTTPOPTIONSREQUEST is intentionally omitted: no
+    # HTTPOptionsRequestTrigger subclass exists yet, so get_trigger() raises
+    # UnknownTriggerTypeError for OPTIONS triggers by design.
 }
 
 
