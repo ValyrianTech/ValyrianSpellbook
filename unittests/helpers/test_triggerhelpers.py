@@ -700,6 +700,63 @@ class TestCheckTriggersAdvanced:
         assert mock_delete_action.call_count == 2
         mock_delete_trigger.assert_called_once()
 
+    @mock.patch('helpers.triggerhelpers.LOG')
+    @mock.patch('helpers.triggerhelpers.delete_trigger')
+    @mock.patch('helpers.triggerhelpers.delete_action')
+    @mock.patch('helpers.triggerhelpers.get_triggers', return_value=['bad_trigger'])
+    @mock.patch('helpers.triggerhelpers.get_trigger_config', return_value={'trigger_type': 'MadeUpType', 'self_destruct': 500})
+    @mock.patch('helpers.triggerhelpers.get_trigger', side_effect=UnknownTriggerTypeError('Unknown trigger type: MadeUpType'))
+    @mock.patch('time.time', return_value=1000)
+    def test_check_triggers_unknown_type_self_destruct(self, mock_time, mock_get_trigger, mock_get_trigger_config, mock_get_triggers, mock_delete_action, mock_delete_trigger, mock_log):
+        """Test unknown-type trigger still gets self-destruct cleanup without action destruction"""
+        check_triggers()
+        mock_delete_trigger.assert_called_once_with(trigger_id='bad_trigger')
+        mock_delete_action.assert_not_called()
+        assert mock_log.error.called
+
+    @mock.patch('helpers.triggerhelpers.LOG')
+    @mock.patch('helpers.triggerhelpers.delete_trigger')
+    @mock.patch('helpers.triggerhelpers.delete_action')
+    @mock.patch('helpers.triggerhelpers.get_triggers', return_value=['bad_trigger'])
+    @mock.patch('helpers.triggerhelpers.get_trigger_config', return_value={'trigger_type': 'MadeUpType', 'self_destruct': 500, 'destruct_actions': True, 'actions': ['action1', 'action2']})
+    @mock.patch('helpers.triggerhelpers.get_trigger', side_effect=UnknownTriggerTypeError('Unknown trigger type: MadeUpType'))
+    @mock.patch('time.time', return_value=1000)
+    def test_check_triggers_unknown_type_self_destruct_with_actions(self, mock_time, mock_get_trigger, mock_get_trigger_config, mock_get_triggers, mock_delete_action, mock_delete_trigger, mock_log):
+        """Test unknown-type trigger self-destruct also deletes attached actions"""
+        check_triggers()
+        assert mock_delete_action.call_count == 2
+        mock_delete_action.assert_has_calls([
+            mock.call(action_id='action1'),
+            mock.call(action_id='action2'),
+        ])
+        mock_delete_trigger.assert_called_once_with(trigger_id='bad_trigger')
+
+    @mock.patch('helpers.triggerhelpers.LOG')
+    @mock.patch('helpers.triggerhelpers.delete_trigger')
+    @mock.patch('helpers.triggerhelpers.delete_action')
+    @mock.patch('helpers.triggerhelpers.get_triggers', return_value=['bad_trigger'])
+    @mock.patch('helpers.triggerhelpers.get_trigger_config', return_value={'trigger_type': 'MadeUpType', 'self_destruct': 2000})
+    @mock.patch('helpers.triggerhelpers.get_trigger', side_effect=UnknownTriggerTypeError('Unknown trigger type: MadeUpType'))
+    @mock.patch('time.time', return_value=1000)
+    def test_check_triggers_unknown_type_self_destruct_future(self, mock_time, mock_get_trigger, mock_get_trigger_config, mock_get_triggers, mock_delete_action, mock_delete_trigger, mock_log):
+        """Test unknown-type trigger with future self_destruct is not deleted"""
+        check_triggers()
+        mock_delete_trigger.assert_not_called()
+        mock_delete_action.assert_not_called()
+
+    @mock.patch('helpers.triggerhelpers.LOG')
+    @mock.patch('helpers.triggerhelpers.delete_trigger')
+    @mock.patch('helpers.triggerhelpers.delete_action')
+    @mock.patch('helpers.triggerhelpers.get_triggers', return_value=['bad_trigger'])
+    @mock.patch('helpers.triggerhelpers.get_trigger_config', return_value={'trigger_type': 'MadeUpType'})
+    @mock.patch('helpers.triggerhelpers.get_trigger', side_effect=UnknownTriggerTypeError('Unknown trigger type: MadeUpType'))
+    @mock.patch('time.time', return_value=1000)
+    def test_check_triggers_unknown_type_no_self_destruct(self, mock_time, mock_get_trigger, mock_get_trigger_config, mock_get_triggers, mock_delete_action, mock_delete_trigger, mock_log):
+        """Test unknown-type trigger with no self_destruct is not deleted"""
+        check_triggers()
+        mock_delete_trigger.assert_not_called()
+        mock_delete_action.assert_not_called()
+
 
 class TestVerifySignedMessageAdvanced:
     """Advanced tests for verify_signed_message function"""
