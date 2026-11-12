@@ -317,16 +317,27 @@ class SendTransactionAction(Action):
                 LOG.error(f'Aborting SendTransaction: The total value of the receiving outputs is less than the transaction fee: {total_sending_value} < {transaction_fee}')
                 return ActionResult(success=False)
 
+            # Split the transaction fee across the receiving outputs using a largest-remainder
+            # distribution so that no satoshis are silently dropped as an extra miner fee when the
+            # fee does not divide evenly among the outputs.
             fee_share = int(transaction_fee/len(receiving_outputs))
-            for receiving_output in receiving_outputs:
-                if receiving_output.value < fee_share:
-                    LOG.error(f'Aborting SendTransaction: The value of at least one receiving output is not enough to subtract its share of the transaction fee: {receiving_output.value} < {fee_share}')
+            remainder = transaction_fee - fee_share * len(receiving_outputs)
+
+            # Subtract 1 extra satoshi from the highest-value outputs first
+            sorted_outputs = sorted(receiving_outputs, key=lambda output: output.value, reverse=True)
+            for index, receiving_output in enumerate(sorted_outputs):
+                extra = 1 if index < remainder else 0
+                if receiving_output.value < fee_share + extra:
+                    LOG.error(f'Aborting SendTransaction: The value of at least one receiving output is not enough to subtract its share of the transaction fee: {receiving_output.value} < {fee_share + extra}')
                     return ActionResult(success=False)
                 else:
-                    receiving_output.value -= fee_share
+                    receiving_output.value -= fee_share + extra
 
-            # Adjust the transaction fee in case dividing the transaction fee has caused some rounding errors
-            transaction_fee = int(fee_share * len(receiving_outputs))
+            if remainder != 0:
+                LOG.info(f'Distributing {remainder} leftover satoshi(s) of the transaction fee across the highest-value receiving output(s)')
+
+            # Keep the full transaction fee so that everything is accounted for
+            transaction_fee = fee_share * len(receiving_outputs) + remainder
 
         # if a specific amount needs to be sent, then the transaction fee should be subtracted from the change output
         elif self.amount > 0 and change_output is not None:
@@ -598,12 +609,14 @@ class SendTransactionAction(Action):
 
         Each output value must be greater or equal than the minimum output value, otherwise that output is excluded from the distribution
 
-        Important: the total of the output values must be the same as the sending_amount,
-                   sometimes rounding errors can occur because of the distribution, if this happens
-                   then the first output absorbs the remaining amount (the remainder is always >= 0, never negative)
+        Important: the total of the output values must be the same as the sending_amount.
+                   Rounding errors can leave a small remainder. The remainder is only absorbed into the
+                   first output when it is smaller than the minimum output value (genuine rounding dust);
+                   a larger remainder would silently re-allocate funds, so in that case the distribution
+                   is aborted and an empty list is returned so the caller can fail the action.
 
         :param sending_amount: The total amount to send in satoshis (integer)
-        :return: A list of TransactionOutputs
+        :return: A list of TransactionOutputs, or an empty list if the distribution cannot be honoured
         """
         distribution = self.get_distribution(transaction_type=self.transaction_type, sending_amount=sending_amount)
         receiving_outputs = []
@@ -629,10 +642,41 @@ class SendTransactionAction(Action):
             receiving_outputs.append(TransactionOutput(address, receiving_value))
             LOG.info(f'receiving output: {receiving_value} -> {address}')
 
-        # If rounding errors are causing a few satoshis remaining, the first output absorbs them
-        if remaining_amount != 0 and len(receiving_outputs) > 0:
+        return self._finalize_receiving_outputs(receiving_outputs, remaining_amount)
+
+    def _finalize_receiving_outputs(self, receiving_outputs, remaining_amount):
+        """
+        Absorb any remaining satoshis into the first receiving output, or abort the distribution
+
+        The remainder may only be absorbed when it is genuine rounding dust, i.e. strictly smaller than the
+        minimum output value. A remainder that is too large would silently re-allocate funds and is therefore
+        treated as a distribution that cannot be honoured, returning an empty list so the caller aborts.
+        A negative remainder is corrected defensively by subtracting from the first output, provided that
+        the first output remains at or above the minimum output value.
+
+        :param receiving_outputs: The list of TransactionOutput objects computed so far
+        :param remaining_amount: The number of satoshis left unallocated (may be negative in theory)
+        :return: The list of TransactionOutputs, or an empty list if the distribution cannot be honoured
+        """
+        if len(receiving_outputs) == 0:
+            LOG.error(f'Distribution cannot be honoured: no receiving output meets the minimum output value of {self.minimum_output_value} and {remaining_amount} Satoshi(s) remain unallocated')
+            return []
+
+        if remaining_amount > 0 and remaining_amount < self.minimum_output_value:
             LOG.info(f'Remaining {remaining_amount} Satoshi(s) go to address {receiving_outputs[0].address}')
             receiving_outputs[0].value += remaining_amount
+        elif remaining_amount < 0 and abs(remaining_amount) < self.minimum_output_value:
+            if receiving_outputs[0].value - abs(remaining_amount) >= self.minimum_output_value:
+                LOG.info(f'Removing {abs(remaining_amount)} Satoshi(s) from address {receiving_outputs[0].address} to correct the negative remainder')
+                receiving_outputs[0].value -= abs(remaining_amount)
+            else:
+                LOG.error(f'Unable to correct the negative remainder {remaining_amount}: the first output would fall below the minimum output value of {self.minimum_output_value}')
+                return []
+        elif remaining_amount != 0:
+            LOG.error(f'Distribution cannot be honoured: remainder {remaining_amount} is not smaller than the minimum output value of {self.minimum_output_value}; aborting to avoid silently re-allocating funds')
+            return []
+
+        assert receiving_outputs[0].value >= self.minimum_output_value
 
         return receiving_outputs
 

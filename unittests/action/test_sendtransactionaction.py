@@ -1220,7 +1220,7 @@ class TestGetReceivingOutputsRemaining:
         action = SendTransactionAction('test_send_tx')
         action.distribution = {'addr1': 50, 'addr2': 50}
         action.transaction_type = 'Send2Many'
-        action.minimum_output_value = 1
+        action.minimum_output_value = 10
 
         outputs = action.get_receiving_outputs(101)  # Odd number to force rounding
         total = sum(o.value for o in outputs)
@@ -1259,7 +1259,7 @@ class TestGetReceivingOutputsRemaining:
         action = SendTransactionAction('test_send_tx')
         action.distribution = {'addr_a': 40, 'addr_b': 35, 'addr_c': 25}
         action.transaction_type = 'Send2Many'
-        action.minimum_output_value = 1
+        action.minimum_output_value = 10
 
         outputs = action.get_receiving_outputs(997)
 
@@ -1267,6 +1267,50 @@ class TestGetReceivingOutputsRemaining:
         # addr_a absorbs the 2-satoshi rounding remainder (398 + 2 = 400)
         assert by_address == {'addr_a': 400, 'addr_b': 348, 'addr_c': 249}
         assert sum(o.value for o in outputs) == 997
+
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.valid_distribution')
+    def test_get_receiving_outputs_aborts_when_remainder_not_dust(self, mock_valid_distribution, mock_valid_amount):
+        """The distribution is aborted (empty list) when the remainder is not smaller than the minimum output value."""
+        mock_valid_amount.return_value = True
+        mock_valid_distribution.return_value = True
+
+        action = SendTransactionAction('test_send_tx')
+        action.distribution = {'addr_big': 90, 'addr_small1': 5, 'addr_small2': 5}
+        action.transaction_type = 'Send2Many'
+        action.minimum_output_value = 100
+
+        # addr_big gets 90% of 1000 = 900 (kept); the two 5% recipients get 50 each (< 100, excluded).
+        # The 100 satoshis of excluded value accumulate as the remainder, which is not smaller than the
+        # minimum output value, so the distribution cannot be honoured without re-allocating funds.
+        outputs = action.get_receiving_outputs(1000)
+
+        assert outputs == []
+
+    def test_get_receiving_outputs_negative_remainder_subtracted(self):
+        """A negative remainder (defensive path) is subtracted from the first output when it stays >= minimum."""
+        from action.sendtransactionaction import TransactionOutput
+
+        action = SendTransactionAction('test_send_tx')
+        action.minimum_output_value = 100
+
+        receiving_outputs = [TransactionOutput('addr1', 1000)]
+        outputs = action._finalize_receiving_outputs(receiving_outputs, -5)
+
+        assert len(outputs) == 1
+        assert outputs[0].value == 995
+
+    def test_get_receiving_outputs_negative_remainder_cannot_correct(self):
+        """A negative remainder aborts when subtracting it would drop the first output below the minimum."""
+        from action.sendtransactionaction import TransactionOutput
+
+        action = SendTransactionAction('test_send_tx')
+        action.minimum_output_value = 100
+
+        receiving_outputs = [TransactionOutput('addr1', 100)]
+        outputs = action._finalize_receiving_outputs(receiving_outputs, -1)
+
+        assert outputs == []
 
 
 class TestConfigureChangeAddress:
@@ -1836,3 +1880,48 @@ class TestRunEdgeCases:
         action.transaction_type = 'Send2Single'
         result = action.run()
         assert not result
+
+
+class TestRunSendAllFeeSplitRemainder:
+    """Tests for the send-all fee split that distributes the fee exactly across outputs."""
+
+    @mock.patch('action.sendtransactionaction.push_tx')
+    @mock.patch('action.sendtransactionaction.txhash', return_value='abc123')
+    @mock.patch('action.sendtransactionaction.make_custom_tx', return_value='abcdef')
+    @mock.patch('action.sendtransactionaction.get_high_priority_fee', return_value=3)
+    @mock.patch('action.sendtransactionaction.get_private_key')
+    @mock.patch('action.sendtransactionaction.get_hot_wallet')
+    @mock.patch('action.sendtransactionaction.utxos')
+    @mock.patch('action.sendtransactionaction.valid_distribution')
+    @mock.patch('action.sendtransactionaction.valid_amount')
+    @mock.patch('action.sendtransactionaction.get_max_tx_fee_percentage', return_value=0)
+    def test_run_send_all_fee_split_no_dropped_satoshis(self, mock_max_fee, mock_valid_amount, mock_valid_dist,
+                                                         mock_utxos, mock_get_hot_wallet, mock_get_priv,
+                                                         mock_high_fee, mock_make_tx, mock_txhash, mock_push):
+        """The send-all fee split distributes the full fee, dropping no satoshis on an uneven split."""
+        mock_utxos.return_value = {'utxos': [
+            {'value': 1000, 'output_hash': 'hash1', 'output_n': 0, 'confirmations': 6}
+        ]}
+        mock_valid_amount.return_value = True
+        mock_valid_dist.return_value = True
+        mock_get_hot_wallet.return_value = {'1TestAddress': 'priv_key_1'}
+        mock_get_priv.return_value = {'1TestAddress': 'priv_key_1'}
+        mock_push.return_value = {'success': True}
+
+        action = SendTransactionAction('test_send_tx')
+        action.sending_address = '1TestAddress'
+        action.wallet_type = 'Single'
+        action.amount = 0
+        action.transaction_type = 'Send2Many'
+        action.distribution = {'addr1': 50, 'addr2': 50}
+        action.minimum_output_value = 1
+
+        result = action.run()
+        assert result
+
+        # transaction = 'abcdef' (6 hex chars = 3 bytes), fee = 3 * 3 = 9 satoshis
+        # fee_share = 9 // 2 = 4, remainder = 1 -> the highest-value output loses an extra satoshi
+        second_call_outputs = mock_make_tx.call_args_list[1].kwargs['tx_outputs']
+        output_values = sorted(o['value'] for o in second_call_outputs)
+        assert output_values == [495, 496]
+        assert sum(output_values) == 1000 - 9
