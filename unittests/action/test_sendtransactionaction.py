@@ -1312,6 +1312,17 @@ class TestGetReceivingOutputsRemaining:
 
         assert outputs == []
 
+    def test_finalize_receiving_outputs_invariant_violation_returns_empty(self):
+        """A first output below the minimum output value violates the invariant and returns an empty list."""
+        from action.sendtransactionaction import TransactionOutput
+
+        action = SendTransactionAction('test_send_tx')
+        action.minimum_output_value = 100
+
+        outputs = action._finalize_receiving_outputs([TransactionOutput('addr1', 50)], 0)
+
+        assert outputs == []
+
 
 class TestConfigureChangeAddress:
     """Tests for change_address configuration"""

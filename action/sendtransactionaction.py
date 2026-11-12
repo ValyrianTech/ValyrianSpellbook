@@ -652,7 +652,9 @@ class SendTransactionAction(Action):
         minimum output value. A remainder that is too large would silently re-allocate funds and is therefore
         treated as a distribution that cannot be honoured, returning an empty list so the caller aborts.
         A negative remainder is corrected defensively by subtracting from the first output, provided that
-        the first output remains at or above the minimum output value.
+        the first output remains at or above the minimum output value. As a final money-safety invariant,
+        the first output is checked to be at or above the minimum output value; if it is not, an error is
+        logged and an empty list is returned.
 
         :param receiving_outputs: The list of TransactionOutput objects computed so far
         :param remaining_amount: The number of satoshis left unallocated (may be negative in theory)
@@ -676,7 +678,9 @@ class SendTransactionAction(Action):
             LOG.error(f'Distribution cannot be honoured: remainder {remaining_amount} is not smaller than the minimum output value of {self.minimum_output_value}; aborting to avoid silently re-allocating funds')
             return []
 
-        assert receiving_outputs[0].value >= self.minimum_output_value
+        if receiving_outputs[0].value < self.minimum_output_value:
+            LOG.error(f'Invariant violation: the first receiving output value {receiving_outputs[0].value} is below the minimum output value {self.minimum_output_value}; aborting to avoid sending an undersized output')
+            return []
 
         return receiving_outputs
 
