@@ -3,6 +3,7 @@
 
 import glob
 import os
+import threading
 import time
 
 from helpers.actionhelpers import delete_action
@@ -33,6 +34,11 @@ from trigger.txconfirmationtrigger import TxConfirmationTrigger
 from validators.validators import valid_address
 
 TRIGGERS_DIR = 'json/public/triggers'
+
+# Serialise trigger checks so concurrent checks (e.g. the periodic checker and a
+# client POST to /spellbook/check_triggers) cannot double-activate a trigger or
+# race on the trigger JSON files.
+_CHECK_TRIGGERS_LOCK = threading.Lock()
 
 
 class UnknownTriggerTypeError(ValueError):
@@ -217,45 +223,46 @@ def check_triggers(trigger_id=None):
     elif trigger_id is not None and trigger_id not in triggers:
         return {'error': f'Unknown trigger id: {trigger_id}'}
 
-    for tid in triggers:
-        try:
-            trigger = get_trigger(trigger_id=tid)
-        except UnknownTriggerTypeError as ex:
-            LOG.error(f'Skipping trigger {tid}: {ex}')
+    with _CHECK_TRIGGERS_LOCK:
+        for tid in triggers:
+            try:
+                trigger = get_trigger(trigger_id=tid)
+            except UnknownTriggerTypeError as ex:
+                LOG.error(f'Skipping trigger {tid}: {ex}')
 
-            trigger_config = get_trigger_config(tid)
-            self_destruct = trigger_config.get('self_destruct')
+                trigger_config = get_trigger_config(tid)
+                self_destruct = trigger_config.get('self_destruct')
 
-            if self_destruct is not None and self_destruct <= int(time.time()):
+                if self_destruct is not None and self_destruct <= int(time.time()):
+                    LOG.info(f'Trigger {tid} has reached its self-destruct time')
+
+                    if trigger_config.get('destruct_actions') is True:
+                        for action_id in trigger_config.get('actions') or []:
+                            LOG.info(f'Deleting action {action_id}')
+                            delete_action(action_id=action_id)
+
+                    LOG.info(f'Deleting trigger {tid}')
+                    delete_trigger(trigger_id=tid)
+
+                continue
+
+            if trigger.status == 'Active':
+                LOG.info(f'Checking conditions of trigger {tid}')
+                if trigger.conditions_fulfilled() is True:
+                    trigger.activate()
+
+            if trigger.self_destruct is not None and trigger.self_destruct <= int(time.time()):
                 LOG.info(f'Trigger {tid} has reached its self-destruct time')
 
-                if trigger_config.get('destruct_actions') is True:
-                    for action_id in trigger_config.get('actions') or []:
+                # Also destruct any attached actions if needed
+                if trigger.destruct_actions is True:
+                    for action_id in trigger.actions:
                         LOG.info(f'Deleting action {action_id}')
                         delete_action(action_id=action_id)
 
                 LOG.info(f'Deleting trigger {tid}')
                 delete_trigger(trigger_id=tid)
-
-            continue
-
-        if trigger.status == 'Active':
-            LOG.info(f'Checking conditions of trigger {tid}')
-            if trigger.conditions_fulfilled() is True:
-                trigger.activate()
-
-        if trigger.self_destruct is not None and trigger.self_destruct <= int(time.time()):
-            LOG.info(f'Trigger {tid} has reached its self-destruct time')
-
-            # Also destruct any attached actions if needed
-            if trigger.destruct_actions is True:
-                for action_id in trigger.actions:
-                    LOG.info(f'Deleting action {action_id}')
-                    delete_action(action_id=action_id)
-
-            LOG.info(f'Deleting trigger {tid}')
-            delete_trigger(trigger_id=tid)
-            continue
+                continue
 
 
 def verify_signed_message(trigger_id, **data):

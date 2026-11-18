@@ -758,6 +758,35 @@ class TestCheckTriggersAdvanced:
         mock_delete_action.assert_not_called()
 
 
+class TestCheckTriggersLock:
+    """Tests that check_triggers serialises trigger checks via a lock"""
+
+    @mock.patch('helpers.triggerhelpers._CHECK_TRIGGERS_LOCK')
+    @mock.patch('helpers.triggerhelpers.get_triggers', return_value=['trigger1'])
+    @mock.patch('helpers.triggerhelpers.get_trigger')
+    def test_check_triggers_acquires_lock(self, mock_get_trigger, mock_get_triggers, mock_lock):
+        """Test check_triggers acquires and releases the serialisation lock"""
+        mock_trigger = mock.MagicMock()
+        mock_trigger.status = 'Active'
+        mock_trigger.conditions_fulfilled.return_value = False
+        mock_trigger.self_destruct = None
+        mock_get_trigger.return_value = mock_trigger
+
+        check_triggers()
+
+        mock_lock.__enter__.assert_called_once()
+        mock_lock.__exit__.assert_called_once()
+
+    @mock.patch('helpers.triggerhelpers._CHECK_TRIGGERS_LOCK')
+    @mock.patch('helpers.triggerhelpers.get_triggers', return_value=['trigger1'])
+    def test_check_triggers_unknown_id_does_not_lock(self, mock_get_triggers, mock_lock):
+        """Test check_triggers returns for unknown id before acquiring the lock"""
+        result = check_triggers(trigger_id='unknown')
+        assert 'error' in result
+        mock_lock.__enter__.assert_not_called()
+        mock_lock.__exit__.assert_not_called()
+
+
 class TestVerifySignedMessageAdvanced:
     """Advanced tests for verify_signed_message function"""
 
