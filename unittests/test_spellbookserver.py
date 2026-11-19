@@ -14,7 +14,7 @@ from typing import ClassVar
 from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
-from bottle import WSGIHeaderDict, response
+from bottle import HTTPResponse, WSGIHeaderDict, response
 
 # --- Module loading -----------------------------------------------------------
 # spellbookserver.py imports heavy dependencies at module level (faster_whisper,
@@ -84,7 +84,7 @@ def mock_bottle_response():
 # --- enable_cors tests --------------------------------------------------------
 class TestEnableCors:
     def test_allowed_origin_echoed_back(self):
-        """Allowed origin is echoed back, credentials and Vary set, fn called."""
+        """Allowed origin is echoed back, Vary set, no credentials, fn called."""
         fn = MagicMock(return_value='result')
 
         with patch('spellbookserver.response') as mock_resp, \
@@ -97,7 +97,7 @@ class TestEnableCors:
             assert result == 'result'
             fn.assert_called_once_with()
             assert mock_resp.headers['Access-Control-Allow-Origin'] == 'https://app.example.com'
-            assert mock_resp.headers['Access-Control-Allow-Credentials'] == 'true'
+            assert 'Access-Control-Allow-Credentials' not in mock_resp.headers
             assert mock_resp.headers['Vary'] == 'Origin'
 
     def test_disallowed_origin_no_cors_headers(self):
@@ -189,6 +189,84 @@ class TestEnableCors:
             return 'result'
 
         assert enable_cors(my_named_fn).__name__ == 'my_named_fn'
+
+    def test_httpresponse_gets_cors_headers(self):
+        """CORS headers are also propagated onto a returned HTTPResponse."""
+        fn = MagicMock(return_value=HTTPResponse(status=204))
+
+        with patch('spellbookserver.response') as mock_resp, \
+             patch('spellbookserver.request') as mock_req, \
+             patch('spellbookserver.get_cors_allowed_origins', return_value=['https://app.example.com']):
+            mock_resp.headers = {}
+            mock_req.headers = {'Origin': 'https://app.example.com'}
+
+            result = enable_cors(fn)()
+
+            assert result.status_code == 204
+            assert result.headers['Access-Control-Allow-Origin'] == 'https://app.example.com'
+            assert result.headers['Vary'] == 'Origin'
+            assert 'Access-Control-Allow-Credentials' not in result.headers
+            assert 'OPTIONS' in result.headers['Access-Control-Allow-Methods']
+            assert 'Authorization' in result.headers['Access-Control-Allow-Headers']
+
+    def test_httpresponse_no_origin_gets_no_acao(self):
+        """A returned HTTPResponse without an allowed origin gets no ACAO header."""
+        fn = MagicMock(return_value=HTTPResponse(status=403, body={'error': 'x'}))
+
+        with patch('spellbookserver.response') as mock_resp, \
+             patch('spellbookserver.request') as mock_req, \
+             patch('spellbookserver.get_cors_allowed_origins', return_value=[]):
+            mock_resp.headers = {}
+            mock_req.headers = {'Origin': 'https://evil.example.com'}
+
+            result = enable_cors(fn)()
+
+            assert result.status_code == 403
+            assert 'Access-Control-Allow-Origin' not in result.headers
+            assert 'Access-Control-Allow-Credentials' not in result.headers
+
+
+class TestCorsPreflight:
+    def test_cors_preflight_response_returns_204(self):
+        """The module helper returns an empty HTTPResponse with status 204."""
+        from spellbookserver import cors_preflight_response
+
+        result = cors_preflight_response()
+        assert isinstance(result, HTTPResponse)
+        assert result.status_code == 204
+        assert result.body == ''
+
+    def test_cors_preflight_returns_204_with_headers(self):
+        """cors_preflight returns 204 and sets CORS headers (no credentials)."""
+        with patch('spellbookserver.response') as mock_resp, \
+             patch('spellbookserver.request') as mock_req, \
+             patch('spellbookserver.get_cors_allowed_origins', return_value=['https://app.example.com']):
+            mock_resp.headers = {}
+            mock_req.headers = {'Origin': 'https://app.example.com'}
+
+            result = SpellbookRESTAPI.cors_preflight()
+
+            assert isinstance(result, HTTPResponse)
+            assert result.status_code == 204
+            assert result.body == ''
+            assert mock_resp.headers['Access-Control-Allow-Origin'] == 'https://app.example.com'
+            assert result.headers['Access-Control-Allow-Origin'] == 'https://app.example.com'
+            assert 'Access-Control-Allow-Credentials' not in mock_resp.headers
+            assert 'Access-Control-Allow-Credentials' not in result.headers
+
+    def test_cors_preflight_disallowed_origin_no_acao(self):
+        """cors_preflight with a disallowed origin still returns 204 without ACAO."""
+        with patch('spellbookserver.response') as mock_resp, \
+             patch('spellbookserver.request') as mock_req, \
+             patch('spellbookserver.get_cors_allowed_origins', return_value=[]):
+            mock_resp.headers = {}
+            mock_req.headers = {'Origin': 'https://evil.example.com'}
+
+            result = SpellbookRESTAPI.cors_preflight()
+
+            assert result.status_code == 204
+            assert 'Access-Control-Allow-Origin' not in mock_resp.headers
+            assert 'Access-Control-Allow-Origin' not in result.headers
 
 
 # --- log_to_logger tests ------------------------------------------------------
@@ -1741,12 +1819,6 @@ class TestTranscribe:
         assert '403' in str(result.status)
 
     @patch('spellbookserver.request')
-    def test_transcribe_options(self, mock_req):
-        mock_req.method = 'OPTIONS'
-        result = SpellbookRESTAPI.transcribe()
-        assert result == {}
-
-    @patch('spellbookserver.request')
     @patch('spellbookserver.get_enable_transcribe', return_value=True)
     def test_transcribe_no_file(self, mock_enable, mock_req):
         mock_req.method = 'POST'
@@ -2301,6 +2373,58 @@ class TestStateChangingRoutesArePost:
         for route in app.routes:
             if route.rule in self.STATE_CHANGING_RULES:
                 assert route.method != 'GET', f'{route.rule} must not be a GET route'
+
+
+class TestCorsPreflightRoutes:
+    """Regression tests: every CORS-opted route must answer OPTIONS preflight.
+
+    The preflight handler is a lightweight 204 callback (cors_preflight), not
+    the real GET/POST/DELETE handler, so browsers can complete preflight
+    without triggering the actual endpoint.
+    """
+
+    CORS_RULES: ClassVar[list[str]] = [
+        '/spellbook/upload',
+        '/spellbook/transcribe',
+        '/api/qr',
+        '/files/<trigger_id:re:[a-zA-Z0-9_\\-.]+>',
+        '/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\\-.]+>/message',
+        '/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\\-.]+>/get',
+        '/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\\-.]+>/post',
+        '/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\\-.]+>/delete',
+    ]
+
+    def _build_app(self):
+        with patch('spellbookserver.get_enable_ssl', return_value=False), \
+             patch('spellbookserver.get_enable_wallet', return_value=False), \
+             patch('spellbookserver.get_explorers', return_value={'blockstream': {}}), \
+             patch('spellbookserver.get_host', return_value='localhost'), \
+             patch('spellbookserver.get_port', return_value=8080), \
+             patch('spellbookserver.os.path.isfile', return_value=True), \
+             patch('bottle.Bottle.run'), \
+             patch('spellbookserver.LOG'):
+            return SpellbookRESTAPI()
+
+    def test_cors_rules_have_options_preflight(self):
+        app = self._build_app()
+        options_callbacks = {}
+        for route in app.routes:
+            if route.method == 'OPTIONS':
+                options_callbacks.setdefault(route.rule, set()).add(route.callback.__name__)
+
+        for rule in self.CORS_RULES:
+            assert rule in options_callbacks, f'{rule} has no OPTIONS route'
+            assert 'cors_preflight' in options_callbacks[rule], f'{rule} OPTIONS is not cors_preflight'
+
+    def test_upload_and_transcribe_options_are_preflight(self):
+        app = self._build_app()
+        callbacks = {}
+        for route in app.routes:
+            if route.method == 'OPTIONS':
+                callbacks[route.rule] = route.callback.__name__
+
+        assert callbacks['/spellbook/upload'] == 'cors_preflight'
+        assert callbacks['/spellbook/transcribe'] == 'cors_preflight'
 
 
 class TestGetRevealNoStore:

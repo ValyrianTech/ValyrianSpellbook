@@ -193,18 +193,33 @@ def enable_cors(fn):
 
         if origin and origin in allowed_origins:
             response.headers['Access-Control-Allow-Origin'] = origin
-            response.headers['Access-Control-Allow-Credentials'] = 'true'
             response.headers['Vary'] = 'Origin'
         else:
             response.headers.pop('Access-Control-Allow-Origin', None)
-            response.headers.pop('Access-Control-Allow-Credentials', None)
 
         response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS, HEAD'
         response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token, Authorization'
 
-        return fn(*args, **kwargs)
+        result = fn(*args, **kwargs)
+
+        # Bottle applies a returned HTTPResponse's own headers/status to the
+        # response (replacing the ones set above), so propagate the CORS headers
+        # onto the HTTPResponse so they survive for preflight/error responses.
+        if isinstance(result, HTTPResponse):
+            if origin and origin in allowed_origins:
+                result.headers['Access-Control-Allow-Origin'] = origin
+                result.headers['Vary'] = 'Origin'
+            result.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS, HEAD'
+            result.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token, Authorization'
+
+        return result
 
     return _enable_cors
+
+
+def cors_preflight_response():
+    """Return a 204 response for CORS OPTIONS preflight requests."""
+    return HTTPResponse(status=204)
 
 
 class SSLWebServer(ServerAdapter):
@@ -326,9 +341,13 @@ class SpellbookRESTAPI(Bottle):
         self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='DELETE', callback=self.delete_trigger)
         self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/activate', method='POST', callback=self.activate_trigger)
         self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/message', method='POST', callback=self.verify_signed_message)
+        self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/message', method='OPTIONS', callback=self.cors_preflight)
         self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/get', method='GET', callback=self.http_get_request)
+        self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/get', method='OPTIONS', callback=self.cors_preflight)
         self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/post', method='POST', callback=self.http_post_request)
+        self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/post', method='OPTIONS', callback=self.cors_preflight)
         self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/delete', method='DELETE', callback=self.http_delete_request)
+        self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/delete', method='OPTIONS', callback=self.cors_preflight)
         self.route(r'/spellbook/triggers/<trigger_id:re:[a-zA-Z0-9_\-.]+>/check', method='POST', callback=self.check_trigger)
         self.route('/spellbook/check_triggers', method='POST', callback=self.check_all_triggers)
 
@@ -345,9 +364,11 @@ class SpellbookRESTAPI(Bottle):
 
         # Routes for file downloads
         self.route(r'/files/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='GET', callback=self.file_download)
+        self.route(r'/files/<trigger_id:re:[a-zA-Z0-9_\-.]+>', method='OPTIONS', callback=self.cors_preflight)
 
         # Routes for QR image generation
         self.route('/api/qr', method='GET', callback=self.qr)
+        self.route('/api/qr', method='OPTIONS', callback=self.cors_preflight)
 
         # Routes for Actions
         self.route('/spellbook/actions', method='GET', callback=self.get_actions)
@@ -364,9 +385,9 @@ class SpellbookRESTAPI(Bottle):
 
         # Routes for uploading files
         self.route('/spellbook/upload', method='POST', callback=self.upload_file)
-        self.route('/spellbook/upload', method='OPTIONS', callback=self.upload_file)
+        self.route('/spellbook/upload', method='OPTIONS', callback=self.cors_preflight)
         self.route('/spellbook/transcribe', method='POST', callback=self.transcribe)
-        self.route('/spellbook/transcribe', method='OPTIONS', callback=self.transcribe)
+        self.route('/spellbook/transcribe', method='OPTIONS', callback=self.cors_preflight)
 
         # Check if there are explorers configured, this will also initialize the default explorers on first startup
         if len(get_explorers()) == 0:
@@ -476,6 +497,12 @@ class SpellbookRESTAPI(Bottle):
         LOG.info('Pong')
         response.content_type = 'application/json'
         return {'success': True}
+
+    @staticmethod
+    @enable_cors
+    def cors_preflight(*args, **kwargs):
+        """Answer CORS preflight OPTIONS requests for a route with a 204."""
+        return cors_preflight_response()
 
     @staticmethod
     @enable_cors
@@ -843,6 +870,7 @@ class SpellbookRESTAPI(Bottle):
         return http_post_request(trigger_id, **data)
 
     @staticmethod
+    @enable_cors
     @output_json
     def http_delete_request(trigger_id):
         """http delete request endpoint."""
@@ -868,6 +896,7 @@ class SpellbookRESTAPI(Bottle):
         return http_get_request(trigger_id, **data)
 
     @staticmethod
+    @enable_cors
     def qr():
         """qr endpoint."""
         response.content_type = 'image/png'
@@ -1052,10 +1081,6 @@ class SpellbookRESTAPI(Bottle):
     @enable_cors
     def transcribe():
         """transcribe endpoint."""
-        # Handle OPTIONS preflight request for CORS
-        if request.method == 'OPTIONS':
-            return {}
-
         start = time.time()
         if get_enable_transcribe() is False:
             return HTTPResponse(status=403, body={"error": "Transcribe endpoint is not enabled"})
