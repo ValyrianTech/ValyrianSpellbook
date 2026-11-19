@@ -2,6 +2,7 @@
 """Action that executes a system command."""
 
 import math
+import re
 import shlex
 import subprocess
 
@@ -14,6 +15,10 @@ from .actiontype import ActionType
 # Bounds synchronous command execution so a hung command fails the action
 # instead of blocking the trigger/action processing loop.
 DEFAULT_COMMAND_TIMEOUT = 600
+
+# Matches a placeholder token such as '{MESSAGE}'. Placeholders are substituted in
+# a single pass over the original command, so a substituted value is never re-scanned.
+PLACEHOLDER_RE = re.compile(r'\{([A-Za-z0-9_]+)\}')
 
 
 class CommandAction(Action):
@@ -30,6 +35,13 @@ class CommandAction(Action):
         Run the action
 
         if a parameter called 'placeholders' is passed in the kwargs, the placeholders in the run_command will be replaced with the values in the placeholders dict
+
+        Substitution is performed in a single pass over the original command using a
+        regex callback: each matched placeholder is replaced with the corresponding
+        value quoted exactly once via ``shlex.quote()``. Substituted values are NOT
+        re-scanned for further placeholders (so a value containing another placeholder
+        token such as ``{B}`` is left as the literal string ``{B}``), and quoting is
+        never applied more than once per value, regardless of dict insertion order.
 
         Note: placeholders are intended to occupy a complete command argument/token (e.g. run_command='echo {MESSAGE}').
         Each substituted value is quoted with shlex.quote() so that a whole-token placeholder can never inject shell
@@ -68,9 +80,14 @@ class CommandAction(Action):
 
         command = self.run_command
         placeholders = kwargs.get('placeholders', {})
-        for key, value in placeholders.items():
-            LOG.info(f'Replacing placeholder {key} with {value}')
-            command = command.replace(key, shlex.quote(str(value)))
+        if placeholders:
+            def _sub(match):
+                key = match.group(0)  # e.g. '{MESSAGE}'
+                if key in placeholders:
+                    # quote the value once; surrounding original text untouched
+                    return shlex.quote(str(placeholders[key]))
+                return match.group(0)
+            command = PLACEHOLDER_RE.sub(_sub, command)
 
         LOG.info(f'Running command: {command}')
         if self.working_dir is not None:

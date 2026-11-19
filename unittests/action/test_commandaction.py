@@ -290,3 +290,33 @@ class TestCommandActionSecurity:
         # shlex.quote() wraps the value in single quotes, which become literal characters
         # inside the surrounding double quotes, so the special characters are preserved.
         assert result[1] == b"prefix 'a b|c&d;e' suffix"
+
+    def test_commandaction_placeholder_value_is_not_re_expanded(self):
+        action = CommandAction('test_command_action')
+        action.configure(run_command='echo {A}')
+        result = action.run(placeholders={'{A}': '{B}', '{B}': 'x'})
+        assert result[0]
+        assert result[1] == b'{B}'
+
+    def test_commandaction_placeholder_substitution_is_order_independent(self):
+        action = CommandAction('test_command_action')
+        action.configure(run_command='echo {A} {B}')
+        first = action.run(placeholders={'{A}': '{B}', '{B}': 'x'})
+        second = action.run(placeholders={'{B}': 'x', '{A}': '{B}'})
+        assert first[0]
+        assert second[0]
+        assert first[1] == second[1]
+
+    def test_commandaction_placeholder_value_quoted_exactly_once(self):
+        action = CommandAction('test_command_action')
+        action.configure(run_command='printf %s {MESSAGE}')
+        result = action.run(placeholders={'{MESSAGE}': "it's a test"})
+        assert result[0]
+        assert result[1] == b"it's a test"
+
+    def test_commandaction_unknown_placeholder_is_left_untouched(self):
+        action = CommandAction('test_command_action')
+        action.configure(run_command='echo {MESSAGE} {UNKNOWN}')
+        result = action.run(placeholders={'{MESSAGE}': 'x'})
+        assert result[0]
+        assert result[1] == b'x {UNKNOWN}'
