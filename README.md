@@ -94,6 +94,8 @@ Triggers invoke actions based on specific conditions:
 
 A stored trigger whose `trigger_type` is not recognized is skipped during bulk trigger checks (`check_triggers`) and reported as an error by single-trigger operations, rather than crashing the check/activate/run flow.
 
+Trigger checks are serialized by an internal lock, so concurrent trigger checks (for example the periodic checker running alongside a client-triggered check) cannot double-activate a trigger or corrupt the trigger JSON files.
+
 ---
 
 ## Actions
