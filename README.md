@@ -68,7 +68,9 @@ python spellbookserver.py
 
 ### CORS / Cross-origin access
 
-The REST API supports cross-origin requests (CORS) for clients such as the Web UI/admin. Set the `allowed_origins` option in the `[RESTAPI]` section of `configuration/spellbook.conf` to a comma-separated allow-list of origins permitted to make cross-origin requests. The server echoes the request's `Origin` header back with `Access-Control-Allow-Credentials: true` only when it is in the allow-list. When `allowed_origins` is empty (the default), no cross-origin requests are allowed, so the Web UI/admin must set this option to call the REST API from another origin.
+The REST API supports cross-origin requests (CORS) for clients such as the Web UI/admin. Set the `allowed_origins` option in the `[RESTAPI]` section of `configuration/spellbook.conf` to a comma-separated allow-list of origins permitted to make cross-origin requests. When the request's `Origin` header is in the allow-list, the server echoes it back in `Access-Control-Allow-Origin` (plus `Vary: Origin`); when `allowed_origins` is empty (the default), no cross-origin requests are allowed, so the Web UI/admin must set this option to call the REST API from another origin.
+
+The server does not advertise `Access-Control-Allow-Credentials`, so cross-origin callers must be authenticated via headers (e.g. `Authorization`) rather than cookie credentials. CORS preflight (`OPTIONS`) requests are answered with a dedicated `204 No Content` response for the file-upload/transcribe routes, the file-download and QR routes, and the HTTP trigger routes, and the CORS headers are propagated onto returned `HTTPResponse` objects so they survive on preflight and error responses.
 
 ### Using the CLI
 
